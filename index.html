@@ -674,6 +674,45 @@
 
           <!-- Collapsible Cloud Hosting Config (Optional for GitHub Pages / Netlify / Vercel) -->
           <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Persistent Cloud Sync Status Diagnostics Panel (Never Auto-Hiding) -->
+            <div class="p-5 bg-slate-50 border-b border-slate-200 space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span id="diag-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                  <h3 class="text-sm sm:text-base font-bold text-slate-900">Cloud Sync Status</h3>
+                </div>
+                <button type="button" onclick="testAndSyncCloudNow()" id="test-sync-now-btn" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition active:scale-95 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                  </svg>
+                  Test &amp; Sync Now
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div class="bg-white rounded-xl border border-slate-200 p-3">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Firebase Project ID</div>
+                  <div id="diag-project-id" class="font-mono font-bold text-slate-900 mt-1 break-all">iti-attendance-b1ab1</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-3">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Auth State (UID)</div>
+                  <div id="diag-auth-state" class="font-mono font-semibold text-slate-800 mt-1 break-all">Initializing...</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-3">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Firestore Sync State</div>
+                  <div id="diag-firestore-state" class="font-semibold text-amber-700 mt-1">Connecting to Cloud...</div>
+                </div>
+              </div>
+
+              <!-- Persistent Error Box (Shown whenever a Firebase auth/Firestore error occurs) -->
+              <div id="diag-error-box" class="hidden rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs text-rose-800">
+                <div class="font-bold text-rose-900">Firebase Connection / Permission Message:</div>
+                <div id="diag-error-text" class="font-mono mt-1 break-words">--</div>
+              </div>
+            </div>
+
             <button type="button" onclick="toggleCloudConfigPanel()" class="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-slate-50 transition">
               <div class="flex items-center gap-2.5">
                 <span class="w-8 h-8 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center">
@@ -683,7 +722,7 @@
                 </span>
                 <div>
                   <h3 class="text-sm sm:text-base font-bold text-slate-900">Cloud Hosting Config (Optional — Self-Hosting)</h3>
-                  <p class="text-xs text-slate-500">Connect your own free Firebase project if hosting <code class="font-mono text-slate-700">index.html</code> on GitHub Pages, Netlify, or Vercel.</p>
+                  <p class="text-xs text-slate-500">Pre-wired with your Firebase project config and copyable Firestore Security Rules.</p>
                 </div>
               </div>
               <svg id="cloud-config-chevron" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -693,14 +732,14 @@
 
             <div id="cloud-config-body" class="hidden px-5 pb-5 pt-2 border-t border-slate-100 space-y-4">
               <div>
-                <label for="custom-firebase-config-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Firebase Web Config JSON</label>
-                <textarea id="custom-firebase-config-input" rows="4" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}' class="w-full p-3 rounded-xl border border-slate-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                <label for="custom-firebase-config-input" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Firebase Web Config JSON (Active)</label>
+                <textarea id="custom-firebase-config-input" rows="5" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "...", "storageBucket": "...", "messagingSenderId": "...", "appId": "..."}' class="w-full p-3 rounded-xl border border-slate-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
                 <div class="mt-2 flex flex-wrap gap-2">
                   <button type="button" onclick="saveCustomFirebaseConfig()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition">
-                    Save & Connect Cloud Config
+                    Save &amp; Connect Cloud Config
                   </button>
                   <button type="button" onclick="clearCustomFirebaseConfig()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition">
-                    Reset Custom Config
+                    Use Built-In Default Config
                   </button>
                 </div>
               </div>
@@ -889,8 +928,17 @@ service cloud.firestore {
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // =========================================================================
-    // 1. CONSTANTS, STORAGE KEYS & SAMPLE DATA
+    // 1. CONSTANTS, BUILT-IN FIREBASE CONFIG & SAMPLE DATA
     // =========================================================================
+    const BUILTIN_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDlk8HTuzdGkwndUXm6B3WO_0VUkQBqm16",
+      authDomain: "iti-attendance-b1ab1.firebaseapp.com",
+      projectId: "iti-attendance-b1ab1",
+      storageBucket: "iti-attendance-b1ab1.firebasestorage.app",
+      messagingSenderId: "680846674510",
+      appId: "1:680846674510:web:a8affdd473b1c47bfe911f"
+    };
+
     const STORAGE_KEYS = {
       STUDENTS: 'iti_electrician_students_v1',
       ATTENDANCE: 'iti_electrician_attendance_v1',
@@ -898,295 +946,327 @@ service cloud.firestore {
       ADMIN_CONFIG: 'iti_electrician_admin_v1',
       CUSTOM_FIREBASE: 'iti_electrician_custom_fb_v1',
     };
-
-    const SAMPLE_STUDENTS = [
-      { id: 'stu-1', rollNo: 'EL-01', name: 'Aarav Sharma', regId: 'R250809100101', batch: '2025-2027-A' },
-      { id: 'stu-2', rollNo: 'EL-02', name: 'Rohan Verma', regId: 'R250809100102', batch: '2025-2027-A' },
-      { id: 'stu-3', rollNo: 'EL-03', name: 'Priya Nair', regId: 'R250809100103', batch: '2025-2027-A' },
-      { id: 'stu-4', rollNo: 'EL-04', name: 'Vikram Singh', regId: 'R250809100104', batch: '2025-2027-A' },
-      { id: 'stu-5', rollNo: 'EL-05', name: 'Sneha Patil', regId: 'R250809100105', batch: '2025-2027-A' },
-      { id: 'stu-6', rollNo: 'EL-06', name: 'Mohammed Irfan', regId: 'R250809100106', batch: '2025-2027-A' },
-      { id: 'stu-7', rollNo: 'EL-07', name: 'Deepak Yadav', regId: 'R250809100107', batch: '2025-2027-A' },
-      { id: 'stu-8', rollNo: 'EL-08', name: 'Ananya Das', regId: 'R250809100108', batch: '2025-2027-A' },
-    ];
-
-    // =========================================================================
-    // 2. DATE & MONDAY–FRIDAY CALENDAR HELPERS
-    // =========================================================================
-    function toISODate(dt) {
-      const y = dt.getFullYear();
-      const m = String(dt.getMonth() + 1).padStart(2, '0');
-      const d = String(dt.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    }
-
-    function getTodayISO() {
-      return toISODate(new Date());
-    }
-
-    function parseISODate(isoStr) {
-      const [y, m, d] = isoStr.split('-').map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function formatDateReadable(isoStr) {
-      const dt = parseISODate(isoStr);
-      return dt.toLocaleDateString('en-IN', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      });
-    }
-
-    function isWeekendISO(isoStr) {
-      const day = parseISODate(isoStr).getDay();
-      return day === 0 || day === 6; // Sun = 0, Sat = 6
-    }
-
-    function getWeekDates(anchorISO) {
-      const dt = parseISODate(anchorISO);
-      const dayOfWeek = dt.getDay(); // 0=Sun..6=Sat
-      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      const monday = new Date(dt);
-      monday.setDate(dt.getDate() + diffToMonday);
-
-      const result = [];
-      for (let i = 0; i < 7; i++) {
-        const cur = new Date(monday);
-        cur.setDate(monday.getDate() + i);
-        result.push({
-          iso: toISODate(cur),
-          shortDay: cur.toLocaleDateString('en-US', { weekday: 'short' }),
-          dayNum: cur.getDate(),
-        });
-      }
-      return result;
-    }
-
-    function getDayRecordKey(batch, isoStr) {
-      return `${batch}__${isoStr}`;
-    }
-
-    function getDayRecord(batch, isoStr) {
-      const key = getDayRecordKey(batch, isoStr);
-      return state.attendanceRecords[key] || { batch, date: isoStr, records: {}, specialClass: false };
-    }
-
-    function isWorkingDay(batch, isoStr) {
-      if (!isWeekendISO(isoStr)) return true;
-      const rec = getDayRecord(batch, isoStr);
-      return Boolean(rec.specialClass);
-    }
-
-    function getWorkingDatesInMonth(batch, year, monthIdx) {
-      const dates = [];
-      const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dt = new Date(year, monthIdx, d);
-        const iso = toISODate(dt);
-        if (isWorkingDay(batch, iso)) {
-          dates.push(iso);
-        }
-      }
-      return dates;
-    }
-
-    function generateInitialDemoAttendance(batch, students) {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth();
-      const todayNum = now.getDate();
-      const map = {};
-
-      for (let d = 1; d <= todayNum; d++) {
-        const dt = new Date(year, month, d);
-        const day = dt.getDay();
-        if (day === 0 || day === 6) continue; // Mon-Fri only
-        const iso = toISODate(dt);
-        const records = {};
-        students.forEach((stu, idx) => {
-          // Give realistic attendance (>85% for most, ~70% for EL-07 so shortage alert is visible)
-          if (idx === 6) {
-            records[stu.id] = d % 3 === 0 ? 'A' : 'P';
-          } else {
-            records[stu.id] = (d + idx) % 11 === 0 ? 'A' : 'P';
-          }
-        });
-        map[getDayRecordKey(batch, iso)] = {
-          batch,
-          date: iso,
-          records,
-          specialClass: false,
-        };
-      }
-      return map;
-    }
-
-    // =========================================================================
-    // 3. APPLICATION STATE & ROLE-BASED ACCESS CONTROL
-    // =========================================================================
-    const urlParams = new URLSearchParams(window.location.search);
-    const forcedStudentParam =
-      urlParams.get('view') === 'student' || urlParams.get('mode') === 'student';
-
+// ... existing code ... -->
     const state = {
-      appId: typeof __app_id !== 'undefined' ? __app_id : 'iti-electrician-attendance',
+      appId: typeof __app_id !== 'undefined' && __app_id ? String(__app_id) : 'iti-attendance-b1ab1',
       db: null,
       auth: null,
       currentUser: null,
       firestoreEnabled: false,
       initialSeedDone: false,
-
-      currentBatch: '2025-2027-A',
-      selectedDate: getTodayISO(),
-      activeTab: forcedStudentParam ? 'monthly' : 'daily',
-      selectedTraineeId: '',
-
-      students: [],
-      attendanceRecords: {},
-
-      // Admin ownership & session state
-      adminConfig: {
-        adminUid: null,
-        adminEmail: null,
-        adminPin: '1234',
-      },
-      isAdmin: false,
-    };
-
-    function determineInitialRole() {
-      // If link explicitly has ?view=student or ?mode=student, strictly start in Student Read-Only Mode
-      if (forcedStudentParam) {
-        state.isAdmin = false;
-        state.activeTab = 'monthly';
-        return;
+      activeProjectId: BUILTIN_FIREBASE_CONFIG.projectId,
+      lastCloudError: '',
+// ... existing code ... -->
+    function normalizeFirebaseConfig(cfg) {
+      if (!cfg || typeof cfg !== 'object') return null;
+      const normalized = { ...cfg };
+      if (!normalized.projectId && normalized.projectID) {
+        normalized.projectId = normalized.projectID;
       }
-
-      // Check if current browser session is unlocked as Admin
-      const sessionUnlocked = sessionStorage.getItem('iti_admin_unlocked') === 'true';
-      const savedLocalAdmin = localStorage.getItem('iti_local_owner_unlocked') === 'true';
-
-      if (sessionUnlocked || savedLocalAdmin) {
-        state.isAdmin = true;
-        state.activeTab = 'daily';
-      } else {
-        // Default on creator's own device before sharing: allow Admin if no external student param,
-        // unless locked manually via "Lock / Preview Student View"
-        const explicitlyLocked = localStorage.getItem('iti_explicitly_locked') === 'true';
-        state.isAdmin = !explicitlyLocked;
-        state.activeTab = state.isAdmin ? 'daily' : 'monthly';
-      }
+      if (!normalized.apiKey || !normalized.projectId) return null;
+      return normalized;
     }
 
-    function applyRoleUI() {
-      const roleBadge = document.getElementById('role-status-badge');
-      const roleLabel = document.getElementById('role-status-label');
-      const shareBtnHeader = document.getElementById('header-share-btn');
-      const lockBtnHeader = document.getElementById('header-admin-lock-btn');
-      const loginBtnHeader = document.getElementById('header-instructor-login-btn');
-      const tabDaily = document.getElementById('tab-btn-daily');
-      const tabStudents = document.getElementById('tab-btn-students');
-      const studentNavHint = document.getElementById('student-mode-nav-hint');
-      const reportReadonlyPill = document.getElementById('report-readonly-pill');
-      const reportShareBtn = document.getElementById('report-share-btn');
-
-      if (state.isAdmin) {
-        roleBadge.className =
-          'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30';
-        roleLabel.textContent = state.adminConfig.adminEmail
-          ? `Instructor Admin (${state.adminConfig.adminEmail})`
-          : 'Instructor (Admin Mode)';
-
-        shareBtnHeader.classList.remove('hidden');
-        lockBtnHeader.classList.remove('hidden');
-        loginBtnHeader.classList.add('hidden');
-        tabDaily.classList.remove('hidden');
-        tabStudents.classList.remove('hidden');
-        studentNavHint.classList.add('hidden');
-        reportReadonlyPill.classList.add('hidden');
-        reportShareBtn.classList.remove('hidden');
-      } else {
-        roleBadge.className =
-          'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30';
-        roleLabel.textContent = 'Read-Only Student View';
-
-        shareBtnHeader.classList.add('hidden');
-        lockBtnHeader.classList.add('hidden');
-        loginBtnHeader.classList.remove('hidden');
-        tabDaily.classList.add('hidden');
-        tabStudents.classList.add('hidden');
-        studentNavHint.classList.remove('hidden');
-        reportReadonlyPill.classList.remove('hidden');
-        reportShareBtn.classList.add('hidden');
-
-        // Force monthly view in Read-Only Student Mode
-        if (state.activeTab !== 'monthly') {
-          state.activeTab = 'monthly';
+    function resolveFirebaseConfig() {
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+          const envCfg = normalizeFirebaseConfig(JSON.parse(__firebase_config));
+          if (envCfg) return envCfg;
+        } catch (e) {
+          console.warn('Invalid __firebase_config, using built-in default');
         }
       }
+      const customRaw = localStorage.getItem(STORAGE_KEYS.CUSTOM_FIREBASE);
+      if (customRaw) {
+        try {
+          const customCfg = normalizeFirebaseConfig(JSON.parse(customRaw));
+          if (customCfg) return customCfg;
+        } catch (e) {
+          console.warn('Invalid custom Firebase config in localStorage, falling back to built-in');
+        }
+      }
+      return { ...BUILTIN_FIREBASE_CONFIG };
+    }
 
-      // Sync active tab styles
-      ['daily', 'monthly', 'students'].forEach((t) => {
-        const view = document.getElementById(`view-${t}`);
-        const btn = document.getElementById(`tab-btn-${t}`);
-        if (t === state.activeTab) {
-          view.classList.remove('hidden');
-          btn.className =
-            'tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all bg-amber-500 text-slate-950 shadow-sm whitespace-nowrap';
+    function updateDiagnosticsUI({ projectId, authStateText, firestoreStateText, dotClass, errorMessage }) {
+      const projEl = document.getElementById('diag-project-id');
+      const authEl = document.getElementById('diag-auth-state');
+      const fsEl = document.getElementById('diag-firestore-state');
+      const dotEl = document.getElementById('diag-status-dot');
+      const errBox = document.getElementById('diag-error-box');
+      const errText = document.getElementById('diag-error-text');
+
+      if (projectId && projEl) projEl.textContent = projectId;
+      if (authStateText && authEl) authEl.textContent = authStateText;
+      if (firestoreStateText && fsEl) {
+        fsEl.textContent = firestoreStateText;
+        fsEl.className = `font-semibold mt-1 ${
+          dotClass === 'bg-emerald-400'
+            ? 'text-emerald-700'
+            : dotClass === 'bg-rose-500'
+            ? 'text-rose-700'
+            : 'text-amber-700'
+        }`;
+      }
+      if (dotClass && dotEl) {
+        dotEl.className = `w-2.5 h-2.5 rounded-full ${dotClass}`;
+      }
+      if (typeof errorMessage === 'string' && errBox && errText) {
+        state.lastCloudError = errorMessage;
+        if (errorMessage.trim()) {
+          errBox.classList.remove('hidden');
+          errText.textContent = errorMessage;
         } else {
-          view.classList.add('hidden');
-          if (!btn.classList.contains('hidden')) {
-            btn.className =
-              'tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-800 whitespace-nowrap';
-          }
+          errBox.classList.add('hidden');
+          errText.textContent = '';
         }
-      });
+      }
     }
 
-    function requireAdmin() {
-      if (!state.isAdmin) {
-        showToast('Read-Only Student View: Only the Instructor can modify attendance.');
+    async function initStorage() {
+      determineInitialRole();
+      applyRoleUI();
+
+      // Resolve active Firebase config (Environment -> Custom Override -> Built-In Default)
+      const activeConfig = resolveFirebaseConfig();
+      state.activeProjectId = activeConfig.projectId || BUILTIN_FIREBASE_CONFIG.projectId;
+
+      // Pre-fill the config textarea with the active config so it is always visible & editable
+      const ta = document.getElementById('custom-firebase-config-input');
+      if (ta) {
+        ta.value = JSON.stringify(activeConfig, null, 2);
+      }
+
+      // 1. Load from localStorage first for instant offline/local persistence
+      const hasLocalData = loadFromLocalStorage();
+      if (!hasLocalData) {
+        state.students = [...SAMPLE_STUDENTS];
+        state.attendanceRecords = generateInitialDemoAttendance('2025-2027-A', SAMPLE_STUDENTS);
+        saveToLocalStorage();
+      }
+      renderAll();
+
+      // 2. Connect to Firebase Firestore automatically
+      updateSyncUI('Connecting to Cloud...', 'bg-amber-400 animate-pulse');
+      updateDiagnosticsUI({
+        projectId: state.activeProjectId,
+        authStateText: 'Signing in...',
+        firestoreStateText: 'Connecting to Cloud...',
+        dotClass: 'bg-amber-400 animate-pulse',
+        errorMessage: '',
+      });
+
+      try {
+        const app = initializeApp(activeConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        state.auth = auth;
+        state.db = db;
+
+        // RULE 3: Authenticate FIRST and await before any Firestore query
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          state.currentUser = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          state.currentUser = cred.user;
+        }
+
+        if (!state.currentUser) {
+          updateSyncUI('Offline Mode (Tap Cloud Tab)', 'bg-rose-400');
+          updateDiagnosticsUI({
+            authStateText: 'Not signed in',
+            firestoreStateText: 'Disconnected (Auth returned empty user)',
+            dotClass: 'bg-rose-500',
+            errorMessage: 'Firebase authentication did not return a user session.',
+          });
+          return;
+        }
+
+        state.firestoreEnabled = true;
+        updateDiagnosticsUI({
+          authStateText: `Signed in (${state.currentUser.uid})`,
+          firestoreStateText: 'Subscribing to Firestore...',
+          dotClass: 'bg-amber-400 animate-pulse',
+          errorMessage: '',
+        });
+
+        // RULE 1 & RULE 2: Simple collection listeners on /artifacts/{appId}/public/data/...
+        const studentsCol = collection(db, 'artifacts', state.appId, 'public', 'data', 'iti_students');
+        const attendanceCol = collection(db, 'artifacts', state.appId, 'public', 'data', 'iti_attendance');
+        const configCol = collection(db, 'artifacts', state.appId, 'public', 'data', 'iti_config');
+
+        let studentsLoaded = false;
+
+        // Real-time Admin Config Listener
+        onSnapshot(
+          configCol,
+          (snapshot) => {
+            snapshot.forEach((docSnap) => {
+              if (docSnap.id === 'admin') {
+                const data = docSnap.data();
+                state.adminConfig = { ...state.adminConfig, ...data };
+                saveToLocalStorage();
+                // If adminUid is set to another user and not unlocked via PIN, enforce read-only
+                if (
+                  state.adminConfig.adminUid &&
+                  state.currentUser &&
+                  state.adminConfig.adminUid !== state.currentUser.uid &&
+                  sessionStorage.getItem('iti_admin_unlocked') !== 'true'
+                ) {
+                  state.isAdmin = false;
+                  applyRoleUI();
+                }
+              }
+            });
+          },
+          (error) => {
+            console.error('Config listener error:', error);
+            updateDiagnosticsUI({
+              errorMessage: `Config listener error (${error.code || 'unknown'}): ${error.message}`,
+            });
+          }
+        );
+
+        // Real-time Students Roster Listener
+        onSnapshot(
+          studentsCol,
+          async (snapshot) => {
+            updateSyncUI('Cloud & Offline Synced', 'bg-emerald-400');
+            updateDiagnosticsUI({
+              firestoreStateText: `Synced (${snapshot.size} trainee records)`,
+              dotClass: 'bg-emerald-400',
+              errorMessage: '',
+            });
+
+            if (!snapshot.empty) {
+              const fetched = [];
+              snapshot.forEach((docSnap) => {
+                fetched.push({ id: docSnap.id, ...docSnap.data() });
+              });
+              state.students = fetched;
+              studentsLoaded = true;
+              saveToLocalStorage();
+              renderAll();
+            } else if (!studentsLoaded && !state.initialSeedDone && state.isAdmin) {
+              state.initialSeedDone = true;
+              await syncFullStateToFirestore();
+            }
+          },
+          (error) => {
+            console.error('Students listener error:', error);
+            updateSyncUI('Offline Mode (Tap Cloud Tab)', 'bg-rose-400');
+            updateDiagnosticsUI({
+              firestoreStateText: 'Firestore Read Blocked / Error',
+              dotClass: 'bg-rose-500',
+              errorMessage: `Students listener (${error.code || 'error'}): ${error.message}`,
+            });
+          }
+        );
+
+        // Real-time Daily Attendance Listener (Students see live updates immediately)
+        onSnapshot(
+          attendanceCol,
+          (snapshot) => {
+            updateSyncUI('Cloud & Offline Synced', 'bg-emerald-400');
+            if (!snapshot.empty) {
+              const map = {};
+              snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                map[docSnap.id] = {
+                  batch: data.batch || '2025-2027-A',
+                  date: data.date,
+                  records: data.records || {},
+                  specialClass: Boolean(data.specialClass),
+                };
+              });
+              state.attendanceRecords = map;
+              saveToLocalStorage();
+              renderAll();
+            }
+          },
+          (error) => {
+            console.error('Attendance listener error:', error);
+            updateSyncUI('Offline Mode (Tap Cloud Tab)', 'bg-rose-400');
+            updateDiagnosticsUI({
+              firestoreStateText: 'Attendance Sync Error',
+              dotClass: 'bg-rose-500',
+              errorMessage: `Attendance listener (${error.code || 'error'}): ${error.message}`,
+            });
+          }
+        );
+      } catch (err) {
+        console.error('Firebase setup error:', err);
+        updateSyncUI('Offline Mode (Tap Cloud Tab)', 'bg-rose-400');
+        updateDiagnosticsUI({
+          authStateText: 'Failed',
+          firestoreStateText: 'Connection Failed',
+          dotClass: 'bg-rose-500',
+          errorMessage: `${err.code || 'FirebaseError'}: ${err.message}`,
+        });
+      }
+    }
+
+    async function syncFullStateToFirestore() {
+      if (!state.firestoreEnabled || !state.db || !state.currentUser || !state.isAdmin) return false;
+      try {
+        const batchWrite = writeBatch(state.db);
+        state.students.forEach((stu) => {
+          const ref = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'iti_students', stu.id);
+          batchWrite.set(ref, stu);
+        });
+        Object.entries(state.attendanceRecords).forEach(([key, val]) => {
+          const ref = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'iti_attendance', key);
+          batchWrite.set(ref, val);
+        });
+        await batchWrite.commit();
+        return true;
+      } catch (e) {
+        console.error('Error syncing full state to Firestore:', e);
+        updateDiagnosticsUI({
+          firestoreStateText: 'Write Failed',
+          dotClass: 'bg-rose-500',
+          errorMessage: `Write error (${e.code || 'error'}): ${e.message}`,
+        });
         return false;
       }
-      return true;
     }
 
-    // =========================================================================
-    // 4. ADMIN AUTHENTICATION (PIN + GOOGLE SIGN-IN) & SHARE MODAL
-    // =========================================================================
-    window.openAdminAuthModal = function () {
-      document.getElementById('login-pin-input').value = '';
-      const hasCustomPin = state.adminConfig.adminPin && state.adminConfig.adminPin !== '1234';
-      document.getElementById('login-pin-hint').innerHTML = hasCustomPin
-        ? 'Enter your 4–6 digit Instructor Admin PIN.'
-        : 'Default initial PIN is <code class="font-mono font-bold text-slate-800">1234</code> (you can change it in Manage Students).';
-      const modal = document.getElementById('admin-auth-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    };
+    window.testAndSyncCloudNow = async function () {
+      if (!requireAdmin()) return;
+      const btn = document.getElementById('test-sync-now-btn');
+      if (btn) btn.disabled = true;
 
-    window.closeAdminAuthModal = function () {
-      const modal = document.getElementById('admin-auth-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
+      try {
+        if (!state.firestoreEnabled || !state.db || !state.currentUser) {
+          showToast('Re-attempting Firebase connection...');
+          await initStorage();
+        }
+        if (!state.firestoreEnabled || !state.db || !state.currentUser) {
+          showToast('Cloud connection failed — check error message in Cloud Sync Status');
+          return;
+        }
 
-    window.handleAdminPinSubmit = function (e) {
-      e.preventDefault();
-      const entered = (document.getElementById('login-pin-input').value || '').trim();
-      const expected = state.adminConfig.adminPin || '1234';
-      if (entered === expected) {
-        state.isAdmin = true;
-        sessionStorage.setItem('iti_admin_unlocked', 'true');
-        localStorage.setItem('iti_explicitly_locked', 'false');
-        closeAdminAuthModal();
-        switchTab('daily');
-        applyRoleUI();
-        renderAll();
-        showToast('Instructor Admin Mode unlocked');
-      } else {
-        showToast('Incorrect Instructor PIN');
+        updateDiagnosticsUI({
+          firestoreStateText: 'Testing write & syncing...',
+          dotClass: 'bg-amber-400 animate-pulse',
+        });
+
+        const ok = await syncFullStateToFirestore();
+        if (ok) {
+          updateSyncUI('Cloud & Offline Synced', 'bg-emerald-400');
+          updateDiagnosticsUI({
+            firestoreStateText: `Verified & Synced (${state.students.length} students)`,
+            dotClass: 'bg-emerald-400',
+            errorMessage: '',
+          });
+          showToast('Cloud sync verified! All student & attendance records pushed.');
+        } else {
+          updateSyncUI('Offline Mode (Tap Cloud Tab)', 'bg-rose-400');
+          showToast('Firestore write failed — see Cloud Sync Status box');
+        }
+      } finally {
+        if (btn) btn.disabled = false;
       }
     };
 
@@ -2575,17 +2655,26 @@ service cloud.firestore {
         return;
       }
       try {
-        const parsed = JSON.parse(raw);
-        if (!parsed.apiKey || !parsed.projectId) {
+        const parsed = normalizeFirebaseConfig(JSON.parse(raw));
+        if (!parsed) {
           showToast('Config JSON must include apiKey and projectId');
           return;
         }
         localStorage.setItem(STORAGE_KEYS.CUSTOM_FIREBASE, JSON.stringify(parsed));
-        showToast('Custom Firebase config saved! Reloading to connect...');
-        setTimeout(() => window.location.reload(), 900);
+        showToast('Firebase config saved! Reloading to connect...');
+        setTimeout(() => window.location.reload(), 800);
       } catch (e) {
         showToast('Invalid JSON syntax in Firebase config');
       }
+    };
+
+    window.clearCustomFirebaseConfig = function () {
+      if (!requireAdmin()) return;
+      localStorage.removeItem(STORAGE_KEYS.CUSTOM_FIREBASE);
+      const ta = document.getElementById('custom-firebase-config-input');
+      if (ta) ta.value = JSON.stringify(BUILTIN_FIREBASE_CONFIG, null, 2);
+      showToast('Reset to built-in Firebase config! Reloading...');
+      setTimeout(() => window.location.reload(), 800);
     };
 
     window.clearCustomFirebaseConfig = function () {

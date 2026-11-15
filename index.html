@@ -244,6 +244,38 @@
     html.bright-mode .ring-2.ring-\[\#0c1322\] {
       --tw-ring-color: #ffffff !important;
     }
+
+    /* Exclusive CR Privilege & Gold/Silver/Bronze Rank Ribbons */
+    .ribbon-cr {
+      border-color: rgba(245, 158, 11, 0.72) !important;
+      box-shadow: inset 3px 0 0 #f59e0b, 0 4px 16px -4px rgba(245, 158, 11, 0.22) !important;
+    }
+    .ribbon-gold {
+      border-color: rgba(251, 191, 36, 0.65) !important;
+      box-shadow: inset 3px 0 0 #fbbf24 !important;
+    }
+    .ribbon-silver {
+      border-color: rgba(203, 213, 225, 0.6) !important;
+      box-shadow: inset 3px 0 0 #94a3b8 !important;
+    }
+    .ribbon-bronze {
+      border-color: rgba(251, 146, 60, 0.6) !important;
+      box-shadow: inset 3px 0 0 #ea580c !important;
+    }
+    html.bright-mode .text-purple-300 {
+      color: #6b21a8 !important;
+    }
+    html.bright-mode .bg-purple-500\/15 {
+      background-color: #f3e8ff !important;
+      border-color: #c084fc !important;
+    }
+    html.bright-mode .text-orange-300 {
+      color: #9a3412 !important;
+    }
+    html.bright-mode .bg-orange-500\/15 {
+      background-color: #ffedd5 !important;
+      border-color: #fdba74 !important;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
@@ -273,10 +305,10 @@
             <i id="icon-theme-toggle" data-lucide="moon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700"></i>
           </button>
 
-          <button type="button" id="btn-sync-indicator" onclick="manualCloudSync()" title="Offline Mode"
+          <button type="button" id="btn-sync-indicator" onclick="manualCloudSync()" title="Connecting Cloud Sync..."
             class="relative w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
-            <i id="icon-sync-cloud" data-lucide="cloud-off" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400"></i>
-            <span id="dot-sync-status" class="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-400 ring-2 ring-[#0c1322]"></span>
+            <i id="icon-sync-cloud" data-lucide="cloud" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400"></i>
+            <span id="dot-sync-status" class="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0c1322]"></span>
           </button>
 
           <button type="button" id="btn-mode-indicator" onclick="openAdminModal()" title="Student View"
@@ -304,7 +336,7 @@
             <span id="header-date-label">Sun, 15 Nov 2026</span>
           </span>
           <span class="text-slate-600">•</span>
-          <span id="header-live-clock" class="font-medium text-amber-400 tabular-nums">04:23 PM</span>
+          <span id="header-live-clock" class="font-medium text-amber-400 tabular-nums">09:42 PM</span>
           <span id="header-holiday-pill" class="hidden px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-300 font-semibold">
             Sunday Weekly Off
           </span>
@@ -339,7 +371,7 @@
 
       <!-- Instant Search Results Dropdown -->
       <div id="trainee-search-results"
-        class="hidden absolute left-0 right-0 mt-1.5 bg-[#0f172a] border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-800/80">
+        class="hidden absolute left-0 right-0 mt-1.5 bg-[#0f172a] border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-800/80 z-50">
       </div>
     </div>
 
@@ -387,7 +419,7 @@
 
             <button type="button" onclick="switchTab('videos')"
               class="shrink-0 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-semibold flex items-center gap-1 transition btn-tap">
-              <span>All</span>
+              <span>Study & All</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
@@ -453,7 +485,7 @@
             </div>
           </div>
 
-          <!-- Weekly Schedule Strip (Mon–Sun) -->
+          <!-- Weekly Schedule Strip (Sun–Sat) -->
           <div id="weekly-strip" class="grid grid-cols-7 gap-1 sm:gap-1.5"></div>
 
           <!-- Holiday Banner / Admin Holiday & Bulk Roll-Call Controls -->
@@ -491,30 +523,64 @@
           </div>
         </div>
 
-        <!-- Collapsible Monthly Holiday Calendar -->
-        <div id="holiday-calendar-card" class="hidden bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl animate-panel">
-          <div class="flex items-center justify-between gap-2 mb-3">
+        <!-- Collapsible Monthly Holiday Calendar (Sunday First) -->
+        <div id="holiday-calendar-card" class="hidden bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl animate-panel space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
               <button type="button" onclick="shiftCalendarMonth(-1)"
                 class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
               </button>
-              <h3 id="calendar-month-title" class="text-xs sm:text-sm font-bold text-white min-w-[120px] text-center">Month Year</h3>
+              <h3 id="calendar-month-title" class="text-xs sm:text-sm font-bold text-white min-w-[125px] text-center">Month Year</h3>
               <button type="button" onclick="shiftCalendarMonth(1)"
                 class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
                 <i data-lucide="chevron-right" class="w-4 h-4"></i>
               </button>
             </div>
-            <span class="text-[11px] text-slate-400">Tap date to view • Sun/Red = Holiday</span>
+            <span class="text-[11px] text-slate-400">Tap date to view • Sun/Sat/Red = Holiday</span>
           </div>
 
-          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-1.5">
-            <div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-rose-400">SAT</div><div class="text-rose-400">SUN</div>
+          <div>
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-1.5">
+              <div class="text-rose-400">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-rose-400">SAT</div>
+            </div>
+            <div id="holiday-calendar-grid" class="grid grid-cols-7 gap-1"></div>
           </div>
-          <div id="holiday-calendar-grid" class="grid grid-cols-7 gap-1"></div>
+
+          <div id="monthly-holidays-summary" class="pt-2 border-t border-slate-800/80 space-y-1.5"></div>
         </div>
 
-        <!-- Trainee Roll-Call List (Collapsible, Closed by Default) -->
+        <!-- Daily Class Attenders Leaderboard (Toggleable Accordion: 1st, 2nd, 3rd with Total Present & Absent Days) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleAccordion('daily-top-attenders')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <div class="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="trophy" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-xs sm:text-sm font-bold text-white truncate">Daily Class Attenders (Top 3)</h3>
+                <p class="text-[10px] text-slate-400 truncate">Tap to toggle • 1st, 2nd & 3rd Present & Absent Days</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
+                1st • 2nd • 3rd
+              </span>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-daily-top-attenders" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron rotate-180"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-daily-top-attenders" class="accordion-body accordion-open">
+            <div class="accordion-inner pt-2 border-t border-slate-800/70">
+              <div id="daily-top-attenders-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trainee Roll-Call List (Roll No. Wise, Collapsible, Closed by Default) -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleAccordion('daily-rollcall')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -768,12 +834,12 @@
                 <i data-lucide="file-check-2" class="w-4 h-4"></i>
               </div>
               <div class="min-w-0 flex-1">
-                <h2 class="text-sm sm:text-base font-bold text-white truncate">Internal Practical & Theory Tests</h2>
-                <p class="text-[11px] text-slate-400 truncate">Monthly Workshop Sessional Assessment (/100)</p>
+                <h2 id="internal-exam-heading" class="text-sm sm:text-base font-bold text-white truncate">Internal Practical & Theory Tests</h2>
+                <p id="internal-exam-subtitle" class="text-[11px] text-slate-400 truncate">Monthly Workshop Sessional Assessment (/100)</p>
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
-              <button type="button" onclick="event.stopPropagation(); openResultModal('internal')"
+              <button type="button" onclick="event.stopPropagation(); openInternalExamModal()"
                 class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
                 <i data-lucide="edit-3" class="w-3 h-3"></i>
                 <span>Edit</span>
@@ -793,9 +859,34 @@
       </section>
 
       <!-- ================================================================= -->
-      <!-- TAB 5: VIDEOS (TRADE VIDEOS)                                      -->
+      <!-- TAB 5: STUDY MATERIALS & TRADE VIDEOS                             -->
       <!-- ================================================================= -->
       <section id="view-videos" class="tab-view hidden animate-panel space-y-4">
+
+        <!-- NCVT Study Notes, Question Banks & PDFs -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">NCVT Study Notes & PDF Bank</h2>
+                <p class="text-[11px] text-slate-400 truncate">Bharat Skills question banks, diagrams & theory notes</p>
+              </div>
+            </div>
+
+            <button type="button" onclick="openStudyNoteModal()"
+              class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/20 transition btn-tap">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add Note</span>
+            </button>
+          </div>
+
+          <div id="study-notes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+        </div>
+
+        <!-- Trade Videos Header -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl px-4 py-3.5 shadow-xl flex items-center justify-between gap-3">
           <div class="flex items-center gap-2.5 min-w-0">
             <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
@@ -885,8 +976,8 @@
 
       <button type="button" id="tab-btn-videos" onclick="switchTab('videos')"
         class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="play-circle" class="w-4 h-4 shrink-0"></i>
-        <span class="truncate">Videos</span>
+        <i data-lucide="book-open-check" class="w-4 h-4 shrink-0"></i>
+        <span class="truncate">Study & Lab</span>
       </button>
     </div>
   </nav>
@@ -990,8 +1081,8 @@
                   class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
               </div>
               <div>
-                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Internal (/100)</label>
-                <input type="number" id="trainee-int-input" min="0" max="100" placeholder="85"
+                <label id="admin-trainee-int-label" class="block text-[10px] font-semibold text-slate-400 mb-0.5">Internal (/100)</label>
+                <input type="number" id="trainee-int-input" min="0" max="500" placeholder="85"
                   class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
               </div>
             </div>
@@ -1023,7 +1114,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
               <label class="inline-flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
                 <input type="checkbox" id="trainee-star-input" class="rounded border-slate-700 text-amber-500 focus:ring-amber-500" />
-                <span>Gold Star (CR / Star)</span>
+                <span>CR Privilege / Crown (♛)</span>
               </label>
               <button type="submit"
                 class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap">
@@ -1066,9 +1157,12 @@
         <!-- Sub-Tab 3: Firebase Cloud Sync Config & Firestore Rules -->
         <div id="admintab-firebase" class="admintab-panel hidden space-y-3">
           <form onsubmit="handleSaveFirebaseConfig(event)" class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-bold text-white">Firebase Web App Config (JSON)</span>
-              <button type="button" onclick="resetFirebaseToDefault()" class="text-[11px] text-amber-400 hover:underline">Reset</button>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="copyFirebaseShareLink()" class="text-[11px] text-emerald-400 hover:underline font-semibold">Copy Setup Link</button>
+                <button type="button" onclick="resetFirebaseToDefault()" class="text-[11px] text-amber-400 hover:underline">Reset</button>
+              </div>
             </div>
             <textarea id="firebase-config-textarea" rows="4" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}'
               class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-mono text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
@@ -1101,7 +1195,7 @@ service cloud.firestore {
         <!-- Sub-Tab 4: JSON Export / Import Backups -->
         <div id="admintab-backup" class="admintab-panel hidden space-y-3">
           <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
-            <p class="text-xs text-slate-300">Download a complete offline JSON backup of trainees, daily attendance, notices, marks, and trade videos.</p>
+            <p class="text-xs text-slate-300">Download a complete offline JSON backup of trainees, daily attendance, notices, marks, study notes, and trade videos.</p>
             <button type="button" onclick="exportBackupJSON()"
               class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition btn-tap">
               <i data-lucide="download" class="w-4 h-4"></i>
@@ -1225,8 +1319,8 @@ service cloud.firestore {
               class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Internal (/100)</label>
-            <input type="number" id="marks-internal-input" min="0" max="100" required
+            <label id="modal-marks-int-label" class="block text-[11px] font-semibold text-slate-400 mb-1">Internal (/100)</label>
+            <input type="number" id="marks-internal-input" min="0" max="500" required
               class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
           </div>
         </div>
@@ -1253,6 +1347,9 @@ service cloud.firestore {
         </button>
       </div>
       <div class="p-4 space-y-3">
+        <!-- Rank & Privilege Ribbon Banner -->
+        <div id="report-privilege-banner" class="hidden"></div>
+
         <div id="report-academics-grid" class="grid grid-cols-3 gap-2 text-center"></div>
 
         <button type="button" onclick="openAdminDirectEditFromReport()"
@@ -1413,6 +1510,110 @@ service cloud.firestore {
   </div>
 
   <!-- ===================================================================== -->
+  <!-- MODAL 9: ADD NCVT STUDY NOTE / PDF LINK (ADMIN)                       -->
+  <!-- ===================================================================== -->
+  <div id="modal-add-studynote" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Add NCVT Study Note / PDF Link</h3>
+        <button type="button" onclick="closeModal('modal-add-studynote')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveStudyNote(event)" class="p-4 space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Topic / PDF Title</label>
+          <input type="text" id="note-title-input" required placeholder="e.g. 2nd Year Trade Theory NIMI Question Bank"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Subject Tag</label>
+            <select id="note-subject-input"
+              class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
+              <option value="Trade Theory">Trade Theory</option>
+              <option value="Trade Practical">Trade Practical</option>
+              <option value="Workshop Calc">Workshop Calc</option>
+              <option value="Engg. Drawing">Engg. Drawing</option>
+              <option value="Employability">Employability</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Resource Link (URL)</label>
+            <input type="url" id="note-url-input" required placeholder="https://bharatskills.gov.in/..."
+              class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Short Description</label>
+          <input type="text" id="note-desc-input" placeholder="Module coverage, diagrams, or exam notes..."
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Add Study Resource
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 10: COMPLETE INTERNAL EXAM BATCH EDITOR (ADMIN)                 -->
+  <!-- ===================================================================== -->
+  <div id="modal-edit-internal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-lg shadow-2xl animate-modal overflow-hidden my-auto">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-sky-500/15 border border-sky-500/40 flex items-center justify-center text-sky-400">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">Complete Internal Exam Editor</h3>
+        </div>
+        <button type="button" onclick="closeModal('modal-edit-internal')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSaveCompleteInternalExam(event)" class="p-4 space-y-3 max-h-[80vh] overflow-y-auto">
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Internal Exam Title</label>
+            <input type="text" id="internal-meta-title" required placeholder="Internal Practical & Theory Tests"
+              class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div class="sm:col-span-2">
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Subtitle / Session Note</label>
+              <input type="text" id="internal-meta-subtitle" required placeholder="Monthly Workshop Sessional Assessment"
+                class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Max Marks</label>
+              <input type="number" id="internal-meta-max" min="10" max="500" required value="100"
+                class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-2 text-[11px]">
+          <span class="font-bold text-slate-300">All Trainees Internal Marks</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="fillAllInternalMarks(85)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Set All 85</button>
+            <button type="button" onclick="fillAllInternalMarks(0)" class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 font-semibold">Reset 0</button>
+          </div>
+        </div>
+
+        <div id="complete-internal-trainees-list" class="space-y-1.5 max-h-64 overflow-y-auto pr-1"></div>
+
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Save Complete Internal Exam
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
   <!-- TOAST NOTIFICATION BANNER                                             -->
   <!-- ===================================================================== -->
   <div id="toast-container" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-3"></div>
@@ -1451,8 +1652,18 @@ service cloud.firestore {
     const THEME_MODE_KEY = "iti_chhotojagulia_theme_v4";
     const DEFAULT_ADMIN_PIN = "2508";
 
+    // Live Firebase Web App Config (iti-attendance-b1ab1)
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDlK8HTuzdGkwmdUXm6B3WO_0VUkQBqm18",
+      authDomain: "iti-attendance-b1ab1.firebaseapp.com",
+      projectId: "iti-attendance-b1ab1",
+      storageBucket: "iti-attendance-b1ab1.firebasestorage.app",
+      messagingSenderId: "680846674510",
+      appId: "1:680846674510:web:a8affdd473b1c47bfe911f"
+    };
+
     const DEFAULT_TRAINEES = [
-      { id: "tr-02", rno: "02", name: "Devit Munda", roll: "250819008869", star: true, year1: 548, year2: 556, internal: 94 },
+      { id: "tr-02", rno: "02", name: "Devit Munda", roll: "250819008869", star: true, year1: 555, year2: 556, internal: 94 },
       { id: "tr-03", rno: "03", name: "Ayan Karmakar", roll: "250819008805", star: false, year1: 512, year2: 520, internal: 88 },
       { id: "tr-04", rno: "04", name: "Arijit Das", roll: "250819008842", star: false, year1: 498, year2: 506, internal: 85 },
       { id: "tr-05", rno: "05", name: "Sayani Ghoshal", roll: "250819008858", star: false, year1: 534, year2: 540, internal: 91 },
@@ -1475,7 +1686,7 @@ service cloud.firestore {
         id: "not-1",
         title: "2nd Year Practical Workshop & Safety Briefing",
         date: "2026-11-16",
-        body: "All Electrician Batch 2025–27 trainees must report to the Main Electrical Machine Lab at 10:00 AM sharp with insulated pliers, test lamp, and practical record book."
+        body: "All Electrician Batch 2025–27 trainees must report to the Main Electrical Machine Lab at 10:30 AM sharp with insulated pliers, test lamp, and practical record book."
       },
       {
         id: "not-2",
@@ -1488,6 +1699,37 @@ service cloud.firestore {
         title: "1st Year NCVT Result Verification Completed",
         date: "2026-11-05",
         body: "1st Year consolidated marks (out of 600) are published under the Results tab. Report any discrepancy in Registration ID to the Trade Instructor."
+      }
+    ];
+
+    const DEFAULT_STUDY_NOTES = [
+      {
+        id: "sn-1",
+        subject: "Trade Theory",
+        title: "Bharat Skills NIMI Electrician 2nd Year Question Bank",
+        url: "https://bharatskills.gov.in/Home/StudyMaterial?TradeName=Electrician",
+        desc: "Official DGT / NIMI MCQ PDFs for DC Motors, AC 3-Phase Machines, Transformers & Control Panels."
+      },
+      {
+        id: "sn-2",
+        subject: "Trade Practical",
+        title: "NCVT Electrician Practical Job Manual & Circuit Diagrams",
+        url: "https://bharatskills.gov.in/Home/StudyMaterial?TradeName=Electrician",
+        desc: "Standard wiring layouts, Star-Delta starter diagrams, and IS 3043 earthing measurement sheets."
+      },
+      {
+        id: "sn-3",
+        subject: "Workshop Calc",
+        title: "Workshop Calculation & Science (2nd Year Formula Sheet)",
+        url: "https://bharatskills.gov.in/Home/StudyMaterial?TradeName=Electrician",
+        desc: "Friction, center of gravity, algebra, elasticity, and heat treatment CBT practice sets."
+      },
+      {
+        id: "sn-4",
+        subject: "Employability",
+        title: "Employability Skills CBT Question Bank (NSQF Level 4)",
+        url: "https://bharatskills.gov.in/Home/StudyMaterial?TradeName=Electrician",
+        desc: "Communication skills, IT literacy, entrepreneurship, and occupational safety modules."
       }
     ];
 
@@ -1535,11 +1777,18 @@ service cloud.firestore {
         desc: "Continuity, diode, AC/DC current measurement and short-circuit troubleshooting safety rules."
       }
     ];
+
     const DEFAULT_EXAM_SCHEDULE = [
       { subject: "Trade Theory (2nd Year CBT)", date: "14 Jul 2027", time: "10:00 AM – 12:00 PM", venue: "NCVT CBT Center" },
       { subject: "Employability Skills (CBT)", date: "15 Jul 2027", time: "10:00 AM – 11:00 AM", venue: "NCVT CBT Center" },
       { subject: "Trade Practical (2nd Year)", date: "20 Jul 2027", time: "09:30 AM – 05:00 PM", venue: "Main Electrical Workshop" }
     ];
+
+    const DEFAULT_INTERNAL_META = {
+      title: "Internal Practical & Theory Tests",
+      subtitle: "Monthly Workshop Sessional Assessment",
+      maxMarks: 100
+    };
 
     // =========================================================================
     // 2. APPLICATION STATE & HELPERS
@@ -1547,8 +1796,10 @@ service cloud.firestore {
     let appState = {
       trainees: JSON.parse(JSON.stringify(DEFAULT_TRAINEES)),
       notices: JSON.parse(JSON.stringify(DEFAULT_NOTICES)),
+      studyNotes: JSON.parse(JSON.stringify(DEFAULT_STUDY_NOTES)),
       videos: JSON.parse(JSON.stringify(DEFAULT_VIDEOS)),
       examSchedule: JSON.parse(JSON.stringify(DEFAULT_EXAM_SCHEDULE)),
+      internalMeta: { ...DEFAULT_INTERNAL_META },
       attendance: {},
       holidays: {
         "2026-11-15": { title: "Sunday Weekly Off", info: "Regular Sunday institute holiday." },
@@ -1668,6 +1919,89 @@ service cloud.firestore {
       if (window.lucide) lucide.createIcons();
     }
 
+    // =========================================================================
+    // REWARD SYSTEM: GOLD / SILVER / BRONZE STARS, RIBBONS & DEVIT CR PRIVILEGE
+    // =========================================================================
+    function computeRewardMaps() {
+      const marksRankMap = {};
+      const attRankMap = {};
+
+      const sortedByMarks = [...appState.trainees].sort((a, b) => {
+        const totB = Number(b.year1 || 0) + Number(b.year2 || 0);
+        const totA = Number(a.year1 || 0) + Number(a.year2 || 0);
+        return totB - totA;
+      });
+      sortedByMarks.slice(0, 3).forEach((tr, idx) => {
+        marksRankMap[tr.id] = idx + 1;
+      });
+
+      const sortedByAtt = [...appState.trainees].sort((a, b) => {
+        const stB = calculateTraineeStats(b.id, "ALL");
+        const stA = calculateTraineeStats(a.id, "ALL");
+        if (stB.pct !== stA.pct) return stB.pct - stA.pct;
+        return stB.presentDays - stA.presentDays;
+      });
+      sortedByAtt.slice(0, 3).forEach((tr, idx) => {
+        attRankMap[tr.id] = idx + 1;
+      });
+
+      return { marksRankMap, attRankMap };
+    }
+
+    function getTraineeRewardMeta(tr, maps, scope = "all") {
+      const mRank = maps.marksRankMap[tr.id] || 0;
+      const aRank = maps.attRankMap[tr.id] || 0;
+      const isDevitCR = tr.id === "tr-02" || tr.rno === "02" || Boolean(tr.star);
+
+      const showMarks = scope === "all" || scope === "marks";
+      const showAtt = scope === "all" || scope === "attendance";
+      const activeRank = showMarks && showAtt ? (mRank || aRank) : showMarks ? mRank : aRank;
+
+      let cardRibbonClass = "";
+      if (isDevitCR) {
+        cardRibbonClass = "ribbon-cr";
+      } else if (activeRank === 1) {
+        cardRibbonClass = "ribbon-gold";
+      } else if (activeRank === 2) {
+        cardRibbonClass = "ribbon-silver";
+      } else if (activeRank === 3) {
+        cardRibbonClass = "ribbon-bronze";
+      }
+
+      const rankStyles = {
+        1: { label: "1st", starColor: "text-amber-400", pill: "bg-amber-500/15 border-amber-400/50 text-amber-300" },
+        2: { label: "2nd", starColor: "text-slate-300", pill: "bg-slate-300/15 border-slate-300/50 text-slate-200" },
+        3: { label: "3rd", starColor: "text-orange-400", pill: "bg-orange-500/15 border-orange-400/50 text-orange-300" }
+      };
+
+      const badges = [];
+      if (isDevitCR) {
+        badges.push(
+          `<span title="Class Representative & Batch Coordinator Privilege" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-purple-500/15 border border-purple-400/50 text-purple-300 text-[9px] font-extrabold shrink-0">♛ CR</span>`
+        );
+      }
+      if (showMarks && mRank && rankStyles[mRank]) {
+        const rs = rankStyles[mRank];
+        badges.push(
+          `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md border text-[9px] font-extrabold shrink-0 ${rs.pill}"><span class="${rs.starColor}">★</span><span>${rs.label}</span></span>`
+        );
+      }
+      if (showAtt && aRank && rankStyles[aRank]) {
+        const rs = rankStyles[aRank];
+        badges.push(
+          `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md border text-[9px] font-extrabold shrink-0 ${rs.pill}"><span class="${rs.starColor}">★</span><span>${rs.label}</span></span>`
+        );
+      }
+
+      return {
+        isDevitCR,
+        mRank,
+        aRank,
+        cardRibbonClass,
+        badgesHTML: badges.join("")
+      };
+    }
+
     function seedInitialAttendance() {
       const base = parseISO(getTodayISO());
       let seededDays = 0;
@@ -1685,7 +2019,23 @@ service cloud.firestore {
       }
     }
 
+    function checkUrlFirebaseConfig() {
+      try {
+        const hash = window.location.hash || "";
+        const match = hash.match(/fb=([A-Za-z0-9+/=_-]+)/);
+        if (match && match[1]) {
+          const decoded = atob(decodeURIComponent(match[1]));
+          const parsed = JSON.parse(decoded);
+          if (parsed && parsed.projectId) {
+            localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(parsed));
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+          }
+        }
+      } catch (e) {}
+    }
+
     function loadLocalState() {
+      checkUrlFirebaseConfig();
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
@@ -1693,6 +2043,8 @@ service cloud.firestore {
           appState = {
             ...appState,
             ...parsed,
+            studyNotes: Array.isArray(parsed.studyNotes) ? parsed.studyNotes : JSON.parse(JSON.stringify(DEFAULT_STUDY_NOTES)),
+            internalMeta: { ...DEFAULT_INTERNAL_META, ...(parsed.internalMeta || {}) },
             settings: { ...appState.settings, ...(parsed.settings || {}) }
           };
         }
@@ -1714,6 +2066,9 @@ service cloud.firestore {
       }
     }
 
+    // =========================================================================
+    // 3. DAILY ATTENDANCE, HOLIDAY EDITOR & FIREBASE CLOUD SYNC
+    // =========================================================================
     function openHolidayEditorModal() {
       if (!isAdminUnlocked) {
         openAdminModal();
@@ -1918,11 +2273,6 @@ service cloud.firestore {
       renderEligibilityChart();
     }
 
-    function toggleTraineeAttendance(traineeId) {
-      const cur = appState.attendance[selectedDateStr] && appState.attendance[selectedDateStr][traineeId];
-      setTraineeAttendance(traineeId, cur === "P" ? "A" : "P");
-    }
-
     function renderDailyRollCall() {
       const list = document.getElementById("daily-rollcall-list");
       const statusText = document.getElementById("daily-status-text");
@@ -1935,6 +2285,51 @@ service cloud.firestore {
         lockHint.innerHTML = isAdminUnlocked
           ? `<i data-lucide="unlock" class="w-3 h-3 text-emerald-400"></i><span class="text-emerald-400 font-semibold">P / A / Clear Enabled</span>`
           : `<i data-lucide="lock" class="w-3 h-3 text-amber-400"></i><span>View Only</span>`;
+      }
+
+      // Always render Daily Class Attenders (Top 3) regardless of selected date
+      const topRankedTrainees = [...appState.trainees].sort((a, b) => {
+        const stA = calculateTraineeStats(a.id, "ALL");
+        const stB = calculateTraineeStats(b.id, "ALL");
+        if (stB.pct !== stA.pct) return stB.pct - stA.pct;
+        if (stB.presentDays !== stA.presentDays) return stB.presentDays - stA.presentDays;
+        return String(a.rno || "").localeCompare(String(b.rno || ""), undefined, { numeric: true });
+      });
+
+      const topGrid = document.getElementById("daily-top-attenders-grid");
+      if (topGrid) {
+        const medals = [
+          { rank: "1st", starColor: "text-amber-400", borderCls: "border-amber-400/70 bg-amber-500/10", pillCls: "bg-amber-500/20 text-amber-300 border-amber-400/50" },
+          { rank: "2nd", starColor: "text-slate-300", borderCls: "border-slate-300/60 bg-slate-400/10", pillCls: "bg-slate-300/20 text-slate-200 border-slate-300/50" },
+          { rank: "3rd", starColor: "text-orange-400", borderCls: "border-orange-500/60 bg-orange-500/10", pillCls: "bg-orange-500/20 text-orange-300 border-orange-400/50" }
+        ];
+        topGrid.innerHTML = topRankedTrainees
+          .slice(0, 3)
+          .map((tr, idx) => {
+            const st = calculateTraineeStats(tr.id, "ALL");
+            const absentDays = Math.max(0, st.workingDays - st.presentDays);
+            const m = medals[idx];
+            return `
+              <div onclick="openTraineeReport('${tr.id}')"
+                class="p-2.5 rounded-xl bg-slate-950 border ${m.borderCls} cursor-pointer hover:brightness-110 transition space-y-1.5">
+                <div class="flex items-center justify-between gap-1.5">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-extrabold ${m.pillCls}">
+                    <span class="${m.starColor}">★</span>
+                    <span>${m.rank}</span>
+                  </span>
+                  <span class="text-xs font-extrabold text-emerald-400">${st.pct}%</span>
+                </div>
+                <div class="text-xs font-bold text-white truncate">
+                  <span class="font-mono text-[11px] text-amber-400">R.${escapeHTML(tr.rno || "--")}</span> ${escapeHTML(tr.name)}
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/70 text-[11px] font-bold">
+                  <span class="text-emerald-400">Present: ${st.presentDays}d</span>
+                  <span class="text-rose-400">Absent: ${absentDays}d</span>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
       }
 
       const holEntry = getHolidayEntry(selectedDateStr);
@@ -1971,13 +2366,20 @@ service cloud.firestore {
 
       const hasSavedRecord = Boolean(appState.attendance[selectedDateStr]);
       const dayRecord = appState.attendance[selectedDateStr] || {};
+      const rewardMaps = computeRewardMaps();
       let presentCount = 0;
       let absentCount = 0;
       let unmarkedCount = 0;
 
-      list.innerHTML = appState.trainees
+      // Roll Call list aligned strictly Roll No.-wise (02, 03, 04...)
+      const rollSortedTrainees = [...appState.trainees].sort((a, b) =>
+        String(a.rno || "").localeCompare(String(b.rno || ""), undefined, { numeric: true })
+      );
+
+      list.innerHTML = rollSortedTrainees
         .map((tr) => {
           const st = dayRecord[tr.id] || "";
+          const rw = getTraineeRewardMeta(tr, rewardMaps, "attendance");
           if (st === "P") presentCount++;
           else if (st === "A") absentCount++;
           else unmarkedCount++;
@@ -2027,15 +2429,15 @@ service cloud.firestore {
           `;
 
           return `
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl bg-slate-950 border border-slate-800/90">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl bg-slate-950 border border-slate-800/90 ${rw.cardRibbonClass}">
               <div onclick="openTraineeReport('${tr.id}')" class="flex items-center gap-2.5 w-full sm:w-auto min-w-0 flex-1 cursor-pointer">
                 <span class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 font-mono text-xs font-bold text-amber-400 shrink-0">
                   R.${escapeHTML(tr.rno || "--")}
                 </span>
                 <div class="min-w-0 flex-1">
-                  <div class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 leading-snug">
+                  <div class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 flex-wrap leading-snug">
                     <span class="truncate">${escapeHTML(tr.name)}</span>
-                    ${tr.star ? '<span class="text-amber-400 shrink-0">★</span>' : ""}
+                    ${rw.badgesHTML}
                   </div>
                   <div class="text-[11px] font-mono text-slate-400 mt-0.5">${escapeHTML(tr.roll)}</div>
                 </div>
@@ -2060,15 +2462,24 @@ service cloud.firestore {
       if (window.lucide) lucide.createIcons();
     }
 
+    function getActiveFirebaseConfig() {
+      const rawCfg = localStorage.getItem(FB_CONFIG_KEY);
+      if (rawCfg) {
+        try {
+          return JSON.parse(rawCfg);
+        } catch (e) {}
+      }
+      return DEFAULT_FIREBASE_CONFIG;
+    }
+
     window.initFirebaseCloud = function () {
       const sdk = window.__FB_SDK__;
-      const rawCfg = localStorage.getItem(FB_CONFIG_KEY);
-      if (!sdk || !rawCfg) {
+      const cfg = getActiveFirebaseConfig();
+      if (!sdk || !cfg || !cfg.projectId) {
         updateSyncIndicator(false, "Offline Mode (Local Storage)");
         return;
       }
       try {
-        const cfg = JSON.parse(rawCfg);
         const app = sdk.getApps().length ? sdk.getApps()[0] : sdk.initializeApp(cfg);
         const db = sdk.getFirestore(app);
         const portalRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27");
@@ -2083,13 +2494,15 @@ service cloud.firestore {
                 appState = {
                   ...appState,
                   ...cloudData,
+                  studyNotes: Array.isArray(cloudData.studyNotes) ? cloudData.studyNotes : appState.studyNotes,
+                  internalMeta: { ...DEFAULT_INTERNAL_META, ...(cloudData.internalMeta || {}) },
                   settings: { ...appState.settings, ...(cloudData.settings || {}) }
                 };
                 saveLocalState(false);
                 renderAllViews();
               }
             }
-            updateSyncIndicator(true, "Cloud Synced");
+            updateSyncIndicator(true, "Cloud Synced (iti-attendance-b1ab1)");
           },
           () => updateSyncIndicator(false, "Offline Mode (Sync Paused)")
         );
@@ -2107,7 +2520,7 @@ service cloud.firestore {
     function manualCloudSync() {
       if (window.pushStateToFirebase) {
         window.pushStateToFirebase();
-        showToast("Synced with Cloud", "success");
+        showToast("Synced with Cloud (iti-attendance-b1ab1)", "success");
       } else {
         showToast("Saved locally • Add Firebase in Admin for Cloud Sync", "info");
       }
@@ -2181,9 +2594,9 @@ service cloud.firestore {
         "scroll",
         () => {
           const curY = window.scrollY;
-          if (curY > 90 && curY > lastY + 8) {
+          if (curY > 75 && curY > lastY + 8) {
             header.classList.add("header-hidden");
-          } else if (curY < lastY - 6 || curY <= 40) {
+          } else if (curY < lastY - 6 || curY <= 35) {
             header.classList.remove("header-hidden");
           }
           lastY = curY;
@@ -2236,9 +2649,11 @@ service cloud.firestore {
     function handleTraineeSearch(query) {
       const box = document.getElementById("trainee-search-results");
       const clearBtn = document.getElementById("btn-clear-trainee-search");
-      const q = String(query || "").trim().toLowerCase();
+      const rawQ = String(query || "").trim();
+      const q = rawQ.toLowerCase();
+      const numericQ = q.replace(/^r\.?\s*/i, "").replace(/^0+/, "");
 
-      if (clearBtn) clearBtn.classList.toggle("hidden", !q);
+      if (clearBtn) clearBtn.classList.toggle("hidden", !rawQ);
       if (!box) return;
       if (!q) {
         box.classList.add("hidden");
@@ -2246,33 +2661,44 @@ service cloud.firestore {
         return;
       }
 
-      const matches = appState.trainees.filter(
-        (tr) =>
-          tr.name.toLowerCase().includes(q) ||
-          String(tr.rno || "").toLowerCase().includes(q) ||
-          String(tr.roll || "").toLowerCase().includes(q)
-      );
+      const matches = appState.trainees.filter((tr) => {
+        const name = String(tr.name || "").toLowerCase();
+        const rno = String(tr.rno || "").toLowerCase();
+        const rnoStripped = rno.replace(/^0+/, "");
+        const roll = String(tr.roll || "").toLowerCase();
+        return (
+          name.includes(q) ||
+          rno.includes(q) ||
+          `r.${rno}`.includes(q) ||
+          `r${rno}`.includes(q) ||
+          (numericQ && rnoStripped === numericQ) ||
+          roll.includes(q)
+        );
+      });
 
       if (!matches.length) {
-        box.innerHTML = `<div class="px-3.5 py-3 text-xs text-slate-400">No trainee found matching "${escapeHTML(query)}"</div>`;
+        box.innerHTML = `<div class="px-3.5 py-3 text-xs text-slate-400">No trainee found matching "${escapeHTML(rawQ)}"</div>`;
         box.classList.remove("hidden");
         return;
       }
 
+      const rewardMaps = computeRewardMaps();
       box.innerHTML = matches
         .map((tr) => {
           const st = calculateTraineeStats(tr.id, "ALL");
+          const rw = getTraineeRewardMeta(tr, rewardMaps, "all");
           const total1200 = Number(tr.year1 || 0) + Number(tr.year2 || 0);
           return `
-            <div class="w-full px-3.5 py-2.5 hover:bg-slate-900/90 flex items-center justify-between gap-2 transition">
-              <button type="button" onclick="selectSearchedTrainee('${tr.id}')" class="min-w-0 flex-1 text-left">
-                <div class="text-xs font-bold text-white flex items-center gap-1.5 truncate">
-                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 font-mono text-[10px] text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+            <div onpointerdown="event.preventDefault(); selectSearchedTrainee('${tr.id}')"
+              class="w-full px-3.5 py-2.5 hover:bg-slate-900/90 active:bg-slate-800 flex items-center justify-between gap-2 cursor-pointer select-none transition">
+              <div class="min-w-0 flex-1 text-left">
+                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
+                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 font-mono text-[10px] text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
                   <span class="truncate">${escapeHTML(tr.name)}</span>
-                  ${tr.star ? '<span class="text-amber-400">★</span>' : ""}
+                  ${rw.badgesHTML}
                 </div>
                 <div class="text-[10px] font-mono text-slate-400 mt-0.5">ID: ${escapeHTML(tr.roll)}</div>
-              </button>
+              </div>
               <div class="flex items-center gap-2 shrink-0">
                 <div class="text-right">
                   <div class="text-[11px] font-extrabold ${st.pct >= 80 ? "text-emerald-400" : "text-rose-400"}">${st.pct}% Att.</div>
@@ -2280,7 +2706,7 @@ service cloud.firestore {
                 </div>
                 ${
                   isAdminUnlocked
-                    ? `<button type="button" onclick="openAdminDirectEdit('${tr.id}')" title="Directly Update Student Data"
+                    ? `<button type="button" onpointerdown="event.stopPropagation(); event.preventDefault(); openAdminDirectEdit('${tr.id}')" title="Directly Update Student Data"
                         class="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] flex items-center gap-1 transition btn-tap">
                         <i data-lucide="pencil" class="w-3 h-3"></i>
                         <span>Update</span>
@@ -2298,6 +2724,8 @@ service cloud.firestore {
     }
 
     function selectSearchedTrainee(traineeId) {
+      const inp = document.getElementById("global-trainee-search-input");
+      if (inp) inp.blur();
       clearTraineeSearch();
       openTraineeReport(traineeId);
     }
@@ -2314,6 +2742,18 @@ service cloud.firestore {
       if (clearBtn) clearBtn.classList.add("hidden");
     }
 
+    // Close search dropdown cleanly when tapping outside the search wrapper
+    document.addEventListener("pointerdown", (e) => {
+      const wrap = document.getElementById("global-trainee-search-wrap");
+      const box = document.getElementById("trainee-search-results");
+      if (wrap && box && !wrap.contains(e.target)) {
+        box.classList.add("hidden");
+      }
+    });
+
+    // =========================================================================
+    // 8. NOTICES, STUDY NOTES & TRADE VIDEOS RENDERING
+    // =========================================================================
     function renderNotices() {
       const container = document.getElementById("notices-list-container");
       if (!container) return;
@@ -2349,6 +2789,47 @@ service cloud.firestore {
       if (window.lucide) lucide.createIcons();
     }
 
+    function renderStudyNotes() {
+      const list = document.getElementById("study-notes-list");
+      if (!list) return;
+      const notes = Array.isArray(appState.studyNotes) ? appState.studyNotes : [];
+      if (!notes.length) {
+        list.innerHTML = `<div class="col-span-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No study notes or PDF links added yet.</div>`;
+        return;
+      }
+      list.innerHTML = notes
+        .map(
+          (sn) => `
+          <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-emerald-500/40 flex flex-col justify-between gap-2 transition">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                  ${escapeHTML(sn.subject || "NCVT Note")}
+                </span>
+                ${
+                  isAdminUnlocked
+                    ? `<button type="button" onclick="deleteStudyNote('${sn.id}')" title="Remove Note"
+                        class="p-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                      </button>`
+                    : ""
+                }
+              </div>
+              <h3 class="text-xs font-bold text-white leading-snug">${escapeHTML(sn.title)}</h3>
+              ${sn.desc ? `<p class="text-[11px] text-slate-400 leading-relaxed">${escapeHTML(sn.desc)}</p>` : ""}
+            </div>
+            <a href="${escapeHTML(sn.url)}" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-[11px] font-bold transition btn-tap">
+              <span>Open PDF / Resource</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </article>
+        `
+        )
+        .join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
     function renderVideoCards(containerId, targetPrefix, limit = null) {
       const grid = document.getElementById(containerId);
       if (!grid) return;
@@ -2370,7 +2851,6 @@ service cloud.firestore {
             <article class="group rounded-2xl bg-slate-950 border border-slate-800/90 hover:border-amber-500/50 overflow-hidden flex flex-col justify-between transition">
               <div onclick="playInlineVideo('${targetPrefix}', '${cleanId}', '${safeTitleArg}')" class="cursor-pointer">
                 <div class="relative aspect-video bg-slate-900 overflow-hidden flex items-center justify-center">
-                  <!-- Custom Electrical Schematic Fallback Layer -->
                   <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950/40 flex flex-col items-center justify-center p-3 text-center">
                     <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-1.5">
                       <i data-lucide="zap" class="w-4 h-4"></i>
@@ -2448,7 +2928,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 9. DAILY ATTENDANCE & HOLIDAY CALENDAR
+    // 9. DAILY ATTENDANCE & HOLIDAY CALENDAR (SUNDAY FIRST)
     // =========================================================================
     function renderDailySection() {
       const picker = document.getElementById("daily-date-picker");
@@ -2494,15 +2974,14 @@ service cloud.firestore {
       const strip = document.getElementById("weekly-strip");
       if (!strip) return;
       const base = parseISO(selectedDateStr);
-      const dayIdx = (base.getDay() + 6) % 7; // Mon=0 ... Sun=6
-      const monday = new Date(base);
-      monday.setDate(base.getDate() - dayIdx);
+      const sunday = new Date(base);
+      sunday.setDate(base.getDate() - base.getDay());
 
-      const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+      const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
       let html = "";
       for (let i = 0; i < 7; i++) {
-        const d = new Date(monday);
-        d.setDate(monday.getDate() + i);
+        const d = new Date(sunday);
+        d.setDate(sunday.getDate() + i);
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         const isSelected = iso === selectedDateStr;
         const isHol = isHolidayDate(iso);
@@ -2528,8 +3007,9 @@ service cloud.firestore {
     function toggleCalendarDrawer() {
       const card = document.getElementById("holiday-calendar-card");
       if (!card) return;
-      card.classList.toggle("hidden");
-      renderHolidayCalendar();
+      const opening = card.classList.contains("hidden");
+      card.classList.toggle("hidden", !opening);
+      if (opening) renderHolidayCalendar();
       if (window.lucide) lucide.createIcons();
     }
 
@@ -2541,25 +3021,34 @@ service cloud.firestore {
     function renderHolidayCalendar() {
       const grid = document.getElementById("holiday-calendar-grid");
       const title = document.getElementById("calendar-month-title");
+      const summaryBox = document.getElementById("monthly-holidays-summary");
       if (!grid || !title) return;
 
       const year = calendarViewDate.getFullYear();
       const month = calendarViewDate.getMonth();
       title.textContent = calendarViewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
+      // Sunday-first padding (Sun = 0 ... Sat = 6)
       const firstDay = new Date(year, month, 1);
-      const startPad = (firstDay.getDay() + 6) % 7;
+      const startPad = firstDay.getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
       let cells = "";
+      const monthHolidays = [];
+
       for (let i = 0; i < startPad; i++) {
         cells += `<div class="h-8"></div>`;
       }
       for (let d = 1; d <= daysInMonth; d++) {
         const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
         const isSel = iso === selectedDateStr;
-        const isHol = isHolidayDate(iso);
+        const holEntry = getHolidayEntry(iso);
+        const isHol = Boolean(holEntry);
         const hasAtt = Boolean(appState.attendance[iso]);
+
+        if (holEntry) {
+          monthHolidays.push({ iso, day: d, title: holEntry.title, info: holEntry.info });
+        }
 
         let cls = "bg-slate-950 border-slate-800/80 text-slate-300 hover:border-slate-700";
         if (isSel) {
@@ -2571,17 +3060,39 @@ service cloud.firestore {
         }
 
         cells += `
-          <button type="button" onclick="selectCalendarDate('${iso}')"
+          <button type="button" onclick="selectCalendarDate('${iso}')" title="${escapeHTML(holEntry ? holEntry.title : formatDisplayDate(iso))}"
             class="h-8 rounded-lg border text-xs flex items-center justify-center transition btn-tap ${cls}">
             ${d}
           </button>
         `;
       }
       grid.innerHTML = cells;
+
+      if (summaryBox) {
+        const specialHolidays = monthHolidays.filter((h) => !h.title.includes("Weekly Off"));
+        const displayItems = specialHolidays.length ? specialHolidays : monthHolidays;
+        summaryBox.innerHTML = `
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-bold text-rose-400">Holidays in ${escapeHTML(title.textContent)} (${monthHolidays.length} Days Off)</span>
+            <span class="text-[10px] text-slate-400">Sun & Sat Weekly Off</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            ${displayItems
+              .map(
+                (h) => `
+              <button type="button" onclick="selectCalendarDate('${h.iso}')"
+                class="px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-500/30 text-[10px] font-semibold text-rose-300 hover:border-rose-400 transition">
+                ${String(h.day).padStart(2, "0")} ${escapeHTML(title.textContent.slice(0, 3))}: ${escapeHTML(h.title)}
+              </button>`
+              )
+              .join("")}
+          </div>
+        `;
+      }
     }
 
     // =========================================================================
-    // 10. 80% NCVT ELIGIBILITY CHART (ALL / 6M / 9M / 12M + PNG & CSV EXPORT)
+    // 10. 80% NCVT ELIGIBILITY CHART (ALL / 1M / 6M / 9M / 12M + PNG & CSV)
     // =========================================================================
     let currentChartPeriod = "ALL";
 
@@ -2651,15 +3162,22 @@ service cloud.firestore {
       if (!cards || !list) return;
 
       const dates = getFilteredAttendanceDates(currentChartPeriod);
+      const rewardMaps = computeRewardMaps();
       let eligibleCount = 0;
       let shortageCount = 0;
 
-      const rows = appState.trainees.map((tr) => {
-        const st = calculateTraineeStats(tr.id, currentChartPeriod);
-        if (st.pct >= 80) eligibleCount++;
-        else shortageCount++;
-        return { tr, st };
-      });
+      const rows = appState.trainees
+        .map((tr) => {
+          const st = calculateTraineeStats(tr.id, currentChartPeriod);
+          if (st.pct >= 80) eligibleCount++;
+          else shortageCount++;
+          return { tr, st };
+        })
+        .sort((a, b) => {
+          if (b.st.pct !== a.st.pct) return b.st.pct - a.st.pct;
+          if (b.st.presentDays !== a.st.presentDays) return b.st.presentDays - a.st.presentDays;
+          return String(a.tr.rno || "").localeCompare(String(b.tr.rno || ""), undefined, { numeric: true });
+        });
 
       cards.innerHTML = `
         <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
@@ -2717,17 +3235,20 @@ service cloud.firestore {
       }
 
       list.innerHTML = rows
-        .map(({ tr, st }) => {
+        .map(({ tr, st }, idx) => {
           const ok = st.pct >= 80;
           const barColor = ok ? "bg-emerald-500" : "bg-rose-500";
           const pctColor = ok ? "text-emerald-400" : "text-rose-400";
+          const rw = getTraineeRewardMeta(tr, rewardMaps, "attendance");
           return `
             <div onclick="openTraineeReport('${tr.id}')"
-              class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer space-y-1.5 transition">
+              class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer space-y-1.5 transition ${rw.cardRibbonClass}">
               <div class="flex items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <span class="font-mono text-[11px] font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                  <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
                   <span class="font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                  ${rw.badgesHTML}
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                   <span class="text-[11px] text-slate-400">${st.presentDays}/${st.workingDays}d</span>
@@ -2768,7 +3289,9 @@ service cloud.firestore {
 
     function downloadAttendanceChartPNG() {
       const dates = getFilteredAttendanceDates(currentChartPeriod);
-      const rows = appState.trainees.map((tr) => ({ tr, st: calculateTraineeStats(tr.id, currentChartPeriod) }));
+      const rows = appState.trainees
+        .map((tr) => ({ tr, st: calculateTraineeStats(tr.id, currentChartPeriod) }))
+        .sort((a, b) => b.st.pct - a.st.pct || b.st.presentDays - a.st.presentDays);
       const rowH = 38;
       const headerH = 105;
       const footerH = 44;
@@ -2862,21 +3385,38 @@ service cloud.firestore {
       const y12List = document.getElementById("combined-two-year-results-list");
       const schedList = document.getElementById("exam-schedule-list");
       const intList = document.getElementById("internal-tests-list");
+      const intHeading = document.getElementById("internal-exam-heading");
+      const intSubtitle = document.getElementById("internal-exam-subtitle");
+      const meta = { ...DEFAULT_INTERNAL_META, ...(appState.internalMeta || {}) };
+      const maxInt = Number(meta.maxMarks) || 100;
+      const rewardMaps = computeRewardMaps();
+
+      if (intHeading) intHeading.textContent = meta.title;
+      if (intSubtitle) intSubtitle.textContent = `${meta.subtitle} (/${maxInt})`;
+
+      const sortedByY1 = [...appState.trainees].sort((a, b) => Number(b.year1 || 0) - Number(a.year1 || 0));
+      const sortedByCombined = [...appState.trainees].sort(
+        (a, b) => Number(b.year1 || 0) + Number(b.year2 || 0) - (Number(a.year1 || 0) + Number(a.year2 || 0))
+      );
+      const sortedByInternal = [...appState.trainees].sort((a, b) => Number(b.internal || 0) - Number(a.internal || 0));
 
       if (y1List) {
-        y1List.innerHTML = appState.trainees
-          .map((tr) => {
+        y1List.innerHTML = sortedByY1
+          .map((tr, idx) => {
             const marks = Number(tr.year1 || 0);
             const pct = ((marks / 600) * 100).toFixed(1);
+            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
             return `
               <div onclick="openTraineeReport('${tr.id}')"
-                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-mono text-[11px] font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer ${rw.cardRibbonClass}">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                    <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
                     <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                    ${rw.badgesHTML}
                   </div>
-                  <div class="text-[10px] font-mono text-slate-400">${escapeHTML(tr.roll)}</div>
+                  <div class="text-[10px] font-mono text-slate-400 mt-0.5">${escapeHTML(tr.roll)}</div>
                 </div>
                 <div class="text-right shrink-0">
                   <div class="text-xs font-extrabold text-emerald-400">${marks}/600 (${pct}%)</div>
@@ -2889,19 +3429,22 @@ service cloud.firestore {
       }
 
       if (y12List) {
-        y12List.innerHTML = appState.trainees
-          .map((tr) => {
+        y12List.innerHTML = sortedByCombined
+          .map((tr, idx) => {
             const m1 = Number(tr.year1 || 0);
             const m2 = Number(tr.year2 || 0);
             const tot = m1 + m2;
             const pct = ((tot / 1200) * 100).toFixed(1);
+            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
             return `
               <div onclick="openTraineeReport('${tr.id}')"
-                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-mono text-[11px] font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer ${rw.cardRibbonClass}">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                    <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
                     <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                    ${rw.badgesHTML}
                   </div>
                   <div class="text-[10px] text-slate-400 mt-0.5">1st Yr: ${m1}/600 • 2nd Yr: ${m2}/600</div>
                 </div>
@@ -2917,8 +3460,9 @@ service cloud.firestore {
 
       if (schedList) {
         const scheduleItems = Array.isArray(appState.examSchedule) && appState.examSchedule.length ? appState.examSchedule : DEFAULT_EXAM_SCHEDULE;
-        schedList.innerHTML = scheduleItems.map(
-          (ex) => `
+        schedList.innerHTML = scheduleItems
+          .map(
+            (ex) => `
           <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <div>
               <div class="text-xs font-bold text-white">${escapeHTML(ex.subject)}</div>
@@ -2929,21 +3473,25 @@ service cloud.firestore {
             </span>
           </div>
         `
-        ).join("");
+          )
+          .join("");
       }
 
       if (intList) {
-        intList.innerHTML = appState.trainees
-          .map((tr) => {
+        intList.innerHTML = sortedByInternal
+          .map((tr, idx) => {
             const sc = Number(tr.internal || 0);
+            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
             return `
               <div onclick="openTraineeReport('${tr.id}')"
-                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer">
-                <div class="flex items-center gap-2 min-w-0">
-                  <span class="font-mono text-[11px] font-bold text-sky-400">R.${escapeHTML(tr.rno || "--")}</span>
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer ${rw.cardRibbonClass}">
+                <div class="flex items-center gap-1.5 min-w-0 flex-wrap flex-1">
+                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                  <span class="font-mono text-[11px] font-bold text-sky-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
                   <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                  ${rw.badgesHTML}
                 </div>
-                <span class="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 text-xs font-extrabold shrink-0">${sc}/100</span>
+                <span class="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 text-xs font-extrabold shrink-0">${sc}/${maxInt}</span>
               </div>
             `;
           })
@@ -2952,7 +3500,8 @@ service cloud.firestore {
     }
 
     function downloadBatchResultsCSV() {
-      const lines = ["Roll No,Registration ID,Trainee Name,1st Year (/600),2nd Year (/600),Combined Total (/1200),Aggregate %,Internal (/100),Status"];
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+      const lines = [`Roll No,Registration ID,Trainee Name,1st Year (/600),2nd Year (/600),Combined Total (/1200),Aggregate %,Internal (/${maxInt}),Status`];
       appState.trainees.forEach((tr) => {
         const y1 = Number(tr.year1 || 0);
         const y2 = Number(tr.year2 || 0);
@@ -2991,8 +3540,32 @@ service cloud.firestore {
       const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
       if (!tr) return;
 
+      const rewardMaps = computeRewardMaps();
+      const rw = getTraineeRewardMeta(tr, rewardMaps, "all");
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+
       document.getElementById("report-trainee-name").textContent = `R.${tr.rno || "--"} • ${tr.name}`;
       document.getElementById("report-trainee-roll").textContent = `NCVT Reg ID: ${tr.roll}`;
+
+      const privBanner = document.getElementById("report-privilege-banner");
+      if (privBanner) {
+        if (rw.isDevitCR || rw.mRank || rw.aRank) {
+          privBanner.className = "p-2.5 rounded-xl bg-slate-950 border border-amber-500/40 flex flex-wrap items-center justify-between gap-2";
+          privBanner.innerHTML = `
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${rw.badgesHTML}
+            </div>
+            ${
+              rw.isDevitCR
+                ? `<span class="text-[10px] font-bold text-purple-300">♛ Class Representative Privilege</span>`
+                : `<span class="text-[10px] font-semibold text-amber-300">Batch Merit Ribbon</span>`
+            }
+          `;
+        } else {
+          privBanner.className = "hidden";
+          privBanner.innerHTML = "";
+        }
+      }
 
       const y1 = Number(tr.year1 || 0);
       const y2 = Number(tr.year2 || 0);
@@ -3009,7 +3582,7 @@ service cloud.firestore {
             <div class="text-[10px] text-slate-400">2-Yr Total</div>
           </div>
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
-            <div class="text-xs font-extrabold text-sky-400">${tr.internal || 0}/100</div>
+            <div class="text-xs font-extrabold text-sky-400">${tr.internal || 0}/${maxInt}</div>
             <div class="text-[10px] text-slate-400">Internal</div>
           </div>
         `;
@@ -3080,6 +3653,7 @@ service cloud.firestore {
       const y1 = Number(tr.year1 || 0);
       const y2 = Number(tr.year2 || 0);
       const tot = y1 + y2;
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
       const dates = getFilteredAttendanceDates(activeReportPeriod);
 
       const lines = [
@@ -3090,7 +3664,7 @@ service cloud.firestore {
         `1st Year Marks (/600),${y1}`,
         `2nd Year Marks (/600),${y2}`,
         `Consolidated Total (/1200),${tot}`,
-        `Internal Assessment (/100),${tr.internal || 0}`,
+        `Internal Assessment (/${maxInt}),${tr.internal || 0}`,
         `Attendance Period,${activeReportPeriod}`,
         `Present Days,${st.presentDays}`,
         `Working Days,${st.workingDays}`,
@@ -3126,6 +3700,7 @@ service cloud.firestore {
       const y2 = Number(tr.year2 || 0);
       const tot = y1 + y2;
       const pctMarks = ((tot / 1200) * 100).toFixed(1);
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
       const canvas = document.createElement("canvas");
       canvas.width = 760;
@@ -3152,7 +3727,6 @@ service cloud.firestore {
       ctx.font = "600 14px monospace";
       ctx.fillText(`NCVT Registration ID: ${tr.roll}`, 34, 120);
 
-      // Boxes
       const drawBox = (x, y, w, h, title, val, color) => {
         ctx.fillStyle = "#0f172a";
         ctx.fillRect(x, y, w, h);
@@ -3169,7 +3743,7 @@ service cloud.firestore {
 
       drawBox(34, 148, 215, 84, "1st Year Marks", `${y1} / 600`, "#34d399");
       drawBox(272, 148, 215, 84, `Combined 2-Yr (${pctMarks}%)`, `${tot} / 1200`, "#fbbf24");
-      drawBox(510, 148, 215, 84, "Internal Assessment", `${tr.internal || 0} / 100`, "#38bdf8");
+      drawBox(510, 148, 215, 84, "Internal Assessment", `${tr.internal || 0} / ${maxInt}`, "#38bdf8");
 
       const ok = st.pct >= 80;
       drawBox(34, 252, 215, 84, `Present (${activeReportPeriod})`, `${st.presentDays} / ${st.workingDays} Days`, "#ffffff");
@@ -3220,7 +3794,6 @@ service cloud.firestore {
       if (el) el.classList.add("hidden");
     }
 
-    // Close any open modal on backdrop tap or Escape key
     document.addEventListener("click", (e) => {
       if (e.target && e.target.id && e.target.id.startsWith("modal-")) {
         closeModal(e.target.id);
@@ -3257,9 +3830,13 @@ service cloud.firestore {
         const pinField = document.getElementById("setting-new-pin");
         const emailField = document.getElementById("setting-admin-email");
         const fbField = document.getElementById("firebase-config-textarea");
+        const intLbl = document.getElementById("admin-trainee-int-label");
+        const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+        if (intLbl) intLbl.textContent = `Internal (/${maxInt})`;
         if (pinField) pinField.value = appState.settings.adminPin || DEFAULT_ADMIN_PIN;
         if (emailField) emailField.value = appState.settings.adminEmail || "";
-        if (fbField) fbField.value = localStorage.getItem(FB_CONFIG_KEY) || "";
+        const activeCfg = getActiveFirebaseConfig();
+        if (fbField) fbField.value = activeCfg ? JSON.stringify(activeCfg, null, 2) : "";
       }
 
       renderAllViews();
@@ -3287,15 +3864,14 @@ service cloud.firestore {
 
     async function handleGoogleSignIn() {
       const sdk = window.__FB_SDK__;
-      const rawCfg = localStorage.getItem(FB_CONFIG_KEY);
-      if (!sdk || !rawCfg) {
+      const cfg = getActiveFirebaseConfig();
+      if (!sdk || !cfg || !cfg.projectId) {
         isAdminUnlocked = true;
         updateAdminUIState();
         showToast("Admin Unlocked (Local Mode)", "success");
         return;
       }
       try {
-        const cfg = JSON.parse(rawCfg);
         const app = sdk.getApps().length ? sdk.getApps()[0] : sdk.initializeApp(cfg);
         const auth = sdk.getAuth(app);
         const provider = new sdk.GoogleAuthProvider();
@@ -3363,7 +3939,7 @@ service cloud.firestore {
           (tr) => `
           <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
             <div class="min-w-0 flex-1">
-              <div class="font-bold text-white truncate">R.${escapeHTML(tr.rno || "--")} • ${escapeHTML(tr.name)} ${tr.star ? "★" : ""}</div>
+              <div class="font-bold text-white truncate">R.${escapeHTML(tr.rno || "--")} • ${escapeHTML(tr.name)} ${tr.star ? "♛" : ""}</div>
               <div class="text-[10px] font-mono text-slate-400 truncate">ID: ${escapeHTML(tr.roll)} • 1st: ${tr.year1 || 0} • 2nd: ${tr.year2 || 0} • Int: ${tr.internal || 0}</div>
             </div>
             <div class="flex items-center gap-1 shrink-0">
@@ -3406,10 +3982,11 @@ service cloud.firestore {
       const y1Raw = document.getElementById("trainee-y1-input").value;
       const y2Raw = document.getElementById("trainee-y2-input").value;
       const intRaw = document.getElementById("trainee-int-input").value;
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
       const year1 = y1Raw !== "" ? Math.min(600, Math.max(0, Number(y1Raw))) : 500;
       const year2 = y2Raw !== "" ? Math.min(600, Math.max(0, Number(y2Raw))) : 500;
-      const internal = intRaw !== "" ? Math.min(100, Math.max(0, Number(intRaw))) : 85;
+      const internal = intRaw !== "" ? Math.min(maxInt, Math.max(0, Number(intRaw))) : Math.round(maxInt * 0.85);
 
       if (id) {
         const idx = appState.trainees.findIndex((t) => t.id === id);
@@ -3515,19 +4092,6 @@ service cloud.firestore {
       document.getElementById("admin-direct-att-box")?.classList.add("hidden");
     }
 
-    function resetTraineeForm() {
-      document.getElementById("edit-trainee-id").value = "";
-      document.getElementById("trainee-rno-input").value = "";
-      document.getElementById("trainee-name-input").value = "";
-      document.getElementById("trainee-roll-input").value = "";
-      document.getElementById("trainee-y1-input").value = "";
-      document.getElementById("trainee-y2-input").value = "";
-      document.getElementById("trainee-int-input").value = "";
-      document.getElementById("trainee-star-input").checked = false;
-      document.getElementById("trainee-form-heading").textContent = "Add / Update Trainee Data";
-      document.getElementById("btn-cancel-trainee-edit").classList.add("hidden");
-    }
-
     function deleteTrainee(id) {
       appState.trainees = appState.trainees.filter((t) => t.id !== id);
       saveLocalState(true);
@@ -3551,8 +4115,8 @@ service cloud.firestore {
       const raw = document.getElementById("firebase-config-textarea").value.trim();
       if (!raw) {
         localStorage.removeItem(FB_CONFIG_KEY);
-        updateSyncIndicator(false, "Offline Mode");
-        showToast("Firebase config cleared", "info");
+        window.initFirebaseCloud();
+        showToast("Switched to default embedded Firebase config", "info");
         return;
       }
       try {
@@ -3566,11 +4130,24 @@ service cloud.firestore {
       }
     }
 
+    function copyFirebaseShareLink() {
+      const cfg = getActiveFirebaseConfig();
+      if (!cfg || !cfg.projectId) {
+        showToast("Save a valid Firebase config first", "error");
+        return;
+      }
+      const encoded = encodeURIComponent(btoa(JSON.stringify(cfg)));
+      const baseUrl = window.location.href.split("#")[0];
+      copyTextFallback(`${baseUrl}#fb=${encoded}`);
+      showToast("Cloud setup link copied", "success");
+    }
+
     function resetFirebaseToDefault() {
       localStorage.removeItem(FB_CONFIG_KEY);
-      document.getElementById("firebase-config-textarea").value = "";
-      updateSyncIndicator(false, "Offline Mode");
-      showToast("Reset to Offline Mode", "info");
+      const fbField = document.getElementById("firebase-config-textarea");
+      if (fbField) fbField.value = JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2);
+      window.initFirebaseCloud();
+      showToast("Restored default Firebase config", "info");
     }
 
     function copyFirestoreRules() {
@@ -3605,6 +4182,8 @@ service cloud.firestore {
           appState = {
             ...appState,
             ...parsed,
+            studyNotes: Array.isArray(parsed.studyNotes) ? parsed.studyNotes : appState.studyNotes,
+            internalMeta: { ...DEFAULT_INTERNAL_META, ...(parsed.internalMeta || {}) },
             settings: { ...appState.settings, ...(parsed.settings || {}) }
           };
           saveLocalState(true);
@@ -3644,6 +4223,33 @@ service cloud.firestore {
       showToast("Notice deleted", "info");
     }
 
+    // Study Notes Modal
+    function openStudyNoteModal() {
+      openModal("modal-add-studynote");
+    }
+
+    function handleSaveStudyNote(e) {
+      e.preventDefault();
+      if (!Array.isArray(appState.studyNotes)) appState.studyNotes = [];
+      const title = document.getElementById("note-title-input").value.trim();
+      const subject = document.getElementById("note-subject-input").value;
+      const url = document.getElementById("note-url-input").value.trim();
+      const desc = document.getElementById("note-desc-input").value.trim();
+      appState.studyNotes.unshift({ id: "sn-" + Date.now(), title, subject, url, desc });
+      saveLocalState(true);
+      renderStudyNotes();
+      e.target.reset();
+      closeModal("modal-add-studynote");
+      showToast("Study resource added", "success");
+    }
+
+    function deleteStudyNote(id) {
+      appState.studyNotes = (appState.studyNotes || []).filter((sn) => sn.id !== id);
+      saveLocalState(true);
+      renderStudyNotes();
+      showToast("Study resource removed", "info");
+    }
+
     // Videos Modal
     function openVideoModal() {
       openModal("modal-add-video");
@@ -3673,17 +4279,79 @@ service cloud.firestore {
     }
 
     // Marks Modal
-    function openResultModal(focusTarget = "year1") {
+    function openResultModal() {
       const sel = document.getElementById("marks-trainee-select");
       if (!sel || !appState.trainees.length) return;
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+      const intLbl = document.getElementById("modal-marks-int-label");
+      if (intLbl) intLbl.textContent = `Internal (/${maxInt})`;
       sel.innerHTML = appState.trainees
         .map((tr) => `<option value="${tr.id}">R.${escapeHTML(tr.rno || "--")} • ${escapeHTML(tr.name)}</option>`)
         .join("");
       populateMarksForm(appState.trainees[0].id);
       openModal("modal-edit-results");
-      if (focusTarget === "internal") {
-        setTimeout(() => document.getElementById("marks-internal-input")?.focus(), 80);
+    }
+
+    // Complete Internal Exam Batch Editor Modal
+    function openInternalExamModal() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
       }
+      const meta = { ...DEFAULT_INTERNAL_META, ...(appState.internalMeta || {}) };
+      document.getElementById("internal-meta-title").value = meta.title;
+      document.getElementById("internal-meta-subtitle").value = meta.subtitle;
+      document.getElementById("internal-meta-max").value = meta.maxMarks || 100;
+
+      const list = document.getElementById("complete-internal-trainees-list");
+      if (list) {
+        list.innerHTML = appState.trainees
+          .map(
+            (tr) => `
+            <div class="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+              <div class="min-w-0 flex-1">
+                <span class="font-mono font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                <span class="font-bold text-white ml-1.5">${escapeHTML(tr.name)}</span>
+              </div>
+              <input type="number" data-int-trid="${tr.id}" min="0" max="500" value="${Number(tr.internal || 0)}"
+                class="internal-batch-score-input w-20 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-right font-mono font-bold text-sky-400 focus:outline-none focus:border-amber-500" />
+            </div>
+          `
+          )
+          .join("");
+      }
+      openModal("modal-edit-internal");
+    }
+
+    function fillAllInternalMarks(val) {
+      const maxVal = Math.max(10, Number(document.getElementById("internal-meta-max")?.value) || 100);
+      const clamped = Math.min(maxVal, Math.max(0, Number(val) || 0));
+      document.querySelectorAll(".internal-batch-score-input").forEach((inp) => {
+        inp.value = clamped;
+      });
+    }
+
+    function handleSaveCompleteInternalExam(e) {
+      e.preventDefault();
+      if (!isAdminUnlocked) return;
+      const title = document.getElementById("internal-meta-title").value.trim() || DEFAULT_INTERNAL_META.title;
+      const subtitle = document.getElementById("internal-meta-subtitle").value.trim() || DEFAULT_INTERNAL_META.subtitle;
+      const maxMarks = Math.min(500, Math.max(10, Number(document.getElementById("internal-meta-max").value) || 100));
+
+      appState.internalMeta = { title, subtitle, maxMarks };
+
+      document.querySelectorAll(".internal-batch-score-input").forEach((inp) => {
+        const trId = inp.getAttribute("data-int-trid");
+        const tr = appState.trainees.find((t) => t.id === trId);
+        if (tr) {
+          tr.internal = Math.min(maxMarks, Math.max(0, Number(inp.value) || 0));
+        }
+      });
+
+      saveLocalState(true);
+      renderResultsSection();
+      closeModal("modal-edit-internal");
+      showToast("Internal exam & all trainee scores saved", "success");
     }
 
     // 2nd Year Exam Schedule Admin Modal
@@ -3793,9 +4461,10 @@ service cloud.firestore {
     function handleSaveMarks(e) {
       e.preventDefault();
       const id = document.getElementById("marks-trainee-select").value;
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
       const y1 = Math.min(600, Math.max(0, Number(document.getElementById("marks-year1-input").value)));
       const y2 = Math.min(600, Math.max(0, Number(document.getElementById("marks-year2-input").value)));
-      const internal = Math.min(100, Math.max(0, Number(document.getElementById("marks-internal-input").value)));
+      const internal = Math.min(maxInt, Math.max(0, Number(document.getElementById("marks-internal-input").value)));
       const tr = appState.trainees.find((t) => t.id === id);
       if (tr) {
         tr.year1 = y1;
@@ -3833,6 +4502,7 @@ service cloud.firestore {
     // =========================================================================
     function renderAllViews() {
       renderNotices();
+      renderStudyNotes();
       renderVideoCards("notices-videos-grid", "notices", 3);
       renderVideoCards("full-videos-grid", "videos");
       renderDailySection();

@@ -1,0 +1,3862 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth bright-mode">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ITI Electrician • 2025–27 | Govt. ITI Chhotojagulia</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#080d18',
+              900: '#0c1322',
+              800: '#0f172a',
+              700: '#1e293b',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Hide scrollbars cleanly */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Smooth top-down tab panel entrance animation */
+    @keyframes panelFadeSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-panel {
+      animation: panelFadeSlide 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Smooth modal pop-in */
+    @keyframes modalScaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    .animate-modal {
+      animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Header smooth auto-hide transition */
+    #main-header {
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+      will-change: transform;
+    }
+    #main-header.header-hidden {
+      transform: translateY(-100%);
+    }
+
+    /* Tactile button press */
+    .btn-tap:active {
+      transform: scale(0.95);
+    }
+
+    /* Smooth Accordion Collapse/Expand */
+    .accordion-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.28s ease,
+                  margin-top 0.3s ease;
+    }
+    .accordion-body > .accordion-inner {
+      overflow: hidden;
+    }
+    .accordion-body.accordion-open {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      margin-top: 0.75rem;
+    }
+    .accordion-chevron {
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .accordion-chevron.rotate-180 {
+      transform: rotate(180deg);
+    }
+
+    /* Smooth Dark <-> Bright Mode Transition */
+    body,
+    header,
+    footer,
+    nav,
+    section > div,
+    article,
+    input,
+    select,
+    textarea,
+    button {
+      transition: background-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  color 0.3s ease,
+                  border-color 0.35s ease,
+                  box-shadow 0.35s ease;
+    }
+
+    /* Bright (Light) Mode Overrides (Active by default via .bright-mode) */
+    html.bright-mode body {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    html.bright-mode #main-header {
+      background-color: rgba(255, 255, 255, 0.96) !important;
+      border-bottom-color: #cbd5e1 !important;
+      box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.08) !important;
+    }
+    html.bright-mode #bottom-tab-bar {
+      background-color: rgba(255, 255, 255, 0.96) !important;
+      border-top-color: #cbd5e1 !important;
+      box-shadow: 0 -4px 20px -4px rgba(15, 23, 42, 0.08) !important;
+    }
+    html.bright-mode footer {
+      background-color: #ffffff !important;
+      border-top-color: #cbd5e1 !important;
+    }
+    html.bright-mode .bg-\[\#0f172a\],
+    html.bright-mode .bg-\[\#0c1322\] {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 6px 24px -6px rgba(15, 23, 42, 0.07) !important;
+    }
+    html.bright-mode .bg-slate-950,
+    html.bright-mode .bg-slate-950\/75,
+    html.bright-mode .bg-slate-950\/80,
+    html.bright-mode .bg-slate-900,
+    html.bright-mode .bg-slate-900\/90,
+    html.bright-mode .bg-slate-900\/95 {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    html.bright-mode .bg-slate-800 {
+      background-color: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
+    }
+    html.bright-mode .hover\:bg-slate-900\/90:hover,
+    html.bright-mode .hover\:bg-slate-800:hover,
+    html.bright-mode .hover\:bg-slate-700:hover {
+      background-color: #e2e8f0 !important;
+    }
+    html.bright-mode .border-slate-800,
+    html.bright-mode .border-slate-800\/90,
+    html.bright-mode .border-slate-800\/80,
+    html.bright-mode .border-slate-800\/70,
+    html.bright-mode .border-slate-700,
+    html.bright-mode .border-slate-700\/90,
+    html.bright-mode .border-slate-700\/80 {
+      border-color: #cbd5e1 !important;
+    }
+    html.bright-mode .text-white {
+      color: #0f172a !important;
+    }
+    html.bright-mode .text-slate-100,
+    html.bright-mode .text-slate-200 {
+      color: #1e293b !important;
+    }
+    html.bright-mode .text-slate-300 {
+      color: #334155 !important;
+    }
+    html.bright-mode .text-slate-400,
+    html.bright-mode .text-slate-500 {
+      color: #475569 !important;
+    }
+    html.bright-mode .text-amber-300,
+    html.bright-mode .text-amber-400 {
+      color: #92400e !important;
+    }
+    html.bright-mode .bg-amber-500\/15,
+    html.bright-mode .bg-amber-500\/20 {
+      background-color: #fef3c7 !important;
+      border-color: #f59e0b !important;
+    }
+    html.bright-mode .text-emerald-300,
+    html.bright-mode .text-emerald-400 {
+      color: #065f46 !important;
+    }
+    html.bright-mode .bg-emerald-500\/15,
+    html.bright-mode .bg-emerald-500\/20,
+    html.bright-mode .bg-emerald-950\/30 {
+      background-color: #d1fae5 !important;
+      border-color: #6ee7b7 !important;
+    }
+    html.bright-mode .text-rose-300,
+    html.bright-mode .text-rose-400 {
+      color: #9f1239 !important;
+    }
+    html.bright-mode .bg-rose-500\/15,
+    html.bright-mode .bg-rose-950\/30,
+    html.bright-mode .bg-rose-950\/40 {
+      background-color: #ffe4e6 !important;
+      border-color: #fda4af !important;
+    }
+    html.bright-mode .text-sky-400 {
+      color: #0369a1 !important;
+    }
+    html.bright-mode .bg-sky-500\/15 {
+      background-color: #e0f2fe !important;
+      border-color: #7dd3fc !important;
+    }
+    html.bright-mode .bg-black\/80.text-white,
+    html.bright-mode .bg-rose-500.text-white {
+      color: #ffffff !important;
+    }
+    html.bright-mode .bg-amber-500 .text-slate-950,
+    html.bright-mode button.bg-amber-500,
+    html.bright-mode .text-slate-950 {
+      color: #0f172a !important;
+    }
+    html.bright-mode .ring-2.ring-\[\#0c1322\] {
+      --tw-ring-color: #ffffff !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
+
+  <!-- ===================================================================== -->
+  <!-- MINIMALIST AUTO-HIDING TOP HEADER                                     -->
+  <!-- ===================================================================== -->
+  <header id="main-header" class="sticky top-0 z-30 bg-[#0c1322]/95 backdrop-blur-md border-b border-slate-800/90 shadow-lg">
+    <div class="max-w-5xl mx-auto px-3 sm:px-5 py-2.5 space-y-2">
+      <!-- Top Row: Title & Compact Icon Pills -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0 flex-1">
+          <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h1 class="text-xs sm:text-base font-extrabold text-white tracking-tight truncate">
+              Govt. ITI Chhotojagulia
+            </h1>
+          </div>
+        </div>
+
+        <!-- Compact Action Pills -->
+        <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <button type="button" id="btn-theme-toggle" onclick="toggleThemeMode()" title="Switch to Dark Mode"
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
+            <i id="icon-theme-toggle" data-lucide="moon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700"></i>
+          </button>
+
+          <button type="button" id="btn-sync-indicator" onclick="manualCloudSync()" title="Offline Mode"
+            class="relative w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
+            <i id="icon-sync-cloud" data-lucide="cloud-off" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400"></i>
+            <span id="dot-sync-status" class="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-400 ring-2 ring-[#0c1322]"></span>
+          </button>
+
+          <button type="button" id="btn-mode-indicator" onclick="openAdminModal()" title="Student View"
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
+            <i id="icon-mode-indicator" data-lucide="eye" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300"></i>
+          </button>
+
+          <button type="button" onclick="shareStudentLink()" title="Copy Read-Only Student Link"
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 hover:text-amber-400 transition btn-tap">
+            <i data-lucide="share-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          </button>
+
+          <button type="button" id="btn-admin-key" onclick="openAdminModal()" title="Admin / Key"
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition btn-tap">
+            <i id="icon-admin-key" data-lucide="key-round" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sub-Bar: Spacious Day, Date, Minimalist Time & Batch Badge -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-800/70 text-[11px]">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="inline-flex items-center gap-1 text-slate-300 font-semibold">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span id="header-date-label">Sun, 15 Nov 2026</span>
+          </span>
+          <span class="text-slate-600">•</span>
+          <span id="header-live-clock" class="font-medium text-amber-400 tabular-nums">04:23 PM</span>
+          <span id="header-holiday-pill" class="hidden px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-300 font-semibold">
+            Sunday Weekly Off
+          </span>
+        </div>
+
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold tracking-wide shrink-0">
+          Batch Electrician 2025-27
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT WORKSPACE                                                -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 pt-4 pb-10">
+
+    <!-- Global Quick Trainee Search Bar -->
+    <div id="global-trainee-search-wrap" class="relative mb-4 z-20">
+      <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl px-3 py-2 shadow-lg flex items-center gap-2 focus-within:border-amber-500/70">
+        <i data-lucide="search" class="w-4 h-4 text-amber-400 shrink-0"></i>
+        <input type="text" id="global-trainee-search-input"
+          oninput="handleTraineeSearch(this.value)"
+          onfocus="handleTraineeSearch(this.value)"
+          placeholder="Search trainee by Name, R.No (e.g. 02) or Reg ID..."
+          class="w-full bg-transparent text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none" />
+        <button type="button" id="btn-clear-trainee-search" onclick="clearTraineeSearch()"
+          class="hidden p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Instant Search Results Dropdown -->
+      <div id="trainee-search-results"
+        class="hidden absolute left-0 right-0 mt-1.5 bg-[#0f172a] border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-800/80">
+      </div>
+    </div>
+
+    <!-- Main Tab Panels Column -->
+    <main class="w-full min-w-0 space-y-5">
+
+      <!-- ================================================================= -->
+      <!-- TAB 1: NOTICES (DEFAULT) + TRADE VIDEOS BELOW                     -->
+      <!-- ================================================================= -->
+      <section id="view-notices" class="tab-view animate-panel space-y-5">
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="megaphone" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">Batch Notices & Holidays</h2>
+                <p class="text-[11px] text-slate-400 truncate">Official circulars, workshop updates & holiday alerts</p>
+              </div>
+            </div>
+
+            <button type="button" onclick="openNoticeModal()"
+              class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition btn-tap">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Post</span>
+            </button>
+          </div>
+
+          <div id="notices-list-container" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Trade Practicals & Video Lectures Directly Below Notices -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="play-circle" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">Trade Practicals & Video Lectures</h2>
+                <p class="text-[11px] text-slate-400 truncate">NCVT Electrician 1st & 2nd Year workshop demos</p>
+              </div>
+            </div>
+
+            <button type="button" onclick="switchTab('videos')"
+              class="shrink-0 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-semibold flex items-center gap-1 transition btn-tap">
+              <span>All</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Inline Video Player Box (Notices View) -->
+          <div id="notices-inline-player-wrap" class="hidden mb-3.5 rounded-2xl overflow-hidden bg-slate-950 border border-amber-500/40 shadow-lg">
+            <div class="flex items-center justify-between gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800">
+              <span id="notices-player-title" class="text-xs font-bold text-amber-300 truncate flex-1 min-w-0">Playing Video</span>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <a id="notices-player-ext" href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"
+                  class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-200 flex items-center gap-1 transition">
+                  <span>YouTube</span>
+                  <i data-lucide="external-link" class="w-3 h-3"></i>
+                </a>
+                <button type="button" onclick="closeInlinePlayer('notices')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            <div class="aspect-video w-full bg-black">
+              <iframe id="notices-player-iframe" class="w-full h-full" src="" title="Trade Video Player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <div class="px-3 py-1.5 bg-slate-950 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between">
+              <span>Trouble playing inside preview?</span>
+              <a id="notices-player-ext-sub" href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" class="text-amber-400 font-semibold hover:underline">Open in YouTube App ↗</a>
+            </div>
+          </div>
+
+          <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 2: DAILY ATTENDANCE & HOLIDAY CALENDAR                        -->
+      <!-- ================================================================= -->
+      <section id="view-daily" class="tab-view hidden animate-panel space-y-4">
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <div class="flex items-center justify-between sm:justify-start gap-1.5 w-full sm:w-auto">
+              <button type="button" onclick="shiftSelectedDay(-1)" title="Previous Day"
+                class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 shrink-0 transition btn-tap">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <input type="date" id="daily-date-picker" onchange="onDatePickerChange(this.value)"
+                class="flex-1 sm:flex-initial min-w-0 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs sm:text-sm font-bold text-white text-center focus:outline-none focus:border-amber-500" />
+              <button type="button" onclick="shiftSelectedDay(1)" title="Next Day"
+                class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 shrink-0 transition btn-tap">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="flex items-center justify-end gap-1.5 w-full sm:w-auto">
+              <button type="button" onclick="selectToday()"
+                class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-amber-400 transition btn-tap">
+                Today
+              </button>
+              <button type="button" onclick="toggleCalendarDrawer()"
+                class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition btn-tap">
+                <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Holidays</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Weekly Schedule Strip (Mon–Sun) -->
+          <div id="weekly-strip" class="grid grid-cols-7 gap-1 sm:gap-1.5"></div>
+
+          <!-- Holiday Banner / Admin Holiday & Bulk Roll-Call Controls -->
+          <div id="daily-holiday-bar" class="flex flex-col gap-2 pt-2 border-t border-slate-800/80 text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div id="daily-status-text" class="text-slate-300 font-medium flex items-center gap-1.5"></div>
+              <div class="admin-only hidden flex flex-wrap items-center gap-1.5">
+                <button type="button" onclick="openHolidayEditorModal()"
+                  class="px-2.5 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-semibold text-[11px] flex items-center gap-1 transition btn-tap">
+                  <i data-lucide="calendar-plus" class="w-3 h-3"></i>
+                  <span>Edit Holiday / Info</span>
+                </button>
+              </div>
+            </div>
+            <p id="daily-holiday-note" class="hidden text-[11px] text-rose-300/90 bg-rose-950/30 border border-rose-500/30 rounded-xl px-2.5 py-1.5"></p>
+            <div id="admin-bulk-rollcall-bar" class="admin-only hidden flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-800/60">
+              <button type="button" onclick="markAllPresent()"
+                class="px-2.5 py-1 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-semibold text-[11px] transition btn-tap">
+                All Present
+              </button>
+              <button type="button" onclick="markAllAbsent()"
+                class="px-2.5 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-semibold text-[11px] transition btn-tap">
+                All Absent
+              </button>
+              <button type="button" onclick="clearDayAttendance()"
+                class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-[11px] transition btn-tap">
+                Clear
+              </button>
+              <button type="button" onclick="openPartialAttendanceModal()"
+                class="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-semibold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="user-check" class="w-3 h-3"></i>
+                <span>Partial P/A (2–3d Regular)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Monthly Holiday Calendar -->
+        <div id="holiday-calendar-card" class="hidden bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl animate-panel">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="shiftCalendarMonth(-1)"
+                class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <h3 id="calendar-month-title" class="text-xs sm:text-sm font-bold text-white min-w-[120px] text-center">Month Year</h3>
+              <button type="button" onclick="shiftCalendarMonth(1)"
+                class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <span class="text-[11px] text-slate-400">Tap date to view • Sun/Red = Holiday</span>
+          </div>
+
+          <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-1.5">
+            <div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-rose-400">SAT</div><div class="text-rose-400">SUN</div>
+          </div>
+          <div id="holiday-calendar-grid" class="grid grid-cols-7 gap-1"></div>
+        </div>
+
+        <!-- Trainee Roll-Call List (Collapsible, Closed by Default) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleAccordion('daily-rollcall')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">Trainee Roll Call</h2>
+              <span id="rollcall-summary-pill" class="px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-[10px] sm:text-[11px] font-semibold text-slate-300 shrink-0">
+                16 Trainees
+              </span>
+            </div>
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <span id="rollcall-lock-hint" class="hidden sm:flex text-[11px] text-slate-400 items-center gap-1">
+                <i data-lucide="lock" class="w-3 h-3 text-amber-400"></i>
+                <span>View Only</span>
+              </span>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-daily-rollcall" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-daily-rollcall" class="accordion-body">
+            <div class="accordion-inner">
+              <div id="daily-rollcall-list" class="space-y-2 pt-2 border-t border-slate-800/70"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 3: 80% CHART (NCVT ELIGIBILITY CALCULATOR)                    -->
+      <!-- ================================================================= -->
+      <section id="view-monthly" class="tab-view hidden animate-panel space-y-4">
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
+          <div role="button" tabindex="0" onclick="toggleAccordion('monthly-chart')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="min-w-0 flex-1">
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">NCVT 80% Attendance Eligibility</h2>
+              <p class="text-[11px] text-slate-400 truncate">Tap to view batch chart & 6/9/12-month reports</p>
+            </div>
+            <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 shrink-0">
+              <i id="chevron-monthly-chart" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+            </div>
+          </div>
+
+          <!-- Non-overlapping Action Toolbar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/70">
+            <select id="eligibility-month-filter" onchange="setChartPeriod(this.value)"
+              class="flex-1 sm:flex-initial min-w-[140px] px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs font-semibold text-white focus:outline-none focus:border-amber-500">
+              <option value="ALL">All Working Days</option>
+              <option value="1M">Current Month (1M)</option>
+              <option value="6M">6 Months Report</option>
+              <option value="9M">9 Months Report</option>
+              <option value="12M">12 Months Report</option>
+            </select>
+
+            <button type="button" onclick="downloadAttendanceChartPNG()" title="Download Visual 80% Chart (PNG)"
+              class="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 transition btn-tap">
+              <i data-lucide="image-down" class="w-3.5 h-3.5 shrink-0"></i>
+              <span>Download Chart</span>
+            </button>
+          </div>
+
+          <div id="body-monthly-chart" class="accordion-body">
+            <div class="accordion-inner space-y-4 pt-2 border-t border-slate-800/70">
+              <!-- Period Quick Pills & Export -->
+              <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <button type="button" onclick="setChartPeriod('ALL')" data-period="ALL"
+                    class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition btn-tap">
+                    All Working Days
+                  </button>
+                  <button type="button" onclick="setChartPeriod('1M')" data-period="1M"
+                    class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap">
+                    Current Month
+                  </button>
+                  <button type="button" onclick="setChartPeriod('6M')" data-period="6M"
+                    class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap">
+                    6 Months
+                  </button>
+                  <button type="button" onclick="setChartPeriod('9M')" data-period="9M"
+                    class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap">
+                    9 Months
+                  </button>
+                  <button type="button" onclick="setChartPeriod('12M')" data-period="12M"
+                    class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap">
+                    12 Months
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="downloadAttendanceChartPNG()"
+                    class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center gap-1 transition btn-tap">
+                    <i data-lucide="image-down" class="w-3 h-3"></i>
+                    <span>Chart PNG</span>
+                  </button>
+                  <button type="button" onclick="downloadAttendanceReportCSV()"
+                    class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold flex items-center gap-1 transition btn-tap">
+                    <i data-lucide="download" class="w-3 h-3"></i>
+                    <span>CSV Report</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Summary Strip -->
+              <div id="eligibility-summary-cards" class="grid grid-cols-3 gap-2"></div>
+
+              <!-- Monthly Attendance Count Breakdown -->
+              <div class="bg-slate-950 border border-slate-800/90 rounded-xl p-3 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400">Monthly Attendance Count</span>
+                  <span class="text-[10px] text-slate-400">Working Days & Batch Presence</span>
+                </div>
+                <div id="monthly-attendance-count-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+              </div>
+
+              <!-- Trainee Eligibility Progress Bars -->
+              <div id="eligibility-list" class="space-y-2.5"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 4: RESULTS & EXAMS                                            -->
+      <!-- ================================================================= -->
+      <section id="view-results" class="tab-view hidden animate-panel space-y-3">
+        <!-- Quick Actions: Download Batch Results & Official Skill India Digital Hub Link -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-xs sm:text-sm font-bold text-white">Marksheet & Official Verification</div>
+            <div class="text-[11px] text-slate-400 leading-snug mt-0.5">Export batch marks or download original certificate via Skill India Digital Hub</div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
+            <button type="button" onclick="downloadBatchResultsCSV()"
+              class="flex-1 sm:flex-initial justify-center px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition btn-tap">
+              <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
+              <span>Download Results</span>
+            </button>
+            <a href="https://dgt.skillindiadigital.gov.in/result" target="_blank" rel="noopener noreferrer"
+              class="flex-1 sm:flex-initial justify-center px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 transition btn-tap">
+              <span>Skill India Digital Hub</span>
+              <i data-lucide="external-link" class="w-3.5 h-3.5 shrink-0"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- 1st Year NCVT Results (Collapsible, Closed by Default) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleResultAccordion('y1')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <i data-lucide="award" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-xs sm:text-base font-bold text-white truncate">1st Year NCVT Results (Out of 600)</h2>
+                <p class="text-[11px] text-slate-400 truncate">Electrician Trade • Session 2025–26</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="event.stopPropagation(); openResultModal()"
+                class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="edit-3" class="w-3 h-3"></i>
+                <span>Edit</span>
+              </button>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-res-y1" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-res-y1" class="accordion-body">
+            <div class="accordion-inner">
+              <div id="first-year-results-list" class="space-y-2 pt-2 border-t border-slate-800/70"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consolidated 2-Year NCVT Results (Out of 1200) (Collapsible, Closed by Default) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleResultAccordion('y12')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="trophy" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-xs sm:text-base font-bold text-white truncate">Combined 2-Year Result (Out of 1200)</h2>
+                <p class="text-[11px] text-slate-400 truncate">1st Year (/600) + 2nd Year (/600) Consolidated Total</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="event.stopPropagation(); openResultModal()"
+                class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="edit-3" class="w-3 h-3"></i>
+                <span>Edit</span>
+              </button>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-res-y12" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-res-y12" class="accordion-body">
+            <div class="accordion-inner">
+              <div id="combined-two-year-results-list" class="space-y-2 pt-2 border-t border-slate-800/70"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2nd Year Exam Schedule (Collapsible, Closed by Default) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleResultAccordion('y2')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">2nd Year NCVT Exam Schedule</h2>
+                <p class="text-[11px] text-slate-400 truncate">Session 2026–27 • Upcoming CBT & Practical</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="event.stopPropagation(); openExamScheduleModal()"
+                class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="edit-3" class="w-3 h-3"></i>
+                <span>Edit</span>
+              </button>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-res-y2" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-res-y2" class="accordion-body">
+            <div class="accordion-inner">
+              <div id="exam-schedule-list" class="space-y-2 pt-2 border-t border-slate-800/70"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internal Practical & Theory Tests (Collapsible, Closed by Default) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleResultAccordion('int')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <div class="w-8 h-8 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
+                <i data-lucide="file-check-2" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">Internal Practical & Theory Tests</h2>
+                <p class="text-[11px] text-slate-400 truncate">Monthly Workshop Sessional Assessment (/100)</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="event.stopPropagation(); openResultModal('internal')"
+                class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="edit-3" class="w-3 h-3"></i>
+                <span>Edit</span>
+              </button>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-res-int" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-res-int" class="accordion-body">
+            <div class="accordion-inner">
+              <div id="internal-tests-list" class="space-y-2 pt-2 border-t border-slate-800/70"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- TAB 5: VIDEOS (TRADE VIDEOS)                                      -->
+      <!-- ================================================================= -->
+      <section id="view-videos" class="tab-view hidden animate-panel space-y-4">
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl px-4 py-3.5 shadow-xl flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <i data-lucide="video" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">Trade Videos — Workshop Practicals & Theory Lectures</h2>
+            </div>
+          </div>
+
+          <button type="button" onclick="openVideoModal()"
+            class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/20 transition btn-tap">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add</span>
+          </button>
+        </div>
+
+        <!-- Inline Video Player Box (Videos Tab) -->
+        <div id="videos-inline-player-wrap" class="hidden rounded-2xl overflow-hidden bg-slate-950 border border-amber-500/40 shadow-xl">
+          <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 bg-slate-900 border-b border-slate-800">
+            <span id="videos-player-title" class="text-xs sm:text-sm font-bold text-amber-300 truncate flex-1 min-w-0">Playing Video</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <a id="videos-player-ext" href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"
+                class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-bold text-slate-200 flex items-center gap-1 transition">
+                <span>YouTube</span>
+                <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+              <button type="button" onclick="closeInlinePlayer('videos')" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div class="aspect-video w-full bg-black">
+            <iframe id="videos-player-iframe" class="w-full h-full" src="" title="Trade Video Player" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+          <div class="px-3.5 py-1.5 bg-slate-950 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between">
+            <span>Trouble playing inside preview?</span>
+            <a id="videos-player-ext-sub" href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" class="text-amber-400 font-semibold hover:underline">Open in YouTube App ↗</a>
+          </div>
+        </div>
+
+        <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MINIMALIST SINGLE-LINE FOOTER DISCLAIMER (ABOVE BOTTOM DOCK)          -->
+  <!-- ===================================================================== -->
+  <footer class="bg-[#0c1322] border-t border-slate-800/80 pt-3 pb-28 px-4 text-center">
+    <p class="text-[11px] text-slate-400 leading-relaxed">
+      Trainee-built portal for Batch 2025–27; not officially linked with Govt. ITI Chhotojagulia.
+    </p>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- FIXED BOTTOM ONE-THUMB NAVIGATION DOCK                                -->
+  <!-- ===================================================================== -->
+  <nav id="bottom-tab-bar" aria-label="Primary Sections"
+    class="fixed bottom-0 inset-x-0 z-40 bg-[#0c1322]/95 backdrop-blur-md border-t border-slate-800/90 shadow-2xl">
+    <div class="max-w-5xl mx-auto px-2 py-1.5 grid grid-cols-5 gap-1">
+      <button type="button" id="tab-btn-notices" onclick="switchTab('notices')"
+        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 transition btn-tap">
+        <i data-lucide="bell" class="w-4 h-4 shrink-0"></i>
+        <span class="truncate">Notices</span>
+      </button>
+
+      <button type="button" id="tab-btn-daily" onclick="switchTab('daily')"
+        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="calendar-check-2" class="w-4 h-4 shrink-0"></i>
+        <span class="truncate">Daily</span>
+      </button>
+
+      <button type="button" id="tab-btn-monthly" onclick="switchTab('monthly')"
+        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i>
+        <span class="truncate">80% Chart</span>
+      </button>
+
+      <button type="button" id="tab-btn-results" onclick="switchTab('results')"
+        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="award" class="w-4 h-4 shrink-0"></i>
+        <span class="truncate">Results</span>
+      </button>
+
+      <button type="button" id="tab-btn-videos" onclick="switchTab('videos')"
+        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="play-circle" class="w-4 h-4 shrink-0"></i>
+        <span class="truncate">Videos</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: MERGED ADMIN / KEY & MANAGEMENT HUB                          -->
+  <!-- ===================================================================== -->
+  <div id="modal-admin" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-lg shadow-2xl animate-modal overflow-hidden my-auto">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
+            <i data-lucide="key-round" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">Instructor Admin & Portal Hub</h3>
+        </div>
+        <button type="button" onclick="closeModal('modal-admin')" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Locked View: PIN or Google Sign-In -->
+      <div id="admin-locked-view" class="p-4 sm:p-5 space-y-4">
+        <div class="text-center space-y-1">
+          <p class="text-xs text-slate-300 font-medium">Enter Instructor Security PIN or sign in with authorized Google Account</p>
+          <p class="text-[11px] text-slate-400">Default PIN: <span class="font-mono text-amber-400 font-bold">2508</span></p>
+        </div>
+
+        <form onsubmit="handlePinUnlock(event)" class="space-y-3">
+          <input type="password" id="admin-pin-input" inputmode="numeric" maxlength="8" placeholder="Enter PIN (e.g. 2508)"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-center text-sm font-mono tracking-widest text-white focus:outline-none focus:border-amber-500" />
+          <button type="submit"
+            class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition btn-tap">
+            Unlock Admin Mode
+          </button>
+        </form>
+
+        <div class="relative flex py-1 items-center">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-3 text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Or Cloud Auth</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+
+        <button type="button" onclick="handleGoogleSignIn()"
+          class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-white flex items-center justify-center gap-2 transition btn-tap">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span>Sign in with Google Admin</span>
+        </button>
+      </div>
+
+      <!-- Unlocked Admin Management Hub -->
+      <div id="admin-unlocked-view" class="hidden p-4 space-y-4 max-h-[78vh] overflow-y-auto">
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-emerald-950/30 border border-emerald-500/30 rounded-xl px-3 py-2">
+          <div class="flex items-center gap-2 text-xs text-emerald-300 font-semibold">
+            <i data-lucide="unlock" class="w-4 h-4 text-emerald-400"></i>
+            <span>Admin Unlocked (Full Edit Access)</span>
+          </div>
+          <button type="button" onclick="lockAdminMode()"
+            class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-[11px] font-bold transition btn-tap">
+            Lock Session
+          </button>
+        </div>
+
+        <!-- Admin Sub-Tabs -->
+        <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold">
+          <button type="button" onclick="switchAdminSubTab('roster')" id="admintab-btn-roster"
+            class="admintab-btn py-1.5 px-2 rounded-lg bg-amber-500 text-slate-950 transition">Trainees</button>
+          <button type="button" onclick="switchAdminSubTab('security')" id="admintab-btn-security"
+            class="admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition">PIN / Auth</button>
+          <button type="button" onclick="switchAdminSubTab('firebase')" id="admintab-btn-firebase"
+            class="admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition">Firebase</button>
+          <button type="button" onclick="switchAdminSubTab('backup')" id="admintab-btn-backup"
+            class="admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition">Backup</button>
+        </div>
+
+        <!-- Sub-Tab 1: Roster Management -->
+        <div id="admintab-roster" class="admintab-panel space-y-3">
+          <form onsubmit="handleAddOrUpdateTrainee(event)" class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span id="trainee-form-heading" class="text-xs font-bold text-amber-400">Add / Update Trainee Data</span>
+              <button type="button" id="btn-cancel-trainee-edit" onclick="resetTraineeForm()" class="hidden text-[11px] text-slate-400 hover:text-white">Cancel</button>
+            </div>
+            <input type="hidden" id="edit-trainee-id" value="" />
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input type="text" id="trainee-rno-input" required placeholder="Roll No (e.g. 21)"
+                class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
+              <input type="text" id="trainee-name-input" required placeholder="Trainee Full Name"
+                class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              <input type="text" id="trainee-roll-input" required placeholder="Reg ID (e.g. 250819008899)"
+                class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">1st Yr (/600)</label>
+                <input type="number" id="trainee-y1-input" min="0" max="600" placeholder="500"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">2nd Yr (/600)</label>
+                <input type="number" id="trainee-y2-input" min="0" max="600" placeholder="500"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Internal (/100)</label>
+                <input type="number" id="trainee-int-input" min="0" max="100" placeholder="85"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+            </div>
+
+            <!-- Direct Single-Student Attendance Updater -->
+            <div id="admin-direct-att-box" class="hidden pt-2 border-t border-slate-800/80 space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Direct Attendance Update</span>
+                <span id="admin-direct-att-status" class="text-[10px] font-semibold text-slate-400">Select date</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <input type="date" id="admin-direct-att-date" onchange="syncAdminDirectAttendanceUI()"
+                  class="flex-1 min-w-[130px] px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+                <button type="button" onclick="applyAdminDirectAttendance('P')"
+                  class="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold text-[11px] transition btn-tap">
+                  Present
+                </button>
+                <button type="button" onclick="applyAdminDirectAttendance('A')"
+                  class="px-2.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-[11px] transition btn-tap">
+                  Absent
+                </button>
+                <button type="button" onclick="applyAdminDirectAttendance('CLEAR')"
+                  class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold text-[11px] transition btn-tap">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+              <label class="inline-flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                <input type="checkbox" id="trainee-star-input" class="rounded border-slate-700 text-amber-500 focus:ring-amber-500" />
+                <span>Gold Star (CR / Star)</span>
+              </label>
+              <button type="submit"
+                class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap">
+                Save Student Data
+              </button>
+            </div>
+          </form>
+
+          <!-- Admin Search Filter for Direct Student Update -->
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-amber-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="admin-roster-search-input" oninput="renderAdminRosterList(this.value)"
+              placeholder="Search student by Name, R.No or Reg ID to update..."
+              class="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500" />
+          </div>
+
+          <div id="admin-roster-list" class="space-y-1.5 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Sub-Tab 2: PIN & Google Admin Settings -->
+        <div id="admintab-security" class="admintab-panel hidden space-y-3">
+          <form onsubmit="handleSaveSecuritySettings(event)" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Admin Unlock PIN</label>
+              <input type="text" id="setting-new-pin" inputmode="numeric" maxlength="8" placeholder="2508"
+                class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1">Authorized Google Admin Email</label>
+              <input type="email" id="setting-admin-email" placeholder="instructor.iti@gmail.com"
+                class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+            </div>
+            <button type="submit"
+              class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap">
+              Update Security Settings
+            </button>
+          </form>
+        </div>
+
+        <!-- Sub-Tab 3: Firebase Cloud Sync Config & Firestore Rules -->
+        <div id="admintab-firebase" class="admintab-panel hidden space-y-3">
+          <form onsubmit="handleSaveFirebaseConfig(event)" class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white">Firebase Web App Config (JSON)</span>
+              <button type="button" onclick="resetFirebaseToDefault()" class="text-[11px] text-amber-400 hover:underline">Reset</button>
+            </div>
+            <textarea id="firebase-config-textarea" rows="4" placeholder='{"apiKey":"...","authDomain":"...","projectId":"..."}'
+              class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-[11px] font-mono text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+            <button type="submit"
+              class="w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition btn-tap">
+              Save & Connect Cloud Sync
+            </button>
+          </form>
+
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-300">Firestore Security Rules</span>
+              <button type="button" onclick="copyFirestoreRules()" class="text-[11px] text-amber-400 hover:underline flex items-center gap-1">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span>Copy Rules</span>
+              </button>
+            </div>
+            <pre id="firestore-rules-code" class="text-[10px] font-mono text-slate-400 bg-slate-900 p-2.5 rounded-lg overflow-x-auto leading-relaxed">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /iti_portals/{portalId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}</pre>
+          </div>
+        </div>
+
+        <!-- Sub-Tab 4: JSON Export / Import Backups -->
+        <div id="admintab-backup" class="admintab-panel hidden space-y-3">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <p class="text-xs text-slate-300">Download a complete offline JSON backup of trainees, daily attendance, notices, marks, and trade videos.</p>
+            <button type="button" onclick="exportBackupJSON()"
+              class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition btn-tap">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Download Full Backup (.json)</span>
+            </button>
+
+            <div class="pt-2 border-t border-slate-800">
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1.5">Restore from JSON Backup</label>
+              <input type="file" accept=".json" onchange="importBackupJSON(event)"
+                class="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: POST NOTICE                                                  -->
+  <!-- ===================================================================== -->
+  <div id="modal-post-notice" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Post Batch Notice</h3>
+        <button type="button" onclick="closeModal('modal-post-notice')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveNotice(event)" class="p-4 space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Notice Title</label>
+          <input type="text" id="notice-title-input" required placeholder="e.g. Workshop Practical Viva Schedule"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Date</label>
+          <input type="date" id="notice-date-input" required
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Message</label>
+          <textarea id="notice-body-input" rows="3" required placeholder="Write clear details for Electrician 2025–27 batch..."
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Publish Notice
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: ADD TRADE VIDEO                                              -->
+  <!-- ===================================================================== -->
+  <div id="modal-add-video" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Add Trade Video</h3>
+        <button type="button" onclick="closeModal('modal-add-video')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveVideo(event)" class="p-4 space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Video Title</label>
+          <input type="text" id="video-title-input" required placeholder="e.g. 3-Phase Star-Delta Starter Wiring"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube URL or Video ID</label>
+            <input type="text" id="video-url-input" required placeholder="e.g. dQw4w9WgXcQ or full link"
+              class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Duration</label>
+            <input type="text" id="video-duration-input" placeholder="e.g. 14:20"
+              class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Short Description</label>
+          <input type="text" id="video-desc-input" placeholder="Key practical steps or NCVT module notes..."
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Add to Video Library
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 4: EDIT MARKS (1ST YEAR & INTERNAL SCORES)                      -->
+  <!-- ===================================================================== -->
+  <div id="modal-edit-results" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Update Trainee Exam Marks</h3>
+        <button type="button" onclick="closeModal('modal-edit-results')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveMarks(event)" class="p-4 space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Select Trainee</label>
+          <select id="marks-trainee-select" onchange="populateMarksForm(this.value)"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></select>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">1st Yr (/600)</label>
+            <input type="number" id="marks-year1-input" min="0" max="600" required
+              class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">2nd Yr (/600)</label>
+            <input type="number" id="marks-year2-input" min="0" max="600" required
+              class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Internal (/100)</label>
+            <input type="number" id="marks-internal-input" min="0" max="100" required
+              class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Save Updated Marks
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 5: INDIVIDUAL TRAINEE FULL PROFILE & REPORT                     -->
+  <!-- ===================================================================== -->
+  <div id="modal-trainee-report" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <div class="min-w-0">
+          <h3 id="report-trainee-name" class="text-sm font-bold text-white truncate">Trainee Profile</h3>
+          <p id="report-trainee-roll" class="text-[11px] font-mono text-amber-400">NCVT Reg ID</p>
+        </div>
+        <button type="button" onclick="closeModal('modal-trainee-report')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div id="report-academics-grid" class="grid grid-cols-3 gap-2 text-center"></div>
+
+        <button type="button" onclick="openAdminDirectEditFromReport()"
+          class="admin-only hidden w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition btn-tap">
+          <i data-lucide="user-cog" class="w-3.5 h-3.5"></i>
+          <span>Edit Student Data (Marks, Roll & Details)</span>
+        </button>
+
+        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <button type="button" onclick="switchReportPeriod('ALL')" data-rperiod="ALL" class="report-period-btn flex-1 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition">All Days</button>
+          <button type="button" onclick="switchReportPeriod('1M')" data-rperiod="1M" class="report-period-btn flex-1 py-1 rounded-lg text-[11px] font-semibold text-slate-300 transition">Curr Mo</button>
+          <button type="button" onclick="switchReportPeriod('6M')" data-rperiod="6M" class="report-period-btn flex-1 py-1 rounded-lg text-[11px] font-semibold text-slate-300 transition">6 Mo</button>
+          <button type="button" onclick="switchReportPeriod('9M')" data-rperiod="9M" class="report-period-btn flex-1 py-1 rounded-lg text-[11px] font-semibold text-slate-300 transition">9 Mo</button>
+          <button type="button" onclick="switchReportPeriod('12M')" data-rperiod="12M" class="report-period-btn flex-1 py-1 rounded-lg text-[11px] font-semibold text-slate-300 transition">12 Mo</button>
+        </div>
+
+        <div id="report-stats-grid" class="grid grid-cols-3 gap-2 text-center"></div>
+        <div id="report-history-list" class="max-h-44 overflow-y-auto space-y-1.5 pr-1"></div>
+
+        <!-- Student Self-Service Performance & Attendance Download -->
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+          <button type="button" onclick="downloadSingleTraineeReportCSV()"
+            class="py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition btn-tap">
+            <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
+            <span>Download CSV</span>
+          </button>
+          <button type="button" onclick="downloadSingleTraineeCardPNG()"
+            class="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition btn-tap">
+            <i data-lucide="image-down" class="w-3.5 h-3.5 shrink-0"></i>
+            <span>Performance Card</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 6: ADMIN HOLIDAY EDITOR (INCLUDING SAT / SUN & INFO NOTES)      -->
+  <!-- ===================================================================== -->
+  <div id="modal-holiday-editor" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Modify Day Status & Holiday Info</h3>
+        <button type="button" onclick="closeModal('modal-holiday-editor')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveHolidayEditor(event)" class="p-4 space-y-3">
+        <div class="text-xs font-semibold text-amber-400" id="holiday-editor-date-label">Selected Date</div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Day Type</label>
+          <select id="holiday-editor-type"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
+            <option value="holiday">Holiday / Institute Closed (Includes Sat/Sun)</option>
+            <option value="working">Working Day / Extra Class (Overrides Sat/Sun Off)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Holiday / Special Class Title</label>
+          <input type="text" id="holiday-editor-title" placeholder="e.g. Saturday Weekly Off / Durga Puja / Extra Lab"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Holiday Information / Circular Note</label>
+          <textarea id="holiday-editor-info" rows="3" placeholder="Add details about holiday reason, reopening date, or workshop instructions..."
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Save Day & Holiday Info
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 7: PARTIAL PRESENT / ABSENT (2–3 DAYS REGULAR STREAK)           -->
+  <!-- ===================================================================== -->
+  <div id="modal-partial-attendance" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Partial Present / Absent Roll Call</h3>
+        <button type="button" onclick="closeModal('modal-partial-attendance')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Automatically mark trainees who attended regularly over the past working days as <span class="text-emerald-400 font-bold">Present</span>, and mark non-attending trainees as <span class="text-rose-400 font-bold">Absent</span>.
+        </p>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Regularity Rule</label>
+          <select id="partial-streak-rule" onchange="previewPartialAttendance()"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
+            <option value="2">Regular for Last 2 Working Days → Present (Others Absent)</option>
+            <option value="3">Regular for Last 3 Working Days → Present (Others Absent)</option>
+            <option value="80">Cumulative ≥ 80% Regular → Present (Others Absent)</option>
+          </select>
+        </div>
+        <div id="partial-preview-summary" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300"></div>
+        <button type="button" onclick="applyPartialAttendance()"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Apply Partial Present / Absent
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 8: EDIT 2ND YEAR UPCOMING EXAM SCHEDULE (ADMIN)                 -->
+  <!-- ===================================================================== -->
+  <div id="modal-edit-exams" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Edit 2nd Year Exam Schedule</h3>
+        <button type="button" onclick="closeModal('modal-edit-exams')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3 max-h-[78vh] overflow-y-auto">
+        <form onsubmit="handleSaveExamItem(event)" class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span id="exam-form-heading" class="text-xs font-bold text-amber-400">Add / Update Exam Paper</span>
+            <button type="button" id="btn-cancel-exam-edit" onclick="resetExamForm()" class="hidden text-[11px] text-slate-400 hover:text-white">Cancel</button>
+          </div>
+          <input type="hidden" id="edit-exam-index" value="-1" />
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Subject / Paper Name</label>
+            <input type="text" id="exam-subject-input" required placeholder="e.g. Trade Theory (2nd Year CBT)"
+              class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Exam Date</label>
+              <input type="text" id="exam-date-input" required placeholder="e.g. 14 Jul 2027"
+                class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Timing</label>
+              <input type="text" id="exam-time-input" required placeholder="e.g. 10:00 AM – 12:00 PM"
+                class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Venue / Center</label>
+            <input type="text" id="exam-venue-input" required placeholder="e.g. NCVT CBT Center / Electrical Workshop"
+              class="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+          <button type="submit"
+            class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap">
+            Save Exam Schedule
+          </button>
+        </form>
+
+        <div id="admin-exam-schedule-list" class="space-y-1.5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION BANNER                                             -->
+  <!-- ===================================================================== -->
+  <div id="toast-container" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-3"></div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC + FIREBASE MODULAR V10 SDK                          -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    window.__FB_SDK__ = {
+      initializeApp,
+      getApps,
+      getFirestore,
+      doc,
+      setDoc,
+      onSnapshot,
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup
+    };
+
+    if (window.initFirebaseCloud) {
+      window.initFirebaseCloud();
+    }
+  </script>
+
+  <script>
+    // =========================================================================
+    // 1. DEFAULT DATA & CONSTANTS
+    // =========================================================================
+    const STORAGE_KEY = "iti_chhotojagulia_elec_2025_27_v2";
+    const FB_CONFIG_KEY = "iti_chhotojagulia_fb_config_v1";
+    const THEME_MODE_KEY = "iti_chhotojagulia_theme_v4";
+    const DEFAULT_ADMIN_PIN = "2508";
+
+    const DEFAULT_TRAINEES = [
+      { id: "tr-02", rno: "02", name: "Devit Munda", roll: "250819008869", star: true, year1: 548, year2: 556, internal: 94 },
+      { id: "tr-03", rno: "03", name: "Ayan Karmakar", roll: "250819008805", star: false, year1: 512, year2: 520, internal: 88 },
+      { id: "tr-04", rno: "04", name: "Arijit Das", roll: "250819008842", star: false, year1: 498, year2: 506, internal: 85 },
+      { id: "tr-05", rno: "05", name: "Sayani Ghoshal", roll: "250819008858", star: false, year1: 534, year2: 540, internal: 91 },
+      { id: "tr-06", rno: "06", name: "Debarathi Kundu", roll: "250819008830", star: false, year1: 526, year2: 532, internal: 90 },
+      { id: "tr-07", rno: "07", name: "Dipan Halder", roll: "250819007214", star: false, year1: 484, year2: 492, internal: 82 },
+      { id: "tr-08", rno: "08", name: "Shreyasi Ballav", roll: "250819011246", star: false, year1: 519, year2: 524, internal: 89 },
+      { id: "tr-09", rno: "09", name: "Rahul Das", roll: "250819008818", star: false, year1: 472, year2: 486, internal: 80 },
+      { id: "tr-11", rno: "11", name: "Swasti Sarkar", roll: "250819027561", star: false, year1: 508, year2: 514, internal: 87 },
+      { id: "tr-12", rno: "12", name: "Riya Biswas", roll: "250819012840", star: false, year1: 522, year2: 528, internal: 89 },
+      { id: "tr-14", rno: "14", name: "Abhijit Bala", roll: "250819011106", star: false, year1: 488, year2: 496, internal: 84 },
+      { id: "tr-15", rno: "15", name: "Ilias Mondal", roll: "250819012861", star: false, year1: 495, year2: 502, internal: 86 },
+      { id: "tr-16", rno: "16", name: "Barsha Chatterjee", roll: "250819011089", star: false, year1: 530, year2: 538, internal: 92 },
+      { id: "tr-17", rno: "17", name: "Riyad Hossain", roll: "250819011135", star: false, year1: 501, year2: 509, internal: 85 },
+      { id: "tr-18", rno: "18", name: "Shaswat Biswas", roll: "250819008812", star: false, year1: 479, year2: 488, internal: 81 },
+      { id: "tr-20", rno: "20", name: "Anupam Dutta", roll: "250819008877", star: false, year1: 515, year2: 521, internal: 88 }
+    ];
+
+    const DEFAULT_NOTICES = [
+      {
+        id: "not-1",
+        title: "2nd Year Practical Workshop & Safety Briefing",
+        date: "2026-11-16",
+        body: "All Electrician Batch 2025–27 trainees must report to the Main Electrical Machine Lab at 10:00 AM sharp with insulated pliers, test lamp, and practical record book."
+      },
+      {
+        id: "not-2",
+        title: "NCVT 80% Minimum Attendance Mandatory Notice",
+        date: "2026-11-12",
+        body: "Trainees having below 80% cumulative attendance in Trade Practical & Theory will not be eligible for the upcoming AITT CBT Hall Ticket generation."
+      },
+      {
+        id: "not-3",
+        title: "1st Year NCVT Result Verification Completed",
+        date: "2026-11-05",
+        body: "1st Year consolidated marks (out of 600) are published under the Results tab. Report any discrepancy in Registration ID to the Trade Instructor."
+      }
+    ];
+
+    const DEFAULT_VIDEOS = [
+      {
+        id: "vid-1",
+        title: "3-Phase Induction Motor DOL Starter Wiring & Testing",
+        ytId: "M7lc1UVf-VE",
+        duration: "12:45",
+        desc: "Complete control & power circuit wiring with overload relay setting for NCVT 2nd Year practical."
+      },
+      {
+        id: "vid-2",
+        title: "Transformer Open Circuit & Short Circuit Test",
+        ytId: "aqz-KE-bpKQ",
+        duration: "15:20",
+        desc: "Step-by-step core loss and copper loss measurement using wattmeter, voltmeter, and ammeter."
+      },
+      {
+        id: "vid-3",
+        title: "Domestic Staircase & Godown Wiring Practical",
+        ytId: "fJ9rUzIMcZQ",
+        duration: "09:50",
+        desc: "Two-way switch control circuit diagram, insulation resistance check with Megger, and earthing test."
+      },
+      {
+        id: "vid-4",
+        title: "DC Shunt Motor Speed Control (Armature & Field)",
+        ytId: "LXb3EKWsInQ",
+        duration: "14:10",
+        desc: "Rheostatic speed control above and below rated RPM in the Electrical Machine Workshop."
+      },
+      {
+        id: "vid-5",
+        title: "Pipe & Plate Earthing Earth Resistance Measurement",
+        ytId: "ScMzIvxBSi4",
+        duration: "11:05",
+        desc: "IS 3043 standard earthing pit layout and Fall-of-Potential earth tester procedure."
+      },
+      {
+        id: "vid-6",
+        title: "Digital Multimeter & Clamp Meter Fault Diagnosis",
+        ytId: "jNQXAC9IVRw",
+        duration: "08:30",
+        desc: "Continuity, diode, AC/DC current measurement and short-circuit troubleshooting safety rules."
+      }
+    ];
+    const DEFAULT_EXAM_SCHEDULE = [
+      { subject: "Trade Theory (2nd Year CBT)", date: "14 Jul 2027", time: "10:00 AM – 12:00 PM", venue: "NCVT CBT Center" },
+      { subject: "Employability Skills (CBT)", date: "15 Jul 2027", time: "10:00 AM – 11:00 AM", venue: "NCVT CBT Center" },
+      { subject: "Trade Practical (2nd Year)", date: "20 Jul 2027", time: "09:30 AM – 05:00 PM", venue: "Main Electrical Workshop" }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE & HELPERS
+    // =========================================================================
+    let appState = {
+      trainees: JSON.parse(JSON.stringify(DEFAULT_TRAINEES)),
+      notices: JSON.parse(JSON.stringify(DEFAULT_NOTICES)),
+      videos: JSON.parse(JSON.stringify(DEFAULT_VIDEOS)),
+      examSchedule: JSON.parse(JSON.stringify(DEFAULT_EXAM_SCHEDULE)),
+      attendance: {},
+      holidays: {
+        "2026-11-15": { title: "Sunday Weekly Off", info: "Regular Sunday institute holiday." },
+        "2026-12-25": { title: "Christmas Holiday", info: "Institute closed on account of Christmas." }
+      },
+      workingOverrides: {},
+      settings: {
+        adminPin: DEFAULT_ADMIN_PIN,
+        adminEmail: ""
+      }
+    };
+
+    let isAdminUnlocked = false;
+    let selectedDateStr = "";
+    let calendarViewDate = new Date();
+    let activeReportTraineeId = null;
+    let activeReportPeriod = "ALL";
+    let fbUnsubscribe = null;
+
+    function getTodayISO() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    }
+
+    function parseISO(iso) {
+      const [y, m, d] = (iso || getTodayISO()).split("-").map(Number);
+      return new Date(y, (m || 1) - 1, d || 1);
+    }
+
+    function formatDisplayDate(iso) {
+      const dt = parseISO(iso);
+      return dt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    }
+
+    function escapeHTML(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function extractYouTubeId(input) {
+      const raw = String(input || "").trim();
+      if (!raw) return "M7lc1UVf-VE";
+      const match = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (match && match[1]) return match[1];
+      if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+      return "M7lc1UVf-VE";
+    }
+
+    function isWeeklyOff(iso) {
+      const day = parseISO(iso).getDay();
+      return day === 0 || day === 6; // Sunday (0) & Saturday (6)
+    }
+
+    function isHolidayDate(iso) {
+      if (appState.workingOverrides && appState.workingOverrides[iso]) return false;
+      return isWeeklyOff(iso) || Boolean(appState.holidays[iso]);
+    }
+
+    function getHolidayEntry(iso) {
+      if (appState.workingOverrides && appState.workingOverrides[iso]) return null;
+      const custom = appState.holidays[iso];
+      if (custom) {
+        if (typeof custom === "string") return { title: custom, info: "" };
+        return { title: custom.title || "Institute Holiday", info: custom.info || "" };
+      }
+      const day = parseISO(iso).getDay();
+      if (day === 0) return { title: "Sunday Weekly Off", info: "Institute closed on Sunday." };
+      if (day === 6) return { title: "Saturday Weekly Off", info: "Institute closed on Saturday." };
+      return null;
+    }
+
+    function getHolidayLabel(iso) {
+      const entry = getHolidayEntry(iso);
+      return entry ? entry.title : "";
+    }
+
+    function showToast(msg, type = "info") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const el = document.createElement("div");
+      const badgeCls =
+        type === "success"
+          ? "bg-emerald-950/95 border-emerald-500/50 text-emerald-200"
+          : type === "error"
+          ? "bg-rose-950/95 border-rose-500/50 text-rose-200"
+          : "bg-slate-900/95 border-amber-500/50 text-amber-200";
+      el.className = `px-3.5 py-2 rounded-xl border text-xs font-semibold shadow-xl text-center animate-panel ${badgeCls}`;
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transition = "opacity 0.25s ease";
+        setTimeout(() => el.remove(), 260);
+      }, 2400);
+    }
+
+    function updateSyncIndicator(isOnline, label) {
+      const btn = document.getElementById("btn-sync-indicator");
+      const icon = document.getElementById("icon-sync-cloud");
+      const dot = document.getElementById("dot-sync-status");
+      if (btn) btn.title = label;
+      if (icon) {
+        icon.setAttribute("data-lucide", isOnline ? "cloud" : "cloud-off");
+        icon.className = isOnline
+          ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400"
+          : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400";
+      }
+      if (dot) {
+        dot.className = `absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${
+          isOnline ? "bg-emerald-400" : "bg-amber-400"
+        } ring-2 ring-[#0c1322]`;
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function seedInitialAttendance() {
+      const base = parseISO(getTodayISO());
+      let seededDays = 0;
+      let cursor = new Date(base);
+      while (seededDays < 14) {
+        cursor.setDate(cursor.getDate() - 1);
+        const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+        if (isHolidayDate(iso)) continue;
+        appState.attendance[iso] = {};
+        appState.trainees.forEach((tr, idx) => {
+          const isIrregular = (idx === 5 || idx === 7 || idx === 14) && seededDays % 2 === 0;
+          appState.attendance[iso][tr.id] = isIrregular ? "A" : "P";
+        });
+        seededDays++;
+      }
+    }
+
+    function loadLocalState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = {
+            ...appState,
+            ...parsed,
+            settings: { ...appState.settings, ...(parsed.settings || {}) }
+          };
+        }
+      } catch (e) {}
+
+      if (!Object.keys(appState.attendance || {}).length) {
+        seedInitialAttendance();
+      }
+      selectedDateStr = getTodayISO();
+      calendarViewDate = parseISO(selectedDateStr);
+    }
+
+    function saveLocalState(pushCloud = false) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {}
+      if (pushCloud && window.pushStateToFirebase) {
+        window.pushStateToFirebase();
+      }
+    }
+
+    function openHolidayEditorModal() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      const lbl = document.getElementById("holiday-editor-date-label");
+      const typeSel = document.getElementById("holiday-editor-type");
+      const titleInp = document.getElementById("holiday-editor-title");
+      const infoInp = document.getElementById("holiday-editor-info");
+      if (lbl) lbl.textContent = `Date: ${formatDisplayDate(selectedDateStr)}`;
+
+      const holEntry = getHolidayEntry(selectedDateStr);
+      const overrideObj = appState.workingOverrides && appState.workingOverrides[selectedDateStr];
+      if (holEntry) {
+        typeSel.value = "holiday";
+        titleInp.value = holEntry.title || "";
+        infoInp.value = holEntry.info || "";
+      } else {
+        typeSel.value = "working";
+        titleInp.value = (overrideObj && overrideObj.title) || "";
+        infoInp.value = (overrideObj && overrideObj.info) || "";
+      }
+      openModal("modal-holiday-editor");
+    }
+
+    function handleSaveHolidayEditor(e) {
+      e.preventDefault();
+      if (!isAdminUnlocked) return;
+      if (!appState.workingOverrides) appState.workingOverrides = {};
+
+      const type = document.getElementById("holiday-editor-type").value;
+      const title = document.getElementById("holiday-editor-title").value.trim();
+      const info = document.getElementById("holiday-editor-info").value.trim();
+
+      if (type === "holiday") {
+        delete appState.workingOverrides[selectedDateStr];
+        const fallbackTitle =
+          parseISO(selectedDateStr).getDay() === 0
+            ? "Sunday Weekly Off"
+            : parseISO(selectedDateStr).getDay() === 6
+            ? "Saturday Weekly Off"
+            : "Institute Holiday";
+        appState.holidays[selectedDateStr] = {
+          title: title || fallbackTitle,
+          info
+        };
+        delete appState.attendance[selectedDateStr];
+        showToast("Holiday & info saved", "success");
+      } else {
+        delete appState.holidays[selectedDateStr];
+        if (isWeeklyOff(selectedDateStr) || title || info) {
+          appState.workingOverrides[selectedDateStr] = {
+            title: title || "Working Day",
+            info
+          };
+        } else {
+          delete appState.workingOverrides[selectedDateStr];
+        }
+        showToast("Set as Working Day", "success");
+      }
+
+      saveLocalState(true);
+      closeModal("modal-holiday-editor");
+      renderAllViews();
+    }
+
+    function markAllPresent() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      if (isHolidayDate(selectedDateStr)) {
+        showToast("Convert day to Working Day first via Edit Holiday", "error");
+        return;
+      }
+      appState.attendance[selectedDateStr] = {};
+      appState.trainees.forEach((tr) => {
+        appState.attendance[selectedDateStr][tr.id] = "P";
+      });
+      saveLocalState(true);
+      renderDailyRollCall();
+      renderEligibilityChart();
+      showToast("All trainees marked Present", "success");
+    }
+
+    function markAllAbsent() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      if (isHolidayDate(selectedDateStr)) {
+        showToast("Convert day to Working Day first via Edit Holiday", "error");
+        return;
+      }
+      appState.attendance[selectedDateStr] = {};
+      appState.trainees.forEach((tr) => {
+        appState.attendance[selectedDateStr][tr.id] = "A";
+      });
+      saveLocalState(true);
+      renderDailyRollCall();
+      renderEligibilityChart();
+      showToast("All trainees marked Absent", "info");
+    }
+
+    function clearDayAttendance() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      delete appState.attendance[selectedDateStr];
+      saveLocalState(true);
+      renderDailyRollCall();
+      renderEligibilityChart();
+      showToast("Cleared attendance record for " + formatDisplayDate(selectedDateStr), "info");
+    }
+
+    function computePartialAttendanceMap(rule) {
+      const priorDates = Object.keys(appState.attendance)
+        .filter((iso) => iso < selectedDateStr && !isHolidayDate(iso))
+        .sort();
+      const map = {};
+
+      appState.trainees.forEach((tr) => {
+        if (rule === "80") {
+          const st = calculateTraineeStats(tr.id, "ALL");
+          map[tr.id] = st.pct >= 80 ? "P" : "A";
+        } else {
+          const streakNeeded = Number(rule) || 2;
+          const recent = priorDates.slice(-streakNeeded);
+          if (!recent.length) {
+            map[tr.id] = "P";
+          } else {
+            const cameAllRecent = recent.every((d) => {
+              const val = appState.attendance[d] && appState.attendance[d][tr.id];
+              return val === "P";
+            });
+            map[tr.id] = cameAllRecent ? "P" : "A";
+          }
+        }
+      });
+      return map;
+    }
+
+    function openPartialAttendanceModal() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      if (isHolidayDate(selectedDateStr)) {
+        showToast("Convert day to Working Day first via Edit Holiday", "error");
+        return;
+      }
+      previewPartialAttendance();
+      openModal("modal-partial-attendance");
+    }
+
+    function previewPartialAttendance() {
+      const rule = document.getElementById("partial-streak-rule")?.value || "2";
+      const map = computePartialAttendanceMap(rule);
+      let pCount = 0;
+      let aCount = 0;
+      Object.values(map).forEach((v) => (v === "P" ? pCount++ : aCount++));
+      const box = document.getElementById("partial-preview-summary");
+      if (box) {
+        box.innerHTML = `Preview for <strong class="text-white">${formatDisplayDate(selectedDateStr)}</strong>: <span class="text-emerald-400 font-bold">${pCount} Regular Trainees → Present</span> • <span class="text-rose-400 font-bold">${aCount} Irregular Trainees → Absent</span>`;
+      }
+    }
+
+    function applyPartialAttendance() {
+      if (!isAdminUnlocked || isHolidayDate(selectedDateStr)) return;
+      const rule = document.getElementById("partial-streak-rule")?.value || "2";
+      appState.attendance[selectedDateStr] = computePartialAttendanceMap(rule);
+      saveLocalState(true);
+      closeModal("modal-partial-attendance");
+      renderDailyRollCall();
+      renderEligibilityChart();
+      showToast("Partial Present/Absent applied", "success");
+    }
+
+    function setTraineeAttendance(traineeId, status) {
+      if (!isAdminUnlocked) {
+        showToast("Unlock Admin Key (2508) to mark attendance", "info");
+        return;
+      }
+      if (isHolidayDate(selectedDateStr)) {
+        showToast("Selected date is a holiday", "error");
+        return;
+      }
+      if (!appState.attendance[selectedDateStr]) {
+        appState.attendance[selectedDateStr] = {};
+      }
+      if (status === "CLEAR") {
+        delete appState.attendance[selectedDateStr][traineeId];
+        if (!Object.keys(appState.attendance[selectedDateStr]).length) {
+          delete appState.attendance[selectedDateStr];
+        }
+      } else {
+        appState.attendance[selectedDateStr][traineeId] = status;
+      }
+      saveLocalState(true);
+      renderDailyRollCall();
+      renderEligibilityChart();
+    }
+
+    function toggleTraineeAttendance(traineeId) {
+      const cur = appState.attendance[selectedDateStr] && appState.attendance[selectedDateStr][traineeId];
+      setTraineeAttendance(traineeId, cur === "P" ? "A" : "P");
+    }
+
+    function renderDailyRollCall() {
+      const list = document.getElementById("daily-rollcall-list");
+      const statusText = document.getElementById("daily-status-text");
+      const noteEl = document.getElementById("daily-holiday-note");
+      const pill = document.getElementById("rollcall-summary-pill");
+      const lockHint = document.getElementById("rollcall-lock-hint");
+      if (!list) return;
+
+      if (lockHint) {
+        lockHint.innerHTML = isAdminUnlocked
+          ? `<i data-lucide="unlock" class="w-3 h-3 text-emerald-400"></i><span class="text-emerald-400 font-semibold">P / A / Clear Enabled</span>`
+          : `<i data-lucide="lock" class="w-3 h-3 text-amber-400"></i><span>View Only</span>`;
+      }
+
+      const holEntry = getHolidayEntry(selectedDateStr);
+      if (holEntry) {
+        if (statusText) {
+          statusText.innerHTML = `<i data-lucide="calendar-off" class="w-3.5 h-3.5 text-rose-400"></i><span class="text-rose-300 font-bold">${escapeHTML(holEntry.title)}</span>`;
+        }
+        if (noteEl) {
+          if (holEntry.info) {
+            noteEl.textContent = holEntry.info;
+            noteEl.classList.remove("hidden");
+          } else {
+            noteEl.classList.add("hidden");
+          }
+        }
+        if (pill) pill.textContent = "Holiday";
+        list.innerHTML = `<div class="p-4 rounded-xl bg-rose-950/30 border border-rose-500/30 text-center space-y-1">
+          <div class="text-xs text-rose-300 font-semibold">Institute Closed (${escapeHTML(holEntry.title)}).</div>
+          ${holEntry.info ? `<div class="text-[11px] text-slate-300">${escapeHTML(holEntry.info)}</div>` : ""}
+        </div>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      const overrideObj = appState.workingOverrides && appState.workingOverrides[selectedDateStr];
+      if (noteEl) {
+        if (overrideObj && overrideObj.info) {
+          noteEl.textContent = `${overrideObj.title || "Special Working Day"}: ${overrideObj.info}`;
+          noteEl.classList.remove("hidden");
+        } else {
+          noteEl.classList.add("hidden");
+        }
+      }
+
+      const hasSavedRecord = Boolean(appState.attendance[selectedDateStr]);
+      const dayRecord = appState.attendance[selectedDateStr] || {};
+      let presentCount = 0;
+      let absentCount = 0;
+      let unmarkedCount = 0;
+
+      list.innerHTML = appState.trainees
+        .map((tr) => {
+          const st = dayRecord[tr.id] || "";
+          if (st === "P") presentCount++;
+          else if (st === "A") absentCount++;
+          else unmarkedCount++;
+
+          const isP = st === "P";
+          const isA = st === "A";
+          const badgeCls = isP
+            ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300"
+            : isA
+            ? "bg-rose-500/15 border-rose-500/40 text-rose-300"
+            : "bg-slate-800 border-slate-700 text-slate-400";
+          const badgeLabel = isP ? "Present" : isA ? "Absent" : "Unmarked";
+
+          const adminControls = `
+            <div class="grid grid-cols-3 sm:flex items-center gap-1.5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/70 shrink-0">
+              <button type="button" onclick="setTraineeAttendance('${tr.id}', 'P')"
+                class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-extrabold border text-center transition btn-tap ${
+                  isP
+                    ? "bg-emerald-500 border-emerald-400 text-slate-950 shadow-sm"
+                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                }">
+                Present
+              </button>
+              <button type="button" onclick="setTraineeAttendance('${tr.id}', 'A')"
+                class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-extrabold border text-center transition btn-tap ${
+                  isA
+                    ? "bg-rose-500 border-rose-400 text-white shadow-sm"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-300 hover:bg-rose-500/20"
+                }">
+                Absent
+              </button>
+              <button type="button" onclick="setTraineeAttendance('${tr.id}', 'CLEAR')"
+                class="px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-bold border text-center transition btn-tap ${
+                  !isP && !isA
+                    ? "bg-slate-700 border-slate-600 text-white"
+                    : "bg-slate-900 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800"
+                }">
+                Clear
+              </button>
+            </div>
+          `;
+
+          const studentBadge = `
+            <span class="px-3 py-1 rounded-xl text-xs font-extrabold border shrink-0 self-end sm:self-center ${badgeCls}">
+              ${badgeLabel}
+            </span>
+          `;
+
+          return `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-xl bg-slate-950 border border-slate-800/90">
+              <div onclick="openTraineeReport('${tr.id}')" class="flex items-center gap-2.5 w-full sm:w-auto min-w-0 flex-1 cursor-pointer">
+                <span class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 font-mono text-xs font-bold text-amber-400 shrink-0">
+                  R.${escapeHTML(tr.rno || "--")}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <div class="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 leading-snug">
+                    <span class="truncate">${escapeHTML(tr.name)}</span>
+                    ${tr.star ? '<span class="text-amber-400 shrink-0">★</span>' : ""}
+                  </div>
+                  <div class="text-[11px] font-mono text-slate-400 mt-0.5">${escapeHTML(tr.roll)}</div>
+                </div>
+              </div>
+
+              ${isAdminUnlocked ? adminControls : studentBadge}
+            </div>
+          `;
+        })
+        .join("");
+
+      if (statusText) {
+        const dayTitle = overrideObj?.title ? `${overrideObj.title} • ` : "Working Day • ";
+        statusText.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400"></i><span>${escapeHTML(dayTitle)}${formatDisplayDate(selectedDateStr)}</span>`;
+      }
+      if (pill) {
+        pill.textContent =
+          hasSavedRecord && (presentCount > 0 || absentCount > 0)
+            ? `${presentCount} P / ${absentCount} A`
+            : `Cleared (${unmarkedCount} Unmarked)`;
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    window.initFirebaseCloud = function () {
+      const sdk = window.__FB_SDK__;
+      const rawCfg = localStorage.getItem(FB_CONFIG_KEY);
+      if (!sdk || !rawCfg) {
+        updateSyncIndicator(false, "Offline Mode (Local Storage)");
+        return;
+      }
+      try {
+        const cfg = JSON.parse(rawCfg);
+        const app = sdk.getApps().length ? sdk.getApps()[0] : sdk.initializeApp(cfg);
+        const db = sdk.getFirestore(app);
+        const portalRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27");
+
+        if (fbUnsubscribe) fbUnsubscribe();
+        fbUnsubscribe = sdk.onSnapshot(
+          portalRef,
+          (snap) => {
+            if (snap.exists()) {
+              const cloudData = snap.data();
+              if (Array.isArray(cloudData.trainees)) {
+                appState = {
+                  ...appState,
+                  ...cloudData,
+                  settings: { ...appState.settings, ...(cloudData.settings || {}) }
+                };
+                saveLocalState(false);
+                renderAllViews();
+              }
+            }
+            updateSyncIndicator(true, "Cloud Synced");
+          },
+          () => updateSyncIndicator(false, "Offline Mode (Sync Paused)")
+        );
+
+        window.pushStateToFirebase = async function () {
+          try {
+            await sdk.setDoc(portalRef, appState, { merge: true });
+          } catch (e) {}
+        };
+      } catch (e) {
+        updateSyncIndicator(false, "Offline Mode");
+      }
+    };
+
+    function manualCloudSync() {
+      if (window.pushStateToFirebase) {
+        window.pushStateToFirebase();
+        showToast("Synced with Cloud", "success");
+      } else {
+        showToast("Saved locally • Add Firebase in Admin for Cloud Sync", "info");
+      }
+    }
+
+    // =========================================================================
+    // 4. THEME MODE (BRIGHT DEFAULT / DARK TOGGLE)
+    // =========================================================================
+    function applyThemeMode(mode) {
+      const isBright = mode !== "dark";
+      document.documentElement.classList.toggle("bright-mode", isBright);
+      const btn = document.getElementById("btn-theme-toggle");
+      const icon = document.getElementById("icon-theme-toggle");
+      if (btn) btn.title = isBright ? "Switch to Dark Mode" : "Switch to Bright Mode";
+      if (icon) {
+        icon.setAttribute("data-lucide", isBright ? "moon" : "sun");
+        icon.className = isBright ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700" : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400";
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleThemeMode() {
+      const next = document.documentElement.classList.contains("bright-mode") ? "dark" : "bright";
+      localStorage.setItem(THEME_MODE_KEY, next);
+      applyThemeMode(next);
+    }
+
+    // =========================================================================
+    // 5. LIVE CLOCK, HEADER DATE & AUTO-HIDE ON SCROLL
+    // =========================================================================
+    function updateLiveClock() {
+      const clockEl = document.getElementById("header-live-clock");
+      if (!clockEl) return;
+      const now = new Date();
+      clockEl.textContent = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      });
+    }
+
+    function updateHeaderDateBadge() {
+      const dateEl = document.getElementById("header-date-label");
+      const holPill = document.getElementById("header-holiday-pill");
+      const targetISO = selectedDateStr || getTodayISO();
+      if (dateEl) {
+        const dt = parseISO(targetISO);
+        dateEl.textContent = dt.toLocaleDateString("en-GB", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+      }
+      if (holPill) {
+        const label = getHolidayLabel(targetISO);
+        if (label) {
+          holPill.textContent = label;
+          holPill.classList.remove("hidden");
+        } else {
+          holPill.classList.add("hidden");
+        }
+      }
+    }
+
+    function setupAutoHideHeader() {
+      const header = document.getElementById("main-header");
+      if (!header) return;
+      let lastY = window.scrollY;
+      window.addEventListener(
+        "scroll",
+        () => {
+          const curY = window.scrollY;
+          if (curY > 90 && curY > lastY + 8) {
+            header.classList.add("header-hidden");
+          } else if (curY < lastY - 6 || curY <= 40) {
+            header.classList.remove("header-hidden");
+          }
+          lastY = curY;
+        },
+        { passive: true }
+      );
+    }
+
+    // =========================================================================
+    // 6. BOTTOM ONE-THUMB TAB SWITCHING & ACCORDIONS
+    // =========================================================================
+    function switchTab(tabName) {
+      document.querySelectorAll(".tab-view").forEach((sec) => {
+        if (sec.id === `view-${tabName}`) {
+          sec.classList.remove("hidden");
+          sec.classList.remove("animate-panel");
+          void sec.offsetWidth;
+          sec.classList.add("animate-panel");
+        } else {
+          sec.classList.add("hidden");
+        }
+      });
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        const active = btn.id === `tab-btn-${tabName}`;
+        btn.className = active
+          ? "tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 transition btn-tap"
+          : "tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap";
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleAccordion(key) {
+      const body = document.getElementById(`body-${key}`);
+      const chev = document.getElementById(`chevron-${key}`);
+      if (!body) return;
+      const isOpen = body.classList.toggle("accordion-open");
+      if (chev) chev.classList.toggle("rotate-180", isOpen);
+    }
+
+    function toggleResultAccordion(key) {
+      toggleAccordion(`res-${key}`);
+    }
+
+    // =========================================================================
+    // 7. GLOBAL INSTANT TRAINEE SEARCH
+    // =========================================================================
+    function handleTraineeSearch(query) {
+      const box = document.getElementById("trainee-search-results");
+      const clearBtn = document.getElementById("btn-clear-trainee-search");
+      const q = String(query || "").trim().toLowerCase();
+
+      if (clearBtn) clearBtn.classList.toggle("hidden", !q);
+      if (!box) return;
+      if (!q) {
+        box.classList.add("hidden");
+        box.innerHTML = "";
+        return;
+      }
+
+      const matches = appState.trainees.filter(
+        (tr) =>
+          tr.name.toLowerCase().includes(q) ||
+          String(tr.rno || "").toLowerCase().includes(q) ||
+          String(tr.roll || "").toLowerCase().includes(q)
+      );
+
+      if (!matches.length) {
+        box.innerHTML = `<div class="px-3.5 py-3 text-xs text-slate-400">No trainee found matching "${escapeHTML(query)}"</div>`;
+        box.classList.remove("hidden");
+        return;
+      }
+
+      box.innerHTML = matches
+        .map((tr) => {
+          const st = calculateTraineeStats(tr.id, "ALL");
+          const total1200 = Number(tr.year1 || 0) + Number(tr.year2 || 0);
+          return `
+            <div class="w-full px-3.5 py-2.5 hover:bg-slate-900/90 flex items-center justify-between gap-2 transition">
+              <button type="button" onclick="selectSearchedTrainee('${tr.id}')" class="min-w-0 flex-1 text-left">
+                <div class="text-xs font-bold text-white flex items-center gap-1.5 truncate">
+                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 font-mono text-[10px] text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                  <span class="truncate">${escapeHTML(tr.name)}</span>
+                  ${tr.star ? '<span class="text-amber-400">★</span>' : ""}
+                </div>
+                <div class="text-[10px] font-mono text-slate-400 mt-0.5">ID: ${escapeHTML(tr.roll)}</div>
+              </button>
+              <div class="flex items-center gap-2 shrink-0">
+                <div class="text-right">
+                  <div class="text-[11px] font-extrabold ${st.pct >= 80 ? "text-emerald-400" : "text-rose-400"}">${st.pct}% Att.</div>
+                  <div class="text-[10px] text-slate-400">${total1200}/1200</div>
+                </div>
+                ${
+                  isAdminUnlocked
+                    ? `<button type="button" onclick="openAdminDirectEdit('${tr.id}')" title="Directly Update Student Data"
+                        class="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] flex items-center gap-1 transition btn-tap">
+                        <i data-lucide="pencil" class="w-3 h-3"></i>
+                        <span>Update</span>
+                      </button>`
+                    : ""
+                }
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      box.classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectSearchedTrainee(traineeId) {
+      clearTraineeSearch();
+      openTraineeReport(traineeId);
+    }
+
+    function clearTraineeSearch() {
+      const inp = document.getElementById("global-trainee-search-input");
+      const box = document.getElementById("trainee-search-results");
+      const clearBtn = document.getElementById("btn-clear-trainee-search");
+      if (inp) inp.value = "";
+      if (box) {
+        box.classList.add("hidden");
+        box.innerHTML = "";
+      }
+      if (clearBtn) clearBtn.classList.add("hidden");
+    }
+
+    function renderNotices() {
+      const container = document.getElementById("notices-list-container");
+      if (!container) return;
+      if (!appState.notices.length) {
+        container.innerHTML = `<div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No notices posted yet.</div>`;
+        return;
+      }
+      container.innerHTML = appState.notices
+        .map(
+          (n) => `
+          <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 space-y-1.5">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="text-xs sm:text-sm font-bold text-white leading-snug">${escapeHTML(n.title)}</h3>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
+                  ${escapeHTML(formatDisplayDate(n.date))}
+                </span>
+                ${
+                  isAdminUnlocked
+                    ? `<button type="button" onclick="deleteNotice('${n.id}')" title="Delete Notice"
+                        class="p-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                      </button>`
+                    : ""
+                }
+              </div>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">${escapeHTML(n.body)}</p>
+          </article>
+        `
+        )
+        .join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderVideoCards(containerId, targetPrefix, limit = null) {
+      const grid = document.getElementById(containerId);
+      if (!grid) return;
+
+      const items = limit ? appState.videos.slice(0, limit) : appState.videos;
+      if (!items.length) {
+        grid.innerHTML = `<div class="col-span-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No trade videos added yet.</div>`;
+        return;
+      }
+
+      grid.innerHTML = items
+        .map((v) => {
+          const cleanId = extractYouTubeId(v.ytId);
+          const thumbUrl = `https://i.ytimg.com/vi/${cleanId}/hqdefault.jpg`;
+          const safeTitle = escapeHTML(v.title);
+          const safeTitleArg = String(v.title || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+          return `
+            <article class="group rounded-2xl bg-slate-950 border border-slate-800/90 hover:border-amber-500/50 overflow-hidden flex flex-col justify-between transition">
+              <div onclick="playInlineVideo('${targetPrefix}', '${cleanId}', '${safeTitleArg}')" class="cursor-pointer">
+                <div class="relative aspect-video bg-slate-900 overflow-hidden flex items-center justify-center">
+                  <!-- Custom Electrical Schematic Fallback Layer -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-amber-950/40 flex flex-col items-center justify-center p-3 text-center">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-1.5">
+                      <i data-lucide="zap" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Electrician Lab Demo</span>
+                  </div>
+
+                  <img src="${thumbUrl}" alt="${safeTitle}" loading="lazy"
+                    onload="if(this.naturalWidth<=120){this.style.display='none';}"
+                    onerror="this.style.display='none';"
+                    class="relative z-10 w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+
+                  <div class="absolute inset-0 z-20 bg-black/25 group-hover:bg-black/10 flex items-center justify-center transition">
+                    <div class="w-10 h-10 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg shadow-black/50 group-hover:scale-110 transition">
+                      <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i>
+                    </div>
+                  </div>
+
+                  ${
+                    v.duration
+                      ? `<span class="absolute bottom-2 right-2 z-20 px-1.5 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono font-bold">${escapeHTML(v.duration)}</span>`
+                      : ""
+                  }
+                </div>
+
+                <div class="p-3 space-y-1">
+                  <h3 class="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-amber-400 transition">${safeTitle}</h3>
+                  ${v.desc ? `<p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${escapeHTML(v.desc)}</p>` : ""}
+                </div>
+              </div>
+
+              ${
+                isAdminUnlocked
+                  ? `<div class="px-3 pb-2.5 pt-1 flex justify-end border-t border-slate-800/70">
+                      <button type="button" onclick="deleteVideo('${v.id}')"
+                        class="px-2 py-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 text-[10px] font-bold flex items-center gap-1">
+                        <i data-lucide="trash-2" class="w-3 h-3"></i>
+                        <span>Remove</span>
+                      </button>
+                    </div>`
+                  : ""
+              }
+            </article>
+          `;
+        })
+        .join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function playInlineVideo(targetPrefix, ytId, title) {
+      const wrap = document.getElementById(`${targetPrefix}-inline-player-wrap`);
+      const iframe = document.getElementById(`${targetPrefix}-player-iframe`);
+      const titleEl = document.getElementById(`${targetPrefix}-player-title`);
+      const extLink = document.getElementById(`${targetPrefix}-player-ext`);
+      const extSubLink = document.getElementById(`${targetPrefix}-player-ext-sub`);
+      if (!wrap || !iframe) return;
+
+      const cleanId = extractYouTubeId(ytId);
+      const watchUrl = `https://www.youtube.com/watch?v=${cleanId}`;
+      if (titleEl) titleEl.textContent = title || "Trade Practical Video";
+      if (extLink) extLink.href = watchUrl;
+      if (extSubLink) extSubLink.href = watchUrl;
+      iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&rel=0&modestbranding=1`;
+      wrap.classList.remove("hidden");
+      wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeInlinePlayer(targetPrefix) {
+      const wrap = document.getElementById(`${targetPrefix}-inline-player-wrap`);
+      const iframe = document.getElementById(`${targetPrefix}-player-iframe`);
+      if (iframe) iframe.src = "";
+      if (wrap) wrap.classList.add("hidden");
+    }
+
+    // =========================================================================
+    // 9. DAILY ATTENDANCE & HOLIDAY CALENDAR
+    // =========================================================================
+    function renderDailySection() {
+      const picker = document.getElementById("daily-date-picker");
+      if (picker) picker.value = selectedDateStr;
+      updateHeaderDateBadge();
+      renderWeeklyStrip();
+      renderHolidayCalendar();
+      renderDailyRollCall();
+    }
+
+    function shiftSelectedDay(delta) {
+      const dt = parseISO(selectedDateStr);
+      dt.setDate(dt.getDate() + delta);
+      selectedDateStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+      calendarViewDate = parseISO(selectedDateStr);
+      renderDailySection();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function onDatePickerChange(val) {
+      if (!val) return;
+      selectedDateStr = val;
+      calendarViewDate = parseISO(val);
+      renderDailySection();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectToday() {
+      selectedDateStr = getTodayISO();
+      calendarViewDate = parseISO(selectedDateStr);
+      renderDailySection();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function selectCalendarDate(iso) {
+      selectedDateStr = iso;
+      calendarViewDate = parseISO(iso);
+      renderDailySection();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderWeeklyStrip() {
+      const strip = document.getElementById("weekly-strip");
+      if (!strip) return;
+      const base = parseISO(selectedDateStr);
+      const dayIdx = (base.getDay() + 6) % 7; // Mon=0 ... Sun=6
+      const monday = new Date(base);
+      monday.setDate(base.getDate() - dayIdx);
+
+      const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+      let html = "";
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const isSelected = iso === selectedDateStr;
+        const isHol = isHolidayDate(iso);
+
+        let cls = "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700";
+        if (isSelected) {
+          cls = "bg-amber-500 border-amber-400 text-slate-950 shadow-md shadow-amber-500/20";
+        } else if (isHol) {
+          cls = "bg-rose-950/30 border-rose-500/30 text-rose-300";
+        }
+
+        html += `
+          <button type="button" onclick="selectCalendarDate('${iso}')"
+            class="py-1.5 px-1 rounded-xl border flex flex-col items-center justify-center transition btn-tap ${cls}">
+            <span class="text-[9px] font-bold opacity-80">${days[i]}</span>
+            <span class="text-xs font-extrabold mt-0.5">${String(d.getDate()).padStart(2, "0")}</span>
+          </button>
+        `;
+      }
+      strip.innerHTML = html;
+    }
+
+    function toggleCalendarDrawer() {
+      const card = document.getElementById("holiday-calendar-card");
+      if (!card) return;
+      card.classList.toggle("hidden");
+      renderHolidayCalendar();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function shiftCalendarMonth(delta) {
+      calendarViewDate.setMonth(calendarViewDate.getMonth() + delta);
+      renderHolidayCalendar();
+    }
+
+    function renderHolidayCalendar() {
+      const grid = document.getElementById("holiday-calendar-grid");
+      const title = document.getElementById("calendar-month-title");
+      if (!grid || !title) return;
+
+      const year = calendarViewDate.getFullYear();
+      const month = calendarViewDate.getMonth();
+      title.textContent = calendarViewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+      const firstDay = new Date(year, month, 1);
+      const startPad = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      let cells = "";
+      for (let i = 0; i < startPad; i++) {
+        cells += `<div class="h-8"></div>`;
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const isSel = iso === selectedDateStr;
+        const isHol = isHolidayDate(iso);
+        const hasAtt = Boolean(appState.attendance[iso]);
+
+        let cls = "bg-slate-950 border-slate-800/80 text-slate-300 hover:border-slate-700";
+        if (isSel) {
+          cls = "bg-amber-500 border-amber-400 text-slate-950 font-extrabold";
+        } else if (isHol) {
+          cls = "bg-rose-950/40 border-rose-500/40 text-rose-300 font-bold";
+        } else if (hasAtt) {
+          cls = "bg-emerald-950/30 border-emerald-500/30 text-emerald-300 font-semibold";
+        }
+
+        cells += `
+          <button type="button" onclick="selectCalendarDate('${iso}')"
+            class="h-8 rounded-lg border text-xs flex items-center justify-center transition btn-tap ${cls}">
+            ${d}
+          </button>
+        `;
+      }
+      grid.innerHTML = cells;
+    }
+
+    // =========================================================================
+    // 10. 80% NCVT ELIGIBILITY CHART (ALL / 6M / 9M / 12M + PNG & CSV EXPORT)
+    // =========================================================================
+    let currentChartPeriod = "ALL";
+
+    function setChartPeriod(period) {
+      currentChartPeriod = period || "ALL";
+      const sel = document.getElementById("eligibility-month-filter");
+      if (sel) sel.value = currentChartPeriod;
+
+      document.querySelectorAll(".chart-period-pill").forEach((btn) => {
+        const active = btn.getAttribute("data-period") === currentChartPeriod;
+        btn.className = active
+          ? "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition btn-tap"
+          : "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap";
+      });
+
+      renderEligibilityChart();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function getFilteredAttendanceDates(period) {
+      const allDates = Object.keys(appState.attendance)
+        .filter((iso) => !isHolidayDate(iso))
+        .sort();
+      if (!allDates.length || period === "ALL") return allDates;
+
+      const todayISO = getTodayISO();
+      if (period === "1M") {
+        const currentYM = todayISO.slice(0, 7);
+        return allDates.filter((iso) => iso.startsWith(currentYM));
+      }
+
+      const monthsBack = period === "6M" ? 6 : period === "9M" ? 9 : 12;
+      const nowDt = parseISO(todayISO);
+      const startMonthDt = new Date(nowDt.getFullYear(), nowDt.getMonth() - (monthsBack - 1), 1);
+      const cutoffYM = `${startMonthDt.getFullYear()}-${String(startMonthDt.getMonth() + 1).padStart(2, "0")}`;
+      const currentYM = todayISO.slice(0, 7);
+
+      return allDates.filter((iso) => {
+        const ym = iso.slice(0, 7);
+        return ym >= cutoffYM && ym <= currentYM;
+      });
+    }
+
+    function calculateTraineeStats(traineeId, period = "ALL") {
+      const dates = getFilteredAttendanceDates(period);
+      if (!dates.length) return { presentDays: 0, workingDays: 0, pct: 100 };
+
+      let presentDays = 0;
+      let countedDays = 0;
+      dates.forEach((iso) => {
+        const st = appState.attendance[iso] && appState.attendance[iso][traineeId];
+        if (st === "P" || st === "A") {
+          countedDays++;
+          if (st === "P") presentDays++;
+        }
+      });
+
+      if (!countedDays) return { presentDays: 0, workingDays: 0, pct: 100 };
+      const pct = Math.round((presentDays / countedDays) * 100);
+      return { presentDays, workingDays: countedDays, pct };
+    }
+
+    function renderEligibilityChart() {
+      const cards = document.getElementById("eligibility-summary-cards");
+      const monthlyGrid = document.getElementById("monthly-attendance-count-grid");
+      const list = document.getElementById("eligibility-list");
+      if (!cards || !list) return;
+
+      const dates = getFilteredAttendanceDates(currentChartPeriod);
+      let eligibleCount = 0;
+      let shortageCount = 0;
+
+      const rows = appState.trainees.map((tr) => {
+        const st = calculateTraineeStats(tr.id, currentChartPeriod);
+        if (st.pct >= 80) eligibleCount++;
+        else shortageCount++;
+        return { tr, st };
+      });
+
+      cards.innerHTML = `
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+          <div class="text-sm sm:text-base font-extrabold text-white">${dates.length}</div>
+          <div class="text-[10px] text-slate-400 font-semibold">Working Days</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-center">
+          <div class="text-sm sm:text-base font-extrabold text-emerald-400">${eligibleCount}</div>
+          <div class="text-[10px] text-emerald-300 font-semibold">≥ 80% Eligible</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-rose-950/30 border border-rose-500/30 text-center">
+          <div class="text-sm sm:text-base font-extrabold text-rose-400">${shortageCount}</div>
+          <div class="text-[10px] text-rose-300 font-semibold">Below 80%</div>
+        </div>
+      `;
+
+      if (monthlyGrid) {
+        const monthMap = {};
+        dates.forEach((iso) => {
+          const ym = iso.slice(0, 7);
+          if (!monthMap[ym]) monthMap[ym] = { days: 0, presentMarks: 0, totalMarks: 0 };
+          monthMap[ym].days++;
+          const rec = appState.attendance[iso] || {};
+          appState.trainees.forEach((tr) => {
+            if (rec[tr.id] === "P" || rec[tr.id] === "A") {
+              monthMap[ym].totalMarks++;
+              if (rec[tr.id] === "P") monthMap[ym].presentMarks++;
+            }
+          });
+        });
+
+        const monthKeys = Object.keys(monthMap).sort().reverse();
+        monthlyGrid.innerHTML = monthKeys.length
+          ? monthKeys
+              .map((ym) => {
+                const [y, m] = ym.split("-").map(Number);
+                const label = new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                const info = monthMap[ym];
+                const avgPct = info.totalMarks ? Math.round((info.presentMarks / info.totalMarks) * 100) : 100;
+                return `
+                  <div class="p-2 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-2">
+                    <div>
+                      <div class="text-xs font-bold text-white">${label}</div>
+                      <div class="text-[10px] text-slate-400">${info.days} Working Days</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xs font-extrabold ${avgPct >= 80 ? "text-emerald-400" : "text-rose-400"}">${avgPct}%</div>
+                      <div class="text-[10px] text-slate-400">${info.presentMarks} P</div>
+                    </div>
+                  </div>
+                `;
+              })
+              .join("")
+          : `<div class="col-span-full text-[11px] text-slate-400 text-center py-2">No monthly attendance records yet.</div>`;
+      }
+
+      list.innerHTML = rows
+        .map(({ tr, st }) => {
+          const ok = st.pct >= 80;
+          const barColor = ok ? "bg-emerald-500" : "bg-rose-500";
+          const pctColor = ok ? "text-emerald-400" : "text-rose-400";
+          return `
+            <div onclick="openTraineeReport('${tr.id}')"
+              class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer space-y-1.5 transition">
+              <div class="flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <span class="font-mono text-[11px] font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                  <span class="font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="text-[11px] text-slate-400">${st.presentDays}/${st.workingDays}d</span>
+                  <span class="text-xs font-extrabold ${pctColor}">${st.pct}%</span>
+                </div>
+              </div>
+              <div class="relative w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div class="h-full rounded-full ${barColor}" style="width: ${Math.min(100, st.pct)}%"></div>
+                <div class="absolute top-0 bottom-0 left-[80%] w-0.5 bg-amber-400" title="80% NCVT Threshold"></div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function downloadAttendanceReportCSV() {
+      const lines = ["Roll No,Registration ID,Trainee Name,Period,Present Days,Working Days,Attendance %,NCVT 80% Status"];
+      appState.trainees.forEach((tr) => {
+        const st = calculateTraineeStats(tr.id, currentChartPeriod);
+        lines.push(
+          `"${tr.rno || ""}","${tr.roll}","${tr.name}","${currentChartPeriod}",${st.presentDays},${st.workingDays},${st.pct}%,${
+            st.pct >= 80 ? "Eligible" : "Shortage"
+          }`
+        );
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ITI_Chhotojagulia_80Percent_Chart_${currentChartPeriod}_${getTodayISO()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("80% Attendance CSV downloaded", "success");
+    }
+
+    function downloadAttendanceChartPNG() {
+      const dates = getFilteredAttendanceDates(currentChartPeriod);
+      const rows = appState.trainees.map((tr) => ({ tr, st: calculateTraineeStats(tr.id, currentChartPeriod) }));
+      const rowH = 38;
+      const headerH = 105;
+      const footerH = 44;
+      const width = 820;
+      const height = headerH + rows.length * rowH + footerH;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#0c1322";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = "#f59e0b";
+      ctx.font = "bold 18px Inter, sans-serif";
+      ctx.fillText("GOVT. ITI CHHOTOJAGULIA • ELECTRICIAN TRADE (BATCH 2025–27)", 28, 36);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 15px Inter, sans-serif";
+      const currentMonthName = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const periodTitle =
+        currentChartPeriod === "ALL"
+          ? "All Working Days"
+          : currentChartPeriod === "1M"
+          ? `Current Month (${currentMonthName})`
+          : currentChartPeriod === "6M"
+          ? "6 Months Report"
+          : currentChartPeriod === "9M"
+          ? "9 Months Report"
+          : "12 Months Report";
+      ctx.fillText(`NCVT 80% Attendance Eligibility Chart — ${periodTitle} (${dates.length} Working Days)`, 28, 62);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px Inter, sans-serif";
+      ctx.fillText(`Generated on ${formatDisplayDate(getTodayISO())} • Dashed Amber Line = 80% NCVT Minimum`, 28, 84);
+
+      const barX = 285;
+      const barW = 390;
+
+      rows.forEach(({ tr, st }, idx) => {
+        const y = headerH + idx * rowH;
+        const ok = st.pct >= 80;
+
+        ctx.fillStyle = idx % 2 === 0 ? "#0f172a" : "#111b30";
+        ctx.fillRect(20, y, width - 40, rowH - 4);
+
+        ctx.fillStyle = "#fbbf24";
+        ctx.font = "bold 12px monospace";
+        ctx.fillText(`R.${tr.rno || "--"}`, 32, y + 22);
+
+        ctx.fillStyle = "#f8fafc";
+        ctx.font = "600 13px Inter, sans-serif";
+        ctx.fillText(tr.name, 78, y + 22);
+
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(barX, y + 11, barW, 12);
+
+        ctx.fillStyle = ok ? "#10b981" : "#f43f5e";
+        ctx.fillRect(barX, y + 11, Math.round((Math.min(100, st.pct) / 100) * barW), 12);
+
+        const threshX = barX + Math.round(0.8 * barW);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillRect(threshX, y + 7, 2, 20);
+
+        ctx.fillStyle = ok ? "#34d399" : "#fb7185";
+        ctx.font = "bold 12px Inter, sans-serif";
+        ctx.fillText(`${st.pct}% (${st.presentDays}/${st.workingDays}d)`, barX + barW + 14, y + 22);
+      });
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "11px Inter, sans-serif";
+      ctx.fillText("Trainee-built portal for Batch 2025–27 • NCVT Eligibility Summary", 28, height - 16);
+
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ITI_Chhotojagulia_80Percent_Chart_${currentChartPeriod}_${getTodayISO()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("80% Chart PNG downloaded", "success");
+    }
+
+    // =========================================================================
+    // 11. RESULTS & EXAMS RENDERING + CSV EXPORT
+    // =========================================================================
+    function renderResultsSection() {
+      const y1List = document.getElementById("first-year-results-list");
+      const y12List = document.getElementById("combined-two-year-results-list");
+      const schedList = document.getElementById("exam-schedule-list");
+      const intList = document.getElementById("internal-tests-list");
+
+      if (y1List) {
+        y1List.innerHTML = appState.trainees
+          .map((tr) => {
+            const marks = Number(tr.year1 || 0);
+            const pct = ((marks / 600) * 100).toFixed(1);
+            return `
+              <div onclick="openTraineeReport('${tr.id}')"
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-[11px] font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                    <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-slate-400">${escapeHTML(tr.roll)}</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs font-extrabold text-emerald-400">${marks}/600 (${pct}%)</div>
+                  <div class="text-[10px] font-bold text-emerald-300">PASS</div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (y12List) {
+        y12List.innerHTML = appState.trainees
+          .map((tr) => {
+            const m1 = Number(tr.year1 || 0);
+            const m2 = Number(tr.year2 || 0);
+            const tot = m1 + m2;
+            const pct = ((tot / 1200) * 100).toFixed(1);
+            return `
+              <div onclick="openTraineeReport('${tr.id}')"
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-[11px] font-bold text-amber-400">R.${escapeHTML(tr.rno || "--")}</span>
+                    <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">1st Yr: ${m1}/600 • 2nd Yr: ${m2}/600</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs font-extrabold text-amber-400">${tot}/1200</div>
+                  <div class="text-[10px] font-bold text-emerald-400">${pct}%</div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (schedList) {
+        const scheduleItems = Array.isArray(appState.examSchedule) && appState.examSchedule.length ? appState.examSchedule : DEFAULT_EXAM_SCHEDULE;
+        schedList.innerHTML = scheduleItems.map(
+          (ex) => `
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <div>
+              <div class="text-xs font-bold text-white">${escapeHTML(ex.subject)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHTML(ex.venue)} • ${escapeHTML(ex.time)}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold self-start sm:self-center">
+              ${escapeHTML(ex.date)}
+            </span>
+          </div>
+        `
+        ).join("");
+      }
+
+      if (intList) {
+        intList.innerHTML = appState.trainees
+          .map((tr) => {
+            const sc = Number(tr.internal || 0);
+            return `
+              <div onclick="openTraineeReport('${tr.id}')"
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="font-mono text-[11px] font-bold text-sky-400">R.${escapeHTML(tr.rno || "--")}</span>
+                  <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 text-xs font-extrabold shrink-0">${sc}/100</span>
+              </div>
+            `;
+          })
+          .join("");
+      }
+    }
+
+    function downloadBatchResultsCSV() {
+      const lines = ["Roll No,Registration ID,Trainee Name,1st Year (/600),2nd Year (/600),Combined Total (/1200),Aggregate %,Internal (/100),Status"];
+      appState.trainees.forEach((tr) => {
+        const y1 = Number(tr.year1 || 0);
+        const y2 = Number(tr.year2 || 0);
+        const tot = y1 + y2;
+        const pct = ((tot / 1200) * 100).toFixed(2);
+        lines.push(`"${tr.rno || ""}","${tr.roll}","${tr.name}",${y1},${y2},${tot},${pct}%,${tr.internal || 0},PASS`);
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ITI_Chhotojagulia_Results_2025_27_${getTodayISO()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Batch results CSV downloaded", "success");
+    }
+
+    // =========================================================================
+    // 12. INDIVIDUAL TRAINEE FULL PROFILE MODAL
+    // =========================================================================
+    function openTraineeReport(traineeId) {
+      activeReportTraineeId = traineeId;
+      activeReportPeriod = "ALL";
+      renderTraineeReportModal();
+      openModal("modal-trainee-report");
+    }
+
+    function switchReportPeriod(period) {
+      activeReportPeriod = period;
+      renderTraineeReportModal();
+    }
+
+    function renderTraineeReportModal() {
+      const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
+      if (!tr) return;
+
+      document.getElementById("report-trainee-name").textContent = `R.${tr.rno || "--"} • ${tr.name}`;
+      document.getElementById("report-trainee-roll").textContent = `NCVT Reg ID: ${tr.roll}`;
+
+      const y1 = Number(tr.year1 || 0);
+      const y2 = Number(tr.year2 || 0);
+      const tot = y1 + y2;
+      const acadGrid = document.getElementById("report-academics-grid");
+      if (acadGrid) {
+        acadGrid.innerHTML = `
+          <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs font-extrabold text-emerald-400">${y1}/600</div>
+            <div class="text-[10px] text-slate-400">1st Year</div>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs font-extrabold text-amber-400">${tot}/1200</div>
+            <div class="text-[10px] text-slate-400">2-Yr Total</div>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs font-extrabold text-sky-400">${tr.internal || 0}/100</div>
+            <div class="text-[10px] text-slate-400">Internal</div>
+          </div>
+        `;
+      }
+
+      document.querySelectorAll(".report-period-btn").forEach((btn) => {
+        const act = btn.getAttribute("data-rperiod") === activeReportPeriod;
+        btn.className = act
+          ? "report-period-btn flex-1 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition"
+          : "report-period-btn flex-1 py-1 rounded-lg text-[11px] font-semibold text-slate-300 transition";
+      });
+
+      const st = calculateTraineeStats(tr.id, activeReportPeriod);
+      const statsGrid = document.getElementById("report-stats-grid");
+      if (statsGrid) {
+        statsGrid.innerHTML = `
+          <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs font-extrabold text-white">${st.presentDays}/${st.workingDays}</div>
+            <div class="text-[10px] text-slate-400">Present Days</div>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs font-extrabold ${st.pct >= 80 ? "text-emerald-400" : "text-rose-400"}">${st.pct}%</div>
+            <div class="text-[10px] text-slate-400">Attendance</div>
+          </div>
+          <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="text-xs font-extrabold ${st.pct >= 80 ? "text-emerald-400" : "text-rose-400"}">${st.pct >= 80 ? "Eligible" : "Shortage"}</div>
+            <div class="text-[10px] text-slate-400">NCVT 80%</div>
+          </div>
+        `;
+      }
+
+      const histList = document.getElementById("report-history-list");
+      const dates = getFilteredAttendanceDates(activeReportPeriod).slice().reverse();
+      if (histList) {
+        histList.innerHTML = dates.length
+          ? dates
+              .map((iso) => {
+                const status = (appState.attendance[iso] && appState.attendance[iso][tr.id]) || "";
+                const isP = status === "P";
+                const isA = status === "A";
+                const label = isP ? "Present" : isA ? "Absent" : "Unmarked";
+                const cls = isP ? "text-emerald-400" : isA ? "text-rose-400" : "text-slate-400";
+                const quickBtns = isAdminUnlocked
+                  ? `<div class="flex items-center gap-1">
+                      <button type="button" onclick="updateReportDayAttendance('${tr.id}', '${iso}', 'P')" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isP ? "bg-emerald-500 text-slate-950" : "bg-emerald-500/15 text-emerald-300"}">P</button>
+                      <button type="button" onclick="updateReportDayAttendance('${tr.id}', '${iso}', 'A')" class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isA ? "bg-rose-500 text-white" : "bg-rose-500/15 text-rose-300"}">A</button>
+                      <button type="button" onclick="updateReportDayAttendance('${tr.id}', '${iso}', 'CLEAR')" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">Clear</button>
+                    </div>`
+                  : `<span class="font-bold ${cls}">${label}</span>`;
+                return `
+                  <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800/80 text-xs">
+                    <span class="text-slate-300">${escapeHTML(formatDisplayDate(iso))}</span>
+                    ${quickBtns}
+                  </div>
+                `;
+              })
+              .join("")
+          : `<div class="text-xs text-slate-400 text-center py-3">No attendance logs in this period.</div>`;
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function downloadSingleTraineeReportCSV() {
+      const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
+      if (!tr) return;
+      const st = calculateTraineeStats(tr.id, activeReportPeriod);
+      const y1 = Number(tr.year1 || 0);
+      const y2 = Number(tr.year2 || 0);
+      const tot = y1 + y2;
+      const dates = getFilteredAttendanceDates(activeReportPeriod);
+
+      const lines = [
+        "Govt. ITI Chhotojagulia - Electrician Trade (Batch 2025-27)",
+        `Trainee Name,${tr.name}`,
+        `Roll No,${tr.rno || ""}`,
+        `NCVT Registration ID,${tr.roll}`,
+        `1st Year Marks (/600),${y1}`,
+        `2nd Year Marks (/600),${y2}`,
+        `Consolidated Total (/1200),${tot}`,
+        `Internal Assessment (/100),${tr.internal || 0}`,
+        `Attendance Period,${activeReportPeriod}`,
+        `Present Days,${st.presentDays}`,
+        `Working Days,${st.workingDays}`,
+        `Attendance Percentage,${st.pct}%`,
+        `NCVT 80% Eligibility,${st.pct >= 80 ? "Eligible" : "Shortage"}`,
+        "",
+        "Date,Status"
+      ];
+
+      dates.forEach((iso) => {
+        const raw = (appState.attendance[iso] && appState.attendance[iso][tr.id]) || "Unmarked";
+        const label = raw === "P" ? "Present" : raw === "A" ? "Absent" : "Unmarked";
+        lines.push(`${iso},${label}`);
+      });
+
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tr.name.replace(/\s+/g, "_")}_Performance_Report_${getTodayISO()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Personal CSV report downloaded", "success");
+    }
+
+    function downloadSingleTraineeCardPNG() {
+      const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
+      if (!tr) return;
+      const st = calculateTraineeStats(tr.id, activeReportPeriod);
+      const y1 = Number(tr.year1 || 0);
+      const y2 = Number(tr.year2 || 0);
+      const tot = y1 + y2;
+      const pctMarks = ((tot / 1200) * 100).toFixed(1);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 760;
+      canvas.height = 420;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#0c1322";
+      ctx.fillRect(0, 0, 760, 420);
+
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(14, 14, 732, 392);
+
+      ctx.fillStyle = "#f59e0b";
+      ctx.font = "bold 18px Inter, sans-serif";
+      ctx.fillText("GOVT. ITI CHHOTOJAGULIA • ELECTRICIAN (2025–27)", 34, 52);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px Inter, sans-serif";
+      ctx.fillText(`R.${tr.rno || "--"} • ${tr.name}`, 34, 94);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "600 14px monospace";
+      ctx.fillText(`NCVT Registration ID: ${tr.roll}`, 34, 120);
+
+      // Boxes
+      const drawBox = (x, y, w, h, title, val, color) => {
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = color;
+        ctx.font = "bold 20px Inter, sans-serif";
+        ctx.fillText(val, x + 16, y + 40);
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "600 12px Inter, sans-serif";
+        ctx.fillText(title, x + 16, y + 64);
+      };
+
+      drawBox(34, 148, 215, 84, "1st Year Marks", `${y1} / 600`, "#34d399");
+      drawBox(272, 148, 215, 84, `Combined 2-Yr (${pctMarks}%)`, `${tot} / 1200`, "#fbbf24");
+      drawBox(510, 148, 215, 84, "Internal Assessment", `${tr.internal || 0} / 100`, "#38bdf8");
+
+      const ok = st.pct >= 80;
+      drawBox(34, 252, 215, 84, `Present (${activeReportPeriod})`, `${st.presentDays} / ${st.workingDays} Days`, "#ffffff");
+      drawBox(272, 252, 215, 84, "Attendance Rate", `${st.pct}%`, ok ? "#34d399" : "#fb7185");
+      drawBox(510, 252, 215, 84, "NCVT 80% Status", ok ? "ELIGIBLE" : "SHORTAGE", ok ? "#34d399" : "#fb7185");
+
+      ctx.fillStyle = "#64748b";
+      ctx.font = "12px Inter, sans-serif";
+      ctx.fillText(`Trainee Performance Summary • Downloaded on ${formatDisplayDate(getTodayISO())}`, 34, 378);
+
+      const url = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tr.name.replace(/\s+/g, "_")}_Performance_Card_${getTodayISO()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("Performance Card PNG downloaded", "success");
+    }
+
+    function updateReportDayAttendance(traineeId, iso, status) {
+      if (!isAdminUnlocked) return;
+      if (!appState.attendance[iso]) appState.attendance[iso] = {};
+      if (status === "CLEAR") {
+        delete appState.attendance[iso][traineeId];
+        if (!Object.keys(appState.attendance[iso]).length) delete appState.attendance[iso];
+      } else {
+        appState.attendance[iso][traineeId] = status;
+      }
+      saveLocalState(true);
+      renderTraineeReportModal();
+      renderDailyRollCall();
+      renderEligibilityChart();
+      showToast(`Attendance updated for ${formatDisplayDate(iso)}`, "success");
+    }
+
+    // =========================================================================
+    // 13. MODALS & ADMIN HUB CONTROLS
+    // =========================================================================
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add("hidden");
+    }
+
+    // Close any open modal on backdrop tap or Escape key
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id && e.target.id.startsWith("modal-")) {
+        closeModal(e.target.id);
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.querySelectorAll('[id^="modal-"]').forEach((m) => m.classList.add("hidden"));
+      }
+    });
+
+    function updateAdminUIState() {
+      document.querySelectorAll(".admin-only").forEach((el) => {
+        el.classList.toggle("hidden", !isAdminUnlocked);
+      });
+
+      const lockedView = document.getElementById("admin-locked-view");
+      const unlockedView = document.getElementById("admin-unlocked-view");
+      if (lockedView) lockedView.classList.toggle("hidden", isAdminUnlocked);
+      if (unlockedView) unlockedView.classList.toggle("hidden", !isAdminUnlocked);
+
+      const modeBtn = document.getElementById("btn-mode-indicator");
+      const modeIcon = document.getElementById("icon-mode-indicator");
+      if (modeBtn) modeBtn.title = isAdminUnlocked ? "Admin Edit Mode" : "Student View";
+      if (modeIcon) {
+        modeIcon.setAttribute("data-lucide", isAdminUnlocked ? "shield-check" : "eye");
+        modeIcon.className = isAdminUnlocked
+          ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400"
+          : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300";
+      }
+
+      if (isAdminUnlocked) {
+        renderAdminRosterList();
+        const pinField = document.getElementById("setting-new-pin");
+        const emailField = document.getElementById("setting-admin-email");
+        const fbField = document.getElementById("firebase-config-textarea");
+        if (pinField) pinField.value = appState.settings.adminPin || DEFAULT_ADMIN_PIN;
+        if (emailField) emailField.value = appState.settings.adminEmail || "";
+        if (fbField) fbField.value = localStorage.getItem(FB_CONFIG_KEY) || "";
+      }
+
+      renderAllViews();
+    }
+
+    function openAdminModal() {
+      updateAdminUIState();
+      openModal("modal-admin");
+    }
+
+    function handlePinUnlock(e) {
+      e.preventDefault();
+      const input = document.getElementById("admin-pin-input");
+      const entered = (input?.value || "").trim();
+      const validPin = appState.settings.adminPin || DEFAULT_ADMIN_PIN;
+      if (entered === validPin) {
+        isAdminUnlocked = true;
+        if (input) input.value = "";
+        updateAdminUIState();
+        showToast("Admin Mode Unlocked", "success");
+      } else {
+        showToast("Incorrect PIN", "error");
+      }
+    }
+
+    async function handleGoogleSignIn() {
+      const sdk = window.__FB_SDK__;
+      const rawCfg = localStorage.getItem(FB_CONFIG_KEY);
+      if (!sdk || !rawCfg) {
+        isAdminUnlocked = true;
+        updateAdminUIState();
+        showToast("Admin Unlocked (Local Mode)", "success");
+        return;
+      }
+      try {
+        const cfg = JSON.parse(rawCfg);
+        const app = sdk.getApps().length ? sdk.getApps()[0] : sdk.initializeApp(cfg);
+        const auth = sdk.getAuth(app);
+        const provider = new sdk.GoogleAuthProvider();
+        const res = await sdk.signInWithPopup(auth, provider);
+        const email = (res.user?.email || "").toLowerCase();
+        const allowed = (appState.settings.adminEmail || "").trim().toLowerCase();
+        if (!allowed || email === allowed) {
+          isAdminUnlocked = true;
+          updateAdminUIState();
+          showToast(`Signed in as ${email}`, "success");
+        } else {
+          showToast("Unauthorized Google account", "error");
+        }
+      } catch (err) {
+        showToast("Google sign-in cancelled or failed", "error");
+      }
+    }
+
+    function lockAdminMode() {
+      isAdminUnlocked = false;
+      updateAdminUIState();
+      closeModal("modal-admin");
+      showToast("Admin session locked", "info");
+    }
+
+    function switchAdminSubTab(tab) {
+      document.querySelectorAll(".admintab-panel").forEach((p) => {
+        p.classList.toggle("hidden", p.id !== `admintab-${tab}`);
+      });
+      document.querySelectorAll(".admintab-btn").forEach((b) => {
+        const active = b.id === `admintab-btn-${tab}`;
+        b.className = active
+          ? "admintab-btn py-1.5 px-2 rounded-lg bg-amber-500 text-slate-950 transition"
+          : "admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition";
+      });
+    }
+
+    function renderAdminRosterList(filterQuery = null) {
+      const list = document.getElementById("admin-roster-list");
+      if (!list) return;
+      const q = (
+        filterQuery !== null
+          ? filterQuery
+          : document.getElementById("admin-roster-search-input")?.value || ""
+      )
+        .trim()
+        .toLowerCase();
+
+      const filtered = q
+        ? appState.trainees.filter(
+            (tr) =>
+              tr.name.toLowerCase().includes(q) ||
+              String(tr.rno || "").toLowerCase().includes(q) ||
+              String(tr.roll || "").toLowerCase().includes(q)
+          )
+        : appState.trainees;
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No matching student found.</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered
+        .map(
+          (tr) => `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-white truncate">R.${escapeHTML(tr.rno || "--")} • ${escapeHTML(tr.name)} ${tr.star ? "★" : ""}</div>
+              <div class="text-[10px] font-mono text-slate-400 truncate">ID: ${escapeHTML(tr.roll)} • 1st: ${tr.year1 || 0} • 2nd: ${tr.year2 || 0} • Int: ${tr.internal || 0}</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="editTrainee('${tr.id}')" title="Update Student Data" class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500 hover:text-slate-950 font-bold text-[10px] flex items-center gap-1 transition">
+                <i data-lucide="pencil" class="w-3 h-3"></i>
+                <span>Edit</span>
+              </button>
+              <button type="button" onclick="deleteTrainee('${tr.id}')" title="Delete Student" class="p-1.5 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openAdminDirectEdit(traineeId) {
+      clearTraineeSearch();
+      openAdminModal();
+      switchAdminSubTab("roster");
+      editTrainee(traineeId);
+    }
+
+    function openAdminDirectEditFromReport() {
+      if (!activeReportTraineeId) return;
+      const targetId = activeReportTraineeId;
+      closeModal("modal-trainee-report");
+      openAdminDirectEdit(targetId);
+    }
+
+    function handleAddOrUpdateTrainee(e) {
+      e.preventDefault();
+      const id = document.getElementById("edit-trainee-id").value;
+      const rno = document.getElementById("trainee-rno-input").value.trim();
+      const name = document.getElementById("trainee-name-input").value.trim();
+      const roll = document.getElementById("trainee-roll-input").value.trim();
+      const star = document.getElementById("trainee-star-input").checked;
+      const y1Raw = document.getElementById("trainee-y1-input").value;
+      const y2Raw = document.getElementById("trainee-y2-input").value;
+      const intRaw = document.getElementById("trainee-int-input").value;
+
+      const year1 = y1Raw !== "" ? Math.min(600, Math.max(0, Number(y1Raw))) : 500;
+      const year2 = y2Raw !== "" ? Math.min(600, Math.max(0, Number(y2Raw))) : 500;
+      const internal = intRaw !== "" ? Math.min(100, Math.max(0, Number(intRaw))) : 85;
+
+      if (id) {
+        const idx = appState.trainees.findIndex((t) => t.id === id);
+        if (idx !== -1) {
+          appState.trainees[idx] = { ...appState.trainees[idx], rno, name, roll, star, year1, year2, internal };
+        }
+        showToast("Student data updated", "success");
+      } else {
+        appState.trainees.push({
+          id: "tr-" + Date.now(),
+          rno,
+          name,
+          roll,
+          star,
+          year1,
+          year2,
+          internal
+        });
+        showToast("New trainee added", "success");
+      }
+
+      resetTraineeForm();
+      saveLocalState(true);
+      renderAdminRosterList();
+      renderAllViews();
+    }
+
+    function editTrainee(id) {
+      const tr = appState.trainees.find((t) => t.id === id);
+      if (!tr) return;
+      document.getElementById("edit-trainee-id").value = tr.id;
+      document.getElementById("trainee-rno-input").value = tr.rno || "";
+      document.getElementById("trainee-name-input").value = tr.name;
+      document.getElementById("trainee-roll-input").value = tr.roll;
+      document.getElementById("trainee-y1-input").value = tr.year1 ?? 500;
+      document.getElementById("trainee-y2-input").value = tr.year2 ?? 500;
+      document.getElementById("trainee-int-input").value = tr.internal ?? 85;
+      document.getElementById("trainee-star-input").checked = Boolean(tr.star);
+      document.getElementById("trainee-form-heading").textContent = `Updating: R.${tr.rno || "--"} ${tr.name}`;
+      document.getElementById("btn-cancel-trainee-edit").classList.remove("hidden");
+
+      const attBox = document.getElementById("admin-direct-att-box");
+      const attDate = document.getElementById("admin-direct-att-date");
+      if (attBox && attDate) {
+        attDate.value = selectedDateStr || getTodayISO();
+        attBox.classList.remove("hidden");
+        syncAdminDirectAttendanceUI();
+      }
+    }
+
+    function syncAdminDirectAttendanceUI() {
+      const id = document.getElementById("edit-trainee-id")?.value;
+      const iso = document.getElementById("admin-direct-att-date")?.value;
+      const badge = document.getElementById("admin-direct-att-status");
+      if (!id || !iso || !badge) return;
+      if (isHolidayDate(iso)) {
+        badge.textContent = `Holiday (${getHolidayLabel(iso)})`;
+        badge.className = "text-[10px] font-bold text-rose-400";
+        return;
+      }
+      const st = appState.attendance[iso] && appState.attendance[iso][id];
+      badge.textContent = st === "P" ? "Current: Present" : st === "A" ? "Current: Absent" : "Current: Unmarked";
+      badge.className =
+        st === "P"
+          ? "text-[10px] font-bold text-emerald-400"
+          : st === "A"
+          ? "text-[10px] font-bold text-rose-400"
+          : "text-[10px] font-semibold text-slate-400";
+    }
+
+    function applyAdminDirectAttendance(status) {
+      const id = document.getElementById("edit-trainee-id")?.value;
+      const iso = document.getElementById("admin-direct-att-date")?.value;
+      if (!id || !iso) return;
+      if (isHolidayDate(iso)) {
+        showToast("Selected date is a holiday", "error");
+        return;
+      }
+      if (!appState.attendance[iso]) appState.attendance[iso] = {};
+      if (status === "CLEAR") {
+        delete appState.attendance[iso][id];
+        if (!Object.keys(appState.attendance[iso]).length) delete appState.attendance[iso];
+      } else {
+        appState.attendance[iso][id] = status;
+      }
+      saveLocalState(true);
+      syncAdminDirectAttendanceUI();
+      renderAllViews();
+      showToast(`Attendance updated (${status === "CLEAR" ? "Cleared" : status === "P" ? "Present" : "Absent"})`, "success");
+    }
+
+    function resetTraineeForm() {
+      document.getElementById("edit-trainee-id").value = "";
+      document.getElementById("trainee-rno-input").value = "";
+      document.getElementById("trainee-name-input").value = "";
+      document.getElementById("trainee-roll-input").value = "";
+      document.getElementById("trainee-y1-input").value = "";
+      document.getElementById("trainee-y2-input").value = "";
+      document.getElementById("trainee-int-input").value = "";
+      document.getElementById("trainee-star-input").checked = false;
+      document.getElementById("trainee-form-heading").textContent = "Add / Update Trainee Data";
+      document.getElementById("btn-cancel-trainee-edit").classList.add("hidden");
+      document.getElementById("admin-direct-att-box")?.classList.add("hidden");
+    }
+
+    function resetTraineeForm() {
+      document.getElementById("edit-trainee-id").value = "";
+      document.getElementById("trainee-rno-input").value = "";
+      document.getElementById("trainee-name-input").value = "";
+      document.getElementById("trainee-roll-input").value = "";
+      document.getElementById("trainee-y1-input").value = "";
+      document.getElementById("trainee-y2-input").value = "";
+      document.getElementById("trainee-int-input").value = "";
+      document.getElementById("trainee-star-input").checked = false;
+      document.getElementById("trainee-form-heading").textContent = "Add / Update Trainee Data";
+      document.getElementById("btn-cancel-trainee-edit").classList.add("hidden");
+    }
+
+    function deleteTrainee(id) {
+      appState.trainees = appState.trainees.filter((t) => t.id !== id);
+      saveLocalState(true);
+      renderAdminRosterList();
+      renderAllViews();
+      showToast("Trainee removed", "info");
+    }
+
+    function handleSaveSecuritySettings(e) {
+      e.preventDefault();
+      const newPin = document.getElementById("setting-new-pin").value.trim();
+      const newEmail = document.getElementById("setting-admin-email").value.trim();
+      if (newPin) appState.settings.adminPin = newPin;
+      appState.settings.adminEmail = newEmail;
+      saveLocalState(true);
+      showToast("Security settings updated", "success");
+    }
+
+    function handleSaveFirebaseConfig(e) {
+      e.preventDefault();
+      const raw = document.getElementById("firebase-config-textarea").value.trim();
+      if (!raw) {
+        localStorage.removeItem(FB_CONFIG_KEY);
+        updateSyncIndicator(false, "Offline Mode");
+        showToast("Firebase config cleared", "info");
+        return;
+      }
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed.projectId) throw new Error("Missing projectId");
+        localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(parsed));
+        window.initFirebaseCloud();
+        showToast("Firebase config saved", "success");
+      } catch (err) {
+        showToast("Invalid Firebase JSON config", "error");
+      }
+    }
+
+    function resetFirebaseToDefault() {
+      localStorage.removeItem(FB_CONFIG_KEY);
+      document.getElementById("firebase-config-textarea").value = "";
+      updateSyncIndicator(false, "Offline Mode");
+      showToast("Reset to Offline Mode", "info");
+    }
+
+    function copyFirestoreRules() {
+      const pre = document.getElementById("firestore-rules-code");
+      if (!pre) return;
+      copyTextFallback(pre.textContent);
+      showToast("Firestore rules copied", "success");
+    }
+
+    function exportBackupJSON() {
+      const dataStr = JSON.stringify(appState, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ITI_Chhotojagulia_Backup_${getTodayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Backup JSON downloaded", "success");
+    }
+
+    function importBackupJSON(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          if (!Array.isArray(parsed.trainees)) throw new Error("Invalid backup");
+          appState = {
+            ...appState,
+            ...parsed,
+            settings: { ...appState.settings, ...(parsed.settings || {}) }
+          };
+          saveLocalState(true);
+          renderAllViews();
+          renderAdminRosterList();
+          showToast("Backup restored successfully", "success");
+        } catch (err) {
+          showToast("Invalid JSON backup file", "error");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Notices Modal
+    function openNoticeModal() {
+      document.getElementById("notice-date-input").value = getTodayISO();
+      openModal("modal-post-notice");
+    }
+
+    function handleSaveNotice(e) {
+      e.preventDefault();
+      const title = document.getElementById("notice-title-input").value.trim();
+      const date = document.getElementById("notice-date-input").value;
+      const body = document.getElementById("notice-body-input").value.trim();
+      appState.notices.unshift({ id: "not-" + Date.now(), title, date, body });
+      saveLocalState(true);
+      renderNotices();
+      e.target.reset();
+      closeModal("modal-post-notice");
+      showToast("Notice published", "success");
+    }
+
+    function deleteNotice(id) {
+      appState.notices = appState.notices.filter((n) => n.id !== id);
+      saveLocalState(true);
+      renderNotices();
+      showToast("Notice deleted", "info");
+    }
+
+    // Videos Modal
+    function openVideoModal() {
+      openModal("modal-add-video");
+    }
+
+    function handleSaveVideo(e) {
+      e.preventDefault();
+      const title = document.getElementById("video-title-input").value.trim();
+      const ytId = extractYouTubeId(document.getElementById("video-url-input").value);
+      const duration = document.getElementById("video-duration-input").value.trim();
+      const desc = document.getElementById("video-desc-input").value.trim();
+      appState.videos.unshift({ id: "vid-" + Date.now(), title, ytId, duration, desc });
+      saveLocalState(true);
+      renderVideoCards("notices-videos-grid", "notices", 3);
+      renderVideoCards("full-videos-grid", "videos");
+      e.target.reset();
+      closeModal("modal-add-video");
+      showToast("Trade video added", "success");
+    }
+
+    function deleteVideo(id) {
+      appState.videos = appState.videos.filter((v) => v.id !== id);
+      saveLocalState(true);
+      renderVideoCards("notices-videos-grid", "notices", 3);
+      renderVideoCards("full-videos-grid", "videos");
+      showToast("Video removed", "info");
+    }
+
+    // Marks Modal
+    function openResultModal(focusTarget = "year1") {
+      const sel = document.getElementById("marks-trainee-select");
+      if (!sel || !appState.trainees.length) return;
+      sel.innerHTML = appState.trainees
+        .map((tr) => `<option value="${tr.id}">R.${escapeHTML(tr.rno || "--")} • ${escapeHTML(tr.name)}</option>`)
+        .join("");
+      populateMarksForm(appState.trainees[0].id);
+      openModal("modal-edit-results");
+      if (focusTarget === "internal") {
+        setTimeout(() => document.getElementById("marks-internal-input")?.focus(), 80);
+      }
+    }
+
+    // 2nd Year Exam Schedule Admin Modal
+    function openExamScheduleModal() {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      if (!Array.isArray(appState.examSchedule)) {
+        appState.examSchedule = JSON.parse(JSON.stringify(DEFAULT_EXAM_SCHEDULE));
+      }
+      resetExamForm();
+      renderAdminExamScheduleList();
+      openModal("modal-edit-exams");
+    }
+
+    function renderAdminExamScheduleList() {
+      const list = document.getElementById("admin-exam-schedule-list");
+      if (!list) return;
+      const items = appState.examSchedule || [];
+      if (!items.length) {
+        list.innerHTML = `<div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No exam papers scheduled.</div>`;
+        return;
+      }
+      list.innerHTML = items
+        .map(
+          (ex, idx) => `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-white truncate">${escapeHTML(ex.subject)}</div>
+              <div class="text-[10px] text-slate-400 truncate">${escapeHTML(ex.date)} • ${escapeHTML(ex.time)} • ${escapeHTML(ex.venue)}</div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="editExamItem(${idx})" class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold text-[10px]">Edit</button>
+              <button type="button" onclick="deleteExamItem(${idx})" class="p-1.5 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+              </button>
+            </div>
+          </div>
+        `
+        )
+        .join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function editExamItem(idx) {
+      const item = appState.examSchedule[idx];
+      if (!item) return;
+      document.getElementById("edit-exam-index").value = idx;
+      document.getElementById("exam-subject-input").value = item.subject || "";
+      document.getElementById("exam-date-input").value = item.date || "";
+      document.getElementById("exam-time-input").value = item.time || "";
+      document.getElementById("exam-venue-input").value = item.venue || "";
+      document.getElementById("exam-form-heading").textContent = "Editing Exam Paper";
+      document.getElementById("btn-cancel-exam-edit").classList.remove("hidden");
+    }
+
+    function resetExamForm() {
+      document.getElementById("edit-exam-index").value = "-1";
+      document.getElementById("exam-subject-input").value = "";
+      document.getElementById("exam-date-input").value = "";
+      document.getElementById("exam-time-input").value = "";
+      document.getElementById("exam-venue-input").value = "";
+      document.getElementById("exam-form-heading").textContent = "Add / Update Exam Paper";
+      document.getElementById("btn-cancel-exam-edit").classList.add("hidden");
+    }
+
+    function handleSaveExamItem(e) {
+      e.preventDefault();
+      if (!Array.isArray(appState.examSchedule)) appState.examSchedule = [];
+      const idx = Number(document.getElementById("edit-exam-index").value);
+      const entry = {
+        subject: document.getElementById("exam-subject-input").value.trim(),
+        date: document.getElementById("exam-date-input").value.trim(),
+        time: document.getElementById("exam-time-input").value.trim(),
+        venue: document.getElementById("exam-venue-input").value.trim()
+      };
+      if (idx >= 0 && appState.examSchedule[idx]) {
+        appState.examSchedule[idx] = entry;
+        showToast("Exam schedule updated", "success");
+      } else {
+        appState.examSchedule.push(entry);
+        showToast("Exam paper added", "success");
+      }
+      resetExamForm();
+      saveLocalState(true);
+      renderAdminExamScheduleList();
+      renderResultsSection();
+    }
+
+    function deleteExamItem(idx) {
+      appState.examSchedule.splice(idx, 1);
+      saveLocalState(true);
+      renderAdminExamScheduleList();
+      renderResultsSection();
+      showToast("Exam paper removed", "info");
+    }
+
+    function populateMarksForm(traineeId) {
+      const tr = appState.trainees.find((t) => t.id === traineeId);
+      if (!tr) return;
+      document.getElementById("marks-year1-input").value = tr.year1 || 0;
+      document.getElementById("marks-year2-input").value = tr.year2 || 0;
+      document.getElementById("marks-internal-input").value = tr.internal || 0;
+    }
+
+    function handleSaveMarks(e) {
+      e.preventDefault();
+      const id = document.getElementById("marks-trainee-select").value;
+      const y1 = Math.min(600, Math.max(0, Number(document.getElementById("marks-year1-input").value)));
+      const y2 = Math.min(600, Math.max(0, Number(document.getElementById("marks-year2-input").value)));
+      const internal = Math.min(100, Math.max(0, Number(document.getElementById("marks-internal-input").value)));
+      const tr = appState.trainees.find((t) => t.id === id);
+      if (tr) {
+        tr.year1 = y1;
+        tr.year2 = y2;
+        tr.internal = internal;
+        saveLocalState(true);
+        renderResultsSection();
+        showToast("2-Year & Internal marks updated", "success");
+      }
+      closeModal("modal-edit-results");
+    }
+
+    // Share Link Helper
+    function copyTextFallback(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+      } catch (e) {}
+      ta.remove();
+    }
+
+    function shareStudentLink() {
+      const url = window.location.href.split("#")[0];
+      copyTextFallback(url);
+      showToast("Student portal link copied", "success");
+    }
+
+    // =========================================================================
+    // 16. RENDER ALL & BOOTSTRAP
+    // =========================================================================
+    function renderAllViews() {
+      renderNotices();
+      renderVideoCards("notices-videos-grid", "notices", 3);
+      renderVideoCards("full-videos-grid", "videos");
+      renderDailySection();
+      renderEligibilityChart();
+      renderResultsSection();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function bootPortal() {
+      const savedTheme = localStorage.getItem(THEME_MODE_KEY) || "bright";
+      applyThemeMode(savedTheme);
+      loadLocalState();
+      updateLiveClock();
+      setInterval(updateLiveClock, 15000);
+      setupAutoHideHeader();
+      renderAllViews();
+      if (window.initFirebaseCloud) window.initFirebaseCloud();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bootPortal);
+    } else {
+      bootPortal();
+    }
+  </script>
+</body>
+</html>

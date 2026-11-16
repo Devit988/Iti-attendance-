@@ -2250,6 +2250,13 @@ service cloud.firestore {
           appState = {
             ...appState,
             ...parsed,
+            trainees: Array.isArray(parsed.trainees) ? parsed.trainees : appState.trainees,
+            notices: Array.isArray(parsed.notices) ? parsed.notices : appState.notices,
+            videos: Array.isArray(parsed.videos) ? parsed.videos : appState.videos,
+            galleryPhotos: Array.isArray(parsed.galleryPhotos) ? parsed.galleryPhotos : appState.galleryPhotos,
+            examItems: Array.isArray(parsed.examItems) ? parsed.examItems : appState.examItems,
+            attendance: (parsed.attendance && typeof parsed.attendance === 'object') ? parsed.attendance : appState.attendance,
+            holidays: (parsed.holidays && typeof parsed.holidays === 'object') ? parsed.holidays : appState.holidays,
             studyNotes: Array.isArray(parsed.studyNotes) ? parsed.studyNotes : JSON.parse(JSON.stringify(DEFAULT_STUDY_NOTES)),
             internalMeta: { ...DEFAULT_INTERNAL_META, ...(parsed.internalMeta || {}) },
             settings: { ...appState.settings, ...(parsed.settings || {}) }
@@ -2824,12 +2831,20 @@ service cloud.firestore {
 
       let lastY = Math.max(0, window.scrollY);
       let headerHidden = false;
+      // Other tabs: scroll-direction auto-hide (down = hide, up = show).
+      // Separate from Home's compact mode — this slides the whole bar away.
+      let navHidden = false;
 
       function syncStickyOffsets() {
         const h = header.offsetHeight || 0;
         wrapEl.style.transform = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
         if (sWrap) {
-          sWrap.style.transform = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
+          if (lastTabName !== "home" && navHidden) {
+            // Slide search bar fully off the top (header height + its own height).
+            sWrap.style.transform = `translateY(-${h + (sWrap.offsetHeight || 60) + 24}px)`;
+          } else {
+            sWrap.style.transform = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
+          }
         }
       }
 
@@ -2841,10 +2856,30 @@ service cloud.firestore {
         const hasQuery = inp && inp.value.trim().length > 0;
         const isLocked = Date.now() < searchExpandLockUntil;
 
-        if (curY <= 12) {
-          headerHidden = false;
+        if (lastTabName !== "home") {
+          // OTHER TABS: scroll-direction auto-hide for heading + search bar.
+          // Never compact here — full-size bar slides away on scroll-down
+          // and slides back on scroll-up.
           expandSearchBar(false);
-        } else if (delta > 1 && curY > 36) {
+          if (curY <= 12) {
+            headerHidden = false;
+            navHidden = false;
+          } else if (delta > 3 && curY > 36) {
+            // Don't hide while the user is typing in search.
+            if (!(inp && document.activeElement === inp)) {
+              headerHidden = true;
+              navHidden = true;
+            }
+          } else if (delta < -2) {
+            headerHidden = false;
+            navHidden = false;
+          }
+        } else if (curY <= 12) {
+          // Home: expand again at the very top.
+          headerHidden = false;
+          navHidden = false;
+          expandSearchBar(false);
+        } else if (lastTabName === "home" && curY > 36) {
           headerHidden = true;
           if (!hasQuery && !isLocked) {
             if (inp && document.activeElement === inp) inp.blur();
@@ -2925,6 +2960,9 @@ service cloud.firestore {
       const inMore = ["results", "videos", "gallery"].includes(tabName);
       updateNavHighlights(inMore ? "more" : tabName);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      // Search bar rule: never compact on other tabs — always full size there.
+      // On Home it compacts only while scrolling (handled in the scroll handler).
+      expandSearchBar(false);
       if (window.lucide) lucide.createIcons();
     }
 
@@ -2941,6 +2979,68 @@ service cloud.firestore {
     // =========================================================================
     let showAllNotices = false;
 
+    // FIX: these handlers were referenced by onclick but never defined,
+    // so every accordion (Daily Top Attenders, Daily Rollcall, Monthly Chart,
+    // and all Results sections) did nothing when tapped.
+    function toggleAccordion(key) {
+      var body = document.getElementById("body-" + key);
+      var chev = document.getElementById("chevron-" + key);
+      if (!body) return;
+      var isOpen = body.classList.toggle("accordion-open");
+      if (chev) chev.classList.toggle("rotate-180", isOpen);
+    }
+    // Results accordions use the same body-/chevron- naming (body-res-y1, etc.)
+    function toggleResultAccordion(key) { toggleAccordion("res-" + key); }
+    // FIX: handleTraineeSearch was called on every keystroke/focus but NEVER
+    // defined, so typing in search threw ReferenceError and no dropdown ever appeared.
+    function handleTraineeSearch(raw) {
+      var q = String(raw == null ? "" : raw).trim().toLowerCase();
+      var box = document.getElementById("trainee-search-results");
+      var btn = document.getElementById("btn-clear-trainee-search");
+      if (btn) btn.classList.toggle("hidden", !q);
+      if (!box) return;
+      if (!q) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+      var matches = (appState.trainees || []).filter(function(tr){
+        return String(tr.name||"").toLowerCase().includes(q)
+          || String(tr.rno||"").toLowerCase().includes(q)
+          || String(tr.roll||"").toLowerCase().includes(q);
+      }).slice(0, 8);
+      if (!matches.length) {
+        box.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center">No trainee found for "' + escapeHTML(raw) + '"</div>';
+      } else {
+        box.innerHTML = matches.map(function(tr){
+          var st = { presentDays: 0, workingDays: 0, pct: 100 };
+          try { st = calculateTraineeStats(tr.id, "ALL"); } catch (e) {}
+          return '<button type="button" onclick="selectSearchTrainee(\'' + tr.id + '\')" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-slate-800/70 transition">'
+            + '<span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[11px] font-extrabold text-amber-300 shrink-0">R.' + escapeHTML(tr.rno||"--") + '</span>'
+            + '<span class="min-w-0 flex-1"><span class="block text-xs font-bold text-white truncate">' + escapeHTML(tr.name||"") + '</span>'
+            + '<span class="block text-[10px] text-slate-400 truncate">Reg: ' + escapeHTML(tr.roll||"--") + ' &bull; ' + st.presentDays + '/' + st.workingDays + ' days &bull; ' + st.pct + '%</span></span>'
+            + '<i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i></button>';
+        }).join("");
+        if (window.lucide) lucide.createIcons();
+      }
+      box.classList.remove("hidden");
+    }
+    function selectSearchTrainee(id) { clearTraineeSearch(); openTraineeReport(id); }
+    document.addEventListener("click", function(e){
+      var wrap = document.getElementById("global-trainee-search-wrap");
+      var box = document.getElementById("trainee-search-results");
+      if (wrap && box && !wrap.contains(e.target)) box.classList.add("hidden");
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape") { var b = document.getElementById("trainee-search-results"); if (b) b.classList.add("hidden"); }
+    });
+    // FIX: clear button + Admin "direct edit" both called this missing function,
+    // which threw ReferenceError and broke Admin direct-edit.
+    function clearTraineeSearch() {
+      var inp = document.getElementById("global-trainee-search-input");
+      var box = document.getElementById("trainee-search-results");
+      var btn = document.getElementById("btn-clear-trainee-search");
+      if (inp) inp.value = "";
+      if (box) box.classList.add("hidden");
+      if (btn) btn.classList.add("hidden");
+      if (typeof handleTraineeSearch === "function") handleTraineeSearch("");
+    }
     function toggleAllNotices() {
       showAllNotices = !showAllNotices;
       const extraBody = document.getElementById("extra-notices-accordion");
@@ -4798,17 +4898,23 @@ service cloud.firestore {
     function galleryStep(d){ openGalleryLightbox((galleryIndex+d+galleryVisible.length)%galleryVisible.length); }
 
     function renderAllViews() {
-      renderNotices();
-      renderStudyNotes();
-      renderVideoCards("notices-videos-grid", "notices", 10);
-      renderVideoCards("full-videos-grid", "videos");
-      renderDailySection();
-      renderEligibilityChart();
-      renderResultsSection();
-      renderGallery();
+      [renderNotices, renderStudyNotes,
+       function(){ renderVideoCards("notices-videos-grid", "notices", 10); },
+       function(){ renderVideoCards("full-videos-grid", "videos"); },
+       renderDailySection, renderEligibilityChart, renderResultsSection, renderGallery
+      ].forEach(function(fn){ try { fn(); } catch (e) { console.error(e); } });
       if (window.lucide) lucide.createIcons();
     }
 
+    // FIX: accordion headers are div[role=button] with only onclick, so
+    // keyboard users (Enter/Space) could not toggle them.
+    document.addEventListener("keydown", function(e){
+      if ((e.key !== "Enter" && e.key !== " ") || !e.target || !e.target.getAttribute) return;
+      var oc = e.target.getAttribute("onclick") || "";
+      if (oc.indexOf("toggleAccordion") === 0 || oc.indexOf("toggleResultAccordion") === 0) {
+        e.preventDefault(); e.target.click();
+      }
+    });
     function bootPortal() {
       const savedTheme = localStorage.getItem(THEME_MODE_KEY) || "bright";
       applyThemeMode(savedTheme);
@@ -4817,7 +4923,7 @@ service cloud.firestore {
       setInterval(updateLiveClock, 15000);
       setupAutoHideHeader();
       renderAllViews();
-      if (window.initFirebaseCloud) window.initFirebaseCloud();
+      try { if (window.initFirebaseCloud) window.initFirebaseCloud(); } catch (e) { updateSyncIndicator(false, "Offline Mode"); }
     }
 
     if (document.readyState === "loading") {

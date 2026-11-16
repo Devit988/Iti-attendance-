@@ -91,22 +91,36 @@
       box-shadow: none !important;
     }
     .tab-btn:active { transform: scale(0.96); }
-    /* More sheet: same smooth ease */
-    #more-sheet { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.38s !important; }
-    #more-sheet.more-open { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s !important; }
-    /* More sheet: smooth open/close - sheet glides, items rise in one by one */
-    #more-sheet { will-change: transform; }
-    #more-sheet .more-sheet-card { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; }
-    #more-sheet:not(.more-open) .more-sheet-card { transform: translateY(16px) scale(0.98); opacity: 0.4; }
-    #more-sheet.more-open .more-sheet-card { transform: translateY(0) scale(1); opacity: 1; }
-    #more-sheet .more-item { opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
-    #more-sheet.more-open .more-item { opacity: 1; transform: translateY(0); }
-    #more-sheet.more-open .more-item:nth-child(2) { transition-delay: 0.05s; }
-    #more-sheet.more-open .more-item:nth-child(3) { transition-delay: 0.1s; }
-    #more-sheet.more-open .more-item:nth-child(4) { transition-delay: 0.15s; }
-    #more-backdrop { transition: opacity 0.32s ease !important; }
-    #more-backdrop.more-open { transition: opacity 0.32s ease !important; }
-    #more-backdrop { transition: opacity 0.32s ease !important; }
+    /* Compact More Tabs Popup */
+    #more-backdrop {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease-out !important;
+    }
+    #more-backdrop.more-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #more-sheet {
+      transform: translate3d(0, 8px, 0) scale(0.97);
+      transform-origin: bottom right;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  opacity 0.18s ease-out,
+                  visibility 0s linear 0.2s !important;
+      will-change: transform, opacity;
+    }
+    #more-sheet.more-open {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  opacity 0.18s ease-out,
+                  visibility 0s !important;
+    }
 
     /* Smooth modal pop-in */
     @keyframes modalScaleIn {
@@ -137,6 +151,23 @@
       pointer-events: none;
       transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
       will-change: transform;
+    }
+    /* Non-Home tabs: eliminate sticky/transform fighting, overshoot, and bounce */
+    body.non-home-tab #top-sticky {
+      transition: transform 0.24s ease-out !important;
+    }
+    body.non-home-tab #search-bar-wrap {
+      position: relative !important;
+      top: auto !important;
+      transform: none !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transition: none !important;
+    }
+    body.non-home-tab #search-bar-inner,
+    body.non-home-tab #search-input-box,
+    body.non-home-tab #global-trainee-search-input {
+      transition: background-color 0.2s ease, border-color 0.2s ease !important;
     }
     #search-bar-inner {
       width: 100%;
@@ -352,6 +383,21 @@
       background-color: #ffe4e6 !important;
       border-color: #fda4af !important;
     }
+    html.bright-mode .cal-sunday {
+      background-color: #fda4af !important;
+      border-color: #f43f5e !important;
+      color: #881337 !important;
+    }
+    html.bright-mode .cal-holiday {
+      background-color: #fff1f2 !important;
+      border-color: #fecdd3 !important;
+      color: #be123c !important;
+    }
+    html.bright-mode .cal-saturday {
+      background-color: #e0f2fe !important;
+      border-color: #7dd3fc !important;
+      color: #0369a1 !important;
+    }
     html.bright-mode .text-sky-400 {
       color: #0369a1 !important;
     }
@@ -402,21 +448,6 @@
     html.bright-mode .bg-orange-500\/15 {
       background-color: #ffedd5 !important;
       border-color: #fdba74 !important;
-    }
-  
-    /* --- MORE SHEET (kept at end of <style> so it is never deleted by other edits) --- */
-    #more-backdrop { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
-    #more-backdrop.more-open { opacity: 1; pointer-events: auto; }
-    #more-sheet {
-      transform: translateY(110%);
-      visibility: hidden; pointer-events: none;
-      transition: transform 0.28s ease, visibility 0s linear 0.28s;
-      will-change: transform;
-    }
-    #more-sheet.more-open {
-      transform: translateY(0);
-      visibility: visible; pointer-events: auto;
-      transition: transform 0.28s ease, visibility 0s;
     }
 </style>
 </head>
@@ -544,7 +575,7 @@
                 <i data-lucide="megaphone" class="w-4 h-4"></i>
               </div>
               <div class="min-w-0">
-                <h2 class="text-sm sm:text-base font-bold text-white truncate">Notie</h2>
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">Notices &amp; Circulars</h2>
               </div>
             </div>
 
@@ -639,10 +670,11 @@
                 class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-amber-400 transition btn-tap">
                 Today
               </button>
-              <button type="button" onclick="toggleCalendarDrawer()"
+              <button type="button" id="btn-toggle-calendar" onclick="toggleCalendarDrawer()"
                 class="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 transition btn-tap">
                 <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Holidays</span>
+                <span>Calendar</span>
+                <i id="chevron-toggle-calendar" data-lucide="chevron-down" class="w-3.5 h-3.5 accordion-chevron"></i>
               </button>
             </div>
           </div>
@@ -685,69 +717,56 @@
           </div>
         </div>
 
-        <!-- Collapsible Monthly Holiday Calendar (Sunday First) -->
-        <div id="holiday-calendar-card" class="hidden bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl animate-panel space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <button type="button" onclick="shiftCalendarMonth(-1)"
-                class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
-                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-              </button>
-              <h3 id="calendar-month-title" class="text-xs sm:text-sm font-bold text-white min-w-[125px] text-center">Month Year</h3>
-              <button type="button" onclick="shiftCalendarMonth(1)"
-                class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
-                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-              </button>
-            </div>
-            <span class="text-[11px] text-slate-400">Tap date to view • Sun/Sat/Red = Holiday</span>
-          </div>
-
-          <div>
-            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-1.5">
-              <div class="text-rose-400">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-rose-400">SAT</div>
-            </div>
-            <div id="holiday-calendar-grid" class="grid grid-cols-7 gap-1"></div>
-          </div>
-
-          <div id="monthly-holidays-summary" class="pt-2 border-t border-slate-800/80 space-y-1.5"></div>
-        </div>
-
-        <!-- Daily Class Attenders Leaderboard -->
-        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
-          <div role="button" tabindex="0" onclick="toggleAccordion('daily-top-attenders')"
-            class="flex items-center justify-between gap-2 cursor-pointer select-none">
-            <div class="flex items-center gap-2 min-w-0 flex-1">
-              <div class="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                <i data-lucide="trophy" class="w-3.5 h-3.5"></i>
+        <!-- Smooth Collapsible Monthly Holiday Calendar (Collapsed by Default) -->
+        <div id="holiday-calendar-accordion" class="accordion-body" style="margin-top:0;">
+          <div class="accordion-inner">
+            <div id="holiday-calendar-card" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="shiftCalendarMonth(-1)"
+                    class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                  </button>
+                  <h3 id="calendar-month-title" class="text-xs sm:text-sm font-bold text-white min-w-[125px] text-center">Month Year</h3>
+                  <button type="button" onclick="shiftCalendarMonth(1)"
+                    class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                  </button>
+                </div>
+                <span class="text-[11px] text-slate-400">Tap date • <span class="text-rose-400 font-semibold">Sun</span> / <span class="text-sky-400 font-semibold">Sat</span> / <span class="text-rose-300 font-semibold">Holiday</span></span>
               </div>
-              <div class="min-w-0 flex-1">
-                <h3 class="text-xs sm:text-sm font-bold text-white truncate">Daily Class Attenders (Top 3)</h3>
-                <p class="text-[10px] text-slate-400 truncate">Tap to toggle • 1st, 2nd & 3rd Present & Absent Days</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
-                1st • 2nd • 3rd
-              </span>
-              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
-                <i id="chevron-daily-top-attenders" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron rotate-180"></i>
-              </div>
-            </div>
-          </div>
 
-          <div id="body-daily-top-attenders" class="accordion-body accordion-open">
-            <div class="accordion-inner pt-2 border-t border-slate-800/70">
-              <div id="daily-top-attenders-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+              <div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-1.5">
+                  <div class="text-rose-500">SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div class="text-sky-400">SAT</div>
+                </div>
+                <div id="holiday-calendar-grid" class="grid grid-cols-7 gap-1"></div>
+              </div>
+
+              <div id="monthly-holidays-summary" class="pt-2 border-t border-slate-800/80 space-y-1.5"></div>
             </div>
           </div>
         </div>
 
-        <!-- Trainee Roll-Call List -->
+        <!-- Trainee Attendance Section (ABOVE Daily Class Attendance, OPEN by Default) -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleAccordion('daily-rollcall')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
-            <div class="flex items-center gap-2 min-w-0 flex-1">
-              <h2 class="text-sm sm:text-base font-bold text-white truncate">Trainee Roll Call</h2>
+            <div class="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">Trainee Attendance</h2>
+              <div onclick="event.stopPropagation()" class="inline-flex items-center gap-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 p-0.5 shrink-0">
+                <button type="button" onclick="shiftSelectedDay(-1)" title="Previous Day"
+                  class="w-5 h-5 rounded-full hover:bg-amber-500/25 flex items-center justify-center text-amber-300 transition btn-tap">
+                  <i data-lucide="chevron-left" class="w-3 h-3"></i>
+                </button>
+                <span id="rollcall-day-date-pill" class="px-1.5 text-[10px] sm:text-[11px] font-bold text-amber-300 whitespace-nowrap">
+                  Mon, 16 Nov 2026
+                </span>
+                <button type="button" onclick="shiftSelectedDay(1)" title="Next Day"
+                  class="w-5 h-5 rounded-full hover:bg-amber-500/25 flex items-center justify-center text-amber-300 transition btn-tap">
+                  <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                </button>
+              </div>
               <span id="rollcall-summary-pill" class="px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-[10px] sm:text-[11px] font-semibold text-slate-300 shrink-0">
                 16 Trainees
               </span>
@@ -758,14 +777,44 @@
                 <span>View Only</span>
               </span>
               <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
-                <i id="chevron-daily-rollcall" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+                <i id="chevron-daily-rollcall" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron rotate-180"></i>
               </div>
             </div>
           </div>
 
-          <div id="body-daily-rollcall" class="accordion-body">
+          <div id="body-daily-rollcall" class="accordion-body accordion-open">
             <div class="accordion-inner">
               <div id="daily-rollcall-list" class="space-y-2 pt-2 border-t border-slate-800/70"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Class Attendance Leaderboard (CLOSED by Default) -->
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div role="button" tabindex="0" onclick="toggleAccordion('daily-top-attenders')"
+            class="flex items-center justify-between gap-2 cursor-pointer select-none">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <div class="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="trophy" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-xs sm:text-sm font-bold text-white truncate">Daily Class Attendance (Top 3)</h3>
+                <p class="text-[10px] text-slate-400 truncate">Tap to toggle • 1st, 2nd & 3rd Present & Absent Days</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
+                1st • 2nd • 3rd
+              </span>
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                <i id="chevron-daily-top-attenders" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-daily-top-attenders" class="accordion-body">
+            <div class="accordion-inner pt-2 border-t border-slate-800/70">
+              <div id="daily-top-attenders-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
             </div>
           </div>
         </div>
@@ -780,39 +829,46 @@
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
             <div class="min-w-0 flex-1">
               <h2 class="text-sm sm:text-base font-bold text-white truncate">NCVT 80% Attendance Eligibility</h2>
-              <p class="text-[11px] text-slate-400 truncate">Tap to view batch chart & 6/9/12-month reports</p>
+              <p class="text-[11px] text-slate-400 truncate">Batch eligibility chart • Filter by specific Month &amp; Year or full period</p>
             </div>
             <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 shrink-0">
-              <i id="chevron-monthly-chart" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
+              <i id="chevron-monthly-chart" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron rotate-180"></i>
             </div>
           </div>
 
-          <!-- Non-overlapping Action Toolbar -->
+          <!-- Non-overlapping Action Toolbar with Month & Year Picker -->
           <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/70">
-            <select id="eligibility-month-filter" onchange="setChartPeriod(this.value)"
-              class="flex-1 sm:flex-initial min-w-[140px] px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs font-semibold text-white focus:outline-none focus:border-amber-500">
-              <option value="ALL">All Working Days</option>
-              <option value="1M">Current Month (1M)</option>
-              <option value="6M">6 Months Report</option>
-              <option value="9M">9 Months Report</option>
-              <option value="12M">12 Months Report</option>
-            </select>
+            <div class="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
+              <select id="eligibility-month-filter" onchange="setChartPeriod(this.value)"
+                class="min-w-[130px] px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs font-semibold text-white focus:outline-none focus:border-amber-500">
+                <option value="ALL">Complete Data (All)</option>
+                <option value="1M">Current Month (1M)</option>
+                <option value="6M">6 Months Report</option>
+                <option value="9M">9 Months Report</option>
+                <option value="12M">12 Months Report</option>
+                <option value="MONTH">Specific Month &amp; Year</option>
+              </select>
+
+              <input type="month" id="eligibility-specific-month" onchange="setChartSpecificMonth(this.value)"
+                title="Select Specific Month & Year"
+                class="px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs font-semibold text-amber-300 focus:outline-none focus:border-amber-500" />
+            </div>
 
             <button type="button" onclick="downloadAttendanceChartPNG()" title="Download Visual 80% Chart (PNG)"
-              class="flex-1 sm:flex-initial justify-center px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 transition btn-tap">
+              class="shrink-0 justify-center px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-amber-500/20 transition btn-tap">
               <i data-lucide="image-down" class="w-3.5 h-3.5 shrink-0"></i>
               <span>Download Chart</span>
             </button>
           </div>
 
-          <div id="body-monthly-chart" class="accordion-body">
+          <div id="body-monthly-chart" class="accordion-body accordion-open">
             <div class="accordion-inner space-y-4 pt-2 border-t border-slate-800/70">
               <!-- Period Quick Pills & Export -->
               <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <div class="flex flex-wrap items-center gap-1.5">
                   <button type="button" onclick="setChartPeriod('ALL')" data-period="ALL"
                     class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition btn-tap">
-                    All Working Days
+                    Complete Data
                   </button>
                   <button type="button" onclick="setChartPeriod('1M')" data-period="1M"
                     class="chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap">
@@ -905,9 +961,9 @@
 
             <div class="flex items-center gap-1.5 shrink-0">
               <button type="button" onclick="event.stopPropagation(); openResultModal()"
-                class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
-                <i data-lucide="edit-3" class="w-3 h-3"></i>
-                <span>Edit</span>
+                class="admin-only hidden px-2.5 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="settings-2" class="w-3 h-3"></i>
+                <span>Manage Results</span>
               </button>
               <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
                 <i id="chevron-res-y1" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
@@ -938,9 +994,9 @@
 
             <div class="flex items-center gap-1.5 shrink-0">
               <button type="button" onclick="event.stopPropagation(); openResultModal()"
-                class="admin-only hidden px-2 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
-                <i data-lucide="edit-3" class="w-3 h-3"></i>
-                <span>Edit</span>
+                class="admin-only hidden px-2.5 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 transition btn-tap">
+                <i data-lucide="settings-2" class="w-3 h-3"></i>
+                <span>Manage Results</span>
               </button>
               <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
                 <i id="chevron-res-y12" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
@@ -1102,12 +1158,11 @@
             <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="images" class="w-4 h-4"></i></div>
             <div class="min-w-0"><h2 class="text-sm sm:text-base font-bold text-white truncate">Photo Gallery</h2><p class="text-[11px] text-slate-400 truncate">Workshop, lab, practical &amp; ITI life — Govt. ITI Chhotojagulia</p></div>
             <span id="gallery-count" class="ml-auto shrink-0 px-2 py-1 rounded-lg bg-slate-900 border border-slate-700/80 text-[11px] font-bold text-amber-300"></span>
-            <button type="button" onclick="document.getElementById('gallery-file-input').click()" class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition btn-tap"><i data-lucide="plus" class="w-3.5 h-3.5"></i><span>Add Photo</span></button>
-            <input type="file" id="gallery-file-input" accept="image/*" class="hidden" onchange="handleGalleryUpload(event)" />
+            <button type="button" onclick="openGalleryUploadModal()" class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition btn-tap"><i data-lucide="plus" class="w-3.5 h-3.5"></i><span>Add Photo</span></button>
           </div>
           <div id="gallery-filters" class="flex flex-wrap gap-1.5"></div>
           <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
-          <p class="text-[11px] text-slate-400 text-center">Tap any photo to view it full-screen. Only Admin can add / delete photos. Students can only view. Tap <b class="text-amber-400">Add Photo</b> (Admin only) to add your own photo. Your photos are saved on this device.</p>
+          <p class="text-[11px] text-slate-400 text-center">Tap any photo to view it full-screen. Only Admin can add / delete photos. Students can only view. Tap <b class="text-amber-400">Add Photo</b> (Admin only) to upload or link photos synced across devices.</p>
         </div>
       </section>
     </main>
@@ -1122,29 +1177,35 @@
     </p>
   </footer>
 
-  <!-- MORE SHEET: Study & Lab + Gallery -->
-  <div id="more-backdrop" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]" style="opacity:0;pointer-events:none;" onclick="closeMoreSheet()"></div>
-  <div id="more-sheet" class="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[76px]" style="transform:translateY(110%);visibility:hidden;pointer-events:none;">
-    <div class="more-sheet-card max-w-5xl mx-auto bg-[#0f172a] border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden">
-      <button type="button" onclick="closeMoreSheet()" class="w-full flex items-center justify-center gap-2 py-2.5 text-slate-400"><span class="w-10 h-1 rounded-full bg-slate-600 block"></span></button>
-      <div class="px-3 pb-3 space-y-2">
-        <p class="px-1 text-xs font-bold text-slate-400">More Sections</p>
-        <button type="button" onclick="selectMoreTab('results')" class="more-item w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-left btn-tap">
-          <span class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="award" class="w-5 h-5"></i></span>
-          <span class="flex-1 min-w-0"><span class="block text-white text-sm font-bold">Results</span><span class="block text-slate-400 text-[11px] truncate">2-Year &amp; internal marks &amp; exam schedule</span></span>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i>
+  <!-- COMPACT MORE TABS POPUP (Right-aligned above More button) -->
+  <div id="more-backdrop" class="fixed inset-0 z-40" onclick="closeMoreSheet()"></div>
+  <div id="more-sheet" class="fixed bottom-[78px] inset-x-0 z-50 pointer-events-none px-3">
+    <div class="max-w-5xl mx-auto flex justify-end">
+      <div class="pointer-events-auto w-56 sm:w-64 bg-[#0f172a] border border-slate-700/90 rounded-2xl shadow-2xl p-1.5 space-y-1">
+        <button type="button" id="more-item-results" onclick="selectMoreTab('results')"
+          class="more-nav-item w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-left transition btn-tap">
+          <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="award" class="w-4 h-4"></i></span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-white text-xs font-bold leading-tight">Results</span>
+            <span class="block text-slate-400 text-[10px] truncate">Marks &amp; exam schedule</span>
+          </span>
         </button>
-        <button type="button" onclick="selectMoreTab('videos')" class="more-item w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-left btn-tap">
-          <span class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="book-open-check" class="w-5 h-5"></i></span>
-          <span class="flex-1 min-w-0"><span class="block text-white text-sm font-bold">Study &amp; Lab</span><span class="block text-slate-400 text-[11px] truncate">NCVT notes, PDFs &amp; trade videos</span></span>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        <button type="button" id="more-item-videos" onclick="selectMoreTab('videos')"
+          class="more-nav-item w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-left transition btn-tap">
+          <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="book-open-check" class="w-4 h-4"></i></span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-white text-xs font-bold leading-tight">Study &amp; Lab</span>
+            <span class="block text-slate-400 text-[10px] truncate">Notes, PDFs &amp; videos</span>
+          </span>
         </button>
-        <button type="button" onclick="selectMoreTab('gallery')" class="more-item w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-left btn-tap">
-          <span class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="images" class="w-5 h-5"></i></span>
-          <span class="flex-1 min-w-0"><span class="block text-white text-sm font-bold">Gallery</span><span class="block text-slate-400 text-[11px] truncate">Workshop, lab &amp; ITI life photos</span></span>
-          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        <button type="button" id="more-item-gallery" onclick="selectMoreTab('gallery')"
+          class="more-nav-item w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-left transition btn-tap">
+          <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="images" class="w-4 h-4"></i></span>
+          <span class="flex-1 min-w-0">
+            <span class="block text-white text-xs font-bold leading-tight">Gallery</span>
+            <span class="block text-slate-400 text-[10px] truncate">Workshop &amp; ITI photos</span>
+          </span>
         </button>
-        <button type="button" onclick="closeMoreSheet()" class="more-item w-full py-2.5 rounded-2xl bg-slate-800 text-slate-300 text-xs font-bold">Close</button>
       </div>
     </div>
   </div>
@@ -1173,7 +1234,7 @@
         <span class="truncate">80% Chart</span>
       </button>
 
-      <button type="button" id="tab-btn-more" onclick="toggleMoreSheet()"
+      <button type="button" id="tab-btn-more" onclick="toggleMoreSheet()" aria-expanded="false"
         class="tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
         <i data-lucide="layout-grid" class="w-5 h-5 shrink-0"></i>
         <span class="truncate">More</span>
@@ -1187,6 +1248,58 @@
     <button type="button" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white" onclick="event.stopPropagation(); galleryStep(1)"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
     <img id="gallery-lightbox-img" src="" alt="" class="max-h-[78vh] max-w-full rounded-2xl shadow-2xl object-contain" onclick="event.stopPropagation()" />
     <div class="mt-3 text-center px-4" onclick="event.stopPropagation()"><p id="gallery-lightbox-title" class="text-white font-bold text-sm"></p><p id="gallery-lightbox-meta" class="text-slate-300 text-xs mt-0.5"></p></div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 11: ADD GALLERY PHOTO (ADMIN UPLOAD / URL)                      -->
+  <!-- ===================================================================== -->
+  <div id="modal-add-gallery" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white">Add Gallery Photo</h3>
+        <button type="button" onclick="closeModal('modal-add-gallery')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <form onsubmit="handleSaveGalleryPhoto(event)" class="p-4 space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Photo Title</label>
+          <input type="text" id="gallery-photo-title" required placeholder="e.g. 3-Phase Motor Panel Wiring"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Category</label>
+            <select id="gallery-photo-cat"
+              class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
+              <option value="Practical">Practical</option>
+              <option value="Lab">Lab</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Events">Events</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">Caption / Date</label>
+            <input type="text" id="gallery-photo-date" placeholder="e.g. Workshop Session"
+              class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Upload Image File (Auto-Optimized for Sync)</label>
+          <input type="file" id="gallery-file-input" accept="image/*"
+            class="w-full text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Or Direct Image URL</label>
+          <input type="url" id="gallery-photo-url" placeholder="https://example.com/photo.jpg"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+          Save &amp; Sync Photo
+        </button>
+      </form>
+    </div>
   </div>
 
   <!-- ===================================================================== -->
@@ -1485,6 +1598,15 @@ service cloud.firestore {
           </div>
         </div>
         <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Designated Section</label>
+          <select id="video-section-input"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
+            <option value="both">Home &amp; Study Lab (Both Sections)</option>
+            <option value="home">Home Section Only</option>
+            <option value="lab">Study &amp; Lab Section Only</option>
+          </select>
+        </div>
+        <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1">Short Description</label>
           <input type="text" id="video-desc-input" placeholder="Key practical steps or NCVT module notes..."
             class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
@@ -1498,44 +1620,218 @@ service cloud.firestore {
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 4: EDIT MARKS (1ST YEAR & INTERNAL SCORES)                      -->
+  <!-- MODAL 4: COMPLETE ADMIN RESULT MANAGEMENT                             -->
   <!-- ===================================================================== -->
-  <div id="modal-edit-results" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
+  <div id="modal-edit-results" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-lg shadow-2xl animate-modal overflow-hidden my-auto">
       <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
-        <h3 class="text-sm font-bold text-white">Update Trainee Exam Marks</h3>
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
+            <i data-lucide="award" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white">Complete Result Management</h3>
+        </div>
         <button type="button" onclick="closeModal('modal-edit-results')" class="p-1 rounded-lg text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
-      <form onsubmit="handleSaveMarks(event)" class="p-4 space-y-3">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Select Trainee</label>
+
+      <div class="p-4 space-y-3 max-h-[82vh] overflow-y-auto">
+        <!-- Search & Trainee Selector Bar -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-bold text-amber-400">1. Select or Add Trainee Result Record</span>
+            <button type="button" onclick="openAddNewResultTrainee()"
+              class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center gap-1 transition btn-tap">
+              <i data-lucide="user-plus" class="w-3 h-3"></i>
+              <span>+ New Trainee Result</span>
+            </button>
+          </div>
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="admin-result-search" oninput="filterResultTraineeOptions(this.value)"
+              placeholder="Search trainee by Name, Roll No, or Reg ID..."
+              class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-amber-500" />
+          </div>
           <select id="marks-trainee-select" onchange="populateMarksForm(this.value)"
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></select>
+            class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-500"></select>
         </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">1st Yr (/600)</label>
-            <input type="number" id="marks-year1-input" min="0" max="600" required
-              class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+
+        <form onsubmit="handleSaveMarks(event)" class="space-y-3">
+          <input type="hidden" id="result-is-new-mode" value="0" />
+
+          <!-- Trainee Identity & Session Details -->
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="text-[11px] font-bold text-amber-400">2. Trainee &amp; Examination Details</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Roll No *</label>
+                <input type="text" id="marks-rno-input" required placeholder="e.g. 02"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Trainee Name *</label>
+                <input type="text" id="marks-name-input" required placeholder="Full Name"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">NCVT Registration No</label>
+                <input type="text" id="marks-reg-input" placeholder="e.g. 250819008869"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Trade &amp; Session</label>
+                <input type="text" id="marks-session-input" placeholder="Electrician • 2025–27"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Examination Details</label>
+                <input type="text" id="marks-exam-details-input" placeholder="AITT NCVT Annual Examination"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Result Status</label>
+                <select id="marks-status-input"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:border-amber-500">
+                  <option value="AUTO">Auto (Pass ≥ 33%)</option>
+                  <option value="PASS">PASS</option>
+                  <option value="FAIL">FAIL</option>
+                  <option value="PENDING">PENDING</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Official NCVT Result URL (Verified Portal Link)</label>
+              <input type="url" id="marks-ncvt-url-input" placeholder="https://dgt.skillindiadigital.gov.in/result"
+                class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+            </div>
           </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">2nd Yr (/600)</label>
-            <input type="number" id="marks-year2-input" min="0" max="600" required
-              class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+
+          <!-- Subject-Wise Marks Editor (Add / Edit / Remove Subjects) -->
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] font-bold text-amber-400">3. Subject-Wise Marks</span>
+              <button type="button" onclick="addResultSubjectRow()"
+                class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] font-bold transition btn-tap">
+                + Add Subject
+              </button>
+            </div>
+            <div id="admin-result-subjects-container" class="space-y-1.5"></div>
           </div>
-          <div>
-            <label id="modal-marks-int-label" class="block text-[11px] font-semibold text-slate-400 mb-1">Internal (/100)</label>
-            <input type="number" id="marks-internal-input" min="0" max="500" required
-              class="w-full px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+
+          <!-- Special Subject & Consolidated Totals -->
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="text-[11px] font-bold text-amber-400">4. Special Subject &amp; Consolidated Marks</div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Special Subject Name</label>
+                <input type="text" id="marks-special-name-input" placeholder="Formative / Workshop"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Special Marks Obtained</label>
+                <input type="number" id="marks-special-obt-input" min="0" max="500"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Special Max Marks</label>
+                <input type="number" id="marks-special-max-input" min="1" max="500"
+                  class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-slate-800/80">
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">1st Yr (/600)</label>
+                <input type="number" id="marks-year1-input" min="0" max="600" required
+                  class="w-full px-2 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">2nd Yr (/600)</label>
+                <input type="number" id="marks-year2-input" min="0" max="600" required
+                  class="w-full px-2 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Max Total (/1200)</label>
+                <input type="number" id="marks-max-total-input" min="100" max="2000" value="1200"
+                  class="w-full px-2 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label id="modal-marks-int-label" class="block text-[10px] font-semibold text-slate-400 mb-0.5">Internal (/100)</label>
+                <input type="number" id="marks-internal-input" min="0" max="500" required
+                  class="w-full px-2 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+            </div>
           </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-delete-result-record" onclick="confirmDeleteResultRecord()"
+              class="px-3 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-xs flex items-center gap-1 transition btn-tap">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Delete</span>
+            </button>
+            <button type="submit"
+              class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
+              Save Result Record
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 12: DEDICATED TRAINEE RESULT DETAILS VIEW                       -->
+  <!-- ===================================================================== -->
+  <div id="modal-result-details" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden my-auto">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <div class="min-w-0">
+          <h3 id="resdet-trainee-name" class="text-sm font-bold text-white truncate">Trainee Result Details</h3>
+          <p id="resdet-meta-line" class="text-[11px] font-mono text-amber-400 truncate">Roll • Reg No</p>
         </div>
-        <button type="submit"
-          class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
-          Save Updated Marks
+        <button type="button" onclick="closeModal('modal-result-details')" class="p-1 rounded-lg text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
         </button>
-      </form>
+      </div>
+
+      <div class="p-4 space-y-3 max-h-[80vh] overflow-y-auto">
+        <!-- Trade, Session & Examination Info -->
+        <div id="resdet-exam-card" class="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5 text-xs"></div>
+
+        <!-- Subject-Wise Marks Table -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-bold text-amber-400">
+            <span>Subject-Wise Marks Breakdown</span>
+            <span>Obtained / Max</span>
+          </div>
+          <div id="resdet-subjects-list" class="space-y-1.5"></div>
+        </div>
+
+        <!-- Special Subject Marks -->
+        <div id="resdet-special-card" class="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 text-xs"></div>
+
+        <!-- Total Marks Obtained, Maximum Marks & Status -->
+        <div id="resdet-totals-grid" class="grid grid-cols-3 gap-2 text-center"></div>
+
+        <!-- Official NCVT Result Download Link + Admin Edit Button -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-slate-800/80">
+          <a id="resdet-official-link" href="https://dgt.skillindiadigital.gov.in/result" target="_blank" rel="noopener noreferrer"
+            class="flex-1 py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition btn-tap">
+            <span>Download Official Result</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 shrink-0"></i>
+          </a>
+          <button type="button" id="resdet-admin-edit-btn" onclick="openAdminEditFromResultDetails()"
+            class="admin-only hidden py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 font-bold text-xs flex items-center justify-center gap-1.5 transition btn-tap">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            <span>Edit Result</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1859,7 +2155,6 @@ service cloud.firestore {
     const THEME_MODE_KEY = "iti_chhotojagulia_theme_v4";
     const DEFAULT_ADMIN_PIN = "2508";
 
-    // Live Firebase Web App Config (iti-attendance-b1ab1)
     const DEFAULT_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDlK8HTuzdGkwmdUXm6B3WO_0VUkQBqm18",
       authDomain: "iti-attendance-b1ab1.firebaseapp.com",
@@ -1946,6 +2241,7 @@ service cloud.firestore {
         title: "3-Phase Induction Motor DOL Starter Wiring & Testing",
         ytId: "M7lc1UVf-VE",
         duration: "12:45",
+        section: "both",
         desc: "Complete control & power circuit wiring with overload relay setting for NCVT 2nd Year practical."
       },
       {
@@ -1953,6 +2249,7 @@ service cloud.firestore {
         title: "Transformer Open Circuit & Short Circuit Test",
         ytId: "aqz-KE-bpKQ",
         duration: "15:20",
+        section: "both",
         desc: "Step-by-step core loss and copper loss measurement using wattmeter, voltmeter, and ammeter."
       },
       {
@@ -1960,6 +2257,7 @@ service cloud.firestore {
         title: "Domestic Staircase & Godown Wiring Practical",
         ytId: "fJ9rUzIMcZQ",
         duration: "09:50",
+        section: "both",
         desc: "Two-way switch control circuit diagram, insulation resistance check with Megger, and earthing test."
       },
       {
@@ -1967,6 +2265,7 @@ service cloud.firestore {
         title: "DC Shunt Motor Speed Control (Armature & Field)",
         ytId: "LXb3EKWsInQ",
         duration: "14:10",
+        section: "both",
         desc: "Rheostatic speed control above and below rated RPM in the Electrical Machine Workshop."
       },
       {
@@ -1974,6 +2273,7 @@ service cloud.firestore {
         title: "Pipe & Plate Earthing Earth Resistance Measurement",
         ytId: "ScMzIvxBSi4",
         duration: "11:05",
+        section: "both",
         desc: "IS 3043 standard earthing pit layout and Fall-of-Potential earth tester procedure."
       },
       {
@@ -1981,6 +2281,7 @@ service cloud.firestore {
         title: "Digital Multimeter & Clamp Meter Fault Diagnosis",
         ytId: "jNQXAC9IVRw",
         duration: "08:30",
+        section: "both",
         desc: "Continuity, diode, AC/DC current measurement and short-circuit troubleshooting safety rules."
       }
     ];
@@ -2005,6 +2306,7 @@ service cloud.firestore {
       notices: JSON.parse(JSON.stringify(DEFAULT_NOTICES)),
       studyNotes: JSON.parse(JSON.stringify(DEFAULT_STUDY_NOTES)),
       videos: JSON.parse(JSON.stringify(DEFAULT_VIDEOS)),
+      galleryPhotos: [],
       examSchedule: JSON.parse(JSON.stringify(DEFAULT_EXAM_SCHEDULE)),
       internalMeta: { ...DEFAULT_INTERNAL_META },
       attendance: {},
@@ -2026,6 +2328,7 @@ service cloud.firestore {
     let activeReportPeriod = "ALL";
     let fbUnsubscribe = null;
     let searchExpandLockUntil = 0;
+
     function getTodayISO() {
       const now = new Date();
       return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -2052,16 +2355,42 @@ service cloud.firestore {
 
     function extractYouTubeId(input) {
       const raw = String(input || "").trim();
-      if (!raw) return "M7lc1UVf-VE";
-      const match = raw.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (!raw) return "";
+      const match = raw.match(
+        /(?:youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+      );
       if (match && match[1]) return match[1];
       if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
-      return "M7lc1UVf-VE";
+      return "";
+    }
+
+    function normalizeVideosList(rawList) {
+      if (!Array.isArray(rawList)) return [];
+      const seen = new Set();
+      const cleaned = [];
+      rawList.forEach((v, idx) => {
+        if (!v || !v.title) return;
+        const cleanId = extractYouTubeId(v.ytId || v.url || "");
+        if (!cleanId) return;
+        const section = v.section === "home" || v.section === "lab" ? v.section : "both";
+        const dedupKey = `${cleanId}_${section}`;
+        if (seen.has(dedupKey)) return;
+        seen.add(dedupKey);
+        cleaned.push({
+          id: v.id || `vid-${cleanId}-${idx}`,
+          title: String(v.title).trim(),
+          ytId: cleanId,
+          duration: String(v.duration || "").trim(),
+          section,
+          desc: String(v.desc || "").trim()
+        });
+      });
+      return cleaned;
     }
 
     function isWeeklyOff(iso) {
       const day = parseISO(iso).getDay();
-      return day === 0 || day === 6; // Sunday (0) & Saturday (6)
+      return day === 0 || day === 6;
     }
 
     function isHolidayDate(iso) {
@@ -2126,9 +2455,6 @@ service cloud.firestore {
       if (window.lucide) lucide.createIcons();
     }
 
-    // =========================================================================
-    // REWARD SYSTEM: GOLD / SILVER / BRONZE STARS, RIBBONS & DEVIT CR PRIVILEGE
-    // =========================================================================
     function computeRewardMaps() {
       const marksRankMap = {};
       const attRankMap = {};
@@ -2250,19 +2576,32 @@ service cloud.firestore {
           appState = {
             ...appState,
             ...parsed,
-            trainees: Array.isArray(parsed.trainees) ? parsed.trainees : appState.trainees,
+            trainees: Array.isArray(parsed.trainees) && parsed.trainees.length ? parsed.trainees : appState.trainees,
             notices: Array.isArray(parsed.notices) ? parsed.notices : appState.notices,
-            videos: Array.isArray(parsed.videos) ? parsed.videos : appState.videos,
+            videos: Array.isArray(parsed.videos) && parsed.videos.length ? normalizeVideosList(parsed.videos) : appState.videos,
             galleryPhotos: Array.isArray(parsed.galleryPhotos) ? parsed.galleryPhotos : appState.galleryPhotos,
-            examItems: Array.isArray(parsed.examItems) ? parsed.examItems : appState.examItems,
-            attendance: (parsed.attendance && typeof parsed.attendance === 'object') ? parsed.attendance : appState.attendance,
-            holidays: (parsed.holidays && typeof parsed.holidays === 'object') ? parsed.holidays : appState.holidays,
+            examSchedule: Array.isArray(parsed.examSchedule) && parsed.examSchedule.length ? parsed.examSchedule : appState.examSchedule,
+            attendance: parsed.attendance && typeof parsed.attendance === "object" ? parsed.attendance : appState.attendance,
+            holidays: parsed.holidays && typeof parsed.holidays === "object" ? parsed.holidays : appState.holidays,
             studyNotes: Array.isArray(parsed.studyNotes) ? parsed.studyNotes : JSON.parse(JSON.stringify(DEFAULT_STUDY_NOTES)),
             internalMeta: { ...DEFAULT_INTERNAL_META, ...(parsed.internalMeta || {}) },
             settings: { ...appState.settings, ...(parsed.settings || {}) }
           };
         }
       } catch (e) {}
+
+      // Migrate any legacy gallery photos into appState.galleryPhotos so they sync properly
+      const legacyGallery = loadCustomGalleryPhotos();
+      if (legacyGallery.length && (!Array.isArray(appState.galleryPhotos) || !appState.galleryPhotos.length)) {
+        appState.galleryPhotos = legacyGallery.map((p, idx) => ({
+          id: p.id || `gal-legacy-${idx}`,
+          title: p.title || "Workshop Photo",
+          cat: p.cat || "Practical",
+          date: p.date || "Workshop Day",
+          img: p.img,
+          custom: true
+        }));
+      }
 
       if (!Object.keys(appState.attendance || {}).length) {
         seedInitialAttendance();
@@ -2280,9 +2619,6 @@ service cloud.firestore {
       }
     }
 
-    // =========================================================================
-    // 3. DAILY ATTENDANCE, HOLIDAY EDITOR & FIREBASE CLOUD SYNC
-    // =========================================================================
     function openHolidayEditorModal() {
       if (!isAdminUnlocked) {
         openAdminModal();
@@ -2492,8 +2828,19 @@ service cloud.firestore {
       const statusText = document.getElementById("daily-status-text");
       const noteEl = document.getElementById("daily-holiday-note");
       const pill = document.getElementById("rollcall-summary-pill");
+      const dayDatePill = document.getElementById("rollcall-day-date-pill");
       const lockHint = document.getElementById("rollcall-lock-hint");
       if (!list) return;
+
+      if (dayDatePill) {
+        const dt = parseISO(selectedDateStr);
+        dayDatePill.textContent = dt.toLocaleDateString("en-GB", {
+          weekday: "short",
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+      }
 
       if (lockHint) {
         lockHint.innerHTML = isAdminUnlocked
@@ -2587,6 +2934,10 @@ service cloud.firestore {
       const rollSortedTrainees = [...appState.trainees].sort((a, b) =>
         String(a.rno || "").localeCompare(String(b.rno || ""), undefined, { numeric: true })
       );
+
+      list.classList.remove("animate-panel");
+      void list.offsetWidth;
+      list.classList.add("animate-panel");
 
       list.innerHTML = rollSortedTrainees
         .map((tr) => {
@@ -2702,11 +3053,15 @@ service cloud.firestore {
           (snap) => {
             if (snap.exists()) {
               const cloudData = snap.data();
-              if (Array.isArray(cloudData.trainees)) {
+              if (Array.isArray(cloudData.trainees) && cloudData.trainees.length) {
                 appState = {
                   ...appState,
                   ...cloudData,
+                  trainees: cloudData.trainees,
+                  videos: Array.isArray(cloudData.videos) && cloudData.videos.length ? normalizeVideosList(cloudData.videos) : appState.videos,
+                  galleryPhotos: Array.isArray(cloudData.galleryPhotos) ? cloudData.galleryPhotos : appState.galleryPhotos,
                   studyNotes: Array.isArray(cloudData.studyNotes) ? cloudData.studyNotes : appState.studyNotes,
+                  examSchedule: Array.isArray(cloudData.examSchedule) && cloudData.examSchedule.length ? cloudData.examSchedule : appState.examSchedule,
                   internalMeta: { ...DEFAULT_INTERNAL_META, ...(cloudData.internalMeta || {}) },
                   settings: { ...appState.settings, ...(cloudData.settings || {}) }
                 };
@@ -2738,9 +3093,6 @@ service cloud.firestore {
       }
     }
 
-    // =========================================================================
-    // 4. THEME MODE (BRIGHT DEFAULT / DARK TOGGLE)
-    // =========================================================================
     function applyThemeMode(mode) {
       const isBright = mode !== "dark";
       document.documentElement.classList.toggle("bright-mode", isBright);
@@ -2760,9 +3112,6 @@ service cloud.firestore {
       applyThemeMode(next);
     }
 
-    // =========================================================================
-    // 5. LIVE CLOCK, HEADER DATE & AUTO-HIDE + MINIMIZING SEARCH BAR
-    // =========================================================================
     function updateLiveClock() {
       const clockEl = document.getElementById("header-live-clock");
       if (!clockEl) return;
@@ -2800,6 +3149,7 @@ service cloud.firestore {
     }
 
     function minimizeSearchBar() {
+      if (lastTabName !== "home") return;
       const sWrap = document.getElementById("search-bar-wrap");
       const inp = document.getElementById("global-trainee-search-input");
       const box = document.getElementById("trainee-search-results");
@@ -2831,22 +3181,25 @@ service cloud.firestore {
 
       let lastY = Math.max(0, window.scrollY);
       let headerHidden = false;
-      // Other tabs: scroll-direction auto-hide (down = hide, up = show).
-      // Separate from Home's compact mode — this slides the whole bar away.
-      let navHidden = false;
+      let ticking = false;
 
       function syncStickyOffsets() {
         const h = header.offsetHeight || 0;
         wrapEl.style.transform = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
         if (sWrap) {
-          if (lastTabName !== "home" && navHidden) {
-            // Slide search bar fully off the top (header height + its own height).
-            sWrap.style.transform = `translateY(-${h + (sWrap.offsetHeight || 60) + 24}px)`;
+          if (lastTabName !== "home") {
+            sWrap.style.transform = "";
           } else {
             sWrap.style.transform = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
           }
         }
       }
+
+      window.__syncHeaderAndSearch = function (forceShow = false) {
+        if (forceShow) headerHidden = false;
+        lastY = Math.max(0, window.scrollY);
+        syncStickyOffsets();
+      };
 
       function handleScrollImmediate() {
         const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -2857,29 +3210,20 @@ service cloud.firestore {
         const isLocked = Date.now() < searchExpandLockUntil;
 
         if (lastTabName !== "home") {
-          // OTHER TABS: scroll-direction auto-hide for heading + search bar.
-          // Never compact here — full-size bar slides away on scroll-down
-          // and slides back on scroll-up.
           expandSearchBar(false);
           if (curY <= 12) {
             headerHidden = false;
-            navHidden = false;
-          } else if (delta > 3 && curY > 36) {
-            // Don't hide while the user is typing in search.
+          } else if (delta > 6 && curY > 44) {
             if (!(inp && document.activeElement === inp)) {
               headerHidden = true;
-              navHidden = true;
             }
-          } else if (delta < -2) {
+          } else if (delta < -6) {
             headerHidden = false;
-            navHidden = false;
           }
         } else if (curY <= 12) {
-          // Home: expand again at the very top.
           headerHidden = false;
-          navHidden = false;
           expandSearchBar(false);
-        } else if (lastTabName === "home" && curY > 36) {
+        } else if (curY > 36) {
           headerHidden = true;
           if (!hasQuery && !isLocked) {
             if (inp && document.activeElement === inp) inp.blur();
@@ -2890,14 +3234,24 @@ service cloud.firestore {
         }
         syncStickyOffsets();
         lastY = curY;
+        ticking = false;
       }
 
       window.addEventListener("resize", syncStickyOffsets, { passive: true });
-      window.addEventListener("scroll", handleScrollImmediate, { passive: true });
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (!ticking) {
+            ticking = true;
+            requestAnimationFrame(handleScrollImmediate);
+          }
+        },
+        { passive: true }
+      );
     }
 
     // =========================================================================
-    // 6. BOTTOM ONE-THUMB TAB SWITCHING & ACCORDIONS
+    // 6. BOTTOM ONE-THUMB TAB SWITCHING, MORE POPUP & ACCORDIONS
     // =========================================================================
     const ACTIVE_TAB_CLS = "tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-bold bg-amber-500 text-slate-950 transition btn-tap";
     const INACTIVE_TAB_CLS = "tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap";
@@ -2906,45 +3260,71 @@ service cloud.firestore {
       document.querySelectorAll(".tab-btn").forEach((btn) => {
         btn.className = btn.id === `tab-btn-${activeKey}` ? ACTIVE_TAB_CLS : INACTIVE_TAB_CLS;
       });
+      ["results", "videos", "gallery"].forEach((k) => {
+        const item = document.getElementById(`more-item-${k}`);
+        if (!item) return;
+        const isCurrent = lastTabName === k;
+        item.classList.toggle("border-amber-500/60", isCurrent);
+        item.classList.toggle("bg-amber-500/10", isCurrent);
+      });
     }
 
     let moreOpen = false;
-    let moreHideTimeout = null;
-    function openMoreSheet(){
-      if (moreHideTimeout) { clearTimeout(moreHideTimeout); moreHideTimeout = null; }
+    let moreToggleLock = 0;
+
+    function openMoreSheet() {
       moreOpen = true;
-      const bd=document.getElementById("more-backdrop"), sh=document.getElementById("more-sheet"); if(!bd||!sh) return;
-      bd.classList.add("more-open"); bd.style.opacity="1"; bd.style.pointerEvents="auto";
-      sh.classList.add("more-open"); sh.style.transform="translateY(0)"; sh.style.visibility="visible"; sh.style.pointerEvents="auto";
+      const bd = document.getElementById("more-backdrop");
+      const sh = document.getElementById("more-sheet");
+      const btn = document.getElementById("tab-btn-more");
+      if (bd) bd.classList.add("more-open");
+      if (sh) sh.classList.add("more-open");
+      if (btn) btn.setAttribute("aria-expanded", "true");
       updateNavHighlights("more");
       if (window.lucide) lucide.createIcons();
     }
-    function closeMoreSheet(skipHighlightReset = false){
+
+    function closeMoreSheet(skipHighlightReset = false) {
       moreOpen = false;
-      const bd2=document.getElementById("more-backdrop"), sh2=document.getElementById("more-sheet");
-      if(bd2){ bd2.classList.remove("more-open"); bd2.style.opacity="0"; bd2.style.pointerEvents="none"; }
-      if(sh2){ sh2.classList.remove("more-open"); sh2.style.transform="translateY(110%)"; sh2.style.pointerEvents="none";
-        if (moreHideTimeout) clearTimeout(moreHideTimeout);
-        moreHideTimeout = setTimeout(function(){ if(!moreOpen) sh2.style.visibility="hidden"; }, 320); }
+      const bd = document.getElementById("more-backdrop");
+      const sh = document.getElementById("more-sheet");
+      const btn = document.getElementById("tab-btn-more");
+      if (bd) bd.classList.remove("more-open");
+      if (sh) sh.classList.remove("more-open");
+      if (btn) {
+        btn.setAttribute("aria-expanded", "false");
+        btn.blur();
+      }
       if (!skipHighlightReset) {
-        const inMore = ["results","videos","gallery"].includes(lastTabName);
+        const inMore = ["results", "videos", "gallery"].includes(lastTabName);
         updateNavHighlights(inMore ? "more" : lastTabName);
       }
     }
-    function toggleMoreSheet(){ moreOpen ? closeMoreSheet() : openMoreSheet(); }
-    function selectMoreTab(tab){
+
+    function toggleMoreSheet() {
+      const now = Date.now();
+      if (now - moreToggleLock < 120) return;
+      moreToggleLock = now;
+      if (moreOpen) closeMoreSheet(false);
+      else openMoreSheet();
+    }
+
+    function selectMoreTab(tab) {
       closeMoreSheet(true);
       switchTab(tab);
     }
 
     let lastTabName = "home";
     const TAB_ORDER = ["home", "daily", "monthly", "results", "videos", "gallery"];
+
     function switchTab(tabName) {
       closeMoreSheet(true);
       const fromIdx = TAB_ORDER.indexOf(lastTabName);
       const toIdx = TAB_ORDER.indexOf(tabName);
       const dirClass = toIdx > fromIdx ? "animate-tab-right" : toIdx < fromIdx ? "animate-tab-left" : "animate-tab-fade";
       lastTabName = tabName;
+
+      document.body.classList.toggle("non-home-tab", tabName !== "home");
 
       document.querySelectorAll(".tab-view").forEach((sec) => {
         if (sec.id === `view-${tabName}`) {
@@ -2957,90 +3337,104 @@ service cloud.firestore {
         }
       });
 
+      // Automatically open Chart section whenever switching to Chart tab
+      if (tabName === "monthly") {
+        const chartBody = document.getElementById("body-monthly-chart");
+        const chartChev = document.getElementById("chevron-monthly-chart");
+        if (chartBody) chartBody.classList.add("accordion-open");
+        if (chartChev) chartChev.classList.add("rotate-180");
+        renderEligibilityChart();
+      }
+
       const inMore = ["results", "videos", "gallery"].includes(tabName);
       updateNavHighlights(inMore ? "more" : tabName);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      // Search bar rule: never compact on other tabs — always full size there.
-      // On Home it compacts only while scrolling (handled in the scroll handler).
+      window.scrollTo(0, 0);
       expandSearchBar(false);
+      if (window.__syncHeaderAndSearch) window.__syncHeaderAndSearch(true);
       if (window.lucide) lucide.createIcons();
     }
 
-    // Automatically close More sheet when clicking/tapping anywhere outside it or the bottom dock
     document.addEventListener("pointerdown", (e) => {
       if (!moreOpen) return;
-      if (!e.target.closest("#more-sheet") && !e.target.closest("#bottom-tab-bar")) {
-        closeMoreSheet();
+      if (!e.target.closest("#more-sheet") && !e.target.closest("#tab-btn-more")) {
+        closeMoreSheet(false);
       }
     });
 
-    // =========================================================================
-    // 8. NOTICES (SHOW LATEST BY DEFAULT + SMOOTH TOGGLE ALL), STUDY NOTES & VIDEOS
-    // =========================================================================
-    let showAllNotices = false;
-
-    // FIX: these handlers were referenced by onclick but never defined,
-    // so every accordion (Daily Top Attenders, Daily Rollcall, Monthly Chart,
-    // and all Results sections) did nothing when tapped.
     function toggleAccordion(key) {
-      var body = document.getElementById("body-" + key);
-      var chev = document.getElementById("chevron-" + key);
+      const body = document.getElementById("body-" + key);
+      const chev = document.getElementById("chevron-" + key);
       if (!body) return;
-      var isOpen = body.classList.toggle("accordion-open");
+      const isOpen = body.classList.toggle("accordion-open");
       if (chev) chev.classList.toggle("rotate-180", isOpen);
     }
-    // Results accordions use the same body-/chevron- naming (body-res-y1, etc.)
-    function toggleResultAccordion(key) { toggleAccordion("res-" + key); }
-    // FIX: handleTraineeSearch was called on every keystroke/focus but NEVER
-    // defined, so typing in search threw ReferenceError and no dropdown ever appeared.
+
+    function toggleResultAccordion(key) {
+      toggleAccordion("res-" + key);
+    }
+
     function handleTraineeSearch(raw) {
-      var q = String(raw == null ? "" : raw).trim().toLowerCase();
-      var box = document.getElementById("trainee-search-results");
-      var btn = document.getElementById("btn-clear-trainee-search");
+      const q = String(raw == null ? "" : raw).trim().toLowerCase();
+      const box = document.getElementById("trainee-search-results");
+      const btn = document.getElementById("btn-clear-trainee-search");
       if (btn) btn.classList.toggle("hidden", !q);
       if (!box) return;
-      if (!q) { box.classList.add("hidden"); box.innerHTML = ""; return; }
-      var matches = (appState.trainees || []).filter(function(tr){
-        return String(tr.name||"").toLowerCase().includes(q)
-          || String(tr.rno||"").toLowerCase().includes(q)
-          || String(tr.roll||"").toLowerCase().includes(q);
-      }).slice(0, 8);
+      if (!q) {
+        box.classList.add("hidden");
+        box.innerHTML = "";
+        return;
+      }
+      const matches = (appState.trainees || [])
+        .filter(
+          (tr) =>
+            String(tr.name || "").toLowerCase().includes(q) ||
+            String(tr.rno || "").toLowerCase().includes(q) ||
+            String(tr.roll || "").toLowerCase().includes(q)
+        )
+        .slice(0, 8);
       if (!matches.length) {
-        box.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center">No trainee found for "' + escapeHTML(raw) + '"</div>';
+        box.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center">No trainee found for "${escapeHTML(raw)}"</div>`;
       } else {
-        box.innerHTML = matches.map(function(tr){
-          var st = { presentDays: 0, workingDays: 0, pct: 100 };
-          try { st = calculateTraineeStats(tr.id, "ALL"); } catch (e) {}
-          return '<button type="button" onclick="selectSearchTrainee(\'' + tr.id + '\')" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-slate-800/70 transition">'
-            + '<span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[11px] font-extrabold text-amber-300 shrink-0">R.' + escapeHTML(tr.rno||"--") + '</span>'
-            + '<span class="min-w-0 flex-1"><span class="block text-xs font-bold text-white truncate">' + escapeHTML(tr.name||"") + '</span>'
-            + '<span class="block text-[10px] text-slate-400 truncate">Reg: ' + escapeHTML(tr.roll||"--") + ' &bull; ' + st.presentDays + '/' + st.workingDays + ' days &bull; ' + st.pct + '%</span></span>'
-            + '<i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i></button>';
-        }).join("");
+        box.innerHTML = matches
+          .map((tr) => {
+            const st = calculateTraineeStats(tr.id, "ALL");
+            return `<button type="button" onclick="selectSearchTrainee('${tr.id}')" class="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-slate-800/70 transition">
+              <span class="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-[11px] font-extrabold text-amber-300 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
+              <span class="min-w-0 flex-1"><span class="block text-xs font-bold text-white truncate">${escapeHTML(tr.name || "")}</span>
+              <span class="block text-[10px] text-slate-400 truncate">Reg: ${escapeHTML(tr.roll || "--")} &bull; ${st.presentDays}/${st.workingDays} days &bull; ${st.pct}%</span></span>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i></button>`;
+          })
+          .join("");
         if (window.lucide) lucide.createIcons();
       }
       box.classList.remove("hidden");
     }
-    function selectSearchTrainee(id) { clearTraineeSearch(); openTraineeReport(id); }
-    document.addEventListener("click", function(e){
-      var wrap = document.getElementById("global-trainee-search-wrap");
-      var box = document.getElementById("trainee-search-results");
-      if (wrap && box && !wrap.contains(e.target)) box.classList.add("hidden");
-    });
-    document.addEventListener("keydown", function(e){
-      if (e.key === "Escape") { var b = document.getElementById("trainee-search-results"); if (b) b.classList.add("hidden"); }
-    });
-    // FIX: clear button + Admin "direct edit" both called this missing function,
-    // which threw ReferenceError and broke Admin direct-edit.
+
+    function selectSearchTrainee(id) {
+      clearTraineeSearch();
+      openTraineeReport(id);
+    }
+
     function clearTraineeSearch() {
-      var inp = document.getElementById("global-trainee-search-input");
-      var box = document.getElementById("trainee-search-results");
-      var btn = document.getElementById("btn-clear-trainee-search");
+      const inp = document.getElementById("global-trainee-search-input");
+      const box = document.getElementById("trainee-search-results");
+      const btn = document.getElementById("btn-clear-trainee-search");
       if (inp) inp.value = "";
       if (box) box.classList.add("hidden");
       if (btn) btn.classList.add("hidden");
-      if (typeof handleTraineeSearch === "function") handleTraineeSearch("");
     }
+
+    document.addEventListener("click", (e) => {
+      const wrap = document.getElementById("global-trainee-search-wrap");
+      const box = document.getElementById("trainee-search-results");
+      if (wrap && box && !wrap.contains(e.target)) box.classList.add("hidden");
+    });
+
+    // =========================================================================
+    // 7. NOTICES, STUDY NOTES & TRADE VIDEOS
+    // =========================================================================
+    let showAllNotices = false;
+
     function toggleAllNotices() {
       showAllNotices = !showAllNotices;
       const extraBody = document.getElementById("extra-notices-accordion");
@@ -3153,9 +3547,16 @@ service cloud.firestore {
       const grid = document.getElementById(containerId);
       if (!grid) return;
 
-      const items = limit ? appState.videos.slice(0, limit) : appState.videos;
+      const normalized = normalizeVideosList(appState.videos);
+      const sectionFiltered = normalized.filter((v) => {
+        const sec = v.section || "both";
+        if (targetPrefix === "notices") return sec === "both" || sec === "home";
+        return sec === "both" || sec === "lab";
+      });
+      const items = limit ? sectionFiltered.slice(0, limit) : sectionFiltered;
+
       if (!items.length) {
-        grid.innerHTML = `<div class="col-span-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No trade videos added yet.</div>`;
+        grid.innerHTML = `<div class="col-span-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No trade videos added for this section yet.</div>`;
         return;
       }
 
@@ -3221,6 +3622,9 @@ service cloud.firestore {
     }
 
     function playInlineVideo(targetPrefix, ytId, title) {
+      const otherPrefix = targetPrefix === "notices" ? "videos" : "notices";
+      closeInlinePlayer(otherPrefix);
+
       const wrap = document.getElementById(`${targetPrefix}-inline-player-wrap`);
       const iframe = document.getElementById(`${targetPrefix}-player-iframe`);
       const titleEl = document.getElementById(`${targetPrefix}-player-title`);
@@ -3233,7 +3637,7 @@ service cloud.firestore {
       if (titleEl) titleEl.textContent = title || "Trade Practical Video";
       if (extLink) extLink.href = watchUrl;
       if (extSubLink) extSubLink.href = watchUrl;
-      iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&rel=0&modestbranding=1`;
+      iframe.src = `https://www.youtube-nocookie.com/embed/${cleanId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
       wrap.classList.remove("hidden");
       wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
       if (window.lucide) lucide.createIcons();
@@ -3247,7 +3651,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 9. DAILY ATTENDANCE & HOLIDAY CALENDAR (SUNDAY FIRST)
+    // 8. DAILY ATTENDANCE & HOLIDAY CALENDAR (SUNDAY FIRST)
     // =========================================================================
     function renderDailySection() {
       const picker = document.getElementById("daily-date-picker");
@@ -3271,6 +3675,9 @@ service cloud.firestore {
       if (!val) return;
       selectedDateStr = val;
       calendarViewDate = parseISO(val);
+      if (!isHolidayDate(val)) {
+        hideHolidayCalendarAndShowTrainees();
+      }
       renderDailySection();
       if (window.lucide) lucide.createIcons();
     }
@@ -3278,13 +3685,31 @@ service cloud.firestore {
     function selectToday() {
       selectedDateStr = getTodayISO();
       calendarViewDate = parseISO(selectedDateStr);
+      if (!isHolidayDate(selectedDateStr)) {
+        hideHolidayCalendarAndShowTrainees();
+      }
       renderDailySection();
       if (window.lucide) lucide.createIcons();
+    }
+
+    function hideHolidayCalendarAndShowTrainees() {
+      const calAcc = document.getElementById("holiday-calendar-accordion");
+      const calChev = document.getElementById("chevron-toggle-calendar");
+      if (calAcc) calAcc.classList.remove("accordion-open");
+      if (calChev) calChev.classList.remove("rotate-180");
+
+      const rollBody = document.getElementById("body-daily-rollcall");
+      const rollChev = document.getElementById("chevron-daily-rollcall");
+      if (rollBody) rollBody.classList.add("accordion-open");
+      if (rollChev) rollChev.classList.add("rotate-180");
     }
 
     function selectCalendarDate(iso) {
       selectedDateStr = iso;
       calendarViewDate = parseISO(iso);
+      if (!isHolidayDate(iso)) {
+        hideHolidayCalendarAndShowTrainees();
+      }
       renderDailySection();
       if (window.lucide) lucide.createIcons();
     }
@@ -3304,12 +3729,22 @@ service cloud.firestore {
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         const isSelected = iso === selectedDateStr;
         const isHol = isHolidayDate(iso);
+        const dow = d.getDay();
 
         let cls = "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700";
         if (isSelected) {
           cls = "bg-amber-500 border-amber-400 text-slate-950";
         } else if (isHol) {
-          cls = "bg-rose-950/30 border-rose-500/30 text-rose-300";
+          const customHol = appState.holidays[iso];
+          const customTitle = typeof customHol === "string" ? customHol : customHol?.title || "";
+          const isNamedNonWeeklyHoliday = Boolean(customHol) && !customTitle.toLowerCase().includes("weekly off");
+          if (dow === 0) {
+            cls = "cal-sunday bg-rose-600/35 border-rose-500/80 text-rose-200";
+          } else if (dow === 6 && !isNamedNonWeeklyHoliday) {
+            cls = "cal-saturday bg-sky-500/15 border-sky-400/45 text-sky-300";
+          } else {
+            cls = "cal-holiday bg-rose-500/15 border-rose-400/35 text-rose-300";
+          }
         }
 
         html += `
@@ -3323,18 +3758,19 @@ service cloud.firestore {
       strip.innerHTML = html;
     }
 
-    function toggleCalendarDrawer() {
-      const card = document.getElementById("holiday-calendar-card");
-      if (!card) return;
-      const opening = card.classList.contains("hidden");
-      card.classList.toggle("hidden", !opening);
-      if (opening) renderHolidayCalendar();
-      if (window.lucide) lucide.createIcons();
-    }
-
     function shiftCalendarMonth(delta) {
       calendarViewDate.setMonth(calendarViewDate.getMonth() + delta);
       renderHolidayCalendar();
+    }
+
+    function toggleCalendarDrawer() {
+      const acc = document.getElementById("holiday-calendar-accordion");
+      const chev = document.getElementById("chevron-toggle-calendar");
+      if (!acc) return;
+      const isOpen = acc.classList.toggle("accordion-open");
+      if (chev) chev.classList.toggle("rotate-180", isOpen);
+      if (isOpen) renderHolidayCalendar();
+      if (window.lucide) lucide.createIcons();
     }
 
     function renderHolidayCalendar() {
@@ -3363,6 +3799,7 @@ service cloud.firestore {
         const holEntry = getHolidayEntry(iso);
         const isHol = Boolean(holEntry);
         const hasAtt = Boolean(appState.attendance[iso]);
+        const dow = new Date(year, month, d).getDay();
 
         if (holEntry) {
           monthHolidays.push({ iso, day: d, title: holEntry.title, info: holEntry.info });
@@ -3372,7 +3809,16 @@ service cloud.firestore {
         if (isSel) {
           cls = "bg-amber-500 border-amber-400 text-slate-950 font-extrabold";
         } else if (isHol) {
-          cls = "bg-rose-950/40 border-rose-500/40 text-rose-300 font-bold";
+          const customHol = appState.holidays[iso];
+          const customTitle = typeof customHol === "string" ? customHol : customHol?.title || "";
+          const isNamedNonWeeklyHoliday = Boolean(customHol) && !customTitle.toLowerCase().includes("weekly off");
+          if (dow === 0) {
+            cls = "cal-sunday bg-rose-600/35 border-rose-500/80 text-rose-200 font-bold";
+          } else if (dow === 6 && !isNamedNonWeeklyHoliday) {
+            cls = "cal-saturday bg-sky-500/15 border-sky-400/45 text-sky-300 font-bold";
+          } else {
+            cls = "cal-holiday bg-rose-500/15 border-rose-400/35 text-rose-300 font-bold";
+          }
         } else if (hasAtt) {
           cls = "bg-emerald-950/30 border-emerald-500/30 text-emerald-300 font-semibold";
         }
@@ -3407,51 +3853,6 @@ service cloud.firestore {
           </div>
         `;
       }
-    }
-
-    // =========================================================================
-    // 10. 80% NCVT ELIGIBILITY CHART (ALL / 1M / 6M / 9M / 12M + PNG & CSV)
-    // =========================================================================
-    let currentChartPeriod = "ALL";
-
-    function setChartPeriod(period) {
-      currentChartPeriod = period || "ALL";
-      const sel = document.getElementById("eligibility-month-filter");
-      if (sel) sel.value = currentChartPeriod;
-
-      document.querySelectorAll(".chart-period-pill").forEach((btn) => {
-        const active = btn.getAttribute("data-period") === currentChartPeriod;
-        btn.className = active
-          ? "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition btn-tap"
-          : "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap";
-      });
-
-      renderEligibilityChart();
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function getFilteredAttendanceDates(period) {
-      const allDates = Object.keys(appState.attendance)
-        .filter((iso) => !isHolidayDate(iso))
-        .sort();
-      if (!allDates.length || period === "ALL") return allDates;
-
-      const todayISO = getTodayISO();
-      if (period === "1M") {
-        const currentYM = todayISO.slice(0, 7);
-        return allDates.filter((iso) => iso.startsWith(currentYM));
-      }
-
-      const monthsBack = period === "6M" ? 6 : period === "9M" ? 9 : 12;
-      const nowDt = parseISO(todayISO);
-      const startMonthDt = new Date(nowDt.getFullYear(), nowDt.getMonth() - (monthsBack - 1), 1);
-      const cutoffYM = `${startMonthDt.getFullYear()}-${String(startMonthDt.getMonth() + 1).padStart(2, "0")}`;
-      const currentYM = todayISO.slice(0, 7);
-
-      return allDates.filter((iso) => {
-        const ym = iso.slice(0, 7);
-        return ym >= cutoffYM && ym <= currentYM;
-      });
     }
 
     function calculateTraineeStats(traineeId, period = "ALL") {
@@ -3549,7 +3950,7 @@ service cloud.firestore {
                 `;
               })
               .join("")
-          : `<div class="col-span-full text-[11px] text-slate-400 text-center py-2">No monthly attendance records yet.</div>`;
+          : `<div class="col-span-full text-[11px] text-slate-400 text-center py-2">No monthly attendance records for this filter.</div>`;
       }
 
       list.innerHTML = rows
@@ -3634,7 +4035,9 @@ service cloud.firestore {
       const currentMonthName = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
       const periodTitle =
         currentChartPeriod === "ALL"
-          ? "All Working Days"
+          ? "Complete Working Days"
+          : currentChartPeriod === "MONTH" && currentChartSpecificMonth
+          ? `Month: ${currentChartSpecificMonth}`
           : currentChartPeriod === "1M"
           ? `Current Month (${currentMonthName})`
           : currentChartPeriod === "6M"
@@ -3695,137 +4098,12 @@ service cloud.firestore {
       showToast("80% Chart PNG downloaded", "success");
     }
 
-    // =========================================================================
-    // 11. RESULTS & EXAMS RENDERING + CSV EXPORT
-    // =========================================================================
-    function renderResultsSection() {
-      const y1List = document.getElementById("first-year-results-list");
-      const y12List = document.getElementById("combined-two-year-results-list");
-      const schedList = document.getElementById("exam-schedule-list");
-      const intList = document.getElementById("internal-tests-list");
-      const intHeading = document.getElementById("internal-exam-heading");
-      const intSubtitle = document.getElementById("internal-exam-subtitle");
-      const meta = { ...DEFAULT_INTERNAL_META, ...(appState.internalMeta || {}) };
-      const maxInt = Number(meta.maxMarks) || 100;
-      const rewardMaps = computeRewardMaps();
-
-      if (intHeading) intHeading.textContent = meta.title;
-      if (intSubtitle) intSubtitle.textContent = `${meta.subtitle} (/${maxInt})`;
-
-      const sortedByY1 = [...appState.trainees].sort((a, b) => Number(b.year1 || 0) - Number(a.year1 || 0));
-      const sortedByCombined = [...appState.trainees].sort(
-        (a, b) => Number(b.year1 || 0) + Number(b.year2 || 0) - (Number(a.year1 || 0) + Number(a.year2 || 0))
-      );
-      const sortedByInternal = [...appState.trainees].sort((a, b) => Number(b.internal || 0) - Number(a.internal || 0));
-
-      if (y1List) {
-        y1List.innerHTML = sortedByY1
-          .map((tr, idx) => {
-            const marks = Number(tr.year1 || 0);
-            const pct = ((marks / 600) * 100).toFixed(1);
-            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
-            return `
-              <div onclick="openTraineeReport('${tr.id}')"
-                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer ${rw.cardRibbonClass}">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
-                    <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
-                    <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
-                    ${rw.badgesHTML}
-                  </div>
-                  <div class="text-[10px] font-mono text-slate-400 mt-0.5">${escapeHTML(tr.roll)}</div>
-                </div>
-                <div class="text-right shrink-0">
-                  <div class="text-xs font-extrabold text-emerald-400">${marks}/600 (${pct}%)</div>
-                  <div class="text-[10px] font-bold text-emerald-300">PASS</div>
-                </div>
-              </div>
-            `;
-          })
-          .join("");
-      }
-
-      if (y12List) {
-        y12List.innerHTML = sortedByCombined
-          .map((tr, idx) => {
-            const m1 = Number(tr.year1 || 0);
-            const m2 = Number(tr.year2 || 0);
-            const tot = m1 + m2;
-            const pct = ((tot / 1200) * 100).toFixed(1);
-            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
-            return `
-              <div onclick="openTraineeReport('${tr.id}')"
-                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer ${rw.cardRibbonClass}">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
-                    <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
-                    <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
-                    ${rw.badgesHTML}
-                  </div>
-                  <div class="text-[10px] text-slate-400 mt-0.5">1st Yr: ${m1}/600 • 2nd Yr: ${m2}/600</div>
-                </div>
-                <div class="text-right shrink-0">
-                  <div class="text-xs font-extrabold text-amber-400">${tot}/1200</div>
-                  <div class="text-[10px] font-bold text-emerald-400">${pct}%</div>
-                </div>
-              </div>
-            `;
-          })
-          .join("");
-      }
-
-      if (schedList) {
-        const scheduleItems = Array.isArray(appState.examSchedule) && appState.examSchedule.length ? appState.examSchedule : DEFAULT_EXAM_SCHEDULE;
-        schedList.innerHTML = scheduleItems
-          .map(
-            (ex) => `
-          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <div>
-              <div class="text-xs font-bold text-white">${escapeHTML(ex.subject)}</div>
-              <div class="text-[10px] text-slate-400">${escapeHTML(ex.venue)} • ${escapeHTML(ex.time)}</div>
-            </div>
-            <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold self-start sm:self-center">
-              ${escapeHTML(ex.date)}
-            </span>
-          </div>
-        `
-          )
-          .join("");
-      }
-
-      if (intList) {
-        intList.innerHTML = sortedByInternal
-          .map((tr, idx) => {
-            const sc = Number(tr.internal || 0);
-            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
-            return `
-              <div onclick="openTraineeReport('${tr.id}')"
-                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-slate-700 cursor-pointer ${rw.cardRibbonClass}">
-                <div class="flex items-center gap-1.5 min-w-0 flex-wrap flex-1">
-                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
-                  <span class="font-mono text-[11px] font-bold text-sky-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
-                  <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
-                  ${rw.badgesHTML}
-                </div>
-                <span class="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 text-xs font-extrabold shrink-0">${sc}/${maxInt}</span>
-              </div>
-            `;
-          })
-          .join("");
-      }
-    }
-
     function downloadBatchResultsCSV() {
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
-      const lines = [`Roll No,Registration ID,Trainee Name,1st Year (/600),2nd Year (/600),Combined Total (/1200),Aggregate %,Internal (/${maxInt}),Status`];
+      const lines = [`Roll No,Registration ID,Trainee Name,1st Year (/600),2nd Year (/600),Combined Total,Max Marks,Aggregate %,Internal (/${maxInt}),Status`];
       appState.trainees.forEach((tr) => {
-        const y1 = Number(tr.year1 || 0);
-        const y2 = Number(tr.year2 || 0);
-        const tot = y1 + y2;
-        const pct = ((tot / 1200) * 100).toFixed(2);
-        lines.push(`"${tr.rno || ""}","${tr.roll}","${tr.name}",${y1},${y2},${tot},${pct}%,${tr.internal || 0},PASS`);
+        const res = getTraineeResultSummary(tr);
+        lines.push(`"${tr.rno || ""}","${tr.roll}","${tr.name}",${res.y1},${res.y2},${res.tot},${res.maxTotal},${res.pct}%,${tr.internal || 0},${res.status}`);
       });
       const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -3840,7 +4118,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 12. INDIVIDUAL TRAINEE FULL PROFILE MODAL
+    // 12. INDIVIDUAL TRAINEE FULL PROFILE MODAL & GALLERY HELPERS
     // =========================================================================
     function openTraineeReport(traineeId) {
       activeReportTraineeId = traineeId;
@@ -3885,18 +4163,16 @@ service cloud.firestore {
         }
       }
 
-      const y1 = Number(tr.year1 || 0);
-      const y2 = Number(tr.year2 || 0);
-      const tot = y1 + y2;
+      const res = getTraineeResultSummary(tr);
       const acadGrid = document.getElementById("report-academics-grid");
       if (acadGrid) {
         acadGrid.innerHTML = `
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
-            <div class="text-xs font-extrabold text-emerald-400">${y1}/600</div>
+            <div class="text-xs font-extrabold text-emerald-400">${res.y1}/600</div>
             <div class="text-[10px] text-slate-400">1st Year</div>
           </div>
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
-            <div class="text-xs font-extrabold text-amber-400">${tot}/1200</div>
+            <div class="text-xs font-extrabold text-amber-400">${res.tot}/${res.maxTotal}</div>
             <div class="text-[10px] text-slate-400">2-Yr Total</div>
           </div>
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
@@ -3968,9 +4244,7 @@ service cloud.firestore {
       const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
       if (!tr) return;
       const st = calculateTraineeStats(tr.id, activeReportPeriod);
-      const y1 = Number(tr.year1 || 0);
-      const y2 = Number(tr.year2 || 0);
-      const tot = y1 + y2;
+      const res = getTraineeResultSummary(tr);
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
       const dates = getFilteredAttendanceDates(activeReportPeriod);
 
@@ -3979,9 +4253,9 @@ service cloud.firestore {
         `Trainee Name,${tr.name}`,
         `Roll No,${tr.rno || ""}`,
         `NCVT Registration ID,${tr.roll}`,
-        `1st Year Marks (/600),${y1}`,
-        `2nd Year Marks (/600),${y2}`,
-        `Consolidated Total (/1200),${tot}`,
+        `1st Year Marks (/600),${res.y1}`,
+        `2nd Year Marks (/600),${res.y2}`,
+        `Consolidated Total (/${res.maxTotal}),${res.tot}`,
         `Internal Assessment (/${maxInt}),${tr.internal || 0}`,
         `Attendance Period,${activeReportPeriod}`,
         `Present Days,${st.presentDays}`,
@@ -4014,10 +4288,7 @@ service cloud.firestore {
       const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
       if (!tr) return;
       const st = calculateTraineeStats(tr.id, activeReportPeriod);
-      const y1 = Number(tr.year1 || 0);
-      const y2 = Number(tr.year2 || 0);
-      const tot = y1 + y2;
-      const pctMarks = ((tot / 1200) * 100).toFixed(1);
+      const res = getTraineeResultSummary(tr);
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
       const canvas = document.createElement("canvas");
@@ -4059,8 +4330,8 @@ service cloud.firestore {
         ctx.fillText(title, x + 16, y + 64);
       };
 
-      drawBox(34, 148, 215, 84, "1st Year Marks", `${y1} / 600`, "#34d399");
-      drawBox(272, 148, 215, 84, `Combined 2-Yr (${pctMarks}%)`, `${tot} / 1200`, "#fbbf24");
+      drawBox(34, 148, 215, 84, "1st Year Marks", `${res.y1} / 600`, "#34d399");
+      drawBox(272, 148, 215, 84, `Combined 2-Yr (${res.pct}%)`, `${res.tot} / ${res.maxTotal}`, "#fbbf24");
       drawBox(510, 148, 215, 84, "Internal Assessment", `${tr.internal || 0} / ${maxInt}`, "#38bdf8");
 
       const ok = st.pct >= 80;
@@ -4099,7 +4370,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 13. MODALS & ADMIN HUB CONTROLS
+    // 13. MODALS & ADMIN AUTHENTICATION CONTROLS
     // =========================================================================
     function openModal(id) {
       const el = document.getElementById(id);
@@ -4117,14 +4388,15 @@ service cloud.firestore {
         closeModal(e.target.id);
       }
     });
+
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         document.querySelectorAll('[id^="modal-"]').forEach((m) => m.classList.add("hidden"));
+        closeGalleryLightbox();
       }
     });
 
     function updateAdminUIState() {
-      if(typeof renderGallery==="function"){ try{ renderGallery(); }catch(e){} }
       document.querySelectorAll(".admin-only").forEach((el) => {
         el.classList.toggle("hidden", !isAdminUnlocked);
       });
@@ -4140,8 +4412,8 @@ service cloud.firestore {
       if (modeIcon) {
         modeIcon.setAttribute("data-lucide", isAdminUnlocked ? "shield-check" : "eye");
         modeIcon.className = isAdminUnlocked
-          ? "w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400"
-          : "w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300";
+          ? "w-5 h-5 text-emerald-400 shrink-0"
+          : "w-5 h-5 text-slate-300 shrink-0";
       }
 
       if (isAdminUnlocked) {
@@ -4225,6 +4497,64 @@ service cloud.firestore {
         b.className = active
           ? "admintab-btn py-1.5 px-2 rounded-lg bg-amber-500 text-slate-950 transition"
           : "admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition";
+      });
+    }
+
+    const GALLERY_STORAGE_KEY = "iti_gallery_custom_photos_v1";
+    const GALLERY_FALLBACK_SVG =
+      "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22%230f172a%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22280%22%20font-size%3D%2296%22%20text-anchor%3D%22middle%22%3E%E2%9A%A1%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22360%22%20font-size%3D%2232%22%20font-weight%3D%22bold%22%20fill%3D%22%23fbbf24%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EITI%20Workshop%20Photo%3C/text%3E%3C/svg%3E";
+
+    function loadCustomGalleryPhotos() {
+      try {
+        const raw = localStorage.getItem(GALLERY_STORAGE_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function openGalleryUploadModal() {
+      if (!isAdminUnlocked) {
+        showToast("Admin only — unlock Admin Mode first", "error");
+        openModal("modal-admin");
+        return;
+      }
+      const dateInp = document.getElementById("gallery-photo-date");
+      if (dateInp && !dateInp.value) dateInp.value = formatDisplayDate(getTodayISO());
+      openModal("modal-add-gallery");
+    }
+
+    function compressImageDataURL(file, maxDim = 960, quality = 0.8) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Read failed"));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => resolve(reader.result);
+          img.onload = () => {
+            let w = img.width || maxDim;
+            let h = img.height || maxDim;
+            if (w > maxDim || h > maxDim) {
+              if (w >= h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return resolve(reader.result);
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL("image/jpeg", quality));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
       });
     }
 
@@ -4577,20 +4907,53 @@ service cloud.firestore {
     function handleSaveVideo(e) {
       e.preventDefault();
       const title = document.getElementById("video-title-input").value.trim();
-      const ytId = extractYouTubeId(document.getElementById("video-url-input").value);
+      const rawUrl = document.getElementById("video-url-input").value.trim();
+      const ytId = extractYouTubeId(rawUrl);
+      if (!ytId) {
+        showToast("Please enter a valid YouTube link or 11-character Video ID", "error");
+        return;
+      }
+      const section = document.getElementById("video-section-input")?.value || "both";
       const duration = document.getElementById("video-duration-input").value.trim();
       const desc = document.getElementById("video-desc-input").value.trim();
-      appState.videos.unshift({ id: "vid-" + Date.now(), title, ytId, duration, desc });
+
+      appState.videos = normalizeVideosList(appState.videos);
+      const existingIdx = appState.videos.findIndex((v) => v.ytId === ytId && (v.section || "both") === section);
+      const entry = {
+        id: existingIdx >= 0 ? appState.videos[existingIdx].id : "vid-" + Date.now(),
+        title,
+        ytId,
+        duration,
+        section,
+        desc
+      };
+
+      if (existingIdx >= 0) {
+        appState.videos[existingIdx] = entry;
+        showToast("Existing video updated", "success");
+      } else {
+        appState.videos.unshift(entry);
+        showToast("Trade video added & synced", "success");
+      }
+
       saveLocalState(true);
       renderVideoCards("notices-videos-grid", "notices", 10);
       renderVideoCards("full-videos-grid", "videos");
       e.target.reset();
       closeModal("modal-add-video");
-      showToast("Trade video added", "success");
     }
 
     function deleteVideo(id) {
+      const removed = appState.videos.find((v) => v.id === id);
       appState.videos = appState.videos.filter((v) => v.id !== id);
+      if (removed) {
+        ["notices", "videos"].forEach((prefix) => {
+          const iframe = document.getElementById(`${prefix}-player-iframe`);
+          if (iframe && iframe.src && iframe.src.includes(removed.ytId)) {
+            closeInlinePlayer(prefix);
+          }
+        });
+      }
       saveLocalState(true);
       renderVideoCards("notices-videos-grid", "notices", 10);
       renderVideoCards("full-videos-grid", "videos");
@@ -4817,37 +5180,672 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 16. RENDER ALL & BOOTSTRAP (GALLERY + INIT)
+    // 10. 80% NCVT ELIGIBILITY CHART (ALL / 1M / 6M / 9M / 12M / SPECIFIC MONTH)
     // =========================================================================
-    const GALLERY_STORAGE_KEY = "iti_gallery_custom_photos_v1";
-    function loadCustomGalleryPhotos(){ try{ const raw=localStorage.getItem(GALLERY_STORAGE_KEY); const arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; } }
-    function saveCustomGalleryPhotos(arr){ try{ localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(arr)); }catch(e){ showToast("Photo is too large to save. Try under 1 MB.", "error"); } }
-    function handleGalleryUpload(event){
-      if(!isAdminUnlocked){ event.target.value=""; showToast("Admin only — unlock Admin Mode first", "error"); openModal('modal-admin'); return; }
-      const file = event.target.files && event.target.files[0];
-      event.target.value = "";
-      if(!file) return;
-      const title = file.name.replace(/\.[^/.]+$/, "") || "Workshop Photo";
-      const reader = new FileReader();
-      reader.onload = function(){
-        const custom = loadCustomGalleryPhotos();
-        custom.unshift({ title: title.trim(), cat: "Practical", date: formatDisplayDate(getTodayISO()), img: reader.result, custom: true });
-        saveCustomGalleryPhotos(custom);
-        galleryFilter = "All";
-        renderGallery();
-        showToast("Photo added to Gallery!", "success");
+    let currentChartPeriod = "ALL";
+    let currentChartSpecificMonth = "";
+
+    function setChartPeriod(period) {
+      currentChartPeriod = period || "ALL";
+      const sel = document.getElementById("eligibility-month-filter");
+      if (sel) sel.value = currentChartPeriod;
+      const monthInp = document.getElementById("eligibility-specific-month");
+      if (currentChartPeriod === "MONTH") {
+        if (monthInp && !monthInp.value) {
+          monthInp.value = getTodayISO().slice(0, 7);
+        }
+        currentChartSpecificMonth = monthInp ? monthInp.value : getTodayISO().slice(0, 7);
+      } else if (monthInp) {
+        monthInp.value = "";
+        currentChartSpecificMonth = "";
+      }
+
+      document.querySelectorAll(".chart-period-pill").forEach((btn) => {
+        const active = btn.getAttribute("data-period") === currentChartPeriod;
+        btn.className = active
+          ? "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition btn-tap"
+          : "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap";
+      });
+
+      renderEligibilityChart();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function setChartSpecificMonth(ym) {
+      if (!ym) {
+        setChartPeriod("ALL");
+        return;
+      }
+      currentChartSpecificMonth = ym;
+      currentChartPeriod = "MONTH";
+      const sel = document.getElementById("eligibility-month-filter");
+      if (sel) sel.value = "MONTH";
+      document.querySelectorAll(".chart-period-pill").forEach((btn) => {
+        btn.className = "chart-period-pill px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-900 border border-slate-800 text-slate-300 transition btn-tap";
+      });
+      renderEligibilityChart();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function getFilteredAttendanceDates(period) {
+      const allDates = Object.keys(appState.attendance)
+        .filter((iso) => !isHolidayDate(iso))
+        .sort();
+      if (!allDates.length || period === "ALL") return allDates;
+
+      if (period === "MONTH" && currentChartSpecificMonth) {
+        return allDates.filter((iso) => iso.startsWith(currentChartSpecificMonth));
+      }
+
+      const todayISO = getTodayISO();
+      if (period === "1M") {
+        const currentYM = todayISO.slice(0, 7);
+        return allDates.filter((iso) => iso.startsWith(currentYM));
+      }
+
+      const monthsBack = period === "6M" ? 6 : period === "9M" ? 9 : 12;
+      const nowDt = parseISO(todayISO);
+      const startMonthDt = new Date(nowDt.getFullYear(), nowDt.getMonth() - (monthsBack - 1), 1);
+      const cutoffYM = `${startMonthDt.getFullYear()}-${String(startMonthDt.getMonth() + 1).padStart(2, "0")}`;
+      const currentYM = todayISO.slice(0, 7);
+
+      return allDates.filter((iso) => {
+        const ym = iso.slice(0, 7);
+        return ym >= cutoffYM && ym <= currentYM;
+      });
+    }
+    // =========================================================================
+    // 11. RESULTS & EXAMS RENDERING + DEDICATED RESULT DETAILS VIEW
+    // =========================================================================
+    const OFFICIAL_NCVT_PORTAL_URL = "https://dgt.skillindiadigital.gov.in/result";
+    let activeResultDetailTraineeId = null;
+
+    function getDefaultSubjectBreakdown(tr) {
+      if (Array.isArray(tr.subjects) && tr.subjects.length) {
+        return tr.subjects;
+      }
+      const y1 = Number(tr.year1 || 0);
+      const tt = Math.min(100, Math.round(y1 * 0.17));
+      const es = Math.min(50, Math.round(y1 * 0.085));
+      const tp = Math.min(250, Math.round(y1 * 0.42));
+      const fa = Math.max(0, Math.min(200, y1 - (tt + es + tp)));
+      return [
+        { name: "Trade Theory (CBT)", marks: tt, max: 100 },
+        { name: "Employability Skills (CBT)", marks: es, max: 50 },
+        { name: "Trade Practical", marks: tp, max: 250 },
+        { name: "Formative Assessment", marks: fa, max: 200 }
+      ];
+    }
+
+    function getTraineeResultSummary(tr) {
+      const y1 = Number(tr.year1 || 0);
+      const y2 = Number(tr.year2 || 0);
+      const tot = y1 + y2;
+      const maxTotal = Number(tr.maxTotalMarks) || 1200;
+      const pct = maxTotal > 0 ? ((tot / maxTotal) * 100).toFixed(1) : "0.0";
+      const explicitStatus = String(tr.resultStatus || "AUTO").toUpperCase();
+      const status =
+        explicitStatus === "PASS" || explicitStatus === "FAIL" || explicitStatus === "PENDING"
+          ? explicitStatus
+          : Number(pct) >= 33
+          ? "PASS"
+          : "FAIL";
+      return { y1, y2, tot, maxTotal, pct, status };
+    }
+
+    function renderResultsSection() {
+      const y1List = document.getElementById("first-year-results-list");
+      const y12List = document.getElementById("combined-two-year-results-list");
+      const schedList = document.getElementById("exam-schedule-list");
+      const intList = document.getElementById("internal-tests-list");
+      const intHeading = document.getElementById("internal-exam-heading");
+      const intSubtitle = document.getElementById("internal-exam-subtitle");
+      const meta = { ...DEFAULT_INTERNAL_META, ...(appState.internalMeta || {}) };
+      const maxInt = Number(meta.maxMarks) || 100;
+      const rewardMaps = computeRewardMaps();
+
+      if (intHeading) intHeading.textContent = meta.title;
+      if (intSubtitle) intSubtitle.textContent = `${meta.subtitle} (/${maxInt})`;
+
+      const sortedByY1 = [...appState.trainees].sort((a, b) => Number(b.year1 || 0) - Number(a.year1 || 0));
+      const sortedByCombined = [...appState.trainees].sort(
+        (a, b) => Number(b.year1 || 0) + Number(b.year2 || 0) - (Number(a.year1 || 0) + Number(a.year2 || 0))
+      );
+      const sortedByInternal = [...appState.trainees].sort((a, b) => Number(b.internal || 0) - Number(a.internal || 0));
+
+      if (y1List) {
+        y1List.innerHTML = sortedByY1
+          .map((tr, idx) => {
+            const marks = Number(tr.year1 || 0);
+            const pct = ((marks / 600) * 100).toFixed(1);
+            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
+            const res = getTraineeResultSummary(tr);
+            const stCls = res.status === "FAIL" ? "text-rose-400" : res.status === "PENDING" ? "text-amber-300" : "text-emerald-300";
+            return `
+              <div onclick="openResultDetailsModal('${tr.id}')"
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-amber-500/40 cursor-pointer transition ${rw.cardRibbonClass}">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                    <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
+                    <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                    ${rw.badgesHTML}
+                  </div>
+                  <div class="text-[10px] font-mono text-slate-400 mt-0.5">${escapeHTML(tr.roll || "No Reg ID")} • Tap for Subject Marks</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs font-extrabold text-emerald-400">${marks}/600 (${pct}%)</div>
+                  <div class="text-[10px] font-bold ${stCls}">${escapeHTML(res.status)}</div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (y12List) {
+        y12List.innerHTML = sortedByCombined
+          .map((tr, idx) => {
+            const res = getTraineeResultSummary(tr);
+            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
+            return `
+              <div onclick="openResultDetailsModal('${tr.id}')"
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-amber-500/40 cursor-pointer transition ${rw.cardRibbonClass}">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                    <span class="font-mono text-[11px] font-bold text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
+                    <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                    ${rw.badgesHTML}
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">1st Yr: ${res.y1}/600 • 2nd Yr: ${res.y2}/600</div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-xs font-extrabold text-amber-400">${res.tot}/${res.maxTotal}</div>
+                  <div class="text-[10px] font-bold text-emerald-400">${res.pct}%</div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      if (schedList) {
+        const scheduleItems = Array.isArray(appState.examSchedule) && appState.examSchedule.length ? appState.examSchedule : DEFAULT_EXAM_SCHEDULE;
+        schedList.innerHTML = scheduleItems
+          .map(
+            (ex) => `
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <div>
+              <div class="text-xs font-bold text-white">${escapeHTML(ex.subject)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHTML(ex.venue)} • ${escapeHTML(ex.time)}</div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] font-bold self-start sm:self-center">
+              ${escapeHTML(ex.date)}
+            </span>
+          </div>
+        `
+          )
+          .join("");
+      }
+
+      if (intList) {
+        intList.innerHTML = sortedByInternal
+          .map((tr, idx) => {
+            const sc = Number(tr.internal || 0);
+            const rw = getTraineeRewardMeta(tr, rewardMaps, "marks");
+            return `
+              <div onclick="openResultDetailsModal('${tr.id}')"
+                class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800/90 hover:border-amber-500/40 cursor-pointer transition ${rw.cardRibbonClass}">
+                <div class="flex items-center gap-1.5 min-w-0 flex-wrap flex-1">
+                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 font-mono text-[10px] font-bold text-slate-300 shrink-0">#${idx + 1}</span>
+                  <span class="font-mono text-[11px] font-bold text-sky-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
+                  <span class="text-xs font-bold text-white truncate">${escapeHTML(tr.name)}</span>
+                  ${rw.badgesHTML}
+                </div>
+                <span class="px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 text-xs font-extrabold shrink-0">${sc}/${maxInt}</span>
+              </div>
+            `;
+          })
+          .join("");
+      }
+    }
+
+    function openResultDetailsModal(traineeId) {
+      const tr = appState.trainees.find((t) => t.id === traineeId);
+      if (!tr) return;
+      activeResultDetailTraineeId = traineeId;
+
+      const res = getTraineeResultSummary(tr);
+      const subjects = getDefaultSubjectBreakdown(tr);
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+      const specialName = tr.specialSubjectName || "Internal / Workshop Sessional";
+      const specialObt = tr.specialSubjectMarks !== undefined && tr.specialSubjectMarks !== "" ? Number(tr.specialSubjectMarks) : Number(tr.internal || 0);
+      const specialMax = Number(tr.specialSubjectMax) || maxInt;
+      const tradeSession = tr.tradeSession || "Electrician • Batch 2025–27";
+      const examDetails = tr.examDetails || "NCVT AITT Consolidated Marksheet (1st & 2nd Year)";
+      const officialUrl = (tr.ncvtResultUrl && tr.ncvtResultUrl.trim()) || OFFICIAL_NCVT_PORTAL_URL;
+
+      document.getElementById("resdet-trainee-name").textContent = tr.name;
+      document.getElementById("resdet-meta-line").textContent = `Roll No: ${tr.rno || "--"}${tr.roll ? ` • Reg No: ${tr.roll}` : ""}`;
+
+      document.getElementById("resdet-exam-card").innerHTML = `
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-slate-400">Trade &amp; Session</span>
+          <span class="font-bold text-white text-right">${escapeHTML(tradeSession)}</span>
+        </div>
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+          <span class="text-slate-400">Examination</span>
+          <span class="font-semibold text-amber-300 text-right">${escapeHTML(examDetails)}</span>
+        </div>
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+          <span class="text-slate-400">Year-Wise Split</span>
+          <span class="font-mono font-bold text-slate-200">1st Yr: ${res.y1}/600 • 2nd Yr: ${res.y2}/600</span>
+        </div>
+      `;
+
+      document.getElementById("resdet-subjects-list").innerHTML = subjects
+        .map(
+          (sub) => `
+          <div class="flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800/80 text-xs">
+            <span class="text-slate-200 font-medium truncate">${escapeHTML(sub.name)}</span>
+            <span class="font-mono font-bold text-emerald-400 shrink-0">${Number(sub.marks || 0)} / ${Number(sub.max || 100)}</span>
+          </div>
+        `
+        )
+        .join("");
+
+      document.getElementById("resdet-special-card").innerHTML = `
+        <div class="min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-sky-400">Special Subject Marks</div>
+          <div class="text-xs font-bold text-white truncate mt-0.5">${escapeHTML(specialName)}</div>
+        </div>
+        <span class="px-2.5 py-1 rounded-lg bg-sky-500/15 border border-sky-500/30 font-mono text-xs font-extrabold text-sky-300 shrink-0">
+          ${specialObt} / ${specialMax}
+        </span>
+      `;
+
+      const statusBadgeCls =
+        res.status === "FAIL"
+          ? "text-rose-400"
+          : res.status === "PENDING"
+          ? "text-amber-300"
+          : "text-emerald-400";
+
+      document.getElementById("resdet-totals-grid").innerHTML = `
+        <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="text-xs font-extrabold text-amber-400">${res.tot} / ${res.maxTotal}</div>
+          <div class="text-[10px] text-slate-400">Total / Max</div>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="text-xs font-extrabold text-white">${res.pct}%</div>
+          <div class="text-[10px] text-slate-400">Aggregate %</div>
+        </div>
+        <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="text-xs font-extrabold ${statusBadgeCls}">${escapeHTML(res.status)}</div>
+          <div class="text-[10px] text-slate-400">Result Status</div>
+        </div>
+      `;
+
+      const linkEl = document.getElementById("resdet-official-link");
+      if (linkEl) linkEl.href = officialUrl;
+
+      const editBtn = document.getElementById("resdet-admin-edit-btn");
+      if (editBtn) editBtn.classList.toggle("hidden", !isAdminUnlocked);
+
+      openModal("modal-result-details");
+    }
+
+    function openAdminEditFromResultDetails() {
+      if (!isAdminUnlocked || !activeResultDetailTraineeId) return;
+      const targetId = activeResultDetailTraineeId;
+      closeModal("modal-result-details");
+      openResultModal(targetId);
+    }
+    // Complete Admin Result Management Modal
+    function openResultModal(preselectTraineeId = null) {
+      if (!isAdminUnlocked) {
+        openAdminModal();
+        return;
+      }
+      const sel = document.getElementById("marks-trainee-select");
+      const searchInp = document.getElementById("admin-result-search");
+      if (!sel) return;
+      if (searchInp) searchInp.value = "";
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+      const intLbl = document.getElementById("modal-marks-int-label");
+      if (intLbl) intLbl.textContent = `Internal (/${maxInt})`;
+
+      filterResultTraineeOptions("");
+      if (appState.trainees.length) {
+        const chosenId = preselectTraineeId || appState.trainees[0].id;
+        sel.value = chosenId;
+        populateMarksForm(chosenId);
+      } else {
+        openAddNewResultTrainee();
+      }
+      openModal("modal-edit-results");
+    }
+
+    function filterResultTraineeOptions(query) {
+      const sel = document.getElementById("marks-trainee-select");
+      if (!sel) return;
+      const q = String(query || "").trim().toLowerCase();
+      const filtered = q
+        ? appState.trainees.filter(
+            (tr) =>
+              tr.name.toLowerCase().includes(q) ||
+              String(tr.rno || "").toLowerCase().includes(q) ||
+              String(tr.roll || "").toLowerCase().includes(q)
+          )
+        : appState.trainees;
+
+      sel.innerHTML = filtered
+        .map((tr) => `<option value="${tr.id}">R.${escapeHTML(tr.rno || "--")} • ${escapeHTML(tr.name)} (${escapeHTML(tr.roll || "No Reg")})</option>`)
+        .join("");
+
+      if (filtered.length) {
+        populateMarksForm(filtered[0].id);
+      }
+    }
+
+    function renderAdminResultSubjects(subjects) {
+      const container = document.getElementById("admin-result-subjects-container");
+      if (!container) return;
+      container.innerHTML = subjects
+        .map(
+          (sub, idx) => `
+          <div class="admin-res-subject-row grid grid-cols-12 gap-1.5 items-center">
+            <input type="text" value="${escapeHTML(sub.name)}" placeholder="Subject Name"
+              class="res-sub-name col-span-6 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+            <input type="number" value="${Number(sub.marks || 0)}" min="0" max="600" placeholder="Marks"
+              class="res-sub-marks col-span-2 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-emerald-300 focus:outline-none focus:border-amber-500" />
+            <input type="number" value="${Number(sub.max || 100)}" min="1" max="600" placeholder="Max"
+              class="res-sub-max col-span-3 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500" />
+            <button type="button" onclick="this.closest('.admin-res-subject-row').remove()" title="Remove Subject"
+              class="col-span-1 h-7 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 flex items-center justify-center text-xs font-bold">✕</button>
+          </div>
+        `
+        )
+        .join("");
+    }
+
+    function addResultSubjectRow() {
+      const container = document.getElementById("admin-result-subjects-container");
+      if (!container) return;
+      const row = document.createElement("div");
+      row.className = "admin-res-subject-row grid grid-cols-12 gap-1.5 items-center";
+      row.innerHTML = `
+        <input type="text" value="" placeholder="New Subject Name"
+          class="res-sub-name col-span-6 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        <input type="number" value="0" min="0" max="600" placeholder="Marks"
+          class="res-sub-marks col-span-2 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-emerald-300 focus:outline-none focus:border-amber-500" />
+        <input type="number" value="100" min="1" max="600" placeholder="Max"
+          class="res-sub-max col-span-3 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500" />
+        <button type="button" onclick="this.closest('.admin-res-subject-row').remove()" title="Remove Subject"
+          class="col-span-1 h-7 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 flex items-center justify-center text-xs font-bold">✕</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function openAddNewResultTrainee() {
+      document.getElementById("result-is-new-mode").value = "1";
+      document.getElementById("marks-rno-input").value = "";
+      document.getElementById("marks-name-input").value = "";
+      document.getElementById("marks-reg-input").value = "";
+      document.getElementById("marks-session-input").value = "Electrician • 2025–27";
+      document.getElementById("marks-exam-details-input").value = "AITT NCVT Annual Examination";
+      document.getElementById("marks-status-input").value = "AUTO";
+      document.getElementById("marks-ncvt-url-input").value = OFFICIAL_NCVT_PORTAL_URL;
+      document.getElementById("marks-special-name-input").value = "Internal / Workshop Sessional";
+      document.getElementById("marks-special-obt-input").value = 85;
+      document.getElementById("marks-special-max-input").value = Number(appState.internalMeta?.maxMarks) || 100;
+      document.getElementById("marks-year1-input").value = 500;
+      document.getElementById("marks-year2-input").value = 500;
+      document.getElementById("marks-max-total-input").value = 1200;
+      document.getElementById("marks-internal-input").value = 85;
+      renderAdminResultSubjects([
+        { name: "Trade Theory (CBT)", marks: 85, max: 100 },
+        { name: "Employability Skills (CBT)", marks: 42, max: 50 },
+        { name: "Trade Practical", marks: 215, max: 250 },
+        { name: "Formative Assessment", marks: 158, max: 200 }
+      ]);
+      const delBtn = document.getElementById("btn-delete-result-record");
+      if (delBtn) delBtn.classList.add("hidden");
+      showToast("Enter details for new trainee result", "info");
+    }
+
+    function populateMarksForm(traineeId) {
+      const tr = appState.trainees.find((t) => t.id === traineeId);
+      if (!tr) return;
+      document.getElementById("result-is-new-mode").value = "0";
+      document.getElementById("marks-rno-input").value = tr.rno || "";
+      document.getElementById("marks-name-input").value = tr.name || "";
+      document.getElementById("marks-reg-input").value = tr.roll || "";
+      document.getElementById("marks-session-input").value = tr.tradeSession || "Electrician • 2025–27";
+      document.getElementById("marks-exam-details-input").value = tr.examDetails || "AITT NCVT Annual Examination";
+      document.getElementById("marks-status-input").value = tr.resultStatus || "AUTO";
+      document.getElementById("marks-ncvt-url-input").value = tr.ncvtResultUrl || OFFICIAL_NCVT_PORTAL_URL;
+      document.getElementById("marks-special-name-input").value = tr.specialSubjectName || "Internal / Workshop Sessional";
+      document.getElementById("marks-special-obt-input").value = tr.specialSubjectMarks !== undefined ? tr.specialSubjectMarks : (tr.internal || 0);
+      document.getElementById("marks-special-max-input").value = tr.specialSubjectMax || (Number(appState.internalMeta?.maxMarks) || 100);
+      document.getElementById("marks-year1-input").value = tr.year1 || 0;
+      document.getElementById("marks-year2-input").value = tr.year2 || 0;
+      document.getElementById("marks-max-total-input").value = tr.maxTotalMarks || 1200;
+      document.getElementById("marks-internal-input").value = tr.internal || 0;
+      renderAdminResultSubjects(getDefaultSubjectBreakdown(tr));
+      const delBtn = document.getElementById("btn-delete-result-record");
+      if (delBtn) delBtn.classList.remove("hidden");
+    }
+
+    function handleSaveMarks(e) {
+      e.preventDefault();
+      if (!isAdminUnlocked) return;
+
+      const isNew = document.getElementById("result-is-new-mode").value === "1";
+      const id = document.getElementById("marks-trainee-select").value;
+      const rno = document.getElementById("marks-rno-input").value.trim();
+      const name = document.getElementById("marks-name-input").value.trim();
+      const roll = document.getElementById("marks-reg-input").value.trim();
+      const tradeSession = document.getElementById("marks-session-input").value.trim();
+      const examDetails = document.getElementById("marks-exam-details-input").value.trim();
+      const resultStatus = document.getElementById("marks-status-input").value;
+      const ncvtResultUrl = document.getElementById("marks-ncvt-url-input").value.trim() || OFFICIAL_NCVT_PORTAL_URL;
+
+      const specialSubjectName = document.getElementById("marks-special-name-input").value.trim() || "Special Subject";
+      const specialSubjectMax = Math.max(1, Number(document.getElementById("marks-special-max-input").value) || 100);
+      const specialSubjectMarks = Number(document.getElementById("marks-special-obt-input").value) || 0;
+
+      if (specialSubjectMarks < 0 || specialSubjectMarks > specialSubjectMax) {
+        showToast(`Special marks (${specialSubjectMarks}) cannot exceed max (${specialSubjectMax})`, "error");
+        return;
+      }
+
+      const subjects = [];
+      let subjectValidationError = "";
+      document.querySelectorAll(".admin-res-subject-row").forEach((row) => {
+        const sName = row.querySelector(".res-sub-name")?.value.trim();
+        const sMarks = Number(row.querySelector(".res-sub-marks")?.value) || 0;
+        const sMax = Math.max(1, Number(row.querySelector(".res-sub-max")?.value) || 100);
+        if (sName) {
+          if (sMarks < 0 || sMarks > sMax) {
+            subjectValidationError = `${sName}: marks (${sMarks}) exceed maximum (${sMax})`;
+          }
+          subjects.push({ name: sName, marks: sMarks, max: sMax });
+        }
+      });
+
+      if (subjectValidationError) {
+        showToast(subjectValidationError, "error");
+        return;
+      }
+
+      const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
+      const y1 = Number(document.getElementById("marks-year1-input").value) || 0;
+      const y2 = Number(document.getElementById("marks-year2-input").value) || 0;
+      const maxTotalMarks = Math.max(100, Number(document.getElementById("marks-max-total-input").value) || 1200);
+      const internal = Number(document.getElementById("marks-internal-input").value) || 0;
+
+      if (y1 < 0 || y1 > 600 || y2 < 0 || y2 > 600) {
+        showToast("1st & 2nd Year marks must be between 0 and 600", "error");
+        return;
+      }
+      if (y1 + y2 > maxTotalMarks) {
+        showToast(`Combined marks (${y1 + y2}) exceed Maximum Total (${maxTotalMarks})`, "error");
+        return;
+      }
+      if (internal < 0 || internal > maxInt) {
+        showToast(`Internal marks (${internal}) exceed max (${maxInt})`, "error");
+        return;
+      }
+
+      if (isNew) {
+        const dup = appState.trainees.some(
+          (t) => (rno && String(t.rno) === rno) || (roll && String(t.roll) === roll)
+        );
+        if (dup) {
+          showToast("Duplicate Roll No or Registration ID already exists", "error");
+          return;
+        }
+        appState.trainees.push({
+          id: "tr-" + Date.now(),
+          rno,
+          name,
+          roll,
+          star: false,
+          year1: y1,
+          year2: y2,
+          maxTotalMarks,
+          internal,
+          tradeSession,
+          examDetails,
+          resultStatus,
+          ncvtResultUrl,
+          specialSubjectName,
+          specialSubjectMarks,
+          specialSubjectMax,
+          subjects
+        });
+        showToast("New trainee result added", "success");
+      } else {
+        const tr = appState.trainees.find((t) => t.id === id);
+        if (tr) {
+          tr.rno = rno;
+          tr.name = name;
+          tr.roll = roll;
+          tr.year1 = y1;
+          tr.year2 = y2;
+          tr.maxTotalMarks = maxTotalMarks;
+          tr.internal = internal;
+          tr.tradeSession = tradeSession;
+          tr.examDetails = examDetails;
+          tr.resultStatus = resultStatus;
+          tr.ncvtResultUrl = ncvtResultUrl;
+          tr.specialSubjectName = specialSubjectName;
+          tr.specialSubjectMarks = specialSubjectMarks;
+          tr.specialSubjectMax = specialSubjectMax;
+          tr.subjects = subjects;
+          showToast("Result details & marks updated", "success");
+        }
+      }
+
+      saveLocalState(true);
+      renderAllViews();
+      closeModal("modal-edit-results");
+    }
+
+    let pendingDeleteResultId = null;
+    let pendingDeleteResultTimer = null;
+
+    function confirmDeleteResultRecord() {
+      if (!isAdminUnlocked) return;
+      const id = document.getElementById("marks-trainee-select").value;
+      const tr = appState.trainees.find((t) => t.id === id);
+      if (!tr) return;
+
+      if (pendingDeleteResultId !== id) {
+        pendingDeleteResultId = id;
+        showToast(`Tap Delete again to permanently remove ${tr.name}`, "error");
+        clearTimeout(pendingDeleteResultTimer);
+        pendingDeleteResultTimer = setTimeout(() => {
+          pendingDeleteResultId = null;
+        }, 4000);
+        return;
+      }
+
+      pendingDeleteResultId = null;
+      appState.trainees = appState.trainees.filter((t) => t.id !== id);
+      saveLocalState(true);
+      renderAllViews();
+      closeModal("modal-edit-results");
+      showToast(`Deleted result record for ${tr.name}`, "info");
+    }
+
+    async function handleSaveGalleryPhoto(event) {
+      event.preventDefault();
+      if (!isAdminUnlocked) {
+        showToast("Admin only — unlock Admin Mode first", "error");
+        openModal("modal-admin");
+        return;
+      }
+      const title = document.getElementById("gallery-photo-title").value.trim() || "Workshop Photo";
+      const cat = document.getElementById("gallery-photo-cat").value || "Practical";
+      const date = document.getElementById("gallery-photo-date").value.trim() || formatDisplayDate(getTodayISO());
+      const urlInput = document.getElementById("gallery-photo-url").value.trim();
+      const fileInput = document.getElementById("gallery-file-input");
+      const file = fileInput && fileInput.files && fileInput.files[0];
+
+      let imgSrc = "";
+      if (file) {
+        try {
+          imgSrc = await compressImageDataURL(file);
+        } catch (err) {
+          showToast("Could not process image file", "error");
+          return;
+        }
+      } else if (urlInput) {
+        imgSrc = urlInput;
+      } else {
+        showToast("Select an image file or enter an image URL", "error");
+        return;
+      }
+
+      if (!Array.isArray(appState.galleryPhotos)) appState.galleryPhotos = [];
+      const newEntry = {
+        id: "gal-" + Date.now(),
+        title,
+        cat,
+        date,
+        img: imgSrc,
+        custom: true
       };
-      reader.readAsDataURL(file);
-    }
-    function deleteGalleryPhoto(gIdx){
-      if(!isAdminUnlocked){ showToast("Admin only — unlock Admin Mode first", "error"); openModal('modal-admin'); return; }
-      const custom = loadCustomGalleryPhotos();
-      const target = GALLERY_PHOTOS[gIdx];
-      const idx = custom.findIndex(c => c.img===target.img && c.title===target.title);
-      if(idx>=0){ custom.splice(idx,1); saveCustomGalleryPhotos(custom); showToast("Photo deleted", "info"); }
+      appState.galleryPhotos.unshift(newEntry);
+      saveLocalState(true);
+      galleryFilter = "All";
       renderGallery();
+      event.target.reset();
+      closeModal("modal-add-gallery");
+      showToast("Photo added & synced to Gallery!", "success");
     }
-    function getAllGalleryPhotos(){ return [...loadCustomGalleryPhotos(), ...GALLERY_DEFAULT_PHOTOS]; }
+
+    function deleteGalleryPhoto(photoId) {
+      if (!isAdminUnlocked) {
+        showToast("Admin only — unlock Admin Mode first", "error");
+        openModal("modal-admin");
+        return;
+      }
+      appState.galleryPhotos = (appState.galleryPhotos || []).filter((p) => p.id !== photoId);
+      saveLocalState(true);
+      renderGallery();
+      showToast("Photo deleted", "info");
+    }
+
+    function getAllGalleryPhotos() {
+      const cloudAndLocalCustom = Array.isArray(appState.galleryPhotos)
+        ? appState.galleryPhotos.filter((p) => p && p.img)
+        : [];
+      return [...cloudAndLocalCustom, ...GALLERY_DEFAULT_PHOTOS];
+    }
     const GALLERY_DEFAULT_PHOTOS = [
       { title: "Wiring Practice", cat: "Practical", date: "Workshop Day", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f59e0b%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2392400e%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%E2%9A%A1%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EWiring%20Practice%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
       { title: "Motor Winding Lab", cat: "Lab", date: "Practical Session", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230ea5e9%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%231e3a8a%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%94%A7%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EMotor%20Winding%20Lab%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
@@ -4868,30 +5866,64 @@ service cloud.firestore {
     let galleryIndex = 0;
     function renderGallery() {
       GALLERY_PHOTOS = getAllGalleryPhotos();
-      const cats = ["All", ...new Set(GALLERY_PHOTOS.map(p => p.cat))];
-      document.getElementById("gallery-filters").innerHTML = cats.map(c => `<button type="button" onclick="setGalleryFilter('${c}')" class="px-3 py-1.5 rounded-full text-xs font-bold border transition btn-tap ${c===galleryFilter ? "bg-amber-500 text-slate-950 border-amber-500" : "bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800"}">${c}</button>`).join("");
-      galleryVisible = GALLERY_PHOTOS.filter(p => galleryFilter==="All" || p.cat===galleryFilter);
+      const cats = ["All", ...new Set(GALLERY_PHOTOS.map((p) => p.cat))];
+      if (!cats.includes(galleryFilter)) galleryFilter = "All";
+      document.getElementById("gallery-filters").innerHTML = cats
+        .map(
+          (c) =>
+            `<button type="button" onclick="setGalleryFilter('${escapeHTML(c)}')" class="px-3 py-1.5 rounded-full text-xs font-bold border transition btn-tap ${
+              c === galleryFilter
+                ? "bg-amber-500 text-slate-950 border-amber-500"
+                : "bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800"
+            }">${escapeHTML(c)}</button>`
+        )
+        .join("");
+      galleryVisible = GALLERY_PHOTOS.filter((p) => galleryFilter === "All" || p.cat === galleryFilter);
       document.getElementById("gallery-count").textContent = galleryVisible.length + " photos";
-      document.getElementById("gallery-grid").innerHTML = galleryVisible.map((p,i) => {
-        const gIdx = GALLERY_PHOTOS.indexOf(p);
-        return `
+      document.getElementById("gallery-grid").innerHTML = galleryVisible
+        .map((p, i) => {
+          return `
         <div class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 text-left">
-        <button type="button" onclick="openGalleryLightbox(${i})" class="block w-full text-left">
-          <img src="${p.img}" alt="${p.title}" loading="lazy" class="w-full aspect-[4/3] object-cover group-active:scale-105 transition duration-300" />
-          <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-amber-300 text-[10px] font-bold">${p.cat}</span>
-          <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2.5 pt-6 pb-2"><span class="block text-white text-xs font-bold truncate">${p.title}</span><span class="block text-slate-300 text-[10px] truncate">${p.date}</span></span>
-        </button>
-        ${(p.custom && isAdminUnlocked) ? `<button type="button" onclick="deleteGalleryPhoto(${gIdx})" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-bold flex items-center justify-center shadow">✕</button>` : ``}
-        </div>`; }).join("");
+          <button type="button" onclick="openGalleryLightbox(${i})" class="block w-full text-left">
+            <div class="relative w-full aspect-[4/3] bg-slate-900 overflow-hidden">
+              <img src="${escapeHTML(p.img)}" alt="${escapeHTML(p.title)}" loading="lazy"
+                onerror="this.onerror=null;this.src='${GALLERY_FALLBACK_SVG}';"
+                class="w-full h-full object-cover group-active:scale-105 transition duration-300" />
+            </div>
+            <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-amber-300 text-[10px] font-bold">${escapeHTML(p.cat)}</span>
+            <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2.5 pt-6 pb-2"><span class="block text-white text-xs font-bold truncate">${escapeHTML(p.title)}</span><span class="block text-slate-300 text-[10px] truncate">${escapeHTML(p.date)}</span></span>
+          </button>
+          ${
+            p.custom && isAdminUnlocked && p.id
+              ? `<button type="button" onclick="deleteGalleryPhoto('${escapeHTML(p.id)}')" title="Delete Photo" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-bold flex items-center justify-center shadow">✕</button>`
+              : ``
+          }
+        </div>`;
+        })
+        .join("");
       if (window.lucide) lucide.createIcons();
     }
-    function setGalleryFilter(c){ galleryFilter=c; renderGallery(); }
-    function openGalleryLightbox(i){
-      galleryIndex=i; const p=galleryVisible[i]; if(!p) return;
-      document.getElementById("gallery-lightbox-img").src=p.img;
-      document.getElementById("gallery-lightbox-title").textContent=p.title;
-      document.getElementById("gallery-lightbox-meta").textContent=p.cat + " • " + p.date + " • " + (i+1) + " / " + galleryVisible.length;
-      const lb=document.getElementById("gallery-lightbox"); lb.classList.remove("hidden"); lb.classList.add("flex"); document.body.style.overflow="hidden";
+    function setGalleryFilter(c) {
+      galleryFilter = c;
+      renderGallery();
+    }
+    function openGalleryLightbox(i) {
+      galleryIndex = i;
+      const p = galleryVisible[i];
+      if (!p) return;
+      const lbImg = document.getElementById("gallery-lightbox-img");
+      lbImg.onerror = function () {
+        this.onerror = null;
+        this.src = GALLERY_FALLBACK_SVG;
+      };
+      lbImg.src = p.img;
+      document.getElementById("gallery-lightbox-title").textContent = p.title;
+      document.getElementById("gallery-lightbox-meta").textContent =
+        p.cat + " • " + p.date + " • " + (i + 1) + " / " + galleryVisible.length;
+      const lb = document.getElementById("gallery-lightbox");
+      lb.classList.remove("hidden");
+      lb.classList.add("flex");
+      document.body.style.overflow = "hidden";
       if (window.lucide) lucide.createIcons();
     }
     function closeGalleryLightbox(){ const lb=document.getElementById("gallery-lightbox"); lb.classList.add("hidden"); lb.classList.remove("flex"); document.body.style.overflow=""; }
@@ -4906,8 +5938,6 @@ service cloud.firestore {
       if (window.lucide) lucide.createIcons();
     }
 
-    // FIX: accordion headers are div[role=button] with only onclick, so
-    // keyboard users (Enter/Space) could not toggle them.
     document.addEventListener("keydown", function(e){
       if ((e.key !== "Enter" && e.key !== " ") || !e.target || !e.target.getAttribute) return;
       var oc = e.target.getAttribute("onclick") || "";

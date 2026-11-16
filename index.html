@@ -60,6 +60,54 @@
       animation: panelFadeSlide 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
+    /* --- Smooth Tab Switching: soft fade + gentle rise, eased --- */
+    @keyframes tabSmoothIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.995); filter: blur(2px); }
+      to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+    .tab-view {
+      will-change: transform, opacity;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+    .animate-tab-right, .animate-tab-left, .animate-tab-fade, .animate-panel {
+      animation: tabSmoothIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* Cards inside the new tab rise very subtly, one after another - smooth, not bouncy */
+    .animate-tab-right > div, .animate-tab-left > div, .animate-tab-fade > div {
+      animation: tabSmoothIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .animate-tab-right > div:nth-child(2), .animate-tab-left > div:nth-child(2), .animate-tab-fade > div:nth-child(2) { animation-delay: 0.04s; }
+    .animate-tab-right > div:nth-child(3), .animate-tab-left > div:nth-child(3), .animate-tab-fade > div:nth-child(3) { animation-delay: 0.08s; }
+    .animate-tab-right > div:nth-child(4), .animate-tab-left > div:nth-child(4), .animate-tab-fade > div:nth-child(4) { animation-delay: 0.12s; }
+
+    @keyframes tabSmoothFromRight { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes tabSmoothFromLeft { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+    .animate-tab-right { animation-name: tabSmoothFromRight; }
+    .animate-tab-left { animation-name: tabSmoothFromLeft; }
+    /* Bottom tab buttons: smooth colour + gentle icon lift */
+    .tab-btn {
+      transition: background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      box-shadow: none !important;
+    }
+    .tab-btn:active { transform: scale(0.96); }
+    /* More sheet: same smooth ease */
+    #more-sheet { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.38s !important; }
+    #more-sheet.more-open { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s !important; }
+    /* More sheet: smooth open/close - sheet glides, items rise in one by one */
+    #more-sheet { will-change: transform; }
+    #more-sheet .more-sheet-card { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; }
+    #more-sheet:not(.more-open) .more-sheet-card { transform: translateY(16px) scale(0.98); opacity: 0.4; }
+    #more-sheet.more-open .more-sheet-card { transform: translateY(0) scale(1); opacity: 1; }
+    #more-sheet .more-item { opacity: 0; transform: translateY(10px); transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+    #more-sheet.more-open .more-item { opacity: 1; transform: translateY(0); }
+    #more-sheet.more-open .more-item:nth-child(2) { transition-delay: 0.05s; }
+    #more-sheet.more-open .more-item:nth-child(3) { transition-delay: 0.1s; }
+    #more-sheet.more-open .more-item:nth-child(4) { transition-delay: 0.15s; }
+    #more-backdrop { transition: opacity 0.32s ease !important; }
+    #more-backdrop.more-open { transition: opacity 0.32s ease !important; }
+    #more-backdrop { transition: opacity 0.32s ease !important; }
+
     /* Smooth modal pop-in */
     @keyframes modalScaleIn {
       from {
@@ -75,6 +123,85 @@
       animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
+    #top-sticky {
+      transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+      will-change: transform;
+    }
+    /* Sticky rounded search bar placed above notices: zero-lag lockstep with header */
+    #search-bar-wrap {
+      position: sticky;
+      top: 0.65rem;
+      z-index: 29;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: none;
+      transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+      will-change: transform;
+    }
+    #search-bar-inner {
+      width: 100%;
+      pointer-events: auto;
+      transition: width 0.16s cubic-bezier(0.2, 0, 0, 1);
+      will-change: width;
+    }
+    #search-input-box {
+      width: 100%;
+      height: 42px;
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: width 0.16s cubic-bezier(0.2, 0, 0, 1),
+                  height 0.16s cubic-bezier(0.2, 0, 0, 1),
+                  padding 0.16s cubic-bezier(0.2, 0, 0, 1),
+                  border-radius 0.16s cubic-bezier(0.2, 0, 0, 1),
+                  background-color 0.16s ease,
+                  border-color 0.16s ease,
+                  box-shadow 0.16s ease;
+    }
+    #global-trainee-search-input {
+      transition: width 0.16s cubic-bezier(0.2, 0, 0, 1),
+                  opacity 0.12s ease;
+    }
+    #search-bar-wrap.search-minimized #search-bar-inner {
+      width: 112px;
+    }
+    #search-bar-wrap.search-minimized #search-input-box {
+      width: 112px;
+      height: 36px;
+      padding: 0 12px;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 9999px;
+      box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+    }
+    #search-bar-wrap.search-minimized #search-bar-icon {
+      display: block;
+      width: 14px;
+      height: 14px;
+    }
+    #search-bar-wrap.search-minimized #global-trainee-search-input {
+      width: auto;
+      max-width: 54px;
+      opacity: 1;
+      padding: 0;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      pointer-events: none;
+    }
+    #search-bar-wrap.search-minimized #btn-clear-trainee-search {
+      display: none !important;
+    }
+    html.bright-mode #search-bar-wrap:not(.search-minimized) #search-input-box {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 6px 24px -6px rgba(15, 23, 42, 0.08) !important;
+    }
+    html.bright-mode #search-bar-wrap.search-minimized #search-input-box {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 8px 22px -4px rgba(15, 23, 42, 0.18) !important;
+    }
     /* Header smooth auto-hide transition */
     #main-header {
       transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
@@ -276,112 +403,140 @@
       background-color: #ffedd5 !important;
       border-color: #fdba74 !important;
     }
-  </style>
+  
+    /* --- MORE SHEET (kept at end of <style> so it is never deleted by other edits) --- */
+    #more-backdrop { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    #more-backdrop.more-open { opacity: 1; pointer-events: auto; }
+    #more-sheet {
+      transform: translateY(110%);
+      visibility: hidden; pointer-events: none;
+      transition: transform 0.28s ease, visibility 0s linear 0.28s;
+      will-change: transform;
+    }
+    #more-sheet.more-open {
+      transform: translateY(0);
+      visibility: visible; pointer-events: auto;
+      transition: transform 0.28s ease, visibility 0s;
+    }
+</style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
 
   <!-- ===================================================================== -->
   <!-- MINIMALIST AUTO-HIDING TOP HEADER                                     -->
   <!-- ===================================================================== -->
-  <header id="main-header" class="sticky top-0 z-30 bg-[#0c1322]/95 backdrop-blur-md border-b border-slate-800/90 shadow-lg">
-    <div class="max-w-5xl mx-auto px-3 sm:px-5 py-2.5 space-y-2">
-      <!-- Top Row: Title & Compact Icon Pills -->
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 min-w-0 flex-1">
-          <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-            <i data-lucide="zap" class="w-4 h-4"></i>
+  <style>
+  .header-menu-panel { max-height: 0; opacity: 0; transform: translateY(-6px); overflow: hidden; visibility: hidden; transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.35s; }
+  .header-menu-panel.menu-open { max-height: 320px; opacity: 1; transform: translateY(0); visibility: visible; transition: max-height 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s; }
+  #btn-header-menu.menu-open { background: #1e293b; border-color: #475569; }
+  html.bright-mode #btn-header-menu.menu-open { background: #e2e8f0 !important; border-color: #cbd5e1 !important; }
+  html.bright-mode #header-menu-panel .bg-slate-900 { background-color: #ffffff !important; }
+  html.bright-mode #header-menu-panel .hover\:bg-slate-800:hover { background-color: #f1f5f9 !important; }
+  #app-heading { background: rgba(251,191,36,0.15); color: #fbbf24; border: 2px solid rgba(251,191,36,0.7); }
+  #app-heading-line { background: rgba(251,191,36,0.7); }
+  html.bright-mode #app-heading-line { background: #d99a00 !important; }
+  #app-logo { background: rgba(251,191,36,0.15); color: #fbbf24; border: 2px solid rgba(251,191,36,0.7); }
+  html.bright-mode #app-logo { background: rgba(251,191,36,0.3) !important; color: #0c1322 !important; border-color: rgba(251,191,36,0.9) !important; }
+  html.bright-mode #app-heading { background: rgba(251,191,36,0.3) !important; color: #0c1322 !important; border-color: rgba(251,191,36,0.9) !important; }
+</style>
+<div id="top-sticky" class="sticky top-0 z-30">
+<header id="main-header" class="relative bg-[#0c1322] border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 pt-3 pb-3">
+      <!-- Row 1: Logo + Name + Theme + 3-dot -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="app-logo" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+            <i data-lucide="zap" class="w-5 h-5"></i>
           </div>
-          <div class="min-w-0 flex-1">
-            <h1 class="text-xs sm:text-base font-extrabold text-white tracking-tight truncate">
-              Govt. ITI Chhotojagulia
-            </h1>
+          <div class="min-w-0 leading-tight" style="display:inline-flex;flex-direction:column;align-items:flex-start;">
+            <h1 id="app-heading" class="font-extrabold tracking-tight leading-snug inline-block whitespace-nowrap" style="padding:2px 10px;border-radius:9999px;font-size:clamp(11px,3.5vw,15px);white-space:nowrap;">Govt. ITI Chhotojagulia</h1>
+            <p class="text-[12px] text-slate-400 leading-snug" style="margin-top:6px;">Electrician &middot; Batch 2025&ndash;27</p>
           </div>
         </div>
-
-        <!-- Compact Action Pills -->
-        <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          <button type="button" id="btn-theme-toggle" onclick="toggleThemeMode()" title="Switch to Dark Mode"
-            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
-            <i id="icon-theme-toggle" data-lucide="moon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700"></i>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" id="btn-theme-toggle" onclick="toggleThemeMode()" title="Theme" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 btn-tap">
+            <i id="icon-theme-toggle" data-lucide="moon" class="w-5 h-5"></i>
           </button>
-
-          <button type="button" id="btn-sync-indicator" onclick="manualCloudSync()" title="Connecting Cloud Sync..."
-            class="relative w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
-            <i id="icon-sync-cloud" data-lucide="cloud" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400"></i>
-            <span id="dot-sync-status" class="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0c1322]"></span>
-          </button>
-
-          <button type="button" id="btn-mode-indicator" onclick="openAdminModal()" title="Student View"
-            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center transition btn-tap">
-            <i id="icon-mode-indicator" data-lucide="eye" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300"></i>
-          </button>
-
-          <button type="button" onclick="shareStudentLink()" title="Copy Read-Only Student Link"
-            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex items-center justify-center text-slate-300 hover:text-amber-400 transition btn-tap">
-            <i data-lucide="share-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-          </button>
-
-          <button type="button" id="btn-admin-key" onclick="openAdminModal()" title="Admin / Key"
-            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition btn-tap">
-            <i id="icon-admin-key" data-lucide="key-round" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
+          <button type="button" id="btn-header-menu" onclick="toggleHeaderMenu(event)" title="More options" class="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-200 btn-tap">
+            <i id="icon-header-menu" data-lucide="ellipsis-vertical" class="w-5 h-5"></i>
           </button>
         </div>
       </div>
-
-      <!-- Sub-Bar: Spacious Day, Date, Minimalist Time & Batch Badge -->
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-800/70 text-[11px]">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center gap-1 text-slate-300 font-semibold">
-            <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span id="header-date-label">Sun, 15 Nov 2026</span>
-          </span>
-          <span class="text-slate-600">•</span>
-          <span id="header-live-clock" class="font-medium text-amber-400 tabular-nums">09:42 PM</span>
-          <span id="header-holiday-pill" class="hidden px-2 py-0.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-300 font-semibold">
-            Sunday Weekly Off
-          </span>
+      <!-- Row 2: 3-DOT MENU -->
+      <div id="header-menu-panel" class="header-menu-panel">
+        <div class="mt-2.5 rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
+          <button type="button" id="btn-sync-indicator" onclick="manualCloudSync(); closeHeaderMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-slate-200 hover:bg-slate-800 transition btn-tap">
+            <span class="relative shrink-0"><i id="icon-sync-cloud" data-lucide="cloud" class="w-5 h-5 text-emerald-400"></i><span id="dot-sync-status" class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span></span>
+            <span class="min-w-0"><span class="block text-[13px] font-medium">Cloud Sync</span><span class="block text-[11px] text-slate-500">Sync data to cloud</span></span>
+          </button>
+          <div class="h-px bg-slate-800 mx-3"></div>
+          <button type="button" id="btn-mode-indicator" onclick="openAdminModal(); closeHeaderMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-slate-200 hover:bg-slate-800 transition btn-tap">
+            <i id="icon-mode-indicator" data-lucide="eye" class="w-5 h-5 text-slate-300 shrink-0"></i>
+            <span class="min-w-0"><span class="block text-[13px] font-medium">Student View</span><span class="block text-[11px] text-slate-500">See portal as a student</span></span>
+          </button>
+          <div class="h-px bg-slate-800 mx-3"></div>
+          <button type="button" onclick="shareStudentLink(); closeHeaderMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-slate-200 hover:bg-slate-800 transition btn-tap">
+            <i data-lucide="share-2" class="w-5 h-5 text-slate-300 shrink-0"></i>
+            <span class="min-w-0"><span class="block text-[13px] font-medium">Share</span><span class="block text-[11px] text-slate-500">Copy read-only student link</span></span>
+          </button>
+          <div class="h-px bg-slate-800 mx-3"></div>
+          <button type="button" id="btn-admin-key" onclick="openAdminModal(); closeHeaderMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 text-left text-slate-200 hover:bg-slate-800 transition btn-tap">
+            <i id="icon-admin-key" data-lucide="key-round" class="w-5 h-5 text-amber-400 shrink-0"></i>
+            <span class="min-w-0"><span class="block text-[13px] font-medium">Admin</span><span class="block text-[11px] text-slate-500">Unlock admin controls</span></span>
+          </button>
         </div>
-
-        <span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold tracking-wide shrink-0">
-          Batch Electrician 2025-27
+      </div>
+      <!-- Thin full-width divider -->
+      <div id="app-heading-line" class="-mx-4" style="height:1px;margin-top:10px;"></div>
+      <!-- Row 3: Date / Time / Notice -->
+      <div class="flex items-center gap-1.5 mt-2.5 flex-nowrap min-w-0">
+        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 shrink-0">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-300"></i>
+          <span id="header-date-label" class="text-white text-[10px] font-medium whitespace-nowrap">Mon, 16 Nov 2026</span>
+        </span>
+        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 shrink-0">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-300"></i>
+          <span id="header-live-clock" class="tabular-nums text-white text-[10px] font-medium whitespace-nowrap">11:35 AM</span>
+        </span>
+        <span id="header-holiday-pill" class="hidden inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 min-w-0">
+          <i data-lucide="megaphone" class="w-3.5 h-3.5 text-rose-400 shrink-0"></i>
+          <span data-hol-label class="text-white text-[10px] font-medium truncate">Sunday Weekly Off</span>
         </span>
       </div>
     </div>
   </header>
+</div>
+
+<script>
+  function toggleHeaderMenu(e){ if(e) e.stopPropagation(); var p=document.getElementById("header-menu-panel"); var b=document.getElementById("btn-header-menu"); if(!p) return; var open=p.classList.toggle("menu-open"); if(b) b.classList.toggle("menu-open", open); }
+  function closeHeaderMenu(){ var p=document.getElementById("header-menu-panel"); var b=document.getElementById("btn-header-menu"); if(p) p.classList.remove("menu-open"); if(b) b.classList.remove("menu-open"); }
+  document.addEventListener("click", function(e){ var p=document.getElementById("header-menu-panel"); if(!p || !p.classList.contains("menu-open")) return; if(!e.target.closest("#header-menu-panel") && !e.target.closest("#btn-header-menu")) closeHeaderMenu(); });
+</script>
 
   <!-- ===================================================================== -->
   <!-- MAIN CONTENT WORKSPACE                                                -->
   <!-- ===================================================================== -->
-  <div class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 pt-4 pb-10">
-
-    <!-- Global Quick Trainee Search Bar -->
-    <div id="global-trainee-search-wrap" class="relative mb-4 z-20">
-      <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl px-3 py-2 shadow-lg flex items-center gap-2 focus-within:border-amber-500/70">
-        <i data-lucide="search" class="w-4 h-4 text-amber-400 shrink-0"></i>
-        <input type="text" id="global-trainee-search-input"
-          oninput="handleTraineeSearch(this.value)"
-          onfocus="handleTraineeSearch(this.value)"
-          placeholder="Search trainee by Name, R.No (e.g. 02) or Reg ID..."
-          class="w-full bg-transparent text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none" />
-        <button type="button" id="btn-clear-trainee-search" onclick="clearTraineeSearch()"
-          class="hidden p-1 rounded-lg text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-
-      <!-- Instant Search Results Dropdown -->
-      <div id="trainee-search-results"
-        class="hidden absolute left-0 right-0 mt-1.5 bg-[#0f172a] border border-slate-700/90 rounded-2xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-800/80 z-50">
+  <div class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 pt-4 pb-10 space-y-4">
+    <!-- Rounded search bar placed above notices: collapses to search icon on scroll, expands on click -->
+    <div id="search-bar-wrap">
+      <div id="search-bar-inner">
+        <div id="global-trainee-search-wrap" class="relative w-full z-20">
+          <div id="search-input-box" onclick="expandSearchBar(true)" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl pl-3.5 pr-2.5 py-2.5 flex items-center gap-2 shadow-xl focus-within:border-amber-500/70">
+            <i id="search-bar-icon" data-lucide="search" class="w-4 h-4 text-amber-400 shrink-0"></i>
+            <input type="text" id="global-trainee-search-input" oninput="handleTraineeSearch(this.value)" onfocus="expandSearchBar(false); handleTraineeSearch(this.value)" placeholder="Search Name, R.No or Reg. No..." class="w-full bg-transparent text-[12px] text-white placeholder-slate-400 focus:outline-none" />
+            <button type="button" id="btn-clear-trainee-search" onclick="event.stopPropagation(); clearTraineeSearch()" class="hidden w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-white shrink-0"><i data-lucide="x" class="w-3 h-3"></i></button>
+          </div>
+          <div id="trainee-search-results" class="hidden absolute right-0 sm:left-0 sm:right-auto top-full mt-1.5 w-[calc(100vw-1.5rem)] max-w-[360px] bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-800 z-50"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Main Tab Panels Column -->
     <main class="w-full min-w-0 space-y-5">
 
       <!-- ================================================================= -->
-      <!-- TAB 1: NOTICES (DEFAULT) + TRADE VIDEOS BELOW                     -->
+      <!-- TAB 1: HOME (Notices inside) + TRADE VIDEOS BELOW                 -->
       <!-- ================================================================= -->
-      <section id="view-notices" class="tab-view animate-panel space-y-5">
+      <section id="view-home" class="tab-view animate-panel space-y-5">
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div class="flex items-center justify-between gap-2 mb-3">
             <div class="flex items-center gap-2 min-w-0">
@@ -389,16 +544,23 @@
                 <i data-lucide="megaphone" class="w-4 h-4"></i>
               </div>
               <div class="min-w-0">
-                <h2 class="text-sm sm:text-base font-bold text-white truncate">Batch Notices & Holidays</h2>
-                <p class="text-[11px] text-slate-400 truncate">Official circulars, workshop updates & holiday alerts</p>
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">Notie</h2>
               </div>
             </div>
 
-            <button type="button" onclick="openNoticeModal()"
-              class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition btn-tap">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>Post</span>
-            </button>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" id="btn-toggle-notices" onclick="toggleAllNotices()"
+                class="hidden px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 font-semibold text-xs flex items-center gap-1 transition btn-tap">
+                <span id="label-toggle-notices">Show All</span>
+                <i id="chevron-toggle-notices" data-lucide="chevron-down" class="w-3.5 h-3.5 accordion-chevron"></i>
+              </button>
+
+              <button type="button" onclick="openNoticeModal()"
+                class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition btn-tap">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>Post</span>
+              </button>
+            </div>
           </div>
 
           <div id="notices-list-container" class="space-y-2.5"></div>
@@ -550,7 +712,7 @@
           <div id="monthly-holidays-summary" class="pt-2 border-t border-slate-800/80 space-y-1.5"></div>
         </div>
 
-        <!-- Daily Class Attenders Leaderboard (Toggleable Accordion: 1st, 2nd, 3rd with Total Present & Absent Days) -->
+        <!-- Daily Class Attenders Leaderboard -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleAccordion('daily-top-attenders')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -580,7 +742,7 @@
           </div>
         </div>
 
-        <!-- Trainee Roll-Call List (Roll No. Wise, Collapsible, Closed by Default) -->
+        <!-- Trainee Roll-Call List -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleAccordion('daily-rollcall')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -707,7 +869,7 @@
       <!-- TAB 4: RESULTS & EXAMS                                            -->
       <!-- ================================================================= -->
       <section id="view-results" class="tab-view hidden animate-panel space-y-3">
-        <!-- Quick Actions: Download Batch Results & Official Skill India Digital Hub Link -->
+        <!-- Quick Actions -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div class="min-w-0">
             <div class="text-xs sm:text-sm font-bold text-white">Marksheet & Official Verification</div>
@@ -727,7 +889,7 @@
           </div>
         </div>
 
-        <!-- 1st Year NCVT Results (Collapsible, Closed by Default) -->
+        <!-- 1st Year NCVT Results -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleResultAccordion('y1')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -760,7 +922,7 @@
           </div>
         </div>
 
-        <!-- Consolidated 2-Year NCVT Results (Out of 1200) (Collapsible, Closed by Default) -->
+        <!-- Consolidated 2-Year NCVT Results -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleResultAccordion('y12')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -793,7 +955,7 @@
           </div>
         </div>
 
-        <!-- 2nd Year Exam Schedule (Collapsible, Closed by Default) -->
+        <!-- 2nd Year Exam Schedule -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleResultAccordion('y2')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -825,7 +987,7 @@
           </div>
         </div>
 
-        <!-- Internal Practical & Theory Tests (Collapsible, Closed by Default) -->
+        <!-- Internal Practical & Theory Tests -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div role="button" tabindex="0" onclick="toggleResultAccordion('int')"
             class="flex items-center justify-between gap-2 cursor-pointer select-none">
@@ -862,7 +1024,6 @@
       <!-- TAB 5: STUDY MATERIALS & TRADE VIDEOS                             -->
       <!-- ================================================================= -->
       <section id="view-videos" class="tab-view hidden animate-panel space-y-4">
-
         <!-- NCVT Study Notes, Question Banks & PDFs -->
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
           <div class="flex items-center justify-between gap-2">
@@ -877,7 +1038,7 @@
             </div>
 
             <button type="button" onclick="openStudyNoteModal()"
-              class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/20 transition btn-tap">
+              class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition btn-tap">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
               <span>Add Note</span>
             </button>
@@ -898,7 +1059,7 @@
           </div>
 
           <button type="button" onclick="openVideoModal()"
-            class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/20 transition btn-tap">
+            class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition btn-tap">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add</span>
           </button>
@@ -932,6 +1093,23 @@
         <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </section>
 
+      <!-- ================================================================= -->
+      <!-- TAB 6: GALLERY                                                    -->
+      <!-- ================================================================= -->
+      <section id="view-gallery" class="tab-view hidden animate-panel space-y-4">
+        <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="images" class="w-4 h-4"></i></div>
+            <div class="min-w-0"><h2 class="text-sm sm:text-base font-bold text-white truncate">Photo Gallery</h2><p class="text-[11px] text-slate-400 truncate">Workshop, lab, practical &amp; ITI life — Govt. ITI Chhotojagulia</p></div>
+            <span id="gallery-count" class="ml-auto shrink-0 px-2 py-1 rounded-lg bg-slate-900 border border-slate-700/80 text-[11px] font-bold text-amber-300"></span>
+            <button type="button" onclick="document.getElementById('gallery-file-input').click()" class="admin-only hidden shrink-0 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 transition btn-tap"><i data-lucide="plus" class="w-3.5 h-3.5"></i><span>Add Photo</span></button>
+            <input type="file" id="gallery-file-input" accept="image/*" class="hidden" onchange="handleGalleryUpload(event)" />
+          </div>
+          <div id="gallery-filters" class="flex flex-wrap gap-1.5"></div>
+          <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+          <p class="text-[11px] text-slate-400 text-center">Tap any photo to view it full-screen. Only Admin can add / delete photos. Students can only view. Tap <b class="text-amber-400">Add Photo</b> (Admin only) to add your own photo. Your photos are saved on this device.</p>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -944,43 +1122,72 @@
     </p>
   </footer>
 
+  <!-- MORE SHEET: Study & Lab + Gallery -->
+  <div id="more-backdrop" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px]" style="opacity:0;pointer-events:none;" onclick="closeMoreSheet()"></div>
+  <div id="more-sheet" class="fixed bottom-0 inset-x-0 z-50 px-3 pt-2 pb-[76px]" style="transform:translateY(110%);visibility:hidden;pointer-events:none;">
+    <div class="more-sheet-card max-w-5xl mx-auto bg-[#0f172a] border border-slate-700/90 rounded-3xl shadow-2xl overflow-hidden">
+      <button type="button" onclick="closeMoreSheet()" class="w-full flex items-center justify-center gap-2 py-2.5 text-slate-400"><span class="w-10 h-1 rounded-full bg-slate-600 block"></span></button>
+      <div class="px-3 pb-3 space-y-2">
+        <p class="px-1 text-xs font-bold text-slate-400">More Sections</p>
+        <button type="button" onclick="selectMoreTab('results')" class="more-item w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-left btn-tap">
+          <span class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="award" class="w-5 h-5"></i></span>
+          <span class="flex-1 min-w-0"><span class="block text-white text-sm font-bold">Results</span><span class="block text-slate-400 text-[11px] truncate">2-Year &amp; internal marks &amp; exam schedule</span></span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        </button>
+        <button type="button" onclick="selectMoreTab('videos')" class="more-item w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-left btn-tap">
+          <span class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="book-open-check" class="w-5 h-5"></i></span>
+          <span class="flex-1 min-w-0"><span class="block text-white text-sm font-bold">Study &amp; Lab</span><span class="block text-slate-400 text-[11px] truncate">NCVT notes, PDFs &amp; trade videos</span></span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        </button>
+        <button type="button" onclick="selectMoreTab('gallery')" class="more-item w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-left btn-tap">
+          <span class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="images" class="w-5 h-5"></i></span>
+          <span class="flex-1 min-w-0"><span class="block text-white text-sm font-bold">Gallery</span><span class="block text-slate-400 text-[11px] truncate">Workshop, lab &amp; ITI life photos</span></span>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 shrink-0"></i>
+        </button>
+        <button type="button" onclick="closeMoreSheet()" class="more-item w-full py-2.5 rounded-2xl bg-slate-800 text-slate-300 text-xs font-bold">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===================================================================== -->
   <!-- FIXED BOTTOM ONE-THUMB NAVIGATION DOCK                                -->
   <!-- ===================================================================== -->
   <nav id="bottom-tab-bar" aria-label="Primary Sections"
-    class="fixed bottom-0 inset-x-0 z-40 bg-[#0c1322]/95 backdrop-blur-md border-t border-slate-800/90 shadow-2xl">
-    <div class="max-w-5xl mx-auto px-2 py-1.5 grid grid-cols-5 gap-1">
-      <button type="button" id="tab-btn-notices" onclick="switchTab('notices')"
-        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 transition btn-tap">
-        <i data-lucide="bell" class="w-4 h-4 shrink-0"></i>
-        <span class="truncate">Notices</span>
+    class="fixed bottom-0 inset-x-0 z-40 bg-[#0c1322]/95 backdrop-blur-md border-t border-slate-800/80 shadow-sm">
+    <div class="max-w-5xl mx-auto px-3 py-2.5 grid grid-cols-4 gap-2">
+      <button type="button" id="tab-btn-home" onclick="switchTab('home')"
+        class="tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-bold bg-amber-500 text-slate-950 transition btn-tap">
+        <i data-lucide="home" class="w-5 h-5 shrink-0"></i>
+        <span class="truncate">Home</span>
       </button>
 
       <button type="button" id="tab-btn-daily" onclick="switchTab('daily')"
-        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="calendar-check-2" class="w-4 h-4 shrink-0"></i>
+        class="tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="calendar-check-2" class="w-5 h-5 shrink-0"></i>
         <span class="truncate">Daily</span>
       </button>
 
       <button type="button" id="tab-btn-monthly" onclick="switchTab('monthly')"
-        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="bar-chart-3" class="w-4 h-4 shrink-0"></i>
+        class="tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="bar-chart-3" class="w-5 h-5 shrink-0"></i>
         <span class="truncate">80% Chart</span>
       </button>
 
-      <button type="button" id="tab-btn-results" onclick="switchTab('results')"
-        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="award" class="w-4 h-4 shrink-0"></i>
-        <span class="truncate">Results</span>
-      </button>
-
-      <button type="button" id="tab-btn-videos" onclick="switchTab('videos')"
-        class="tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="book-open-check" class="w-4 h-4 shrink-0"></i>
-        <span class="truncate">Study & Lab</span>
+      <button type="button" id="tab-btn-more" onclick="toggleMoreSheet()"
+        class="tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
+        <i data-lucide="layout-grid" class="w-5 h-5 shrink-0"></i>
+        <span class="truncate">More</span>
       </button>
     </div>
   </nav>
+
+  <div id="gallery-lightbox" class="fixed inset-0 z-[60] hidden bg-black/90 backdrop-blur-sm flex-col items-center justify-center p-3" onclick="closeGalleryLightbox()">
+    <button type="button" class="absolute top-3 right-3 p-2 rounded-full bg-white/10 text-white" onclick="closeGalleryLightbox()"><i data-lucide="x" class="w-5 h-5"></i></button>
+    <button type="button" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white" onclick="event.stopPropagation(); galleryStep(-1)"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+    <button type="button" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/10 text-white" onclick="event.stopPropagation(); galleryStep(1)"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+    <img id="gallery-lightbox-img" src="" alt="" class="max-h-[78vh] max-w-full rounded-2xl shadow-2xl object-contain" onclick="event.stopPropagation()" />
+    <div class="mt-3 text-center px-4" onclick="event.stopPropagation()"><p id="gallery-lightbox-title" class="text-white font-bold text-sm"></p><p id="gallery-lightbox-meta" class="text-slate-300 text-xs mt-0.5"></p></div>
+  </div>
 
   <!-- ===================================================================== -->
   <!-- MODAL 1: MERGED ADMIN / KEY & MANAGEMENT HUB                          -->
@@ -1818,7 +2025,7 @@ service cloud.firestore {
     let activeReportTraineeId = null;
     let activeReportPeriod = "ALL";
     let fbUnsubscribe = null;
-
+    let searchExpandLockUntil = 0;
     function getTodayISO() {
       const now = new Date();
       return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -2287,7 +2494,6 @@ service cloud.firestore {
           : `<i data-lucide="lock" class="w-3 h-3 text-amber-400"></i><span>View Only</span>`;
       }
 
-      // Always render Daily Class Attenders (Top 3) regardless of selected date
       const topRankedTrainees = [...appState.trainees].sort((a, b) => {
         const stA = calculateTraineeStats(a.id, "ALL");
         const stB = calculateTraineeStats(b.id, "ALL");
@@ -2371,7 +2577,6 @@ service cloud.firestore {
       let absentCount = 0;
       let unmarkedCount = 0;
 
-      // Roll Call list aligned strictly Roll No.-wise (02, 03, 04...)
       const rollSortedTrainees = [...appState.trainees].sort((a, b) =>
         String(a.rno || "").localeCompare(String(b.rno || ""), undefined, { numeric: true })
       );
@@ -2549,7 +2754,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 5. LIVE CLOCK, HEADER DATE & AUTO-HIDE ON SCROLL
+    // 5. LIVE CLOCK, HEADER DATE & AUTO-HIDE + MINIMIZING SEARCH BAR
     // =========================================================================
     function updateLiveClock() {
       const clockEl = document.getElementById("header-live-clock");
@@ -2578,7 +2783,8 @@ service cloud.firestore {
       if (holPill) {
         const label = getHolidayLabel(targetISO);
         if (label) {
-          holPill.textContent = label;
+          const lbl = holPill.querySelector("[data-hol-label]") || holPill;
+          lbl.textContent = label;
           holPill.classList.remove("hidden");
         } else {
           holPill.classList.add("hidden");
@@ -2586,206 +2792,219 @@ service cloud.firestore {
       }
     }
 
+    function minimizeSearchBar() {
+      const sWrap = document.getElementById("search-bar-wrap");
+      const inp = document.getElementById("global-trainee-search-input");
+      const box = document.getElementById("trainee-search-results");
+      if (!sWrap) return;
+      if (inp && inp.value.trim()) return;
+      if (box) box.classList.add("hidden");
+      if (inp) inp.placeholder = "Search";
+      sWrap.classList.add("search-minimized");
+    }
+
+    function expandSearchBar(shouldFocus = true) {
+      const sWrap = document.getElementById("search-bar-wrap");
+      const inp = document.getElementById("global-trainee-search-input");
+      if (!sWrap) return;
+      searchExpandLockUntil = Date.now() + 450;
+      const wasMinimized = sWrap.classList.contains("search-minimized");
+      sWrap.classList.remove("search-minimized");
+      if (inp) inp.placeholder = "Search Name, R.No or Reg. No...";
+      if (shouldFocus && inp && (wasMinimized || document.activeElement !== inp)) {
+        setTimeout(() => inp.focus(), 50);
+      }
+    }
+
     function setupAutoHideHeader() {
+      const wrapEl = document.getElementById("top-sticky");
       const header = document.getElementById("main-header");
-      if (!header) return;
-      let lastY = window.scrollY;
-      window.addEventListener(
-        "scroll",
-        () => {
-          const curY = window.scrollY;
-          if (curY > 75 && curY > lastY + 8) {
-            header.classList.add("header-hidden");
-          } else if (curY < lastY - 6 || curY <= 35) {
-            header.classList.remove("header-hidden");
+      const sWrap = document.getElementById("search-bar-wrap");
+      if (!wrapEl || !header) return;
+
+      let lastY = Math.max(0, window.scrollY);
+      let headerHidden = false;
+
+      function syncStickyOffsets() {
+        const h = header.offsetHeight || 0;
+        wrapEl.style.transform = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
+        if (sWrap) {
+          sWrap.style.transform = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
+        }
+      }
+
+      function handleScrollImmediate() {
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        const curY = Math.min(maxScroll, Math.max(0, window.scrollY));
+        const delta = curY - lastY;
+        const inp = document.getElementById("global-trainee-search-input");
+        const hasQuery = inp && inp.value.trim().length > 0;
+        const isLocked = Date.now() < searchExpandLockUntil;
+
+        if (curY <= 12) {
+          headerHidden = false;
+          expandSearchBar(false);
+        } else if (delta > 1 && curY > 36) {
+          headerHidden = true;
+          if (!hasQuery && !isLocked) {
+            if (inp && document.activeElement === inp) inp.blur();
+            minimizeSearchBar();
           }
-          lastY = curY;
-        },
-        { passive: true }
-      );
+        } else if (delta < -2) {
+          headerHidden = false;
+        }
+        syncStickyOffsets();
+        lastY = curY;
+      }
+
+      window.addEventListener("resize", syncStickyOffsets, { passive: true });
+      window.addEventListener("scroll", handleScrollImmediate, { passive: true });
     }
 
     // =========================================================================
     // 6. BOTTOM ONE-THUMB TAB SWITCHING & ACCORDIONS
     // =========================================================================
+    const ACTIVE_TAB_CLS = "tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-bold bg-amber-500 text-slate-950 transition btn-tap";
+    const INACTIVE_TAB_CLS = "tab-btn flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap";
+
+    function updateNavHighlights(activeKey) {
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.className = btn.id === `tab-btn-${activeKey}` ? ACTIVE_TAB_CLS : INACTIVE_TAB_CLS;
+      });
+    }
+
+    let moreOpen = false;
+    let moreHideTimeout = null;
+    function openMoreSheet(){
+      if (moreHideTimeout) { clearTimeout(moreHideTimeout); moreHideTimeout = null; }
+      moreOpen = true;
+      const bd=document.getElementById("more-backdrop"), sh=document.getElementById("more-sheet"); if(!bd||!sh) return;
+      bd.classList.add("more-open"); bd.style.opacity="1"; bd.style.pointerEvents="auto";
+      sh.classList.add("more-open"); sh.style.transform="translateY(0)"; sh.style.visibility="visible"; sh.style.pointerEvents="auto";
+      updateNavHighlights("more");
+      if (window.lucide) lucide.createIcons();
+    }
+    function closeMoreSheet(skipHighlightReset = false){
+      moreOpen = false;
+      const bd2=document.getElementById("more-backdrop"), sh2=document.getElementById("more-sheet");
+      if(bd2){ bd2.classList.remove("more-open"); bd2.style.opacity="0"; bd2.style.pointerEvents="none"; }
+      if(sh2){ sh2.classList.remove("more-open"); sh2.style.transform="translateY(110%)"; sh2.style.pointerEvents="none";
+        if (moreHideTimeout) clearTimeout(moreHideTimeout);
+        moreHideTimeout = setTimeout(function(){ if(!moreOpen) sh2.style.visibility="hidden"; }, 320); }
+      if (!skipHighlightReset) {
+        const inMore = ["results","videos","gallery"].includes(lastTabName);
+        updateNavHighlights(inMore ? "more" : lastTabName);
+      }
+    }
+    function toggleMoreSheet(){ moreOpen ? closeMoreSheet() : openMoreSheet(); }
+    function selectMoreTab(tab){
+      closeMoreSheet(true);
+      switchTab(tab);
+    }
+
+    let lastTabName = "home";
+    const TAB_ORDER = ["home", "daily", "monthly", "results", "videos", "gallery"];
     function switchTab(tabName) {
+      closeMoreSheet(true);
+      const fromIdx = TAB_ORDER.indexOf(lastTabName);
+      const toIdx = TAB_ORDER.indexOf(tabName);
+      const dirClass = toIdx > fromIdx ? "animate-tab-right" : toIdx < fromIdx ? "animate-tab-left" : "animate-tab-fade";
+      lastTabName = tabName;
+
       document.querySelectorAll(".tab-view").forEach((sec) => {
         if (sec.id === `view-${tabName}`) {
-          sec.classList.remove("hidden");
-          sec.classList.remove("animate-panel");
+          sec.classList.remove("hidden", "animate-panel", "animate-tab-right", "animate-tab-left", "animate-tab-fade");
           void sec.offsetWidth;
-          sec.classList.add("animate-panel");
+          sec.classList.add(dirClass);
         } else {
           sec.classList.add("hidden");
+          sec.classList.remove("animate-panel", "animate-tab-right", "animate-tab-left", "animate-tab-fade");
         }
       });
 
-      document.querySelectorAll(".tab-btn").forEach((btn) => {
-        const active = btn.id === `tab-btn-${tabName}`;
-        btn.className = active
-          ? "tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-bold bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 transition btn-tap"
-          : "tab-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-xl text-[10px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap";
-      });
-
+      const inMore = ["results", "videos", "gallery"].includes(tabName);
+      updateNavHighlights(inMore ? "more" : tabName);
       window.scrollTo({ top: 0, behavior: "smooth" });
       if (window.lucide) lucide.createIcons();
     }
 
-    function toggleAccordion(key) {
-      const body = document.getElementById(`body-${key}`);
-      const chev = document.getElementById(`chevron-${key}`);
-      if (!body) return;
-      const isOpen = body.classList.toggle("accordion-open");
-      if (chev) chev.classList.toggle("rotate-180", isOpen);
-    }
-
-    function toggleResultAccordion(key) {
-      toggleAccordion(`res-${key}`);
-    }
-
-    // =========================================================================
-    // 7. GLOBAL INSTANT TRAINEE SEARCH
-    // =========================================================================
-    function handleTraineeSearch(query) {
-      const box = document.getElementById("trainee-search-results");
-      const clearBtn = document.getElementById("btn-clear-trainee-search");
-      const rawQ = String(query || "").trim();
-      const q = rawQ.toLowerCase();
-      const numericQ = q.replace(/^r\.?\s*/i, "").replace(/^0+/, "");
-
-      if (clearBtn) clearBtn.classList.toggle("hidden", !rawQ);
-      if (!box) return;
-      if (!q) {
-        box.classList.add("hidden");
-        box.innerHTML = "";
-        return;
-      }
-
-      const matches = appState.trainees.filter((tr) => {
-        const name = String(tr.name || "").toLowerCase();
-        const rno = String(tr.rno || "").toLowerCase();
-        const rnoStripped = rno.replace(/^0+/, "");
-        const roll = String(tr.roll || "").toLowerCase();
-        return (
-          name.includes(q) ||
-          rno.includes(q) ||
-          `r.${rno}`.includes(q) ||
-          `r${rno}`.includes(q) ||
-          (numericQ && rnoStripped === numericQ) ||
-          roll.includes(q)
-        );
-      });
-
-      if (!matches.length) {
-        box.innerHTML = `<div class="px-3.5 py-3 text-xs text-slate-400">No trainee found matching "${escapeHTML(rawQ)}"</div>`;
-        box.classList.remove("hidden");
-        return;
-      }
-
-      const rewardMaps = computeRewardMaps();
-      box.innerHTML = matches
-        .map((tr) => {
-          const st = calculateTraineeStats(tr.id, "ALL");
-          const rw = getTraineeRewardMeta(tr, rewardMaps, "all");
-          const total1200 = Number(tr.year1 || 0) + Number(tr.year2 || 0);
-          return `
-            <div onpointerdown="event.preventDefault(); selectSearchedTrainee('${tr.id}')"
-              class="w-full px-3.5 py-2.5 hover:bg-slate-900/90 active:bg-slate-800 flex items-center justify-between gap-2 cursor-pointer select-none transition">
-              <div class="min-w-0 flex-1 text-left">
-                <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
-                  <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 font-mono text-[10px] text-amber-400 shrink-0">R.${escapeHTML(tr.rno || "--")}</span>
-                  <span class="truncate">${escapeHTML(tr.name)}</span>
-                  ${rw.badgesHTML}
-                </div>
-                <div class="text-[10px] font-mono text-slate-400 mt-0.5">ID: ${escapeHTML(tr.roll)}</div>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <div class="text-right">
-                  <div class="text-[11px] font-extrabold ${st.pct >= 80 ? "text-emerald-400" : "text-rose-400"}">${st.pct}% Att.</div>
-                  <div class="text-[10px] text-slate-400">${total1200}/1200</div>
-                </div>
-                ${
-                  isAdminUnlocked
-                    ? `<button type="button" onpointerdown="event.stopPropagation(); event.preventDefault(); openAdminDirectEdit('${tr.id}')" title="Directly Update Student Data"
-                        class="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] flex items-center gap-1 transition btn-tap">
-                        <i data-lucide="pencil" class="w-3 h-3"></i>
-                        <span>Update</span>
-                      </button>`
-                    : ""
-                }
-              </div>
-            </div>
-          `;
-        })
-        .join("");
-
-      box.classList.remove("hidden");
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function selectSearchedTrainee(traineeId) {
-      const inp = document.getElementById("global-trainee-search-input");
-      if (inp) inp.blur();
-      clearTraineeSearch();
-      openTraineeReport(traineeId);
-    }
-
-    function clearTraineeSearch() {
-      const inp = document.getElementById("global-trainee-search-input");
-      const box = document.getElementById("trainee-search-results");
-      const clearBtn = document.getElementById("btn-clear-trainee-search");
-      if (inp) inp.value = "";
-      if (box) {
-        box.classList.add("hidden");
-        box.innerHTML = "";
-      }
-      if (clearBtn) clearBtn.classList.add("hidden");
-    }
-
-    // Close search dropdown cleanly when tapping outside the search wrapper
+    // Automatically close More sheet when clicking/tapping anywhere outside it or the bottom dock
     document.addEventListener("pointerdown", (e) => {
-      const wrap = document.getElementById("global-trainee-search-wrap");
-      const box = document.getElementById("trainee-search-results");
-      if (wrap && box && !wrap.contains(e.target)) {
-        box.classList.add("hidden");
+      if (!moreOpen) return;
+      if (!e.target.closest("#more-sheet") && !e.target.closest("#bottom-tab-bar")) {
+        closeMoreSheet();
       }
     });
 
     // =========================================================================
-    // 8. NOTICES, STUDY NOTES & TRADE VIDEOS RENDERING
+    // 8. NOTICES (SHOW LATEST BY DEFAULT + SMOOTH TOGGLE ALL), STUDY NOTES & VIDEOS
     // =========================================================================
+    let showAllNotices = false;
+
+    function toggleAllNotices() {
+      showAllNotices = !showAllNotices;
+      const extraBody = document.getElementById("extra-notices-accordion");
+      const label = document.getElementById("label-toggle-notices");
+      const chev = document.getElementById("chevron-toggle-notices");
+      if (extraBody) extraBody.classList.toggle("accordion-open", showAllNotices);
+      if (label) label.textContent = showAllNotices ? "Show Less" : `Show All (${appState.notices.length})`;
+      if (chev) chev.classList.toggle("rotate-180", showAllNotices);
+    }
+
+    function renderNoticeCardHTML(n) {
+      return `
+        <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 space-y-1.5">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-xs sm:text-sm font-bold text-white leading-snug">${escapeHTML(n.title)}</h3>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
+                ${escapeHTML(formatDisplayDate(n.date))}
+              </span>
+              ${
+                isAdminUnlocked
+                  ? `<button type="button" onclick="deleteNotice('${n.id}')" title="Delete Notice"
+                      class="p-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
+                      <i data-lucide="trash-2" class="w-3 h-3"></i>
+                    </button>`
+                  : ""
+              }
+            </div>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">${escapeHTML(n.body)}</p>
+        </article>
+      `;
+    }
+
     function renderNotices() {
       const container = document.getElementById("notices-list-container");
+      const toggleBtn = document.getElementById("btn-toggle-notices");
+      const label = document.getElementById("label-toggle-notices");
+      const chev = document.getElementById("chevron-toggle-notices");
       if (!container) return;
+
       if (!appState.notices.length) {
+        if (toggleBtn) toggleBtn.classList.add("hidden");
         container.innerHTML = `<div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No notices posted yet.</div>`;
         return;
       }
-      container.innerHTML = appState.notices
-        .map(
-          (n) => `
-          <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 space-y-1.5">
-            <div class="flex items-start justify-between gap-2">
-              <h3 class="text-xs sm:text-sm font-bold text-white leading-snug">${escapeHTML(n.title)}</h3>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
-                  ${escapeHTML(formatDisplayDate(n.date))}
-                </span>
-                ${
-                  isAdminUnlocked
-                    ? `<button type="button" onclick="deleteNotice('${n.id}')" title="Delete Notice"
-                        class="p-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
-                        <i data-lucide="trash-2" class="w-3 h-3"></i>
-                      </button>`
-                    : ""
-                }
-              </div>
+
+      const hasMore = appState.notices.length > 1;
+      if (toggleBtn) {
+        toggleBtn.classList.toggle("hidden", !hasMore);
+        if (label) label.textContent = showAllNotices ? "Show Less" : `Show All (${appState.notices.length})`;
+        if (chev) chev.classList.toggle("rotate-180", showAllNotices);
+      }
+
+      const firstNoticeHTML = renderNoticeCardHTML(appState.notices[0]);
+      const restNoticesHTML = hasMore
+        ? `<div id="extra-notices-accordion" class="accordion-body ${showAllNotices ? "accordion-open" : ""}" style="margin-top:0;">
+            <div class="accordion-inner space-y-2.5 pt-2.5">
+              ${appState.notices.slice(1).map(renderNoticeCardHTML).join("")}
             </div>
-            <p class="text-xs text-slate-300 leading-relaxed">${escapeHTML(n.body)}</p>
-          </article>
-        `
-        )
-        .join("");
+          </div>`
+        : "";
+
+      container.innerHTML = firstNoticeHTML + restNoticesHTML;
       if (window.lucide) lucide.createIcons();
     }
 
@@ -2988,7 +3207,7 @@ service cloud.firestore {
 
         let cls = "bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700";
         if (isSelected) {
-          cls = "bg-amber-500 border-amber-400 text-slate-950 shadow-md shadow-amber-500/20";
+          cls = "bg-amber-500 border-amber-400 text-slate-950";
         } else if (isHol) {
           cls = "bg-rose-950/30 border-rose-500/30 text-rose-300";
         }
@@ -3028,7 +3247,6 @@ service cloud.firestore {
       const month = calendarViewDate.getMonth();
       title.textContent = calendarViewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-      // Sunday-first padding (Sun = 0 ... Sat = 6)
       const firstDay = new Date(year, month, 1);
       const startPad = firstDay.getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -3806,6 +4024,7 @@ service cloud.firestore {
     });
 
     function updateAdminUIState() {
+      if(typeof renderGallery==="function"){ try{ renderGallery(); }catch(e){} }
       document.querySelectorAll(".admin-only").forEach((el) => {
         el.classList.toggle("hidden", !isAdminUnlocked);
       });
@@ -4263,7 +4482,7 @@ service cloud.firestore {
       const desc = document.getElementById("video-desc-input").value.trim();
       appState.videos.unshift({ id: "vid-" + Date.now(), title, ytId, duration, desc });
       saveLocalState(true);
-      renderVideoCards("notices-videos-grid", "notices", 3);
+      renderVideoCards("notices-videos-grid", "notices", 10);
       renderVideoCards("full-videos-grid", "videos");
       e.target.reset();
       closeModal("modal-add-video");
@@ -4273,7 +4492,7 @@ service cloud.firestore {
     function deleteVideo(id) {
       appState.videos = appState.videos.filter((v) => v.id !== id);
       saveLocalState(true);
-      renderVideoCards("notices-videos-grid", "notices", 3);
+      renderVideoCards("notices-videos-grid", "notices", 10);
       renderVideoCards("full-videos-grid", "videos");
       showToast("Video removed", "info");
     }
@@ -4498,16 +4717,95 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 16. RENDER ALL & BOOTSTRAP
+    // 16. RENDER ALL & BOOTSTRAP (GALLERY + INIT)
     // =========================================================================
+    const GALLERY_STORAGE_KEY = "iti_gallery_custom_photos_v1";
+    function loadCustomGalleryPhotos(){ try{ const raw=localStorage.getItem(GALLERY_STORAGE_KEY); const arr=raw?JSON.parse(raw):[]; return Array.isArray(arr)?arr:[]; }catch(e){ return []; } }
+    function saveCustomGalleryPhotos(arr){ try{ localStorage.setItem(GALLERY_STORAGE_KEY, JSON.stringify(arr)); }catch(e){ showToast("Photo is too large to save. Try under 1 MB.", "error"); } }
+    function handleGalleryUpload(event){
+      if(!isAdminUnlocked){ event.target.value=""; showToast("Admin only — unlock Admin Mode first", "error"); openModal('modal-admin'); return; }
+      const file = event.target.files && event.target.files[0];
+      event.target.value = "";
+      if(!file) return;
+      const title = file.name.replace(/\.[^/.]+$/, "") || "Workshop Photo";
+      const reader = new FileReader();
+      reader.onload = function(){
+        const custom = loadCustomGalleryPhotos();
+        custom.unshift({ title: title.trim(), cat: "Practical", date: formatDisplayDate(getTodayISO()), img: reader.result, custom: true });
+        saveCustomGalleryPhotos(custom);
+        galleryFilter = "All";
+        renderGallery();
+        showToast("Photo added to Gallery!", "success");
+      };
+      reader.readAsDataURL(file);
+    }
+    function deleteGalleryPhoto(gIdx){
+      if(!isAdminUnlocked){ showToast("Admin only — unlock Admin Mode first", "error"); openModal('modal-admin'); return; }
+      const custom = loadCustomGalleryPhotos();
+      const target = GALLERY_PHOTOS[gIdx];
+      const idx = custom.findIndex(c => c.img===target.img && c.title===target.title);
+      if(idx>=0){ custom.splice(idx,1); saveCustomGalleryPhotos(custom); showToast("Photo deleted", "info"); }
+      renderGallery();
+    }
+    function getAllGalleryPhotos(){ return [...loadCustomGalleryPhotos(), ...GALLERY_DEFAULT_PHOTOS]; }
+    const GALLERY_DEFAULT_PHOTOS = [
+      { title: "Wiring Practice", cat: "Practical", date: "Workshop Day", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f59e0b%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2392400e%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%E2%9A%A1%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EWiring%20Practice%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Motor Winding Lab", cat: "Lab", date: "Practical Session", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230ea5e9%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%231e3a8a%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%94%A7%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EMotor%20Winding%20Lab%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Electrical Panel", cat: "Lab", date: "Lab Work", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2310b981%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23064e3b%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EElectrical%20Panel%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Tools & Safety Kit", cat: "Workshop", date: "Tool Room", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f97316%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%237c2d12%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%A7%B0%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3ETools%20%26%20Safety%20Kit%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Circuit Testing", cat: "Practical", date: "Practical Exam Prep", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%238b5cf6%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23312e81%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%94%8C%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3ECircuit%20Testing%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "ITI Campus", cat: "Events", date: "Campus Life", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2306b6d4%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23155e75%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%8F%AB%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EITI%20Campus%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Cable Jointing", cat: "Practical", date: "Workshop Day", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23eab308%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23713f12%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%94%97%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3ECable%20Jointing%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Trainees at Work", cat: "Workshop", date: "Daily Practical", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2384cc16%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23365314%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%91%B7%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3ETrainees%20at%20Work%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Annual Function", cat: "Events", date: "ITI Event", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23ec4899%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23831843%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%8E%89%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EAnnual%20Function%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Meter & Measurement", cat: "Lab", date: "Lab Work", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2314b8a6%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23134e4a%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%93%8F%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EMeter%20%26%20Measurement%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "House Wiring Demo", cat: "Practical", date: "Demo Class", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23facc15%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a16207%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%92%A1%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EHouse%20Wiring%20Demo%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" },
+      { title: "Prize Distribution", cat: "Events", date: "ITI Event", img: "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22800%22%20height%3D%22600%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23f59e0b%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%237c2d12%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22800%22%20height%3D%22600%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%22400%22%20y%3D%22260%22%20font-size%3D%22140%22%20text-anchor%3D%22middle%22%3E%F0%9F%8F%86%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22380%22%20font-size%3D%2242%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EPrize%20Distribution%3C/text%3E%3Ctext%20x%3D%22400%22%20y%3D%22430%22%20font-size%3D%2224%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.85%29%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%3EGovt.%20ITI%20Chhotojagulia%3C/text%3E%3C/svg%3E" }
+    ];
+    let GALLERY_PHOTOS = getAllGalleryPhotos();
+    let galleryFilter = "All";
+    let galleryVisible = [];
+    let galleryIndex = 0;
+    function renderGallery() {
+      GALLERY_PHOTOS = getAllGalleryPhotos();
+      const cats = ["All", ...new Set(GALLERY_PHOTOS.map(p => p.cat))];
+      document.getElementById("gallery-filters").innerHTML = cats.map(c => `<button type="button" onclick="setGalleryFilter('${c}')" class="px-3 py-1.5 rounded-full text-xs font-bold border transition btn-tap ${c===galleryFilter ? "bg-amber-500 text-slate-950 border-amber-500" : "bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800"}">${c}</button>`).join("");
+      galleryVisible = GALLERY_PHOTOS.filter(p => galleryFilter==="All" || p.cat===galleryFilter);
+      document.getElementById("gallery-count").textContent = galleryVisible.length + " photos";
+      document.getElementById("gallery-grid").innerHTML = galleryVisible.map((p,i) => {
+        const gIdx = GALLERY_PHOTOS.indexOf(p);
+        return `
+        <div class="group relative rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 text-left">
+        <button type="button" onclick="openGalleryLightbox(${i})" class="block w-full text-left">
+          <img src="${p.img}" alt="${p.title}" loading="lazy" class="w-full aspect-[4/3] object-cover group-active:scale-105 transition duration-300" />
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-amber-300 text-[10px] font-bold">${p.cat}</span>
+          <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2.5 pt-6 pb-2"><span class="block text-white text-xs font-bold truncate">${p.title}</span><span class="block text-slate-300 text-[10px] truncate">${p.date}</span></span>
+        </button>
+        ${(p.custom && isAdminUnlocked) ? `<button type="button" onclick="deleteGalleryPhoto(${gIdx})" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-rose-500 text-white text-xs font-bold flex items-center justify-center shadow">✕</button>` : ``}
+        </div>`; }).join("");
+      if (window.lucide) lucide.createIcons();
+    }
+    function setGalleryFilter(c){ galleryFilter=c; renderGallery(); }
+    function openGalleryLightbox(i){
+      galleryIndex=i; const p=galleryVisible[i]; if(!p) return;
+      document.getElementById("gallery-lightbox-img").src=p.img;
+      document.getElementById("gallery-lightbox-title").textContent=p.title;
+      document.getElementById("gallery-lightbox-meta").textContent=p.cat + " • " + p.date + " • " + (i+1) + " / " + galleryVisible.length;
+      const lb=document.getElementById("gallery-lightbox"); lb.classList.remove("hidden"); lb.classList.add("flex"); document.body.style.overflow="hidden";
+      if (window.lucide) lucide.createIcons();
+    }
+    function closeGalleryLightbox(){ const lb=document.getElementById("gallery-lightbox"); lb.classList.add("hidden"); lb.classList.remove("flex"); document.body.style.overflow=""; }
+    function galleryStep(d){ openGalleryLightbox((galleryIndex+d+galleryVisible.length)%galleryVisible.length); }
+
     function renderAllViews() {
       renderNotices();
       renderStudyNotes();
-      renderVideoCards("notices-videos-grid", "notices", 3);
+      renderVideoCards("notices-videos-grid", "notices", 10);
       renderVideoCards("full-videos-grid", "videos");
       renderDailySection();
       renderEligibilityChart();
       renderResultsSection();
+      renderGallery();
       if (window.lucide) lucide.createIcons();
     }
 

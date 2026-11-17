@@ -85,6 +85,206 @@
     .animate-tab-right { animation-name: tabSmoothFromRight; }
     .animate-tab-left { animation-name: tabSmoothFromLeft; }
 
+    /* ===== Disclaimer notice (footer) ===== */
+    #site-disclaimer .disclaimer-box {
+      border-left: 3px solid #fbbf24;
+      padding-left: 0.65rem;
+    }
+    #site-disclaimer .disclaimer-icon {
+      background-color: rgba(251, 191, 36, 0.14);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: #fbbf24;
+    }
+    #site-disclaimer .disclaimer-title { color: #fbbf24; }
+    #site-disclaimer .disclaimer-text { color: #94a3b8; }
+    html.bright-mode #site-disclaimer .disclaimer-box { border-left-color: #d97706; }
+    html.bright-mode #site-disclaimer .disclaimer-icon {
+      background-color: rgba(217, 119, 6, 0.10);
+      border-color: rgba(217, 119, 6, 0.35);
+      color: #b45309;
+    }
+    html.bright-mode #site-disclaimer .disclaimer-title { color: #b45309; }
+    html.bright-mode #site-disclaimer .disclaimer-text { color: #475569; }
+
+    /* ===== Animated NEW badge (Home notices) ===== */
+    .new-badge {
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 6px;
+      padding: 1px 6px;
+      border-radius: 9999px;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.5;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      background-image: linear-gradient(135deg, #f43f5e 0%, #f97316 100%);
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+      white-space: nowrap;
+      transform: translateY(-1px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .new-badge::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: 0 0 9px 2px rgba(249, 115, 22, 0.75);
+      opacity: 0;
+      pointer-events: none;
+      animation: newBadgeGlow 1.9s ease-in-out infinite;
+    }
+    @keyframes newBadgeGlow {
+      0%, 100% { opacity: 0;    transform: scale(1); }
+      50%      { opacity: 0.95; transform: scale(1.08); }
+    }
+    .new-badge.is-leaving { opacity: 0; transform: translateY(-1px) scale(0.85); }
+    html.bright-mode .new-badge {
+      background-image: linear-gradient(135deg, #e11d48 0%, #ea580c 100%);
+      text-shadow: none;
+    }
+    html.bright-mode .new-badge::after { box-shadow: 0 0 8px 2px rgba(234, 88, 12, 0.55); }
+    @media (prefers-reduced-motion: reduce) {
+      .new-badge::after { animation: none; opacity: 0.45; }
+      .new-badge { transition: none; }
+    }
+
+    /* ===== Premium header Calendar & Clock pills (only these two elements animate) ===== */
+    #main-header .hdr-pill {
+      position: relative;
+      background-color: rgba(255, 255, 255, 0.06) !important;
+      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.01)) !important;
+      border-color: rgba(148, 163, 184, 0.28) !important;
+      -webkit-backdrop-filter: blur(8px) saturate(1.35);
+      backdrop-filter: blur(8px) saturate(1.35);
+      box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.08) inset, 0 4px 12px -6px rgba(0, 0, 0, 0.5);
+      transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    html.bright-mode #main-header .hdr-pill {
+      background-color: rgba(255, 255, 255, 0.62) !important;
+      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.35)) !important;
+      border-color: rgba(148, 163, 184, 0.4) !important;
+      box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.9) inset, 0 4px 12px -6px rgba(15, 23, 42, 0.18);
+    }
+    /* soft pulse ring when the value changes (opacity + scale only) */
+    #main-header .hdr-pill::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      border: 1px solid rgba(251, 191, 36, 0.7);
+      box-shadow: 0 0 10px 1px rgba(251, 191, 36, 0.45);
+      opacity: 0;
+      pointer-events: none;
+    }
+    html.bright-mode #main-header .hdr-pill::after {
+      border-color: rgba(217, 119, 6, 0.6);
+      box-shadow: 0 0 9px 1px rgba(217, 119, 6, 0.35);
+    }
+    #main-header .hdr-pill.hdr-pulse::after { animation: hdrPulse 0.38s ease-in-out 1; }
+    @keyframes hdrPulse {
+      0%   { opacity: 0;   transform: scale(1); }
+      45%  { opacity: 0.9; transform: scale(1.05); }
+      100% { opacity: 0;   transform: scale(1.09); }
+    }
+
+    /* icon wrapper: same footprint as the icon; carries the glow halo + hover/tap response */
+    #main-header .hdr-ico {
+      position: relative;
+      display: inline-flex;
+      flex: none;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #main-header .hdr-ico > svg { display: block; position: relative; z-index: 1; transition: color 0.35s ease; }
+    #main-header .hdr-ico::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.42) 0%, rgba(251, 191, 36, 0) 70%);
+      opacity: 0.55;
+      pointer-events: none;
+      animation: hdrHalo 3.6s ease-in-out infinite;
+    }
+    html.bright-mode #main-header .hdr-ico::before {
+      background: radial-gradient(circle, rgba(217, 119, 6, 0.34) 0%, rgba(217, 119, 6, 0) 70%);
+    }
+    @keyframes hdrHalo {
+      0%, 100% { opacity: 0.35; transform: scale(0.92); }
+      50%      { opacity: 0.85; transform: scale(1.08); }
+    }
+    @media (hover: hover) {
+      #main-header .hdr-pill:hover { border-color: rgba(251, 191, 36, 0.5) !important; }
+      html.bright-mode #main-header .hdr-pill:hover { border-color: rgba(217, 119, 6, 0.55) !important; }
+      #main-header .hdr-date-pill:hover .hdr-ico  { transform: scale(1.1) rotate(-6deg); }
+      #main-header .hdr-clock-pill:hover .hdr-ico { transform: scale(1.1) rotate(8deg); }
+    }
+    #main-header .hdr-pill:active { transform: scale(0.97); }
+    #main-header .hdr-pill:active .hdr-ico { transform: scale(0.92); }
+
+    /* clock hands: smooth rotation driven from JS */
+    #main-header .clock-hand {
+      transform-origin: 12px 12px;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #main-header .clock-hand.no-anim { transition: none; }
+
+    /* rolling text (changed clock digits / date label) */
+    #header-live-clock, #header-date-label { position: relative; display: inline-block; }
+    #header-live-clock .dg { position: relative; display: inline-block; white-space: pre; }
+    .hdr-out {
+      position: absolute;
+      left: 0;
+      top: 0;
+      white-space: pre;
+      pointer-events: none;
+      animation: hdrOut 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .hdr-in { display: inline-block; white-space: pre; animation: hdrIn 0.36s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes hdrOut {
+      from { opacity: 1; transform: translate3d(0, 0, 0); }
+      to   { opacity: 0; transform: translate3d(0, -45%, 0); }
+    }
+    @keyframes hdrIn {
+      from { opacity: 0; transform: translate3d(0, 45%, 0); }
+      to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+    /* date uses a slight flip */
+    #header-date-label .hdr-out { transform-origin: 50% 100%; animation-name: hdrDateOut; }
+    #header-date-label .hdr-in  { transform-origin: 50% 0;   animation-name: hdrDateIn; }
+    @keyframes hdrDateOut {
+      from { opacity: 1; transform: perspective(120px) rotateX(0deg) translateY(0); }
+      to   { opacity: 0; transform: perspective(120px) rotateX(55deg) translateY(-30%); }
+    }
+    @keyframes hdrDateIn {
+      from { opacity: 0; transform: perspective(120px) rotateX(-55deg) translateY(30%); }
+      to   { opacity: 1; transform: perspective(120px) rotateX(0deg) translateY(0); }
+    }
+
+    #main-header .hdr-pill {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    /* tap preview: brighter halo for a moment */
+    #main-header .hdr-ico.hdr-flash::before { animation: hdrHaloFlash 0.7s ease-in-out 1; }
+    @keyframes hdrHaloFlash {
+      0%   { opacity: 0.4; transform: scale(0.9); }
+      40%  { opacity: 1;   transform: scale(1.7); }
+      100% { opacity: 0.55; transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #main-header .hdr-ico.hdr-flash::before { animation: none; }
+      #main-header .hdr-pill, #main-header .hdr-ico, #main-header .clock-hand { transition: none !important; }
+      #main-header .hdr-ico::before { animation: none; opacity: 0.5; }
+      #main-header .hdr-pill.hdr-pulse::after { animation: none; }
+      .hdr-in, .hdr-out { animation: none !important; }
+      #main-header .hdr-pill:hover .hdr-ico, #main-header .hdr-pill:active, #main-header .hdr-pill:active .hdr-ico { transform: none; }
+    }
+
     .tab-btn {
       transition: background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
       box-shadow: none !important;
@@ -102,8 +302,8 @@
       pointer-events: auto;
     }
     #more-sheet {
-      bottom: calc(var(--nav-h, 4.6rem) + 0.5rem);
-      max-height: calc(100dvh - var(--nav-h, 4.6rem) - 1.5rem);
+      bottom: calc(var(--nav-h, 4.6rem) + var(--nav-offset, 0px) + 0.5rem);
+      max-height: calc(100dvh - var(--nav-h, 4.6rem) - var(--nav-offset, 0px) - 1.5rem);
       overflow-y: auto;
       transform: translate3d(0, 8px, 0) scale(0.97);
       transform-origin: bottom right;
@@ -131,17 +331,64 @@
     }
 
     /* ===== Glassmorphism Bottom Navigation (Tape) ===== */
-    #bottom-tab-bar {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-      background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(12px) saturate(1.4);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4);
-      border-top: 1px solid rgba(148, 163, 184, 0.22) !important;
-      box-shadow:
-        0 -10px 36px -8px rgba(0, 0, 0, 0.42),
-        0 -1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
+    :root {
+      --nav-gap: 1.4rem;
+      --nav-offset: calc(env(safe-area-inset-bottom, 0px) + var(--nav-gap));
+      --tape-bg: rgba(12, 19, 34, 0.52);
+      --tape-border: rgba(148, 163, 184, 0.22);
+      --tape-glow: rgba(251, 191, 36, 0.38);
+      --tape-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+      --tape-inset: rgba(255, 255, 255, 0.06);
+    }
+    html.bright-mode {
+      --tape-bg: rgba(255, 255, 255, 0.58);
+      --tape-border: rgba(148, 163, 184, 0.38);
+      --tape-glow: rgba(217, 119, 6, 0.32);
+      --tape-shadow: 0 10px 28px -10px rgba(15, 23, 42, 0.18);
+      --tape-inset: rgba(255, 255, 255, 0.75);
+    }
+    /* Floating, curved glass tape: compact, centered, above the safe area */
+    html #bottom-tab-bar {
+      left: 0 !important;
+      right: 0 !important;
+      bottom: var(--nav-offset) !important;
+      width: min(calc(100% - 1.5rem), 28rem) !important;
+      margin-inline: auto !important;
+      padding: 0 !important;
+      border: 1px solid var(--tape-border) !important;
+      border-radius: 2rem 2rem 1.75rem 1.75rem !important;
+      background-color: var(--tape-bg) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+      backdrop-filter: blur(16px) saturate(1.5) !important;
+      box-shadow: var(--tape-shadow), 0 1px 0 0 var(--tape-inset) inset !important;
       transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
     }
+    /* subtle glowing highlight tracing the top edge / curved corners */
+    #bottom-tab-bar::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(180deg, var(--tape-glow), transparent 55%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+    #bottom-tab-bar #tab-bar-inner {
+      padding: 0.3rem 0.45rem !important;
+      gap: 0.25rem !important;
+    }
+    #bottom-tab-bar .tab-btn {
+      padding-block: 0.35rem !important;
+      padding-inline: 0.25rem !important;
+      gap: 0.15rem !important;
+      border-radius: 1.4rem !important;
+    }
+    /* extra scroll room so the last content never hides behind the floating bar */
+    body { padding-bottom: var(--nav-offset); }
 
     #bottom-tab-bar .tab-btn {
       position: relative;
@@ -771,15 +1018,6 @@
       background-color: rgba(255, 255, 255, 0.96) !important;
       border-bottom-color: #cbd5e1 !important;
       box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.08) !important;
-    }
-    html.bright-mode #bottom-tab-bar {
-      background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(12px) saturate(1.45);
-      -webkit-backdrop-filter: blur(12px) saturate(1.45);
-      border-top: 1px solid rgba(148, 163, 184, 0.32) !important;
-      box-shadow:
-        0 -10px 32px -8px rgba(15, 23, 42, 0.14),
-        0 -1px 0 0 rgba(255, 255, 255, 0.7) inset !important;
     }
     html.bright-mode #bottom-tab-bar .tab-btn.tab-active {
       color: #b45309 !important;
@@ -1503,12 +1741,12 @@
       <div id="app-heading-line" class="-mx-4" style="height:1px;margin-top:10px;"></div>
       <!-- Row 3: Date / Time / Notice -->
       <div class="flex items-center gap-1.5 mt-2.5 flex-nowrap min-w-0">
-        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 shrink-0">
-          <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-300"></i>
+        <span id="header-date-pill" class="hdr-pill hdr-date-pill inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 shrink-0">
+          <span class="hdr-ico"><i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-300"></i></span>
           <span id="header-date-label" class="text-white text-[10px] font-medium whitespace-nowrap">Tue, 17 Nov 2026</span>
         </span>
-        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 shrink-0">
-          <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-300"></i>
+        <span id="header-clock-pill" class="hdr-pill hdr-clock-pill inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 shrink-0">
+          <span class="hdr-ico"><svg id="header-clock-icon" class="w-3.5 h-3.5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line id="clock-hand-min" class="clock-hand" x1="12" y1="12" x2="12" y2="6"></line><line id="clock-hand-hr" class="clock-hand" x1="12" y1="12" x2="12" y2="8.2"></line></svg></span>
           <span id="header-live-clock" class="tabular-nums text-white text-[10px] font-medium whitespace-nowrap">05:34 PM</span>
         </span>
         <span id="header-holiday-pill" class="hidden inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-900 border border-slate-800 min-w-0">
@@ -1658,6 +1896,7 @@
       <!-- TAB 2: DAILY ATTENDANCE & HOLIDAY CALENDAR                        -->
       <!-- ================================================================= -->
       <section id="view-daily" class="tab-view hidden animate-panel space-y-4">
+        <div id="focus-daily" hidden></div>
         <div id="daily-calendar-card" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
             <div class="flex items-center justify-between gap-2 min-w-0 flex-1">
@@ -1876,6 +2115,7 @@
       <!-- TAB 3: 80% NCVT ELIGIBILITY CHART & MONTHLY FILTER                -->
       <!-- ================================================================= -->
       <section id="view-monthly" class="tab-view hidden animate-panel space-y-4">
+        <div id="focus-chart" hidden></div>
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div onclick="toggleAccordion('monthly-chart')" class="flex items-center justify-between gap-2 cursor-pointer">
             <div class="flex items-center gap-2.5 min-w-0">
@@ -1958,6 +2198,7 @@
       <!-- TAB 4: RESULTS, MARKS & UPCOMING EXAMS                            -->
       <!-- ================================================================= -->
       <section id="view-results" class="tab-view hidden animate-panel space-y-4">
+        <div id="focus-result" hidden></div>
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3.5 overflow-visible">
           <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-800/80">
             <div class="flex items-center gap-2.5 min-w-0 flex-1">
@@ -2195,8 +2436,19 @@
       </section>
 
       <!-- Compact Batch Footer -->
-      <footer class="rounded-2xl bg-[#0c1322] border border-slate-800/80 px-4 py-3 text-center text-[11px] text-slate-400">
-        Govt. ITI Chhotojagulia &bull; Electrician Trade (Batch 2025&ndash;27) &bull; NCVT Trainee Portal
+      <footer id="site-disclaimer" role="note" aria-label="Disclaimer"
+        class="rounded-2xl bg-[#0c1322] border border-slate-800/80 px-4 py-3 text-[11px] text-slate-400">
+        <div class="disclaimer-box flex items-start gap-2.5 text-left">
+          <span class="disclaimer-icon shrink-0 w-7 h-7 rounded-lg flex items-center justify-center">
+            <i data-lucide="info" class="w-4 h-4"></i>
+          </span>
+          <div class="min-w-0">
+            <div class="disclaimer-title text-[10px] font-extrabold uppercase tracking-widest">Disclaimer</div>
+            <p class="disclaimer-text mt-0.5 text-[11px] leading-relaxed">
+              This is an independent student-managed website and is not officially affiliated with Government ITI Chhotojagulia.
+            </p>
+          </div>
+        </div>
       </footer>
     </main>
   </div>
@@ -2986,14 +3238,27 @@ service cloud.firestore {
         </button>
       </div>
       <div class="p-4 space-y-3">
+        <div id="report-quick-nav" class="qn-row" role="group" aria-label="Quick navigation">
+          <button type="button" class="qn-btn qn-daily" onclick="goToTraineeSection('daily')" title="Open Daily attendance for this trainee">
+            <i data-lucide="calendar-check-2" class="w-3.5 h-3.5"></i><span>Daily</span>
+          </button>
+          <button type="button" class="qn-btn qn-chart" onclick="goToTraineeSection('chart')" title="Open performance chart for this trainee">
+            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i><span>Chart</span>
+          </button>
+          <button type="button" class="qn-btn qn-result" onclick="goToTraineeSection('result')" title="Open result for this trainee">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i><span>Result</span>
+          </button>
+        </div>
         <div id="report-privilege-banner" class="hidden"></div>
-        <div id="report-academics-grid" class="grid grid-cols-3 gap-2 text-center"></div>
 
         <button type="button" onclick="openAdminDirectEditFromReport()"
           class="admin-only hidden w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition btn-tap">
           <i data-lucide="user-cog" class="w-3.5 h-3.5"></i>
           <span>Edit Student Data (Marks, Roll &amp; Details)</span>
         </button>
+
+        <div id="report-perf-card" class="perf-card">
+          <div id="report-academics-grid" class="grid grid-cols-3 gap-2 text-center"></div>
 
         <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
           <button type="button" onclick="switchReportPeriod('ALL')" data-rperiod="ALL" class="report-period-btn flex-1 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-slate-950 transition">All Days</button>
@@ -3004,16 +3269,17 @@ service cloud.firestore {
         </div>
 
         <div id="report-stats-grid" class="grid grid-cols-3 gap-2 text-center"></div>
+        </div>
         <div id="report-history-list" class="max-h-44 overflow-y-auto space-y-1.5 pr-1"></div>
 
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
           <button type="button" onclick="downloadSingleTraineeReportCSV()"
-            class="py-2 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition btn-tap">
+            class="glass-act-btn glass-act-emerald">
             <i data-lucide="download" class="w-3.5 h-3.5 shrink-0"></i>
             <span>Download CSV</span>
           </button>
           <button type="button" onclick="downloadSingleTraineeCardPNG()"
-            class="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition btn-tap">
+            class="glass-act-btn glass-act-amber">
             <i data-lucide="image-down" class="w-3.5 h-3.5 shrink-0"></i>
             <span>Performance Card</span>
           </button>
@@ -4010,11 +4276,221 @@ service cloud.firestore {
       applyThemeMode(isBright ? "dark" : "bright");
     }
 
+    // ---- Header clock & calendar animations (touch only #header-live-clock / #header-date-label / their pills) ----
+    function hdrReducedMotion() {
+      return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    }
+
+    function hdrPulse(pillId) {
+      if (hdrReducedMotion()) return;
+      const pill = document.getElementById(pillId);
+      if (!pill) return;
+      pill.classList.remove("hdr-pulse");
+      void pill.offsetWidth;
+      pill.classList.add("hdr-pulse");
+      clearTimeout(pill._pulseT);
+      pill._pulseT = setTimeout(() => pill.classList.remove("hdr-pulse"), 420);
+    }
+
+    // Replace `el`'s text with a rolling transition. Returns true if the text actually changed.
+    function hdrRollWhole(el, text) {
+      const prev = el.dataset.v;
+      if (prev === text) return false;
+      el.dataset.v = text;
+      el.querySelectorAll(".hdr-out").forEach((n) => n.remove());
+      if (prev === undefined || hdrReducedMotion() || document.hidden) {
+        el.textContent = text;
+        return prev !== undefined;
+      }
+      const out = document.createElement("span");
+      out.className = "hdr-out";
+      out.setAttribute("aria-hidden", "true");
+      out.textContent = prev;
+      const inn = document.createElement("span");
+      inn.className = "hdr-in";
+      inn.textContent = text;
+      el.textContent = "";
+      el.appendChild(inn);
+      el.appendChild(out);
+      setTimeout(() => { out.remove(); }, 420);
+      return true;
+    }
+
+    // Per-character roll: only the digits that changed animate.
+    function hdrRollChars(el, text) {
+      const prev = el.dataset.v;
+      if (prev === text) return false;
+      el.dataset.v = text;
+      const cells = el.querySelectorAll(":scope > .dg");
+      if (prev === undefined || cells.length !== text.length || hdrReducedMotion() || document.hidden) {
+        el.textContent = "";
+        for (const ch of text) {
+          const c = document.createElement("span");
+          c.className = "dg";
+          c.textContent = ch;
+          el.appendChild(c);
+        }
+        return prev !== undefined;
+      }
+      cells.forEach((cell, i) => {
+        const ch = text[i];
+        if (cell.dataset.c === undefined) cell.dataset.c = cell.textContent;
+        if (cell.dataset.c === ch) return;
+        const old = cell.dataset.c;
+        cell.dataset.c = ch;
+        cell.querySelectorAll(".hdr-out").forEach((n) => n.remove());
+        const out = document.createElement("span");
+        out.className = "hdr-out";
+      out.setAttribute("aria-hidden", "true");
+        out.textContent = old;
+        const inn = document.createElement("span");
+        inn.className = "hdr-in";
+        inn.textContent = ch;
+        cell.textContent = "";
+        cell.appendChild(inn);
+        cell.appendChild(out);
+        setTimeout(() => out.remove(), 420);
+      });
+      return true;
+    }
+
+    // Analog hands follow the real local time; angles accumulate so hands never spin backwards at 12.
+    const clockHandAngle = { min: null, hr: null };
+    function hdrSetHand(id, key, target) {
+      const hand = document.getElementById(id);
+      if (!hand) return;
+      let cur = clockHandAngle[key];
+      let next;
+      let instant = false;
+      if (cur === null) {
+        next = target;
+        instant = true;
+      } else {
+        const diff = (((target - (cur % 360)) % 360) + 360) % 360;
+        next = cur + diff;
+        if (diff > 100 || hdrReducedMotion() || document.hidden) instant = true;
+      }
+      clockHandAngle[key] = next;
+      if (instant) hand.classList.add("no-anim");
+      hand.style.transform = `rotate(${next}deg)`;
+      if (instant) {
+        void hand.getBoundingClientRect();
+        hand.classList.remove("no-anim");
+      }
+    }
+    function hdrUpdateClockHands(now) {
+      const m = now.getMinutes();
+      const h = now.getHours() % 12;
+      hdrSetHand("clock-hand-min", "min", m * 6);
+      hdrSetHand("clock-hand-hr", "hr", h * 30 + m * 0.5);
+    }
+
+    // ---- Tap / click preview: replays the full effect on the pill that was touched ----
+    const hdrPreviewLock = {};
+    function hdrPreview(kind) {
+      if (hdrReducedMotion()) return;
+      const now = Date.now();
+      if (hdrPreviewLock[kind] && now - hdrPreviewLock[kind] < 900) return; // no overlapping replays
+      hdrPreviewLock[kind] = now;
+
+      const pillId = kind === "clock" ? "header-clock-pill" : "header-date-pill";
+      const pill = document.getElementById(pillId);
+      if (!pill) return;
+      hdrPulse(pillId);
+
+      const ico = pill.querySelector(".hdr-ico");
+      if (ico) {
+        ico.classList.remove("hdr-flash");
+        void ico.offsetWidth;
+        ico.classList.add("hdr-flash");
+        setTimeout(() => ico.classList.remove("hdr-flash"), 760);
+        if (ico.animate) {
+          const tilt = kind === "clock" ? "14deg" : "-14deg";
+          ico.animate(
+            [
+              { transform: "scale(1) rotate(0deg)" },
+              { transform: `scale(1.25) rotate(${tilt})`, offset: 0.4 },
+              { transform: "scale(1) rotate(0deg)" },
+            ],
+            { duration: 520, easing: "cubic-bezier(0.4, 0, 0.2, 1)" }
+          );
+        }
+      }
+
+      if (kind === "clock") {
+        // minute hand sweeps one full turn and lands exactly on the real time again
+        const hand = document.getElementById("clock-hand-min");
+        if (hand && clockHandAngle.min !== null) {
+          clockHandAngle.min += 360;
+          hand.style.transition = "transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+          hand.style.transform = `rotate(${clockHandAngle.min}deg)`;
+          setTimeout(() => { hand.style.transition = ""; }, 850);
+        }
+        const clockEl = document.getElementById("header-live-clock");
+        if (clockEl) {
+          clockEl.querySelectorAll(":scope > .dg").forEach((cell, i) => {
+            const ch = cell.dataset.c !== undefined ? cell.dataset.c : cell.textContent;
+            cell.dataset.c = ch;
+            cell.querySelectorAll(".hdr-out").forEach((n) => n.remove());
+            const out = document.createElement("span");
+            out.className = "hdr-out";
+            out.setAttribute("aria-hidden", "true");
+            out.textContent = ch;
+            out.style.animationDelay = i * 35 + "ms";
+            const inn = document.createElement("span");
+            inn.className = "hdr-in";
+            inn.textContent = ch;
+            inn.style.animationDelay = i * 35 + "ms";
+            cell.textContent = "";
+            cell.appendChild(inn);
+            cell.appendChild(out);
+            setTimeout(() => out.remove(), 420 + i * 35);
+          });
+        }
+      } else {
+        const dateEl = document.getElementById("header-date-label");
+        if (dateEl && dateEl.dataset.v !== undefined) {
+          dateEl.querySelectorAll(".hdr-out").forEach((n) => n.remove());
+          const out = document.createElement("span");
+          out.className = "hdr-out";
+          out.setAttribute("aria-hidden", "true");
+          out.textContent = dateEl.dataset.v;
+          const inn = document.createElement("span");
+          inn.className = "hdr-in";
+          inn.textContent = dateEl.dataset.v;
+          dateEl.textContent = "";
+          dateEl.appendChild(inn);
+          dateEl.appendChild(out);
+          setTimeout(() => out.remove(), 420);
+        }
+      }
+    }
+    // pointerup fires only for a real tap/click (a scroll gesture cancels the pointer instead)
+    document.addEventListener("pointerup", (e) => {
+      const pill = e.target && e.target.closest ? e.target.closest("#header-clock-pill, #header-date-pill") : null;
+      if (!pill) return;
+      hdrPreview(pill.id === "header-clock-pill" ? "clock" : "date");
+    });
+
+    let clockAlignTimer = null;
+    function scheduleClockAlign() {
+      clearTimeout(clockAlignTimer);
+      const now = Date.now();
+      const delay = 60000 - (now % 60000) + 40;
+      clockAlignTimer = setTimeout(() => { updateLiveClock(); scheduleClockAlign(); }, delay);
+    }
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) updateLiveClock(); });
+    window.addEventListener("focus", () => updateLiveClock());
+    window.addEventListener("pageshow", () => updateLiveClock());
+
     function updateLiveClock() {
       const now = new Date();
       const clockEl = document.getElementById("header-live-clock");
       if (clockEl) {
-        clockEl.textContent = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        const changed = hdrRollChars(clockEl, timeStr);
+        hdrUpdateClockHands(now);
+        if (changed) hdrPulse("header-clock-pill");
       }
       updateHeaderDateBadge();
       if (typeof classAttRenderedMonth !== "undefined" && classAttRenderedMonth && classAttRenderedMonth !== getTodayISO().slice(0, 7)) {
@@ -4026,7 +4502,10 @@ service cloud.firestore {
       const dateEl = document.getElementById("header-date-label");
       const holPill = document.getElementById("header-holiday-pill");
       const todayISO = getTodayISO();
-      if (dateEl) dateEl.textContent = formatDayAndDate(todayISO);
+      if (dateEl) {
+        const dateChanged = hdrRollWhole(dateEl, formatDayAndDate(todayISO));
+        if (dateChanged) hdrPulse("header-date-pill");
+      }
       const hol = getHolidayEntry(todayISO);
       if (holPill) {
         holPill.classList.toggle("hidden", !hol);
@@ -5365,11 +5844,57 @@ service cloud.firestore {
       if (chev) chev.classList.toggle("rotate-180", showAllNotices);
     }
 
+    // ---- NEW badge: shown for NOTICE_NEW_DAYS days from the notice's publication date ----
+    const NOTICE_NEW_DAYS = 3;
+    let noticeBadgeTimer = null;
+
+    function noticeNewExpiry(n) {
+      if (!n || !n.date || !/^\d{4}-\d{2}-\d{2}$/.test(n.date)) return 0;
+      const pub = parseISO(n.date);
+      if (isNaN(pub.getTime())) return 0;
+      // Calendar-day arithmetic (DST-safe): badge ends at local midnight, NOTICE_NEW_DAYS days after the publication date.
+      return new Date(pub.getFullYear(), pub.getMonth(), pub.getDate() + NOTICE_NEW_DAYS).getTime();
+    }
+
+    function isNoticeNew(n) {
+      const exp = noticeNewExpiry(n);
+      return exp > Date.now();
+    }
+
+    function noticeNewBadgeHTML(n) {
+      if (!isNoticeNew(n)) return "";
+      return `<span class="new-badge" data-expires="${noticeNewExpiry(n)}" title="Published in the last ${NOTICE_NEW_DAYS} days">NEW</span>`;
+    }
+
+    // Removes expired badges in place (no re-render, no reload) and schedules the next check.
+    function refreshNoticeBadges() {
+      clearTimeout(noticeBadgeTimer);
+      noticeBadgeTimer = null;
+      const now = Date.now();
+      let next = Infinity;
+      document.querySelectorAll(".new-badge[data-expires]").forEach((b) => {
+        const exp = Number(b.dataset.expires);
+        if (exp <= now) {
+          b.classList.add("is-leaving");
+          setTimeout(() => b.remove(), 260);
+        } else if (exp < next) {
+          next = exp;
+        }
+      });
+      if (next !== Infinity) {
+        const delay = Math.min(Math.max(next - now + 50, 1000), 2147483000);
+        noticeBadgeTimer = setTimeout(refreshNoticeBadges, delay);
+      }
+    }
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshNoticeBadges(); });
+    window.addEventListener("focus", refreshNoticeBadges);
+    window.addEventListener("pageshow", refreshNoticeBadges);
+
     function renderNoticeCardHTML(n) {
       return `
         <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 space-y-1.5">
           <div class="flex items-start justify-between gap-2">
-            <h3 class="text-xs sm:text-sm font-bold text-white leading-snug">${escapeHTML(n.title)}</h3>
+            <h3 class="text-xs sm:text-sm font-bold text-white leading-snug">${escapeHTML(n.title)}${noticeNewBadgeHTML(n)}</h3>
             <div class="flex items-center gap-1.5 shrink-0">
               <span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300">
                 ${escapeHTML(formatDisplayDate(n.date))}
@@ -5420,6 +5945,7 @@ service cloud.firestore {
 
       container.innerHTML = firstNoticeHTML + restNoticesHTML;
       if (window.lucide) lucide.createIcons();
+      refreshNoticeBadges();
     }
 
     function renderStudyNotes() {
@@ -6488,57 +7014,96 @@ service cloud.firestore {
       const res = getTraineeResultSummary(tr);
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
+      const bright = document.documentElement.classList.contains("bright-mode");
+      const S = 2, W = 640, H = 300;
       const canvas = document.createElement("canvas");
-      canvas.width = 760;
-      canvas.height = 420;
+      canvas.width = W * S;
+      canvas.height = H * S;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+      ctx.scale(S, S);
 
-      ctx.fillStyle = "#0c1322";
-      ctx.fillRect(0, 0, 760, 420);
+      const C = bright
+        ? { bg0: "#f8fafc", bg1: "#e5ecf6", spotA: "rgba(96,165,250,0.38)", spotB: "rgba(251,191,36,0.32)", panel: "rgba(255,255,255,0.62)", panelBorder: "rgba(148,163,184,0.6)", cell: "rgba(255,255,255,0.72)", cellBorder: "rgba(148,163,184,0.5)", title: "#b45309", name: "#0f172a", sub: "#475569", label: "#475569", foot: "#64748b", good: "#047857", bad: "#be123c", amber: "#b45309", sky: "#0369a1", plain: "#0f172a" }
+        : { bg0: "#0a1020", bg1: "#0e1a33", spotA: "rgba(59,130,246,0.32)", spotB: "rgba(249,115,22,0.24)", panel: "rgba(255,255,255,0.07)", panelBorder: "rgba(148,163,184,0.38)", cell: "rgba(255,255,255,0.06)", cellBorder: "rgba(148,163,184,0.26)", title: "#fbbf24", name: "#ffffff", sub: "#94a3b8", label: "#94a3b8", foot: "#64748b", good: "#34d399", bad: "#fb7185", amber: "#fbbf24", sky: "#38bdf8", plain: "#ffffff" };
 
-      ctx.strokeStyle = "#f59e0b";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(14, 14, 732, 392);
-
-      ctx.fillStyle = "#f59e0b";
-      ctx.font = "bold 18px Inter, sans-serif";
-      ctx.fillText("GOVT. ITI CHHOTOJAGULIA • ELECTRICIAN (2025–27)", 34, 52);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 24px Inter, sans-serif";
-      ctx.fillText(`R.${tr.rno || "--"} • ${tr.name}`, 34, 94);
-
-      ctx.fillStyle = "#94a3b8";
-      ctx.font = "600 14px monospace";
-      ctx.fillText(`NCVT Registration ID: ${tr.roll}`, 34, 120);
-
-      const drawBox = (x, y, w, h, title, val, color) => {
-        ctx.fillStyle = "#0f172a";
-        ctx.fillRect(x, y, w, h);
-        ctx.strokeStyle = "#1e293b";
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = color;
-        ctx.font = "bold 20px Inter, sans-serif";
-        ctx.fillText(val, x + 16, y + 40);
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "600 12px Inter, sans-serif";
-        ctx.fillText(title, x + 16, y + 64);
+      const rr = (x, y, w, h, r) => {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      };
+      const spot = (cx, cy, r, c0, c1) => {
+        const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        rg.addColorStop(0, c0);
+        rg.addColorStop(1, c1);
+        ctx.fillStyle = rg;
+        ctx.fillRect(0, 0, W, H);
       };
 
-      drawBox(34, 148, 215, 84, "1st Year Marks", `${res.y1} / 600`, "#34d399");
-      drawBox(272, 148, 215, 84, `Combined 2-Yr (${res.pct}%)`, `${res.tot} / ${res.maxTotal}`, "#fbbf24");
-      drawBox(510, 148, 215, 84, "Internal Assessment", `${tr.internal || 0} / ${maxInt}`, "#38bdf8");
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, C.bg0);
+      bg.addColorStop(1, C.bg1);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+      spot(90, 40, 260, C.spotA, C.spotA.replace(/[\d.]+\)$/, "0)"));
+      spot(580, 270, 240, C.spotB, C.spotB.replace(/[\d.]+\)$/, "0)"));
+
+      // translucent glass panel
+      rr(12, 12, W - 24, H - 24, 18);
+      ctx.fillStyle = C.panel;
+      ctx.fill();
+      ctx.strokeStyle = C.panelBorder;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      ctx.fillStyle = C.title;
+      ctx.font = "bold 12px Inter, sans-serif";
+      ctx.fillText("GOVT. ITI CHHOTOJAGULIA \u2022 ELECTRICIAN (2025\u201327)", 28, 38);
+
+      ctx.fillStyle = C.name;
+      ctx.font = "bold 19px Inter, sans-serif";
+      ctx.fillText(`R.${tr.rno || "--"} \u2022 ${tr.name}`, 28, 63);
+
+      ctx.fillStyle = C.sub;
+      ctx.font = "600 11px monospace";
+      ctx.fillText(`NCVT Registration ID: ${tr.roll}`, 28, 82);
+
+      const drawBox = (x, y, w, h, title, val, color) => {
+        rr(x, y, w, h, 12);
+        ctx.fillStyle = C.cell;
+        ctx.fill();
+        ctx.strokeStyle = C.cellBorder;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.font = "bold 17px Inter, sans-serif";
+        ctx.fillText(val, x + 14, y + 31);
+        ctx.fillStyle = C.label;
+        ctx.font = "600 10.5px Inter, sans-serif";
+        ctx.fillText(title, x + 14, y + 52);
+      };
 
       const ok = st.pct >= 80;
-      drawBox(34, 252, 215, 84, `Present (${activeReportPeriod})`, `${st.presentDays} / ${st.workingDays} Days`, "#ffffff");
-      drawBox(272, 252, 215, 84, "Attendance Rate", `${st.pct}%`, ok ? "#34d399" : "#fb7185");
-      drawBox(510, 252, 215, 84, "NCVT 80% Status", ok ? "ELIGIBLE" : "SHORTAGE", ok ? "#34d399" : "#fb7185");
+      const cw = 190, ch = 66, gx = 11, gy = 10, x0 = 24, y0 = 100;
+      const cells = [
+        ["1st Year Marks", `${res.y1} / 600`, C.good],
+        [`Combined 2-Yr (${res.pct}%)`, `${res.tot} / ${res.maxTotal}`, C.amber],
+        ["Internal Assessment", `${tr.internal || 0} / ${maxInt}`, C.sky],
+        [`Present (${activeReportPeriod})`, `${st.presentDays} / ${st.workingDays} Days`, C.plain],
+        ["Attendance Rate", `${st.pct}%`, ok ? C.good : C.bad],
+        ["NCVT 80% Status", ok ? "ELIGIBLE" : "SHORTAGE", ok ? C.good : C.bad]
+      ];
+      cells.forEach((c, i) => {
+        drawBox(x0 + (i % 3) * (cw + gx), y0 + Math.floor(i / 3) * (ch + gy), cw, ch, c[0], c[1], c[2]);
+      });
 
-      ctx.fillStyle = "#64748b";
-      ctx.font = "12px Inter, sans-serif";
-      ctx.fillText(`Trainee Performance Summary • Downloaded on ${formatDisplayDate(getTodayISO())}`, 34, 378);
+      ctx.fillStyle = C.foot;
+      ctx.font = "10.5px Inter, sans-serif";
+      ctx.fillText(`Trainee Performance Summary \u2022 Downloaded on ${formatDisplayDate(getTodayISO())}`, 28, 270);
 
       const url = canvas.toDataURL("image/png");
       const a = document.createElement("a");
@@ -8696,6 +9261,7 @@ service cloud.firestore {
       loadLocalState();
       updateLiveClock();
       setInterval(updateLiveClock, 15000);
+      scheduleClockAlign();
       setupAutoHideHeader();
       renderAllViews();
       requestAnimationFrame(() => positionTabIndicator(true));
@@ -8711,5 +9277,743 @@ service cloud.firestore {
       bootPortal();
     }
   </script>
+<style id="premium-bg-glass">
+  /* =====================================================================
+     Premium ambient background (gradient + soft colour spots) so the existing
+     glass surfaces have something to blur. Two fixed, non-interactive layers:
+       body::before = Dark Mode base (always present)
+       body::after  = Light Mode layer, cross-faded in/out with opacity only (GPU-cheap)
+     ===================================================================== */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    transform: translateZ(0);
+  }
+  body::before {
+    background:
+      radial-gradient(60% 45% at 12% 6%,  rgba(59, 130, 246, 0.20), transparent 70%),
+      radial-gradient(50% 40% at 92% 26%, rgba(249, 115, 22, 0.11), transparent 70%),
+      radial-gradient(55% 45% at 8% 88%,  rgba(14, 165, 233, 0.10), transparent 70%),
+      radial-gradient(45% 38% at 95% 96%, rgba(251, 146, 60, 0.08), transparent 70%),
+      linear-gradient(165deg, #0a1020 0%, #0b1426 42%, #0e1220 72%, #0a0d17 100%);
+  }
+  body::after {
+    background:
+      radial-gradient(60% 45% at 10% 4%,  rgba(96, 165, 250, 0.26), transparent 70%),
+      radial-gradient(50% 40% at 92% 24%, rgba(251, 191, 36, 0.16), transparent 70%),
+      radial-gradient(55% 45% at 6% 90%,  rgba(129, 140, 248, 0.16), transparent 70%),
+      radial-gradient(45% 38% at 96% 96%, rgba(251, 146, 60, 0.12), transparent 70%),
+      linear-gradient(165deg, #f8fafc 0%, #eef3fa 45%, #e5ecf6 100%);
+    opacity: 0;
+    transition: opacity 0.36s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  html.bright-mode body::after { opacity: 1; }
+  /* the global "theme-transition" rule would otherwise override the transition list */
+  html.theme-transition body::after {
+    transition-property: opacity !important;
+    transition-duration: 0.36s !important;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body::after { transition: none; }
+  }
+
+  /* =====================================================================
+     Glass refinements for existing translucent components
+     (slightly richer blur/saturation, defined borders, soft depth + top highlight).
+     Backgrounds/positions/layout are untouched.
+     ===================================================================== */
+  #home-notice-card, #daily-calendar-card, #daily-trainee-section, #daily-class-section,
+  #notices-videos-grid > article, #full-videos-grid > article,
+  #trainee-search-results, #modal-trainee-report > div {
+    -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
+    backdrop-filter: blur(14px) saturate(1.6) !important;
+    border-color: rgba(148, 163, 184, 0.28) !important;
+    box-shadow:
+      0 14px 34px -14px rgba(0, 0, 0, 0.6),
+      0 1px 0 0 rgba(255, 255, 255, 0.08) inset !important;
+  }
+  html.bright-mode #home-notice-card, html.bright-mode #daily-calendar-card,
+  html.bright-mode #daily-trainee-section, html.bright-mode #daily-class-section,
+  html.bright-mode #notices-videos-grid > article, html.bright-mode #full-videos-grid > article,
+  html.bright-mode #trainee-search-results, html.bright-mode #modal-trainee-report > div {
+    border-color: rgba(148, 163, 184, 0.4) !important;
+    box-shadow:
+      0 12px 30px -14px rgba(30, 64, 175, 0.22),
+      0 1px 0 0 rgba(255, 255, 255, 0.85) inset !important;
+  }
+  /* tab bar, search and menu: richer blur only (their own shadows/colours stay) */
+  #more-sheet, #search-input-box, #search-bar-wrap #search-input-box {
+    -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
+    backdrop-filter: blur(14px) saturate(1.6) !important;
+  }
+  /* fullscreen gallery preview: let the ambient colours glow through the frosted overlay */
+  #gallery-lightbox { background-color: rgba(2, 6, 23, 0.66); }
+  html.bright-mode #gallery-lightbox { background-color: rgba(241, 245, 249, 0.7); }
+</style>
+<style id="icon-animation-layer">
+  /* =====================================================================
+     GLOBAL ICON & SYMBOL ANIMATION LAYER
+     - Additive only: no existing icon, size, position or handler is changed.
+     - Uses the individual CSS properties `scale`, `translate` and `rotate`, which
+       compose with (and never overwrite) the existing `transform`-based effects.
+     - Hover effects only on real pointer devices; press/focus/active everywhere.
+     - Zero specificity base via :where(), so existing component rules still win
+       where they are meant to (logo, header clock/calendar pills, accordion chevrons).
+     ===================================================================== */
+  :root {
+    --ico-accent: #fbbf24;
+    --ico-glow: rgba(251, 191, 36, 0.55);
+    --ico-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --ico-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  html.bright-mode {
+    --ico-accent: #b45309;
+    --ico-glow: rgba(217, 119, 6, 0.4);
+  }
+
+  /* ---- Base: smooth transitions on icons inside interactive elements ---- */
+  html :where(button, a, label, [role="button"]:not(#app-logo), [onclick^="toggleAccordion"], [onclick^="toggleResultAccordion"]) svg:where(:not(.accordion-chevron)) {
+    transition:
+      scale 0.22s var(--ico-ease),
+      translate 0.24s var(--ico-ease),
+      rotate 0.26s var(--ico-ease),
+      color 0.22s var(--ico-ease),
+      filter 0.28s var(--ico-ease);
+  }
+
+  /* Accordion chevrons: keep their existing rotate transition, add colour */
+  html .accordion-chevron {
+    transition: transform 0.3s var(--ico-ease-out), color 0.22s var(--ico-ease);
+  }
+
+  /* ---- Hover (pointer devices): subtle scale + colour/brightness ---- */
+  @media (hover: hover) {
+    html :where(button, a, label, [role="button"]:not(#app-logo), [onclick^="toggleAccordion"], [onclick^="toggleResultAccordion"]):not(:disabled):hover svg:where(:not(.accordion-chevron)) {
+      scale: 1.08;
+      filter: brightness(1.15);
+    }
+    /* neutral (slate) icons shift to the theme accent on hover */
+    html :where(button, a, label, [role="button"]:not(#app-logo)):not(:disabled):hover svg[class*="text-slate"]:where(:not(.accordion-chevron)) {
+      color: var(--ico-accent);
+    }
+    html :where(button, [onclick^="toggleAccordion"], [onclick^="toggleResultAccordion"]):hover .accordion-chevron {
+      color: var(--ico-accent);
+    }
+
+    /* Purpose-specific micro-motion (small, eased, no overshoot) */
+    html button:hover svg[class*="lucide-arrow-right"],
+    html button:hover svg[class*="lucide-chevron-right"],
+    html a:hover svg[class*="lucide-arrow-right"] { translate: 2px 0; }
+    html button:hover svg[class*="lucide-chevron-left"] { translate: -2px 0; }
+    html button:hover svg[class*="lucide-download"],
+    html button:hover svg[class*="lucide-image-down"] { translate: 0 2px; }
+    html button:hover svg[class*="lucide-external-link"],
+    html a:hover svg[class*="lucide-external-link"] { translate: 1px -1px; }
+    html button:hover svg[class*="lucide-plus"],
+    html button:hover svg[class*="lucide-image-plus"],
+    html button:hover svg[class*="lucide-user-plus"] { rotate: 90deg; }
+    html button:hover svg[class*="lucide-x"] { rotate: 90deg; }
+    html button:hover svg[class*="lucide-pencil"],
+    html button:hover svg[class*="lucide-edit-3"],
+    html button:hover svg[class*="lucide-user-cog"] { rotate: -10deg; }
+    html button:hover svg[class*="lucide-key-round"] { rotate: 14deg; }
+    html button:hover svg[class*="lucide-rotate-ccw"] { rotate: -60deg; }
+    html button:hover svg[class*="lucide-refresh-cw"] { rotate: 60deg; }
+    html button:hover svg[class*="lucide-megaphone"] { rotate: -8deg; }
+    html button:hover svg[class*="lucide-sun"],
+    html button:hover svg[class*="lucide-moon"] { rotate: 18deg; }
+    html button:hover svg[class*="lucide-search"] { scale: 1.12; }
+
+    /* Video thumbnail play button + ranking stars react when their row is hovered */
+    html #notices-videos-grid article:hover .vid-play-btn svg,
+    html #full-videos-grid article:hover .vid-play-btn svg { scale: 1.12; }
+    html .glass-row:hover .reward-pill,
+    html [onclick^="openTraineeReport"]:hover .reward-pill,
+    html [onclick^="openResultDetailsModal"]:hover .reward-pill { scale: 1.1; }
+  }
+  html .vid-play-btn svg { transition: scale 0.26s var(--ico-ease); }
+  html .reward-pill { transition: scale 0.26s var(--ico-ease); }
+
+  /* Clickable section headers: their icon tile responds when the header is hovered */
+  @media (hover: hover) {
+    html :is([onclick^="toggleAccordion"], [onclick^="toggleResultAccordion"]):hover > div > svg,
+    html :is([onclick^="toggleAccordion"], [onclick^="toggleResultAccordion"]):hover > .rounded-xl > svg { scale: 1.1; }
+  }
+
+  /* ---- Tap / click: gentle press-down, eased release ---- */
+  html :where(button, a, label, [role="button"]:not(#app-logo)):not(:disabled):active svg:where(:not(.accordion-chevron)) {
+    scale: 0.88;
+    translate: 0 0;
+    rotate: 0deg;
+  }
+
+  /* ---- Keyboard focus: soft themed glow ---- */
+  html :where(button, a):focus-visible svg:where(:not(.accordion-chevron)) {
+    filter: drop-shadow(0 0 4px var(--ico-glow));
+  }
+
+  /* ---- Active / selected states: soft glow + slight lift ---- */
+  html #bottom-tab-bar .tab-btn svg {
+    transition:
+      transform 0.3s var(--ico-ease-out),
+      scale 0.3s var(--ico-ease),
+      filter 0.3s var(--ico-ease),
+      color 0.3s var(--ico-ease);
+  }
+  html #bottom-tab-bar .tab-btn.tab-active svg {
+    scale: 1.1;
+    filter: drop-shadow(0 0 5px var(--ico-glow));
+  }
+  html .pa-btn.pa-on svg,
+  html #btn-header-menu.menu-open svg,
+  html #more-sheet button[class*="border-amber-500"] svg {
+    filter: drop-shadow(0 0 4px var(--ico-glow));
+  }
+  html .lb-ctrl-btn:active svg { scale: 0.88; }
+  @media (hover: hover) {
+    html .lb-ctrl-btn:hover svg { scale: 1.12; }
+    html .lb-ctrl-btn:hover svg[class*="lucide-chevron-left"] { translate: -2px 0; }
+    html .lb-ctrl-btn:hover svg[class*="lucide-chevron-right"] { translate: 2px 0; }
+  }
+
+  /* ---- Search icon: glows while the search field is focused ---- */
+  html #search-bar-icon { transition: scale 0.26s var(--ico-ease), filter 0.28s var(--ico-ease); }
+  html #search-input-box:focus-within #search-bar-icon {
+    scale: 1.12;
+    filter: drop-shadow(0 0 4px var(--ico-glow));
+  }
+
+  /* ---- Notification / meaningful state indicators (gentle, opacity/scale only) ---- */
+  html #dot-sync-status.bg-amber-400 { animation: icoDotPulse 2.4s var(--ico-ease) infinite; }
+  html [data-vid-playing-pill]:not(.hidden) { animation: icoSoftPulse 2.4s var(--ico-ease) infinite; }
+  html #header-holiday-pill:not(.hidden) svg { animation: icoSoftPulse 3s var(--ico-ease) infinite; }
+
+  /* ---- One-shot animations. Classes are set by JS on STABLE parents (buttons,
+         views), never on <svg>, because lucide.createIcons() re-creates the svgs. ---- */
+  html .ico-anim-spin svg    { animation: icoSpinOnce 0.72s var(--ico-ease) 1; }
+  html .ico-anim-pulse svg   { animation: icoPulseOnce 0.52s var(--ico-ease) 1; }
+  html .ico-anim-swap svg    { animation: icoSwapIn 0.3s var(--ico-ease-out) 1; }
+  html .ico-anim-switch svg  { animation: icoSwitchIn 0.34s var(--ico-ease-out) 1; }
+  html .ico-anim-success svg[class*="lucide-unlock"],
+  html .ico-anim-success svg[class*="lucide-shield-check"] { animation: icoSuccessPop 0.35s var(--ico-ease-out) 1; }
+
+  /* ---- Success toast: subtle checkmark fade/scale in ---- */
+  html #toast-container > .bg-emerald-600::before {
+    content: "\2713";
+    display: inline-block;
+    margin-right: 6px;
+    font-weight: 800;
+    animation: icoSuccessPop 0.35s var(--ico-ease-out) both;
+  }
+
+  @keyframes icoSpinOnce   { from { rotate: 0deg; } to { rotate: 360deg; } }
+  @keyframes icoPulseOnce  { 0%, 100% { scale: 1; filter: drop-shadow(0 0 0 transparent); } 50% { scale: 1.16; filter: drop-shadow(0 0 5px var(--ico-glow)); } }
+  @keyframes icoSwapIn     { from { scale: 0.72; rotate: -40deg; opacity: 0; } to { scale: 1; rotate: 0deg; opacity: 1; } }
+  @keyframes icoSwitchIn   { from { scale: 0.8; opacity: 0.55; } to { scale: 1.1; opacity: 1; } }
+  @keyframes icoSuccessPop { from { scale: 0.5; opacity: 0; } to { scale: 1; opacity: 1; } }
+  @keyframes icoSoftPulse  { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  @keyframes icoDotPulse   { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 1.3; opacity: 0.7; } }
+
+  /* ---- Accessibility: respect reduced motion ---- */
+  @media (prefers-reduced-motion: reduce) {
+    html :where(button, a, label, [role="button"]:not(#app-logo), [onclick^="toggleAccordion"], [onclick^="toggleResultAccordion"]) svg:where(:not(.accordion-chevron)),
+    html #bottom-tab-bar .tab-btn svg,
+    html .vid-play-btn svg,
+    html .reward-pill,
+    html #search-bar-icon { transition: none !important; }
+    html .ico-anim-spin svg,
+    html .ico-anim-pulse svg,
+    html .ico-anim-swap svg,
+    html .ico-anim-switch svg,
+    html .ico-anim-success svg,
+    html #dot-sync-status,
+    html [data-vid-playing-pill],
+    html #header-holiday-pill svg,
+    html #toast-container > .bg-emerald-600::before { animation: none !important; }
+    html svg { translate: none !important; rotate: none !important; }
+  }
+</style>
+
+<script id="icon-animation-controller">
+  /* Lightweight, event-driven helpers. No timers loops, no rAF loops. Classes go on
+     stable parent elements; each one-shot refuses to restart while still running. */
+  (function () {
+    var reduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+    function once(el, cls, ms) {
+      if (!el || (reduce && reduce.matches) || el.classList.contains(cls)) return;
+      el.classList.add(cls);
+      setTimeout(function () { el.classList.remove(cls); }, ms);
+    }
+
+    // Loading (refresh), cloud sync pulse, theme icon swap
+    document.addEventListener("click", function (e) {
+      var b = e.target && e.target.closest ? e.target.closest("button, a") : null;
+      if (!b) return;
+      if (b.querySelector('svg[class*="lucide-refresh-cw"]')) once(b, "ico-anim-spin", 760);
+      else if (b.id === "btn-sync-indicator") once(b, "ico-anim-pulse", 560);
+      else if (b.id === "btn-theme-toggle") once(b, "ico-anim-swap", 320);
+    }, { passive: true });
+
+    // Navigation: icon of the newly active tab eases in (works for Home/Daily/80%/More)
+    var bar = document.getElementById("tab-bar-inner");
+    if (bar && window.MutationObserver) {
+      new MutationObserver(function (list) {
+        list.forEach(function (m) {
+          var t = m.target;
+          if (!t.classList || !t.classList.contains("tab-active")) return;
+          if ((m.oldValue || "").indexOf("tab-active") !== -1) return;
+          once(t, "ico-anim-switch", 380);
+        });
+      }).observe(bar, { subtree: true, attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+    }
+
+    // Success: admin unlock icons ease in when the unlocked view appears
+    var unlocked = document.getElementById("admin-unlocked-view");
+    if (unlocked && window.MutationObserver) {
+      new MutationObserver(function (list) {
+        list.forEach(function (m) {
+          if (unlocked.classList.contains("hidden") || (m.oldValue || "").indexOf("hidden") === -1) return;
+          once(unlocked, "ico-anim-success", 400);
+        });
+      }).observe(unlocked, { attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+    }
+  })();
+</script>
+<style id="search-nav-glass-layer">
+  /* =====================================================================
+     SEARCH ANIMATION, QUICK NAVIGATION, FOCUS CARDS, COMPACT GLASS COMPONENTS
+     ===================================================================== */
+
+  /* ---- 1. Search suggestions: staggered, gently bouncing entrance ---- */
+  #trainee-search-results { scroll-behavior: smooth; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  #trainee-search-results > button.sr-new {
+    animation: srIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    animation-delay: calc(var(--sr-i, 0) * 45ms);
+  }
+  /* fast typing: smaller, quicker, no overshoot so results never "jump" around */
+  #trainee-search-results > button.sr-new.sr-soft {
+    animation: srInSoft 0.2s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    animation-delay: calc(var(--sr-i, 0) * 25ms);
+  }
+  @keyframes srIn {
+    0%   { opacity: 0; transform: translate3d(0, 12px, 0); }
+    60%  { opacity: 1; transform: translate3d(0, -3px, 0); }
+    100% { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+  @keyframes srInSoft {
+    from { opacity: 0; transform: translate3d(0, 4px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+
+  /* ---- 2. Quick navigation row inside the trainee details panel ---- */
+  .qn-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.375rem; }
+  .qn-btn {
+    --qn-accent: #fbbf24;
+    display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+    min-height: 34px; padding: 0.35rem 0.4rem;
+    border-radius: 0.8rem; font-size: 11px; font-weight: 700; line-height: 1.1;
+    color: #e2e8f0;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5);
+    box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.07) inset;
+    transition: transform 0.28s var(--ico-ease, ease), background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .qn-btn svg { color: var(--qn-accent); flex: none; }
+  .qn-btn.qn-daily  { --qn-accent: #fbbf24; }
+  .qn-btn.qn-chart  { --qn-accent: #38bdf8; }
+  .qn-btn.qn-result { --qn-accent: #34d399; }
+  html.bright-mode .qn-btn {
+    color: #1e293b; background-color: rgba(255, 255, 255, 0.66); border-color: rgba(148, 163, 184, 0.45);
+    box-shadow: 0 4px 12px -6px rgba(15, 23, 42, 0.16), 0 1px 0 0 rgba(255, 255, 255, 0.8) inset;
+  }
+  html.bright-mode .qn-btn.qn-daily  { --qn-accent: #b45309; }
+  html.bright-mode .qn-btn.qn-chart  { --qn-accent: #0369a1; }
+  html.bright-mode .qn-btn.qn-result { --qn-accent: #047857; }
+  @media (hover: hover) {
+    .qn-btn:hover { transform: translateY(-1px); border-color: var(--qn-accent); background-color: rgba(255, 255, 255, 0.11); }
+    html.bright-mode .qn-btn:hover { background-color: rgba(255, 255, 255, 0.92); }
+  }
+  .qn-btn:active { transform: scale(0.97); }
+
+  /* ---- 2b. Focus cards shown at the top of Daily / Chart / Result tabs ---- */
+  .focus-card {
+    display: flex; flex-direction: column; gap: 0.55rem;
+    padding: 0.7rem 0.75rem; border-radius: 1rem;
+    background-color: rgba(12, 19, 34, 0.52);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6);
+    box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.6), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset, inset 3px 0 0 rgba(245, 158, 11, 0.8);
+  }
+  html.bright-mode .focus-card {
+    background-color: rgba(255, 255, 255, 0.58); border-color: rgba(148, 163, 184, 0.4);
+    box-shadow: 0 12px 30px -14px rgba(30, 64, 175, 0.22), 0 1px 0 0 rgba(255, 255, 255, 0.85) inset, inset 3px 0 0 rgba(217, 119, 6, 0.85);
+  }
+  .focus-card.focus-enter { animation: focusCardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes focusCardIn {
+    from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.985); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
+  .focus-mini-btn {
+    width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9999px; color: #cbd5e1;
+    background-color: rgba(255, 255, 255, 0.06); border: 1px solid rgba(148, 163, 184, 0.3);
+    transition: transform 0.25s var(--ico-ease, ease), background-color 0.25s ease, border-color 0.25s ease;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  html.bright-mode .focus-mini-btn { color: #334155; background-color: rgba(255, 255, 255, 0.7); border-color: rgba(148, 163, 184, 0.45); }
+  @media (hover: hover) { .focus-mini-btn:hover { background-color: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.55); } }
+  .focus-mini-btn:active { transform: scale(0.92); }
+  .focus-bar-track { position: relative; height: 7px; border-radius: 9999px; background-color: rgba(148, 163, 184, 0.22); overflow: hidden; }
+  .focus-bar-fill { height: 100%; border-radius: inherit; }
+  .focus-bar-mark { position: absolute; top: 0; bottom: 0; left: 80%; width: 2px; background-color: #fbbf24; }
+  html.bright-mode .focus-bar-mark { background-color: #d97706; }
+  .focus-view-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+    min-height: 32px; padding: 0.3rem 0.7rem; border-radius: 0.8rem; font-size: 11px; font-weight: 700;
+    color: #fcd34d; background-color: rgba(245, 158, 11, 0.16); border: 1px solid rgba(245, 158, 11, 0.42);
+    transition: transform 0.25s var(--ico-ease, ease), background-color 0.25s ease;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  html.bright-mode .focus-view-btn { color: #92400e; background-color: rgba(254, 243, 199, 0.8); border-color: rgba(217, 119, 6, 0.5); }
+  @media (hover: hover) { .focus-view-btn:hover { transform: translateY(-1px); background-color: rgba(245, 158, 11, 0.26); } }
+  .focus-view-btn:active { transform: scale(0.97); }
+
+  /* highlight of the focused trainee inside the existing lists (outline only, no layout change) */
+  .trainee-focus-row { outline: 1.5px solid rgba(245, 158, 11, 0.75); outline-offset: -1px; }
+  html.bright-mode .trainee-focus-row { outline-color: rgba(217, 119, 6, 0.8); }
+
+  /* ---- 3. Compact glass action buttons (Download CSV / Performance Card) ---- */
+  .glass-act-btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+    min-height: 34px; padding: 0.4rem 0.6rem; border-radius: 0.8rem;
+    font-size: 11px; font-weight: 700; line-height: 1.1; white-space: nowrap;
+    color: var(--gb-fg); background-color: var(--gb-bg); border: 1px solid var(--gb-border);
+    -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5);
+    box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
+    transition: transform 0.28s var(--ico-ease, ease), background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .glass-act-emerald { --gb-bg: rgba(16, 185, 129, 0.16); --gb-border: rgba(52, 211, 153, 0.42); --gb-fg: #6ee7b7; --gb-hover: rgba(16, 185, 129, 0.26); }
+  .glass-act-amber   { --gb-bg: rgba(245, 158, 11, 0.16); --gb-border: rgba(251, 191, 36, 0.45); --gb-fg: #fcd34d; --gb-hover: rgba(245, 158, 11, 0.26); }
+  html.bright-mode .glass-act-emerald { --gb-bg: rgba(209, 250, 229, 0.75); --gb-border: rgba(16, 185, 129, 0.5); --gb-fg: #065f46; --gb-hover: rgba(167, 243, 208, 0.85); }
+  html.bright-mode .glass-act-amber   { --gb-bg: rgba(254, 243, 199, 0.8); --gb-border: rgba(217, 119, 6, 0.5); --gb-fg: #92400e; --gb-hover: rgba(253, 230, 138, 0.85); }
+  html.bright-mode .glass-act-btn { box-shadow: 0 4px 12px -6px rgba(15, 23, 42, 0.16), 0 1px 0 0 rgba(255, 255, 255, 0.8) inset; }
+  @media (hover: hover) {
+    .glass-act-btn:hover { transform: translateY(-1px); background-color: var(--gb-hover); box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.1) inset; }
+  }
+  .glass-act-btn:active { transform: scale(0.97); }
+
+  /* ---- 4. Compact Performance Card (glass) ---- */
+  .perf-card {
+    padding: 0.5rem 0.55rem; border-radius: 1rem;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5);
+    box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.55), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
+    animation: perfCardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  html.bright-mode .perf-card {
+    background-color: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.42);
+    box-shadow: 0 10px 26px -12px rgba(30, 64, 175, 0.2), 0 1px 0 0 rgba(255, 255, 255, 0.85) inset;
+  }
+  .perf-card > * + * { margin-top: 0.4rem; }
+  .perf-card .grid { gap: 0.35rem; }
+  .perf-card #report-academics-grid > div,
+  .perf-card #report-stats-grid > div { padding: 0.35rem 0.25rem; border-radius: 0.7rem; }
+  .perf-card #report-academics-grid > div > div:first-child,
+  .perf-card #report-stats-grid > div > div:first-child { font-size: 13.5px; line-height: 1.25; }
+  .perf-card #report-academics-grid > div > div:last-child,
+  .perf-card #report-stats-grid > div > div:last-child { font-size: 10px; }
+  @keyframes perfCardIn {
+    from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.985); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #trainee-search-results { scroll-behavior: auto; }
+    #trainee-search-results > button.sr-new,
+    .focus-card.focus-enter,
+    .perf-card { animation: none !important; }
+    .qn-btn, .glass-act-btn, .focus-mini-btn, .focus-view-btn { transition: none !important; }
+  }
+</style>
+
+<script id="search-nav-controller">
+  (function () {
+    "use strict";
+    var reduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+    /* ---------------------------------------------------------------
+       1. Staggered animation for NEW search suggestions only.
+          Wraps the existing handleTraineeSearch (search logic untouched).
+       --------------------------------------------------------------- */
+    var origSearch = window.handleTraineeSearch;
+    if (typeof origSearch === "function") {
+      var prevIds = new Set();
+      var lastAt = 0;
+      window.handleTraineeSearch = function () {
+        var box = document.getElementById("trainee-search-results");
+        var keepTop = box ? box.scrollTop : 0;
+        var wasOpen = !!box && !box.classList.contains("hidden");
+        var result = origSearch.apply(this, arguments);
+        if (!box) return result;
+
+        var buttons = box.classList.contains("hidden") ? [] : Array.prototype.slice.call(box.children).filter(function (el) { return el.tagName === "BUTTON"; });
+        if (!buttons.length) { prevIds = new Set(); return result; }
+
+        var now = Date.now();
+        var fast = wasOpen && now - lastAt < 180;
+        lastAt = now;
+        var ids = new Set();
+        var n = 0;
+        buttons.forEach(function (btn) {
+          var m = (btn.getAttribute("onclick") || "").match(/'([^']+)'/);
+          var id = m ? m[1] : "";
+          ids.add(id);
+          if (!wasOpen || !prevIds.has(id)) {          // unchanged results are not re-animated
+            if (!(reduce && reduce.matches)) {
+              btn.style.setProperty("--sr-i", String(Math.min(n, 5)));
+              btn.classList.add("sr-new");
+              if (fast) btn.classList.add("sr-soft");  // softer motion while typing quickly
+            }
+            n++;
+          }
+        });
+        prevIds = ids;
+        if (wasOpen) box.scrollTop = keepTop;
+        return result;
+      };
+    }
+
+    /* ---------------------------------------------------------------
+       2. Trainee focus cards (Daily / Chart / Result)
+       --------------------------------------------------------------- */
+    var HOST = { daily: "focus-daily", chart: "focus-chart", result: "focus-result" };
+    var TAB = { daily: "daily", chart: "monthly", result: "results" };
+    var focusId = { daily: null, chart: null, result: null };
+
+    var CH_P = "bg-emerald-500/15 border-emerald-500/30 text-emerald-400";
+    var CH_A = "bg-rose-500/15 border-rose-500/30 text-rose-400";
+    var CH_N = "bg-slate-900 border-slate-800 text-slate-400";
+    function chip(txt, cls) { return '<span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold border shrink-0 ' + cls + '">' + txt + "</span>"; }
+    function noData() {
+      return '<div class="glass-row border rounded-lg px-2.5 py-2.5 text-center text-[11px] font-semibold text-slate-400">No Data Available</div>';
+    }
+    function cell(value, label, cls) {
+      return '<div class="glass-row border rounded-lg py-1.5"><div class="text-[13px] font-extrabold ' + cls + '">' + value + '</div><div class="text-[10px] text-slate-400">' + label + "</div></div>";
+    }
+    function barRow(label, pct, right, fill, txt, mark) {
+      var w = Math.max(0, Math.min(100, Number(pct) || 0));
+      return '<div class="space-y-0.5"><div class="flex items-center justify-between gap-2 text-[10.5px]"><span class="font-semibold text-slate-300 truncate">' + label +
+        '</span><span class="font-extrabold shrink-0 ' + txt + '">' + right + '</span></div><div class="focus-bar-track"><div class="focus-bar-fill ' + fill +
+        '" style="width:' + w + '%"></div>' + (mark ? '<span class="focus-bar-mark"></span>' : "") + "</div></div>";
+    }
+    function shortDate(iso) { return parseISO(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }); }
+
+    function dailyBody(tr) {
+      var rec = appState.attendance || {};
+      var marked = Object.keys(rec).filter(function (d) {
+        var v = (rec[d] || {})[tr.id];
+        return !isHolidayDate(d) && (v === "P" || v === "A");
+      }).sort();
+      if (!marked.length) return noData();
+      var st = calculateTraineeStats(tr.id, "ALL");
+      var ok = st.pct >= 80;
+      var hol = getHolidayEntry(selectedDateStr);
+      var v = (rec[selectedDateStr] || {})[tr.id];
+      var selChip = hol ? chip("Holiday", CH_A) : v === "P" ? chip("Present", CH_P) : v === "A" ? chip("Absent", CH_A) : chip("Unmarked", CH_N);
+      var recent = marked.slice(-7).reverse().map(function (iso) {
+        var s = rec[iso][tr.id];
+        return '<span class="px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ' + (s === "P" ? CH_P : CH_A) + '">' + escapeHTML(shortDate(iso)) + " &middot; " + s + "</span>";
+      }).join("");
+      return '<div class="glass-row border rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2"><span class="text-[11px] font-bold text-slate-300 truncate">' +
+        escapeHTML(formatDayAndDate(selectedDateStr)) + "</span>" + selChip + "</div>" +
+        '<div class="grid grid-cols-3 gap-1.5 text-center">' +
+        cell(st.presentDays + "/" + st.workingDays, "Present Days", "text-white") +
+        cell(st.pct + "%", "Attendance", ok ? "text-emerald-400" : "text-rose-400") +
+        cell(ok ? "Eligible" : "Shortage", "NCVT 80%", ok ? "text-emerald-400" : "text-rose-400") + "</div>" +
+        '<div><div class="text-[10px] font-bold text-slate-400 mb-1">Recent attendance</div><div class="flex flex-wrap gap-1">' + recent + "</div></div>";
+    }
+
+    function periodLabel() {
+      var p = currentChartPeriod;
+      if (p === "MONTH" && currentChartSpecificMonth) return formatMonthLabel(currentChartSpecificMonth);
+      return { ALL: "All data", "1M": "Current month", "6M": "Last 6 months", "9M": "Last 9 months", "12M": "Last 12 months" }[p] || "All data";
+    }
+
+    function chartBody(tr) {
+      var dates = getFilteredAttendanceDates(currentChartPeriod);
+      var map = {};
+      dates.forEach(function (iso) {
+        var v = (appState.attendance[iso] || {})[tr.id];
+        if (v !== "P" && v !== "A") return;
+        var ym = iso.slice(0, 7);
+        if (!map[ym]) map[ym] = { p: 0, t: 0 };
+        map[ym].t++;
+        if (v === "P") map[ym].p++;
+      });
+      var months = Object.keys(map).sort();
+      var att;
+      if (!months.length) {
+        att = noData();
+      } else {
+        var st = calculateTraineeStats(tr.id, currentChartPeriod);
+        var ok = st.pct >= 80;
+        att = barRow("Overall &middot; " + escapeHTML(periodLabel()), st.pct, st.pct + "% (" + st.presentDays + "/" + st.workingDays + "d)", ok ? "bg-emerald-500" : "bg-rose-500", ok ? "text-emerald-400" : "text-rose-400", true) +
+          months.map(function (ym) {
+            var parts = ym.split("-").map(Number);
+            var lbl = new Date(parts[0], parts[1] - 1, 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+            var pct = Math.round((map[ym].p / map[ym].t) * 100);
+            var good = pct >= 80;
+            return barRow(lbl, pct, pct + "% (" + map[ym].p + "/" + map[ym].t + "d)", good ? "bg-emerald-500" : "bg-rose-500", good ? "text-emerald-400" : "text-rose-400", true);
+          }).join("");
+      }
+
+      var res = getTraineeResultSummary(tr);
+      var maxInt = Number(appState.internalMeta && appState.internalMeta.maxMarks) || 100;
+      var marks = [];
+      if (res.y1 > 0) marks.push(barRow("1st Year", (res.y1 / 600) * 100, res.y1 + "/600", "bg-emerald-500", "text-emerald-400", false));
+      if (appState.consolidatedPublished) {
+        marks.push(barRow("2nd Year", (res.y2 / 600) * 100, res.y2 + "/600", "bg-amber-500", "text-amber-400", false));
+        marks.push(barRow("2-Year Total", (res.tot / res.maxTotal) * 100, res.tot + "/" + res.maxTotal, "bg-amber-500", "text-amber-400", false));
+      }
+      if (appState.internalPublished) {
+        marks.push(barRow("Internal", ((tr.internal || 0) / maxInt) * 100, (tr.internal || 0) + "/" + maxInt, "bg-sky-500", "text-sky-400", false));
+      }
+      var marksHTML = marks.length ? marks.join("") : noData();
+      return '<div class="space-y-1.5"><div class="text-[10px] font-bold text-slate-400">Attendance chart</div>' + att + "</div>" +
+        '<div class="space-y-1.5"><div class="text-[10px] font-bold text-slate-400">Marks chart</div>' + marksHTML + "</div>";
+    }
+
+    function resultBody(tr) {
+      var res = getTraineeResultSummary(tr);
+      var maxInt = Number(appState.internalMeta && appState.internalMeta.maxMarks) || 100;
+      var hasY1 = res.y1 > 0;
+      var hasCons = !!appState.consolidatedPublished;
+      var hasInt = !!appState.internalPublished;
+      if (!hasY1 && !hasCons && !hasInt) return noData();
+      var na = '<span class="text-[11px] font-semibold text-slate-400">No Data Available</span>';
+      function row(label, valHTML) {
+        return '<div class="glass-row border rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2"><span class="text-[11px] font-bold text-slate-300">' + label + "</span>" + valHTML + "</div>";
+      }
+      var y1HTML = hasY1 ? '<span class="text-xs font-extrabold text-emerald-400">' + res.y1 + "/600 &middot; " + ((res.y1 / 600) * 100).toFixed(1) + "%</span>" : na;
+      var consHTML = hasCons
+        ? '<span class="text-xs font-extrabold text-amber-400">' + res.tot + "/" + res.maxTotal + " &middot; " + res.pct + "% &middot; " + escapeHTML(res.status) + "</span>"
+        : na;
+      var intHTML = hasInt ? '<span class="text-xs font-extrabold text-sky-400">' + (tr.internal || 0) + "/" + maxInt + "</span>" : na;
+      var btn = (hasY1 || hasCons)
+        ? '<div class="flex justify-end"><button type="button" class="focus-view-btn" onclick="openResultDetailsModal(\'' + tr.id + '\')"><i data-lucide="award" class="w-3.5 h-3.5 shrink-0"></i><span>View Marksheet</span></button></div>'
+        : "";
+      return row("1st Year NCVT", y1HTML) + row("Consolidated (1st + 2nd)", consHTML) + row("Internal Assessment", intHTML) + btn;
+    }
+
+    var META = {
+      daily:  { title: "Daily Attendance", icon: "calendar-check-2", body: dailyBody },
+      chart:  { title: "Performance Chart", icon: "bar-chart-3", body: chartBody },
+      result: { title: "Result", icon: "award", body: resultBody }
+    };
+
+    function render(section) {
+      var host = document.getElementById(HOST[section]);
+      if (!host) return;
+      var id = focusId[section];
+      var tr = id ? appState.trainees.find(function (t) { return t.id === id; }) : null;
+      if (!tr) {
+        focusId[section] = null;
+        if (!host.hidden) { host.hidden = true; host.innerHTML = ""; host.dataset.sig = ""; host.dataset.fid = ""; }
+        return;
+      }
+      var meta = META[section];
+      var rw = getTraineeRewardMeta(tr, computeRewardMaps(), "all");
+      var header =
+        '<div class="flex items-center justify-between gap-2">' +
+          '<div class="flex items-center gap-2 min-w-0">' +
+            '<div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="' + meta.icon + '" class="w-4 h-4"></i></div>' +
+            '<div class="min-w-0">' +
+              '<div class="flex items-center gap-1.5 min-w-0 pt-0.5"><span class="font-mono text-[11px] font-extrabold text-amber-400 shrink-0">R.' + escapeHTML(tr.rno || "--") + '</span>' +
+              '<span class="text-xs sm:text-[13px] font-bold text-white truncate">' + rw.displayNameHTML + "</span></div>" +
+              '<div class="text-[10px] text-slate-400 truncate">' + meta.title + " &bull; Reg: " + escapeHTML(tr.roll || "--") + "</div>" +
+            "</div>" +
+          "</div>" +
+          '<div class="flex items-center gap-1 shrink-0">' +
+            '<button type="button" class="focus-mini-btn" title="Open profile" aria-label="Open profile" onclick="openTraineeReport(\'' + tr.id + '\')"><i data-lucide="user" class="w-3.5 h-3.5"></i></button>' +
+            '<button type="button" class="focus-mini-btn" title="Clear selection" aria-label="Clear selection" onclick="clearTraineeFocus(\'' + section + '\')"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>' +
+          "</div>" +
+        "</div>";
+      var inner = header + meta.body(tr);
+      var sig = tr.id + "|" + inner;
+      if (!host.hidden && host.dataset.sig === sig) return;      // nothing changed: no re-render, no replayed animation
+      var isNew = host.hidden || host.dataset.fid !== tr.id;
+      host.dataset.sig = sig;
+      host.dataset.fid = tr.id;
+      host.hidden = false;
+      host.innerHTML = '<div class="focus-card' + (isNew ? " focus-enter" : "") + '">' + inner + "</div>";
+      if (window.lucide) lucide.createIcons();
+    }
+
+    var ROW_LISTS = {
+      "daily-rollcall-list": "daily",
+      "eligibility-list": "chart",
+      "first-year-results-list": "result",
+      "combined-two-year-results-list": "result",
+      "internal-tests-list": "result"
+    };
+    function markRows() {
+      Object.keys(ROW_LISTS).forEach(function (cid) {
+        var el = document.getElementById(cid);
+        if (!el) return;
+        var id = focusId[ROW_LISTS[cid]];
+        Array.prototype.forEach.call(el.children, function (row) {
+          var oc = row.getAttribute("onclick") || "";
+          row.classList.toggle("trainee-focus-row", !!id && oc.indexOf("'" + id + "'") !== -1);
+        });
+      });
+    }
+
+    window.renderTraineeFocusCard = render;
+
+    window.clearTraineeFocus = function (section) {
+      if (!HOST[section]) return;
+      focusId[section] = null;
+      render(section);
+      markRows();
+    };
+
+    /* Navigate from the trainee details panel to the matching tape for THAT trainee */
+    window.goToTraineeSection = function (section) {
+      var tab = TAB[section];
+      var tr = tab ? appState.trainees.find(function (t) { return t.id === activeReportTraineeId; }) : null;
+      if (!tr) { showToast("Trainee record not found", "error"); return; }
+      focusId[section] = tr.id;
+      var host = document.getElementById(HOST[section]);
+      if (host) { host.dataset.sig = ""; host.dataset.fid = ""; }   // replay the entrance for an explicit navigation
+      closeModal("modal-trainee-report", true);                       // also releases the page scroll lock
+      switchTab(tab);
+      render(section);
+      markRows();
+    };
+
+    /* Keep the focus cards in sync with the existing renderers (no changes to their logic) */
+    function wrap(name, section) {
+      var orig = window[name];
+      if (typeof orig !== "function") return;
+      window[name] = function () {
+        var out = orig.apply(this, arguments);
+        try { render(section); markRows(); } catch (e) { console.error(e); }
+        return out;
+      };
+    }
+    wrap("renderDailyRollCall", "daily");
+    wrap("renderEligibilityChart", "chart");
+    wrap("renderResultsSection", "result");
+  })();
+</script>
 </body>
 </html>

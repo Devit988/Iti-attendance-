@@ -477,6 +477,23 @@
       background-color: rgba(255, 255, 255, 0.6) !important;
     }
 
+    /* ===== Trainee panel: marks & combined result (glass, dark + light) ===== */
+    .tm-combined { text-align: left; }
+    .tm-combined .tm-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 3px 0; font-size: 11px; }
+    .tm-combined .tm-row + .tm-row { border-top: 1px dashed rgba(148,163,184,.22); }
+    .tm-combined .tm-lbl { color: #94a3b8; font-weight: 600; }
+    .tm-combined .tm-val { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tm-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; line-height: 1.3; }
+    .tm-pill-pending { background: rgba(245,158,11,.16); border: 1px solid rgba(245,158,11,.45); color: #fcd34d; }
+    .tm-pill-done { background: rgba(16,185,129,.16); border: 1px solid rgba(16,185,129,.45); color: #6ee7b7; }
+    .tm-nil { color: #cbd5e1; }
+    .tm-sub { display: block; margin-top: 2px; font-size: 9px; font-weight: 800; color: #fcd34d; line-height: 1.2; }
+    html.bright-mode .tm-combined .tm-lbl { color: #475569; }
+    html.bright-mode .tm-pill-pending { background: rgba(245,158,11,.18); border-color: rgba(180,83,9,.5); color: #92400e; }
+    html.bright-mode .tm-pill-done { background: rgba(16,185,129,.16); border-color: rgba(4,120,87,.5); color: #065f46; }
+    html.bright-mode .tm-nil { color: #334155; }
+    html.bright-mode .tm-sub { color: #92400e; }
+
     /* ===== Video Library: glass search bar + category chips ===== */
     .vf-wrap { --vf-bg: rgba(15,23,42,.55); --vf-bd: rgba(148,163,184,.26); --vf-tx:#e2e8f0; --vf-mut:#94a3b8;
       --vf-sh: 0 8px 24px -10px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.05) inset; display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
@@ -1682,21 +1699,10 @@
           </div>
 
           <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" id="btn-refresh-home-playlist" onclick="refreshConnectedPlaylist(true)" title="Refresh connected playlist"
-              class="hidden px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-semibold flex items-center gap-1 transition btn-tap">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-              <span class="hidden sm:inline">Refresh</span>
-            </button>
-
             <button type="button" onclick="openVideoCategoryManager()"
               class="admin-only hidden px-2.5 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-bold flex items-center gap-1 transition btn-tap">
               <i data-lucide="tags" class="w-3.5 h-3.5"></i>
               <span class="hidden sm:inline">Categories</span>
-            </button>
-            <button type="button" onclick="openPlaylistModal()"
-              class="admin-only hidden px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1 transition btn-tap">
-              <i data-lucide="list-video" class="w-3.5 h-3.5"></i>
-              <span>Playlist</span>
             </button>
 
             <button type="button" onclick="switchTab('videos')"
@@ -1706,9 +1712,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Connected Playlist Status & Loading/Error Banner (Home Tape) -->
-        <div id="home-playlist-status-bar" class="hidden mb-3"></div>
 
         <div id="notices-video-filter"></div>
         <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
@@ -2190,20 +2193,10 @@
           </div>
 
           <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" id="btn-refresh-tab-playlist" onclick="refreshConnectedPlaylist(true)" title="Refresh connected playlist"
-              class="hidden px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 font-semibold text-xs flex items-center gap-1 transition btn-tap">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-              <span>Refresh</span>
-            </button>
             <button type="button" onclick="openVideoCategoryManager()"
               class="admin-only hidden px-2.5 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-bold flex items-center gap-1 transition btn-tap">
               <i data-lucide="tags" class="w-3.5 h-3.5"></i>
               <span class="hidden sm:inline">Categories</span>
-            </button>
-            <button type="button" onclick="openPlaylistModal()"
-              class="admin-only hidden px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-1 transition btn-tap">
-              <i data-lucide="list-video" class="w-3.5 h-3.5"></i>
-              <span>Playlist</span>
             </button>
             <button type="button" onclick="switchTab('notes')"
               class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 font-semibold text-xs flex items-center gap-1 transition btn-tap">
@@ -2217,8 +2210,6 @@
             </button>
           </div>
         </div>
-
-        <div id="videos-playlist-status-bar" class="hidden"></div>
 
         <div id="videos-video-filter"></div>
         <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
@@ -2548,7 +2539,7 @@
               </div>
               <div>
                 <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">2nd Yr (/600)</label>
-                <input type="number" id="trainee-y2-input" min="0" max="600" placeholder="500"
+                <input type="number" id="trainee-y2-input" min="0" max="600" placeholder="Not declared"
                   class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
               </div>
               <div>
@@ -2804,63 +2795,6 @@ service cloud.firestore {
   </div>
 
   <!-- ===================================================================== -->
-  <!-- MODAL 3B: YOUTUBE PLAYLIST AUTO-SYNC CONNECTION (ADMIN)               -->
-  <!-- ===================================================================== -->
-  <div id="modal-playlist-sync" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
-            <i data-lucide="list-video" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-sm font-bold text-white">YouTube Playlist Auto-Sync</h3>
-        </div>
-        <button type="button" onclick="closeModal('modal-playlist-sync')" class="p-1 rounded-lg text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-      <form onsubmit="handleConnectYouTubePlaylist(event)" class="p-4 space-y-3">
-        <div id="playlist-modal-connected-badge" class="hidden p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-[11px] text-emerald-300 space-y-0.5"></div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube Playlist URL or Playlist ID *</label>
-          <input type="text" id="playlist-url-input" required placeholder="https://www.youtube.com/playlist?list=PLxxxxxxxx..."
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
-          <p class="text-[10px] text-slate-400 mt-1">Supports standard playlist URLs, watch URLs with <code>?list=</code>, or direct <code>PL...</code> IDs.</p>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube Data API v3 Key (Browser-Restricted) *</label>
-          <input type="password" id="playlist-apikey-input" autocomplete="off" placeholder="AIzaSy... (Saved locally in Admin browser)"
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
-          <p class="text-[10px] text-slate-400 mt-1">Stored only in this browser's local storage (never committed to source code or public cloud sync).</p>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Target Display Section</label>
-          <select id="playlist-section-input"
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
-            <option value="both">Home &amp; Study Lab (Both Sections)</option>
-            <option value="home">Home Section Only</option>
-            <option value="lab">Study &amp; Lab Section Only</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2 pt-1">
-          <button type="button" id="btn-disconnect-playlist" onclick="disconnectYouTubePlaylist()"
-            class="hidden px-3 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-xs transition btn-tap">
-            Disconnect
-          </button>
-          <button type="submit" id="btn-save-playlist-sync"
-            class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
-            Connect &amp; Sync Playlist
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
   <!-- MODAL 4: COMPLETE ADMIN RESULT MANAGEMENT                             -->
   <!-- ===================================================================== -->
   <div id="modal-edit-results" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -2989,7 +2923,7 @@ service cloud.firestore {
               </div>
               <div>
                 <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">2nd Yr (/600)</label>
-                <input type="number" id="marks-year2-input" min="0" max="600" required
+                <input type="number" id="marks-year2-input" min="0" max="600" placeholder="Not declared"
                   class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
               </div>
               <div>
@@ -3391,9 +3325,6 @@ service cloud.firestore {
     const STORAGE_KEY = "iti_chhotojagulia_elec_2025_27_v2";
     const FB_CONFIG_KEY = "iti_chhotojagulia_fb_config_v1";
     const THEME_MODE_KEY = "iti_chhotojagulia_theme_v4";
-    const YT_API_KEY_STORAGE = "iti_chhotojagulia_yt_api_key_v1";
-    const YT_PLAYLIST_CACHE_KEY = "iti_chhotojagulia_yt_pl_cache_v1";
-    const YT_PLAYLIST_CACHE_TTL_MS = 10 * 60 * 1000;
     const DEFAULT_ADMIN_PIN = "2508";
     const MAX_VIDEOS_CAPACITY = 200;
     const VIDEOS_PAGE_BATCH_SIZE = 12;
@@ -3579,14 +3510,6 @@ service cloud.firestore {
       studyNotes: JSON.parse(JSON.stringify(DEFAULT_STUDY_NOTES)),
       videos: JSON.parse(JSON.stringify(DEFAULT_VIDEOS)),
       videoCategories: JSON.parse(JSON.stringify(DEFAULT_VIDEO_CATEGORIES)),
-      youtubePlaylist: {
-        playlistId: "",
-        playlistUrl: "",
-        title: "",
-        section: "both",
-        lastSyncedAt: 0,
-        itemCount: 0
-      },
       galleryPhotos: [],
       examSchedule: JSON.parse(JSON.stringify(DEFAULT_EXAM_SCHEDULE)),
       internalMeta: { ...DEFAULT_INTERNAL_META },
@@ -3665,15 +3588,15 @@ service cloud.firestore {
       const seenIds = new Set();
       return (Array.isArray(list) ? list : [])
         .map((v, idx) => {
+          if (v && (v.source === "playlist" || v.playlistId)) return null; // purge leftovers of removed playlist sync
           const parsed = parseVideoSource(v.directUrl || v.ytId || v.url || "");
           if (!parsed) return null;
-          const isPlaylist = v.source === "playlist" || Boolean(v.playlistId);
-          const dedupeKey = `${isPlaylist ? "pl:" + (v.playlistId || "") : "manual"}:${v.section || "both"}:${parsed.kind === "youtube" ? parsed.ytId : parsed.directUrl}`;
+          const dedupeKey = `${v.section || "both"}:${parsed.kind === "youtube" ? parsed.ytId : parsed.directUrl}`;
           if (seenKeys.has(dedupeKey)) return null;
           seenKeys.add(dedupeKey);
 
           const baseKey = parsed.kind === "youtube" ? parsed.ytId : `direct-${idx}`;
-          let id = v.id || `${isPlaylist ? "plvid" : "vid"}-${idx}-${baseKey}`;
+          let id = v.id || `vid-${idx}-${baseKey}`;
           if (seenIds.has(id)) id = `${id}-${idx}`;
           seenIds.add(id);
 
@@ -3687,397 +3610,11 @@ service cloud.firestore {
             section: v.section || "both",
             desc: String(v.desc || "").trim(),
             category: String(v.category || ""),
-            tags: Array.isArray(v.tags) ? v.tags.map((t) => String(t).trim()).filter(Boolean).join(", ") : String(v.tags || "").trim(),
-            source: isPlaylist ? "playlist" : "manual",
-            playlistId: isPlaylist ? String(v.playlistId || "") : "",
-            playlistPosition: isPlaylist && Number.isFinite(Number(v.playlistPosition)) ? Number(v.playlistPosition) : null
+            tags: Array.isArray(v.tags) ? v.tags.map((t) => String(t).trim()).filter(Boolean).join(", ") : String(v.tags || "").trim()
           };
         })
         .filter(Boolean)
         .slice(0, MAX_VIDEOS_CAPACITY);
-    }
-
-    function extractYouTubePlaylistId(raw) {
-      const s = String(raw || "").trim();
-      if (!s) return "";
-      if (/^(PL|UU|OL|RD|FL|LL)[a-zA-Z0-9_-]{10,}$/.test(s)) return s;
-      const m = s.match(/[?&]list=([a-zA-Z0-9_-]{10,})/);
-      return m ? m[1] : "";
-    }
-
-    let playlistSyncStatus = {
-      loading: false,
-      error: ""
-    };
-
-    function getStoredYouTubeApiKey() {
-      try {
-        return (localStorage.getItem(YT_API_KEY_STORAGE) || "").trim();
-      } catch (e) {
-        return "";
-      }
-    }
-
-    function setStoredYouTubeApiKey(key) {
-      try {
-        const clean = String(key || "").trim();
-        if (clean) localStorage.setItem(YT_API_KEY_STORAGE, clean);
-        else localStorage.removeItem(YT_API_KEY_STORAGE);
-      } catch (e) {}
-    }
-
-    function readPlaylistCache(playlistId) {
-      try {
-        const raw = localStorage.getItem(YT_PLAYLIST_CACHE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || parsed.playlistId !== playlistId || !Array.isArray(parsed.items)) return null;
-        return parsed;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function writePlaylistCache(playlistId, title, items) {
-      try {
-        localStorage.setItem(
-          YT_PLAYLIST_CACHE_KEY,
-          JSON.stringify({
-            playlistId,
-            title: title || "",
-            items,
-            cachedAt: Date.now()
-          })
-        );
-      } catch (e) {}
-    }
-
-    function renderPlaylistStatusBars() {
-      const pl = appState.youtubePlaylist || {};
-      const hasConnected = Boolean(pl.playlistId);
-
-      ["btn-refresh-home-playlist", "btn-refresh-tab-playlist"].forEach((btnId) => {
-        const btn = document.getElementById(btnId);
-        if (btn) btn.classList.toggle("hidden", !hasConnected);
-      });
-
-      ["home-playlist-status-bar", "videos-playlist-status-bar"].forEach((barId) => {
-        const bar = document.getElementById(barId);
-        if (!bar) return;
-
-        if (!hasConnected && !playlistSyncStatus.loading && !playlistSyncStatus.error) {
-          bar.classList.add("hidden");
-          bar.innerHTML = "";
-          return;
-        }
-
-        bar.classList.remove("hidden");
-        if (playlistSyncStatus.loading) {
-          bar.innerHTML = `
-            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/35 flex items-center gap-2.5 text-xs text-amber-300 font-semibold">
-              <span class="vid-loader-ring shrink-0" style="width:16px;height:16px;border-width:2px;"></span>
-              <span>Synchronizing YouTube playlist videos...</span>
-            </div>
-          `;
-          return;
-        }
-
-        if (playlistSyncStatus.error) {
-          bar.innerHTML = `
-            <div class="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 flex flex-wrap items-center justify-between gap-2 text-xs text-rose-300">
-              <div class="flex items-center gap-2 min-w-0">
-                <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400 shrink-0"></i>
-                <span class="truncate font-semibold">${escapeHTML(playlistSyncStatus.error)}</span>
-              </div>
-              <button type="button" onclick="refreshConnectedPlaylist(true)"
-                class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-[11px] font-bold text-rose-200 shrink-0 transition btn-tap">
-                Retry
-              </button>
-            </div>
-          `;
-          return;
-        }
-
-        const syncedTime = pl.lastSyncedAt
-          ? new Date(pl.lastSyncedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-          : "Cached";
-        bar.innerHTML = `
-          <div class="px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800/90 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/35 text-amber-300 font-extrabold text-[10px] shrink-0">Playlist</span>
-              <span class="font-bold text-white truncate">${escapeHTML(pl.title || pl.playlistId)}</span>
-              <span class="text-slate-400 shrink-0">&bull; ${pl.itemCount || 0} videos</span>
-            </div>
-            <span class="text-[10px] text-slate-400 shrink-0">Synced ${escapeHTML(syncedTime)}</span>
-          </div>
-        `;
-      });
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function applySyncedPlaylistItems(playlistId, playlistTitle, playlistUrl, section, syncedItems) {
-      const prevMeta = {};
-      normalizeVideosList(appState.videos).forEach((v) => {
-        if (v.source === "playlist" && v.ytId) prevMeta[v.ytId] = { category: v.category, tags: v.tags };
-      });
-      const manualVideos = normalizeVideosList(appState.videos).filter((v) => v.source !== "playlist");
-      const availableSlots = Math.max(0, MAX_VIDEOS_CAPACITY - manualVideos.length);
-      const boundedPlaylistVideos = syncedItems.slice(0, availableSlots).map((item, idx) => ({
-        id: `pl-${playlistId}-${item.ytId}`,
-        title: item.title,
-        kind: "youtube",
-        ytId: item.ytId,
-        directUrl: "",
-        duration: "",
-        section: section || "both",
-        desc: item.desc || "",
-        category: (prevMeta[item.ytId] && prevMeta[item.ytId].category) || "",
-        tags: (prevMeta[item.ytId] && prevMeta[item.ytId].tags) || "",
-        source: "playlist",
-        playlistId,
-        playlistPosition: idx + 1
-      }));
-
-      appState.videos = normalizeVideosList([...boundedPlaylistVideos, ...manualVideos]);
-      appState.youtubePlaylist = {
-        playlistId,
-        playlistUrl: playlistUrl || `https://www.youtube.com/playlist?list=${playlistId}`,
-        title: playlistTitle || appState.youtubePlaylist?.title || "Connected YouTube Playlist",
-        section: section || "both",
-        lastSyncedAt: Date.now(),
-        itemCount: boundedPlaylistVideos.length
-      };
-
-      saveLocalState(true);
-      renderPlaylistStatusBars();
-      renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
-      renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);
-    }
-
-    async function syncYouTubePlaylist(forceRefresh = false, silent = false) {
-      const pl = appState.youtubePlaylist || {};
-      const playlistId = extractYouTubePlaylistId(pl.playlistId || pl.playlistUrl || "");
-      if (!playlistId) return;
-
-      const apiKey = getStoredYouTubeApiKey();
-      const cached = readPlaylistCache(playlistId);
-
-      if (!forceRefresh && cached && Date.now() - cached.cachedAt < YT_PLAYLIST_CACHE_TTL_MS) {
-        playlistSyncStatus = { loading: false, error: "" };
-        applySyncedPlaylistItems(playlistId, cached.title || pl.title, pl.playlistUrl, pl.section, cached.items);
-        return;
-      }
-
-      if (!apiKey) {
-        if (cached && cached.items.length) {
-          playlistSyncStatus = { loading: false, error: "" };
-          applySyncedPlaylistItems(playlistId, cached.title || pl.title, pl.playlistUrl, pl.section, cached.items);
-        } else {
-          playlistSyncStatus = {
-            loading: false,
-            error: isAdminUnlocked
-              ? "Add your YouTube Data API v3 key in Playlist settings to sync live updates."
-              : ""
-          };
-          renderPlaylistStatusBars();
-        }
-        return;
-      }
-
-      playlistSyncStatus = { loading: true, error: "" };
-      renderPlaylistStatusBars();
-
-      try {
-        let playlistTitle = pl.title || "";
-        try {
-          const metaUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${encodeURIComponent(playlistId)}&key=${encodeURIComponent(apiKey)}`;
-          const metaResp = await fetch(metaUrl);
-          if (metaResp.ok) {
-            const metaJson = await metaResp.json();
-            if (metaJson.items && metaJson.items[0]?.snippet?.title) {
-              playlistTitle = metaJson.items[0].snippet.title;
-            }
-          }
-        } catch (e) {}
-
-        const collected = [];
-        const seenVideoIds = new Set();
-        let pageToken = "";
-        let pageGuard = 0;
-
-        while (collected.length < MAX_VIDEOS_CAPACITY && pageGuard < 6) {
-          pageGuard++;
-          const params = new URLSearchParams({
-            part: "snippet,status",
-            playlistId,
-            maxResults: "50",
-            key: apiKey
-          });
-          if (pageToken) params.set("pageToken", pageToken);
-
-          const resp = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`);
-          const data = await resp.json();
-
-          if (!resp.ok) {
-            const apiMsg = data?.error?.message || `YouTube API error (${resp.status})`;
-            throw new Error(apiMsg);
-          }
-
-          const items = Array.isArray(data.items) ? data.items : [];
-          items.forEach((entry) => {
-            if (collected.length >= MAX_VIDEOS_CAPACITY) return;
-            const snip = entry?.snippet || {};
-            const privacy = entry?.status?.privacyStatus || "";
-            const vidId = snip?.resourceId?.videoId || "";
-            const title = String(snip.title || "").trim();
-
-            // Skip private, deleted, or unavailable playlist entries gracefully
-            if (!vidId || !/^[a-zA-Z0-9_-]{11}$/.test(vidId)) return;
-            if (privacy === "private" || title === "Private video" || title === "Deleted video") return;
-            if (seenVideoIds.has(vidId)) return;
-            seenVideoIds.add(vidId);
-
-            const channel = snip.videoOwnerChannelTitle || snip.channelTitle || "";
-            const rawDesc = String(snip.description || "").replace(/\s+/g, " ").trim();
-            const shortDesc = rawDesc
-              ? rawDesc.slice(0, 120) + (rawDesc.length > 120 ? "..." : "")
-              : channel
-              ? `Playlist Item #${collected.length + 1} • ${channel}`
-              : `Playlist Item #${collected.length + 1}`;
-
-            collected.push({
-              ytId: vidId,
-              title: title || `Playlist Video #${collected.length + 1}`,
-              desc: shortDesc
-            });
-          });
-
-          pageToken = data.nextPageToken || "";
-          if (!pageToken) break;
-        }
-
-        if (!collected.length) {
-          throw new Error("Playlist is empty, private, or contains no playable public videos.");
-        }
-
-        writePlaylistCache(playlistId, playlistTitle, collected);
-        playlistSyncStatus = { loading: false, error: "" };
-        applySyncedPlaylistItems(playlistId, playlistTitle, pl.playlistUrl, pl.section, collected);
-        if (!silent) {
-          showToast(`Synced ${collected.length} videos from YouTube playlist`, "success");
-        }
-      } catch (err) {
-        const msg = err && err.message ? err.message : "Unable to load YouTube playlist.";
-        playlistSyncStatus = { loading: false, error: msg };
-        renderPlaylistStatusBars();
-        if (!silent) showToast(msg, "error");
-      }
-    }
-
-    function refreshConnectedPlaylist(forceRefresh = true) {
-      if (!appState.youtubePlaylist?.playlistId) {
-        if (isAdminUnlocked) openPlaylistModal();
-        else showToast("No YouTube playlist connected yet", "info");
-        return;
-      }
-      if (!getStoredYouTubeApiKey()) {
-        if (isAdminUnlocked) {
-          showToast("Enter your YouTube Data API v3 key to refresh", "info");
-          openPlaylistModal();
-        } else {
-          renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
-          renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);
-          showToast("Refreshed synced playlist view", "info");
-        }
-        return;
-      }
-      syncYouTubePlaylist(forceRefresh, false);
-    }
-
-    function openPlaylistModal() {
-      if (!isAdminUnlocked) {
-        openAdminModal();
-        return;
-      }
-      const pl = appState.youtubePlaylist || {};
-      const urlInp = document.getElementById("playlist-url-input");
-      const keyInp = document.getElementById("playlist-apikey-input");
-      const secInp = document.getElementById("playlist-section-input");
-      const badge = document.getElementById("playlist-modal-connected-badge");
-      const discBtn = document.getElementById("btn-disconnect-playlist");
-
-      if (urlInp) urlInp.value = pl.playlistUrl || pl.playlistId || "";
-      if (keyInp) keyInp.value = getStoredYouTubeApiKey();
-      if (secInp) secInp.value = pl.section || "both";
-
-      if (pl.playlistId) {
-        if (badge) {
-          badge.classList.remove("hidden");
-          badge.innerHTML = `<div class="font-bold">Connected: ${escapeHTML(pl.title || pl.playlistId)}</div>
-            <div class="font-mono text-[10px] opacity-85">ID: ${escapeHTML(pl.playlistId)} &bull; ${pl.itemCount || 0} videos synced</div>`;
-        }
-        if (discBtn) discBtn.classList.remove("hidden");
-      } else {
-        if (badge) badge.classList.add("hidden");
-        if (discBtn) discBtn.classList.add("hidden");
-      }
-
-      openModal("modal-playlist-sync");
-    }
-
-    async function handleConnectYouTubePlaylist(e) {
-      e.preventDefault();
-      if (!isAdminUnlocked) return;
-
-      const rawUrl = document.getElementById("playlist-url-input").value.trim();
-      const apiKey = document.getElementById("playlist-apikey-input").value.trim();
-      const section = document.getElementById("playlist-section-input").value || "both";
-      const playlistId = extractYouTubePlaylistId(rawUrl);
-
-      if (!playlistId) {
-        showToast("Invalid YouTube playlist URL or Playlist ID", "error");
-        return;
-      }
-      if (!apiKey) {
-        showToast("Please enter a valid YouTube Data API v3 key", "error");
-        return;
-      }
-
-      setStoredYouTubeApiKey(apiKey);
-      appState.youtubePlaylist = {
-        ...(appState.youtubePlaylist || {}),
-        playlistId,
-        playlistUrl: rawUrl.includes("list=") ? rawUrl : `https://www.youtube.com/playlist?list=${playlistId}`,
-        section
-      };
-      saveLocalState(true);
-      closeModal("modal-playlist-sync");
-      await syncYouTubePlaylist(true, false);
-    }
-
-    function disconnectYouTubePlaylist() {
-      if (!isAdminUnlocked) return;
-      stopAllActiveVideos();
-      appState.videos = normalizeVideosList(appState.videos).filter((v) => v.source !== "playlist");
-      appState.youtubePlaylist = {
-        playlistId: "",
-        playlistUrl: "",
-        title: "",
-        section: "both",
-        lastSyncedAt: 0,
-        itemCount: 0
-      };
-      try {
-        localStorage.removeItem(YT_PLAYLIST_CACHE_KEY);
-      } catch (e) {}
-      playlistSyncStatus = { loading: false, error: "" };
-      saveLocalState(true);
-      renderPlaylistStatusBars();
-      renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
-      renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);
-      closeModal("modal-playlist-sync");
-      showToast("YouTube playlist disconnected; manual videos preserved", "info");
     }
 
     function getHolidayEntry(iso) {
@@ -4211,6 +3748,11 @@ service cloud.firestore {
         appState.galleryInitialized = true;
       }
 
+      delete appState.youtubePlaylist;
+      try {
+        localStorage.removeItem("iti_chhotojagulia_yt_api_key_v1");
+        localStorage.removeItem("iti_chhotojagulia_yt_pl_cache_v1");
+      } catch (e) {}
       appState.videos = normalizeVideosList(appState.videos);
 
       seedSampleAttendanceIfEmpty();
@@ -5610,7 +5152,6 @@ service cloud.firestore {
     };
     const VIDEO_SYSTEM_CHIPS = [
       { key: "all", label: "All Videos", icon: "layout-grid" },
-      { key: "playlist", label: "Playlist", icon: "list-video" },
       { key: "trade", label: "Trade Videos", icon: "zap" },
       { key: "other", label: "Other Videos", icon: "shapes" }
     ];
@@ -5640,7 +5181,6 @@ service cloud.firestore {
     }
     function videoMatchesCategory(v, key) {
       if (key === "all") return true;
-      if (key === "playlist") return v.source === "playlist";
       if (key === "trade") return videoGroupOf(v) === "trade";
       if (key === "other") return videoGroupOf(v) === "other";
       if (key.indexOf("c:") === 0) return v.category === key.slice(2);
@@ -5648,7 +5188,7 @@ service cloud.firestore {
     }
     function videoSearchHaystack(v) {
       const c = getVideoCategoryById(v.category);
-      return [v.title, v.desc, c ? c.name : "", v.tags, v.source === "playlist" ? "playlist" : ""].join(" ").toLowerCase();
+      return [v.title, v.desc, c ? c.name : "", v.tags].join(" ").toLowerCase();
     }
     function videoMatchesQuery(v, q) {
       const terms = String(q || "").toLowerCase().split(/\s+/).filter(Boolean);
@@ -5761,10 +5301,7 @@ service cloud.firestore {
       if (!sectionTotal) {
         return `<div class="vf-empty vf-fadein"><i data-lucide="video-off" class="w-6 h-6 mx-auto"></i><h4>No videos yet</h4><p>No trade videos have been added for this section yet.</p></div>`;
       }
-      const noPlaylist = vf.cat === "playlist" && !vf.q;
-      const msg = noPlaylist
-        ? "No playlist videos yet. Connect a YouTube playlist to import them."
-        : vf.q ? `Nothing matches “${escapeHTML(vf.q)}”${vf.cat !== "all" ? " in this category" : ""}. Try a different word or category.`
+      const msg = vf.q ? `Nothing matches “${escapeHTML(vf.q)}”${vf.cat !== "all" ? " in this category" : ""}. Try a different word or category.`
         : "There are no videos in this category yet.";
       return `<div class="vf-empty vf-fadein"><i data-lucide="search-x" class="w-6 h-6 mx-auto"></i><h4>No videos found</h4><p>${msg}</p>
         <div class="vf-eb">${vf.q ? `<button type="button" onclick="clearVideoSearch('${prefix}')">Clear search</button>` : ""}
@@ -5883,16 +5420,6 @@ service cloud.firestore {
       });
       commitCategoryChange("Default categories restored (existing ones kept)");
     }
-    function setVideoCategory(videoId, catId) {
-      if (!isAdminUnlocked) return;
-      const v = appState.videos.find((x) => x.id === videoId);
-      if (!v) return;
-      v.category = catId || "";
-      saveLocalState(true);
-      rerenderAllVideoGrids();
-      showToast("Video category updated", "success");
-    }
-
     function renderVideoCards(containerId, targetPrefix, limit = null) {
       const grid = document.getElementById(containerId);
       const pagEl = document.getElementById(`${targetPrefix}-videos-pagination`);
@@ -6005,8 +5532,6 @@ service cloud.firestore {
       const thumbUrl = cleanId ? `https://i.ytimg.com/vi/${cleanId}/hqdefault.jpg` : "";
       const safeTitle = escapeHTML(v.title);
       const safeId = escapeHTML(v.id);
-      const isPlaylistVideo = v.source === "playlist";
-      const posLabel = isPlaylistVideo && v.playlistPosition ? `#${v.playlistPosition}` : "";
 
       return `
         <article data-vid-card="${safeId}" data-vid-prefix="${targetPrefix}" class="group rounded-2xl bg-slate-950 border border-slate-800/90 hover:border-amber-500/50 overflow-hidden flex flex-col justify-between transition">
@@ -6018,15 +5543,9 @@ service cloud.firestore {
                   <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-1.5">
                     <i data-lucide="${isDirect ? "film" : "zap"}" class="w-4 h-4"></i>
                   </div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${isDirect ? "Direct Workshop Video" : isPlaylistVideo ? "Playlist Video" : "Electrician Lab Demo"}</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${isDirect ? "Direct Workshop Video" : "Electrician Lab Demo"}</span>
                   <span data-vid-unavail class="hidden mt-1 px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-[9px] font-bold text-rose-300">Video Unavailable</span>
                 </div>
-
-                ${
-                  posLabel
-                    ? `<span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-md bg-black/75 border border-amber-500/40 text-amber-300 text-[10px] font-mono font-extrabold">${posLabel}</span>`
-                    : ""
-                }
 
                 ${
                   thumbUrl
@@ -6081,18 +5600,11 @@ service cloud.firestore {
             ${
               isAdminUnlocked
                 ? `<div class="flex items-center gap-1.5 ml-auto">
-                    ${
-                      isPlaylistVideo
-                        ? `<select onclick="event.stopPropagation()" onchange="setVideoCategory('${safeId}', this.value)" title="Change category"
-                            class="max-w-[9rem] px-1.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] font-bold text-slate-300 focus:outline-none focus:border-amber-500">
-                            ${buildCategoryOptionsHTML(v.category)}
-                          </select>`
-                        : `<button type="button" onclick="event.stopPropagation(); openVideoModal('${safeId}')"
-                            class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/35 text-amber-300 hover:bg-amber-500 hover:text-slate-950 text-[10px] font-bold flex items-center gap-1 transition">
-                            <i data-lucide="pencil" class="w-3 h-3"></i>
-                            <span>Edit</span>
-                          </button>`
-                    }
+                    <button type="button" onclick="event.stopPropagation(); openVideoModal('${safeId}')"
+                      class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/35 text-amber-300 hover:bg-amber-500 hover:text-slate-950 text-[10px] font-bold flex items-center gap-1 transition">
+                      <i data-lucide="pencil" class="w-3 h-3"></i>
+                      <span>Edit</span>
+                    </button>
                     <button type="button" onclick="event.stopPropagation(); deleteVideo('${safeId}')"
                       class="px-2 py-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 text-[10px] font-bold flex items-center gap-1 transition">
                       <i data-lucide="trash-2" class="w-3 h-3"></i>
@@ -6784,6 +6296,17 @@ service cloud.firestore {
       renderTraineeReportModal();
     }
 
+    // Second-year marks count as published only when explicitly declared (year2Declared === true).
+    // Stored placeholder values are never treated as results; combined stays null until both years exist.
+    function getTraineeMarksPresentation(tr) {
+      const num = (v) => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Number(v));
+      const y1 = num(tr.year1);
+      const y2 = tr.year2Declared === true ? num(tr.year2) : null;
+      const maxTotal = Number(tr.maxTotalMarks) || 1200;
+      const combined = y1 !== null && y2 !== null ? y1 + y2 : null;
+      return { y1, y2, y2Declared: y2 !== null, combined, combinedDeclared: combined !== null, maxTotal };
+    }
+
     function renderTraineeReportModal() {
       const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
       if (!tr) return;
@@ -6806,21 +6329,34 @@ service cloud.firestore {
         }
       }
 
-      const res = getTraineeResultSummary(tr);
+      const mk = getTraineeMarksPresentation(tr);
       const acadGrid = document.getElementById("report-academics-grid");
       if (acadGrid) {
+        const y1Txt = mk.y1 !== null ? `${mk.y1} / 600` : "NIL / 600";
+        const y2Txt = mk.y2Declared ? `${mk.y2} / 600` : "NIL / 600";
+        const combTxt = mk.combinedDeclared ? `${mk.combined} / ${mk.maxTotal}` : `NIL / ${mk.maxTotal}`;
         acadGrid.innerHTML = `
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
-            <div class="text-xs font-extrabold text-emerald-400">${res.y1}/600</div>
-            <div class="text-[10px] text-slate-400">1st Year</div>
+            <div class="text-xs font-extrabold text-emerald-400 whitespace-nowrap">${y1Txt}</div>
+            <div class="text-[10px] text-slate-400">First Year</div>
           </div>
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
-            <div class="text-xs font-extrabold text-amber-400">${res.tot}/${res.maxTotal}</div>
-            <div class="text-[10px] text-slate-400">2-Yr Total</div>
+            <div class="text-xs font-extrabold whitespace-nowrap ${mk.y2Declared ? "text-amber-400" : "tm-nil"}">${y2Txt}</div>
+            <div class="text-[10px] text-slate-400">Second Year</div>
+            ${mk.y2Declared ? "" : `<span class="tm-sub">Not Declared Yet</span>`}
           </div>
           <div class="p-2 rounded-xl bg-slate-950 border border-slate-800">
             <div class="text-xs font-extrabold text-sky-400">${tr.internal || 0}/${maxInt}</div>
             <div class="text-[10px] text-slate-400">Internal</div>
+          </div>
+          <div class="tm-combined col-span-3 p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+            <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
+              <div class="text-[11px] font-extrabold text-white">Combined First &amp; Second Year Marks</div>
+              <span class="tm-pill ${mk.combinedDeclared ? "tm-pill-done" : "tm-pill-pending"}">${mk.combinedDeclared ? "Declared" : "Pending &ndash; Second-Year Marks Not Declared"}</span>
+            </div>
+            <div class="tm-row"><span class="tm-lbl">First Year</span><span class="tm-val text-emerald-400">${y1Txt}</span></div>
+            <div class="tm-row"><span class="tm-lbl">Second Year</span><span class="tm-val ${mk.y2Declared ? "text-amber-400" : "tm-nil"}">${y2Txt}${mk.y2Declared ? "" : " &ndash; Not Declared Yet"}</span></div>
+            <div class="tm-row"><span class="tm-lbl">Combined Total</span><span class="tm-val ${mk.combinedDeclared ? "text-amber-400" : "tm-nil"}">${combTxt}${mk.combinedDeclared ? "" : " &ndash; Pending"}</span></div>
           </div>
         `;
       }
@@ -6887,7 +6423,7 @@ service cloud.firestore {
       const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
       if (!tr) return;
       const st = calculateTraineeStats(tr.id, activeReportPeriod);
-      const res = getTraineeResultSummary(tr);
+      const mk = getTraineeMarksPresentation(tr);
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
       const dates = getFilteredAttendanceDates(activeReportPeriod);
 
@@ -6896,9 +6432,9 @@ service cloud.firestore {
         `Trainee Name,${tr.name}`,
         `Roll No,${tr.rno || ""}`,
         `NCVT Registration ID,${tr.roll}`,
-        `1st Year Marks (/600),${res.y1}`,
-        `2nd Year Marks (/600),${res.y2}`,
-        `Consolidated Total (/${res.maxTotal}),${res.tot}`,
+        `1st Year Marks (/600),${mk.y1 !== null ? mk.y1 : "NIL"}`,
+        `2nd Year Marks (/600),${mk.y2Declared ? mk.y2 : "NIL - Not Declared Yet"}`,
+        `Combined 1st & 2nd Year (/${mk.maxTotal}),${mk.combinedDeclared ? mk.combined : "NIL - Pending"}`,
         `Internal Assessment (/${maxInt}),${tr.internal || 0}`,
         `Attendance Period,${activeReportPeriod}`,
         `Present Days,${st.presentDays}`,
@@ -6931,7 +6467,7 @@ service cloud.firestore {
       const tr = appState.trainees.find((t) => t.id === activeReportTraineeId);
       if (!tr) return;
       const st = calculateTraineeStats(tr.id, activeReportPeriod);
-      const res = getTraineeResultSummary(tr);
+      const mk = getTraineeMarksPresentation(tr);
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
       const canvas = document.createElement("canvas");
@@ -6973,8 +6509,8 @@ service cloud.firestore {
         ctx.fillText(title, x + 16, y + 64);
       };
 
-      drawBox(34, 148, 215, 84, "1st Year Marks", `${res.y1} / 600`, "#34d399");
-      drawBox(272, 148, 215, 84, `Combined 2-Yr (${res.pct}%)`, `${res.tot} / ${res.maxTotal}`, "#fbbf24");
+      drawBox(34, 148, 215, 84, "1st Year Marks", `${mk.y1 !== null ? mk.y1 : "NIL"} / 600`, "#34d399");
+      drawBox(272, 148, 215, 84, mk.combinedDeclared ? "Combined 1st & 2nd Year" : "Combined (Pending - 2nd Yr Not Declared)", `${mk.combinedDeclared ? mk.combined : "NIL"} / ${mk.maxTotal}`, mk.combinedDeclared ? "#fbbf24" : "#cbd5e1");
       drawBox(510, 148, 215, 84, "Internal Assessment", `${tr.internal || 0} / ${maxInt}`, "#38bdf8");
 
       const ok = st.pct >= 80;
@@ -7401,13 +6937,19 @@ service cloud.firestore {
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
       const year1 = y1Raw !== "" ? Math.min(600, Math.max(0, Number(y1Raw))) : 500;
-      const year2 = y2Raw !== "" ? Math.min(600, Math.max(0, Number(y2Raw))) : 500;
+      const year2Declared = y2Raw !== "";
+      const year2 = year2Declared ? Math.min(600, Math.max(0, Number(y2Raw))) : null; // null = leave stored value untouched
       const internal = intRaw !== "" ? Math.min(maxInt, Math.max(0, Number(intRaw))) : Math.round(maxInt * 0.85);
 
       if (id) {
         const idx = appState.trainees.findIndex((t) => t.id === id);
         if (idx !== -1) {
-          appState.trainees[idx] = { ...appState.trainees[idx], rno, name, roll, star, year1, year2, internal };
+          const prev = appState.trainees[idx];
+          appState.trainees[idx] = {
+            ...prev, rno, name, roll, star, year1, internal,
+            year2: year2Declared ? year2 : prev.year2,
+            year2Declared
+          };
         }
         showToast("Student data updated", "success");
       } else {
@@ -7418,7 +6960,8 @@ service cloud.firestore {
           roll,
           star,
           year1,
-          year2,
+          year2: year2Declared ? year2 : 0,
+          year2Declared,
           internal
         });
         showToast("New trainee added", "success");
@@ -7438,7 +6981,7 @@ service cloud.firestore {
       document.getElementById("trainee-name-input").value = tr.name;
       document.getElementById("trainee-roll-input").value = tr.roll;
       document.getElementById("trainee-y1-input").value = tr.year1 ?? 500;
-      document.getElementById("trainee-y2-input").value = tr.year2 ?? 500;
+      document.getElementById("trainee-y2-input").value = tr.year2Declared === true ? (tr.year2 ?? "") : "";
       document.getElementById("trainee-int-input").value = tr.internal ?? 85;
       document.getElementById("trainee-star-input").checked = Boolean(tr.star);
       document.getElementById("trainee-form-heading").textContent = `Updating: R.${tr.rno || "--"} ${tr.name}`;
@@ -8288,7 +7831,7 @@ service cloud.firestore {
       document.getElementById("marks-special-obt-input").value = 85;
       document.getElementById("marks-special-max-input").value = Number(appState.internalMeta?.maxMarks) || 100;
       document.getElementById("marks-year1-input").value = 500;
-      document.getElementById("marks-year2-input").value = 500;
+      document.getElementById("marks-year2-input").value = "";
       document.getElementById("marks-max-total-input").value = 1200;
       document.getElementById("marks-internal-input").value = 85;
       renderAdminResultSubjects([
@@ -8317,7 +7860,7 @@ service cloud.firestore {
       document.getElementById("marks-special-obt-input").value = tr.specialSubjectMarks !== undefined ? tr.specialSubjectMarks : (tr.internal || 0);
       document.getElementById("marks-special-max-input").value = tr.specialSubjectMax || (Number(appState.internalMeta?.maxMarks) || 100);
       document.getElementById("marks-year1-input").value = tr.year1 || 0;
-      document.getElementById("marks-year2-input").value = tr.year2 || 0;
+      document.getElementById("marks-year2-input").value = tr.year2Declared === true ? (tr.year2 ?? "") : "";
       document.getElementById("marks-max-total-input").value = tr.maxTotalMarks || 1200;
       document.getElementById("marks-internal-input").value = tr.internal || 0;
       renderAdminResultSubjects(getDefaultSubjectBreakdown(tr));
@@ -8369,17 +7912,19 @@ service cloud.firestore {
 
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
       const y1 = Number(document.getElementById("marks-year1-input").value) || 0;
-      const y2 = Number(document.getElementById("marks-year2-input").value) || 0;
+      const y2Raw = document.getElementById("marks-year2-input").value.trim();
+      const y2Declared = y2Raw !== "";
+      const y2 = y2Declared ? Number(y2Raw) || 0 : 0;
       const maxTotalMarks = Math.max(100, Number(document.getElementById("marks-max-total-input").value) || 1200);
       const internal = Number(document.getElementById("marks-internal-input").value) || 0;
       const pubConsChk = document.getElementById("marks-publish-consolidated-input");
       const shouldPublishConsolidated = pubConsChk ? pubConsChk.checked : true;
 
-      if (y1 < 0 || y1 > 600 || y2 < 0 || y2 > 600) {
+      if (y1 < 0 || y1 > 600 || (y2Declared && (y2 < 0 || y2 > 600))) {
         showToast("1st & 2nd Year marks must be between 0 and 600", "error");
         return;
       }
-      if (y1 + y2 > maxTotalMarks) {
+      if (y2Declared && y1 + y2 > maxTotalMarks) {
         showToast(`Combined marks (${y1 + y2}) exceed Maximum Total (${maxTotalMarks})`, "error");
         return;
       }
@@ -8404,6 +7949,7 @@ service cloud.firestore {
           star: false,
           year1: y1,
           year2: y2,
+          year2Declared: y2Declared,
           maxTotalMarks,
           internal,
           tradeSession,
@@ -8424,7 +7970,12 @@ service cloud.firestore {
           tr.name = name;
           tr.roll = roll;
           tr.year1 = y1;
-          tr.year2 = y2;
+          if (y2Declared) {
+            tr.year2 = y2;
+            tr.year2Declared = true;
+          } else {
+            tr.year2Declared = false; // blank = not declared; stored value left untouched
+          }
           tr.maxTotalMarks = maxTotalMarks;
           tr.internal = internal;
           tr.tradeSession = tradeSession;
@@ -9132,7 +8683,7 @@ service cloud.firestore {
     }
 
     function renderAllViews() {
-      [renderNotices, renderStudyNotes, renderPlaylistStatusBars,
+      [renderNotices, renderStudyNotes,
        function(){ renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY); },
        function(){ renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY); },
        renderDailySection, renderEligibilityChart, renderResultsSection, renderGallery
@@ -9157,9 +8708,6 @@ service cloud.firestore {
       setupAutoHideHeader();
       renderAllViews();
       requestAnimationFrame(() => positionTabIndicator(true));
-      if (appState.youtubePlaylist && appState.youtubePlaylist.playlistId) {
-        syncYouTubePlaylist(false, true);
-      }
       try { if (window.initFirebaseCloud) window.initFirebaseCloud(); } catch (e) { updateSyncIndicator(false, "Offline Mode"); }
     }
 

@@ -811,6 +811,38 @@
         0 1px 0 0 rgba(255, 255, 255, 0.5) inset !important;
     }
 
+    /* ===== Autoplay bar (translucent glass) ===== */
+    .vid-autoplay-bar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+      padding: 6px 8px; margin-bottom: 10px; border-radius: 14px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2);
+    }
+    html.bright-mode .vid-autoplay-bar { background: rgba(255, 255, 255, 0.6); border-color: rgba(100, 116, 139, 0.3); }
+    .vid-ap-btn {
+      display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 3px 9px;
+      border-radius: 999px; font-size: 11px; font-weight: 700; color: #cbd5e1;
+      background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(148, 163, 184, 0.3);
+      cursor: pointer; transition: background .2s, border-color .2s, color .2s; -webkit-tap-highlight-color: transparent;
+    }
+    html.bright-mode .vid-ap-btn { color: #334155; background: rgba(255, 255, 255, 0.7); }
+    .vid-ap-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+    .vid-ap-switch { position: relative; width: 26px; height: 14px; border-radius: 999px; background: rgba(100, 116, 139, 0.6); transition: background .2s; flex-shrink: 0; }
+    .vid-ap-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; transition: transform .2s; }
+    .vid-ap-btn[aria-checked="true"] { background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.6); color: #fcd34d; }
+    html.bright-mode .vid-ap-btn[aria-checked="true"] { color: #b45309; }
+    .vid-ap-btn[aria-checked="true"] .vid-ap-switch { background: #f59e0b; }
+    .vid-ap-btn[aria-checked="true"] .vid-ap-switch::after { transform: translateX(12px); }
+    .vid-ap-status { flex: 1 1 140px; min-width: 0; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #94a3b8; }
+    html.bright-mode .vid-ap-status { color: #475569; }
+    .vid-ap-status span.txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .vid-ap-dot { width: 7px; height: 7px; border-radius: 50%; background: #64748b; flex-shrink: 0; }
+    .vid-ap-status[data-tone="on"] .vid-ap-dot { background: #34d399; }
+    .vid-ap-status[data-tone="play"] .vid-ap-dot { background: #f59e0b; animation: vidApPulse 1.4s ease-in-out infinite; }
+    .vid-ap-status[data-tone="warn"] .vid-ap-dot { background: #fb7185; }
+    @keyframes vidApPulse { 50% { opacity: .35; } }
+
     /* ===== Glassmorphism: trainee search suggestions dropdown ===== */
     @keyframes searchDropIn {
       from { opacity: 0; transform: translate3d(0, -6px, 0) scale(0.98); }
@@ -1887,6 +1919,7 @@
         <!-- Connected Playlist Status & Loading/Error Banner (Home Tape) -->
         <div id="home-playlist-status-bar" class="hidden mb-3"></div>
 
+        <div data-autoplay-bar-mount="notices"></div>
         <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           <div id="notices-videos-pagination" class="hidden mt-3 pt-2.5 border-t border-slate-800/70 flex flex-wrap items-center justify-between gap-2 text-xs"></div>
         </div>
@@ -2394,6 +2427,7 @@
 
         <div id="videos-playlist-status-bar" class="hidden"></div>
 
+        <div data-autoplay-bar-mount="videos"></div>
         <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
         <div id="full-videos-pagination" class="hidden pt-1 flex flex-wrap items-center justify-between gap-2 text-xs"></div>
       </section>
@@ -5703,6 +5737,7 @@ service cloud.firestore {
 
     function switchTab(tabName) {
       closeMoreSheet(true);
+      disconnectAutoFirstObservers();
       stopAllActiveVideos();
       const fromIdx = TAB_ORDER.indexOf(lastTabName);
       const toIdx = TAB_ORDER.indexOf(tabName);
@@ -5736,6 +5771,7 @@ service cloud.firestore {
       expandSearchBar(false);
       if (window.__syncHeaderAndSearch) window.__syncHeaderAndSearch(true);
       if (window.lucide) lucide.createIcons();
+      try { if (tabName === "videos" || tabName === "home") autoStartForVisibleTab(); } catch (e) {}
     }
 
     document.addEventListener("pointerdown", (e) => {
@@ -6002,6 +6038,7 @@ service cloud.firestore {
       });
 
       if (!sectionFiltered.length) {
+        videoOrderCache[targetPrefix] = [];
         if (pagEl) {
           pagEl.classList.add("hidden");
           pagEl.innerHTML = "";
@@ -6018,7 +6055,16 @@ service cloud.firestore {
       );
       videoSectionVisibleLimit[targetPrefix] = currentLimit;
 
+      // Full playback order for this section (autoplay-next follows it, even past the visible batch)
+      videoOrderCache[targetPrefix] = sectionFiltered.slice(0, totalAvailable);
+
       const items = sectionFiltered.slice(0, currentLimit);
+
+      // Re-rendering replaces the cards: remember position/mute so the active video resumes instead of restarting
+      const hadActive = activeInlinePlayerState[targetPrefix]?.videoId || null;
+      const resumeInfo = hadActive ? getResumeInfo(targetPrefix) : null;
+      if (hadActive) teardownPlayer(targetPrefix);
+
       grid.innerHTML = items.map((v) => renderVideoCardItemHTML(v, targetPrefix)).join("");
 
       if (pagEl) {
@@ -6052,14 +6098,23 @@ service cloud.firestore {
         }
       }
 
-      const activeId = activeInlinePlayerState[targetPrefix]?.videoId;
+      const activeId = hadActive;
       if (activeId) {
         const activeObj = items.find((v) => v.id === activeId);
         if (activeObj) {
-          mountVideoIntoCard(targetPrefix, activeObj, activeInlinePlayerState[targetPrefix].useNoCookie);
+          mountVideoIntoCard(targetPrefix, activeObj, activeInlinePlayerState[targetPrefix].useNoCookie, {
+            auto: true,
+            muted: resumeInfo ? resumeInfo.muted : false,
+            startAt: resumeInfo ? resumeInfo.startAt : 0
+          });
+        } else {
+          // The active video is no longer in this list (e.g. playlist re-synced)
+          activeInlinePlayerState[targetPrefix] = { videoId: null, useNoCookie: false, timer: null };
+          refreshAutoplayBars();
         }
       }
 
+      try { scheduleAutoFirst(targetPrefix); } catch (e) {}
       if (window.lucide) lucide.createIcons();
     }
 
@@ -6193,6 +6248,8 @@ service cloud.firestore {
 
     function stopAllActiveVideos() {
       ["notices", "videos"].forEach((prefix) => {
+        teardownPlayer(prefix);
+        ytRuntime[prefix].videoId = null;
         const st = activeInlinePlayerState[prefix];
         if (st && st.timer) {
           clearTimeout(st.timer);
@@ -6226,9 +6283,10 @@ service cloud.firestore {
         if (activeCtrls) activeCtrls.classList.add("hidden");
         if (footer && !isAdminUnlocked) footer.classList.add("hidden");
       });
+      refreshAutoplayBars();
     }
 
-    function mountVideoIntoCard(targetPrefix, videoObj, useNoCookie = false) {
+    function mountVideoIntoCard(targetPrefix, videoObj, useNoCookie = false, opts = {}) {
       const containerId = targetPrefix === "notices" ? "notices-videos-grid" : "full-videos-grid";
       const grid = document.getElementById(containerId);
       if (!grid || !videoObj) return;
@@ -6256,6 +6314,17 @@ service cloud.firestore {
         altBtn.textContent = useNoCookie ? "Std Player" : "Alt Player";
       }
 
+      // Reset any previous player for this section and start a fresh playback session
+      teardownPlayer(targetPrefix);
+      const rt = ytRuntime[targetPrefix];
+      const token = rt.token;
+      const live = () => rt.token === token;
+      rt.videoId = videoObj.id;
+      rt.autoSource = !!opts.auto;
+      rt.muted = !!opts.muted;
+      rt.triedMuted = !!opts.muted;
+      const startAt = Math.max(0, Math.floor(opts.startAt || 0));
+
       slot.innerHTML = "";
       slot.classList.remove("hidden", "vid-slot-animate");
       void slot.offsetWidth;
@@ -6279,55 +6348,164 @@ service cloud.firestore {
         st.timer = setTimeout(dismissLoader, 3500);
       }
 
+      setAutoplayStatus(targetPrefix, "Loading…", "on");
+
+      // Autoplay was refused by the browser: retry once muted (always allowed), otherwise ask for a tap
+      const handleBlocked = (playFn, muteFn) => {
+        if (!live()) return;
+        if (rt.autoSource && !rt.triedMuted) {
+          rt.triedMuted = true;
+          rt.muted = true;
+          try { muteFn(); playFn(); } catch (e) {}
+          setAutoplayStatus(targetPrefix, "Sound blocked by browser — retrying muted", "warn");
+          rt.blockTimer = setTimeout(() => {
+            if (live() && !rt.playing) setAutoplayStatus(targetPrefix, "Autoplay blocked by browser — tap play to start", "warn");
+          }, 3000);
+        } else {
+          dismissLoader();
+          setAutoplayStatus(targetPrefix, "Autoplay blocked by browser — tap play to start", "warn");
+        }
+      };
+
+      const onEnded = () => {
+        if (!live()) return;
+        rt.playing = false;
+        handleVideoEnded(targetPrefix, videoObj);
+      };
+      const onFailed = (code) => {
+        if (!live()) return;
+        dismissLoader();
+        handleVideoFailed(targetPrefix, videoObj, token, code);
+      };
+      const onPlaying = () => {
+        if (!live()) return;
+        rt.playing = true;
+        dismissLoader();
+        clearTimeout(rt.blockTimer);
+        refreshPlaybackStatus(targetPrefix);
+      };
+
+      rt.pollTimer = setInterval(() => {
+        if (!live()) return;
+        rt.muted = currentMuted(rt);
+        refreshUnmuteButtons();
+      }, 1500);
+
       if (videoObj.kind === "direct") {
         const vid = document.createElement("video");
         vid.className = "w-full h-full object-contain bg-black";
         vid.src = videoObj.directUrl;
         vid.controls = true;
-        vid.autoplay = true;
         vid.playsInline = true;
         vid.setAttribute("playsinline", "");
+        vid.muted = !!opts.muted;
         vid.onloadeddata = dismissLoader;
         vid.oncanplay = dismissLoader;
+        if (startAt) {
+          vid.addEventListener("loadedmetadata", () => { try { vid.currentTime = startAt; } catch (e) {} }, { once: true });
+        }
+        vid.addEventListener("playing", onPlaying);
+        vid.addEventListener("pause", () => {
+          if (!live() || vid.ended) return;
+          rt.playing = false;
+          setAutoplayStatus(targetPrefix, autoplayEnabled ? "Paused · autoplay on" : "Paused", "on");
+        });
+        vid.addEventListener("ended", onEnded);
         vid.onerror = () => {
+          if (!live()) return;
           dismissLoader();
-          slot.innerHTML = `
-            <div class="vid-glass-loader absolute inset-0 flex flex-col items-center justify-center p-4 text-center gap-2">
-              <p class="text-xs font-bold text-rose-400">Unable to load this video file.</p>
-              <p class="text-[11px] opacity-80">The video link may be unavailable or unsupported on this browser.</p>
-              <button type="button" onclick="event.stopPropagation(); closeInlinePlayer('${targetPrefix}')"
-                class="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold">Close Player</button>
-            </div>
-          `;
+          handleVideoFailed(targetPrefix, videoObj, token, "direct");
         };
         slot.appendChild(vid);
+        rt.directEl = vid;
+        const pr = vid.play();
+        if (pr && pr.catch) {
+          pr.catch((err) => {
+            if (!live() || (err && err.name === "AbortError")) return;
+            handleBlocked(() => vid.play().catch(() => {}), () => { vid.muted = true; });
+          });
+        }
       } else {
         const cleanId = extractYouTubeId(videoObj.ytId);
         if (!cleanId) {
           dismissLoader();
-          slot.innerHTML = `
-            <div class="vid-glass-loader absolute inset-0 flex flex-col items-center justify-center p-4 text-center gap-2">
-              <p class="text-xs font-bold text-rose-400">Invalid or unavailable video link.</p>
-              <button type="button" onclick="event.stopPropagation(); closeInlinePlayer('${targetPrefix}')"
-                class="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold">Close Player</button>
-            </div>
-          `;
+          showSlotMessage(targetPrefix, slot, videoObj, "Invalid or unavailable video link.");
+          setAutoplayStatus(targetPrefix, "Video unavailable", "warn");
           return;
         }
-        const host = useNoCookie ? "https://www.youtube-nocookie.com" : "https://www.youtube.com";
-        const iframe = document.createElement("iframe");
-        iframe.className = "w-full h-full";
-        iframe.title = videoObj.title || "Trade Practical Video";
-        iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-        iframe.setAttribute(
-          "allow",
-          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-        );
-        iframe.allowFullscreen = true;
-        iframe.onload = dismissLoader;
-        iframe.src = `${host}/embed/${cleanId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&fs=1`;
-        slot.appendChild(iframe);
+        const hostBase = useNoCookie ? "https://www.youtube-nocookie.com" : "https://www.youtube.com";
+        const allowAttr = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+
+        // Fallback if the IFrame API cannot load: plain embed (no end-of-video events)
+        const mountPlainIframe = () => {
+          if (!live()) return;
+          slot.querySelectorAll("iframe").forEach((f) => f.remove());
+          const iframe = document.createElement("iframe");
+          iframe.className = "w-full h-full";
+          iframe.title = videoObj.title || "Trade Practical Video";
+          iframe.setAttribute("frameborder", "0");
+          iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+          iframe.setAttribute("allow", allowAttr);
+          iframe.allowFullscreen = true;
+          iframe.onload = dismissLoader;
+          iframe.src = `${hostBase}/embed/${cleanId}?autoplay=1&rel=0&modestbranding=1&playsinline=1&fs=1${rt.muted ? "&mute=1" : ""}${startAt ? "&start=" + startAt : ""}`;
+          slot.appendChild(iframe);
+          setAutoplayStatus(targetPrefix, autoplayEnabled ? "Playing · autoplay-next unavailable (YouTube API blocked)" : "Playing", "warn");
+        };
+
+        const hostDiv = document.createElement("div");
+        hostDiv.className = "w-full h-full";
+        slot.appendChild(hostDiv);
+
+        loadYouTubeApi()
+          .then((YT) => {
+            if (!live() || !slot.isConnected) return;
+            const vars = { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, fs: 1, controls: 1 };
+            if (rt.muted) vars.mute = 1;
+            if (startAt) vars.start = startAt;
+            if (/^https?:$/.test(location.protocol)) vars.origin = location.origin;
+            rt.player = new YT.Player(hostDiv, {
+              host: hostBase,
+              videoId: cleanId,
+              playerVars: vars,
+              events: {
+                onReady: (e) => {
+                  if (!live()) return;
+                  try {
+                    const f = e.target.getIframe();
+                    f.title = videoObj.title || "Trade Practical Video";
+                    f.setAttribute("allow", allowAttr);
+                    f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+                    if (rt.muted) e.target.mute();
+                    e.target.playVideo();
+                  } catch (err) {}
+                  // If nothing is playing shortly after, autoplay was probably blocked
+                  rt.blockTimer = setTimeout(() => {
+                    if (!live() || rt.playing) return;
+                    let state = -1;
+                    try { state = e.target.getPlayerState(); } catch (err) {}
+                    if (state === 1 || state === 3) return;
+                    handleBlocked(() => e.target.playVideo(), () => e.target.mute());
+                  }, 3500);
+                },
+                onStateChange: (e) => {
+                  if (!live()) return;
+                  const state = e.data;
+                  if (state === 1) onPlaying();
+                  else if (state === 3) { dismissLoader(); }
+                  else if (state === 2) {
+                    rt.playing = false;
+                    setAutoplayStatus(targetPrefix, autoplayEnabled ? "Paused · autoplay on" : "Paused", "on");
+                  } else if (state === 0) onEnded();
+                },
+                onAutoplayBlocked: () => {
+                  handleBlocked(() => rt.player && rt.player.playVideo(), () => rt.player && rt.player.mute());
+                },
+                onError: (e) => onFailed(e && e.data)
+              }
+            });
+          })
+          .catch(() => mountPlainIframe());
       }
 
       if (window.lucide) lucide.createIcons();
@@ -6342,42 +6520,450 @@ service cloud.firestore {
       if (!videoObj || videoObj.kind !== "youtube") return;
 
       const nextNoCookie = !(st && st.useNoCookie);
+      const resume = getResumeInfo(targetPrefix);
       activeInlinePlayerState[targetPrefix] = {
         videoId: activeId,
         useNoCookie: nextNoCookie,
         timer: null
       };
-      mountVideoIntoCard(targetPrefix, videoObj, nextNoCookie);
+      mountVideoIntoCard(targetPrefix, videoObj, nextNoCookie, { auto: false, muted: resume.muted, startAt: resume.startAt });
       showToast(nextNoCookie ? "Switched to privacy-enhanced player" : "Switched to standard player", "info");
     }
 
+    // User clicked a video: normal playback (sound allowed — it is a user gesture)
     function playInlineVideo(targetPrefix, videoId) {
-      const normalized = normalizeVideosList(appState.videos);
-      const videoObj = normalized.find((v) => v.id === videoId);
-      if (!videoObj) {
-        showToast("Video unavailable or removed", "error");
-        return;
-      }
-
       const prevState = activeInlinePlayerState[targetPrefix];
       if (prevState && prevState.videoId === videoId) {
         return;
       }
-
-      stopAllActiveVideos();
-
-      activeInlinePlayerState[targetPrefix] = {
-        videoId: videoObj.id,
-        useNoCookie: false,
-        timer: null
-      };
-
-      mountVideoIntoCard(targetPrefix, videoObj, false);
+      autoFirstDone[targetPrefix] = true; // the user took control; never auto-start over them
+      completedIds[targetPrefix].delete(videoId);
+      startVideo(targetPrefix, videoId, { auto: false, muted: false });
     }
 
     function closeInlinePlayer() {
       stopAllActiveVideos();
     }
+
+    // =========================================================================
+    // 7B. AUTOPLAY & AUTOPLAY-NEXT (YouTube IFrame Player API)
+    // =========================================================================
+    const AUTOPLAY_PREF_KEY = "iti_chhotojagulia_autoplay_v1";
+    const AUTOPLAY_LOOP_KEY = "iti_chhotojagulia_autoplay_loop_v1";
+
+    function readPref(key) {
+      try { return localStorage.getItem(key) === "on"; } catch (e) { return false; }
+    }
+    function writePref(key, on) {
+      try { localStorage.setItem(key, on ? "on" : "off"); } catch (e) {}
+    }
+
+    // Default ON (muted) until the viewer chooses otherwise; their saved choice always wins
+    let autoplayEnabled = (function () {
+      try {
+        const v = localStorage.getItem(AUTOPLAY_PREF_KEY);
+        return v === null ? true : v === "on";
+      } catch (e) { return true; }
+    })();
+    let autoplayLoop = readPref(AUTOPLAY_LOOP_KEY);
+
+    const videoOrderCache = { notices: [], videos: [] };        // full playback order per section
+    const completedIds = { notices: new Set(), videos: new Set() };
+    const unavailableIds = new Set();
+    const autoFirstDone = { notices: false, videos: false };    // auto-start happens once per enable, not per tab switch
+    const autoFirstTimers = { notices: null, videos: null };
+    const autoFirstObservers = { notices: null, videos: null };
+    const apStatus = { notices: null, videos: null };
+
+    function newRuntime() {
+      return { token: 0, player: null, directEl: null, videoId: null, muted: false, autoSource: false,
+               triedMuted: false, playing: false, blockTimer: null, pollTimer: null, skipTimer: null };
+    }
+    const ytRuntime = { notices: newRuntime(), videos: newRuntime() };
+
+    // ---- YouTube IFrame API loader ----
+    let ytApiPromise = null;
+    function loadYouTubeApi() {
+      if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+      if (ytApiPromise) return ytApiPromise;
+      ytApiPromise = new Promise((resolve, reject) => {
+        const prev = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function () {
+          try { if (typeof prev === "function") prev(); } catch (e) {}
+          resolve(window.YT);
+        };
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        tag.async = true;
+        tag.onerror = () => { ytApiPromise = null; reject(new Error("YouTube API failed to load")); };
+        document.head.appendChild(tag);
+        setTimeout(() => {
+          if (!(window.YT && window.YT.Player)) { ytApiPromise = null; reject(new Error("YouTube API timeout")); }
+        }, 8000);
+      });
+      return ytApiPromise;
+    }
+
+    // ---- runtime helpers ----
+    function teardownPlayer(prefix) {
+      const rt = ytRuntime[prefix];
+      if (!rt) return;
+      rt.token++;
+      clearTimeout(rt.blockTimer);
+      clearTimeout(rt.skipTimer);
+      clearInterval(rt.pollTimer);
+      rt.blockTimer = rt.skipTimer = rt.pollTimer = null;
+      if (rt.player) {
+        try { rt.player.destroy(); } catch (e) {}
+        rt.player = null;
+      }
+      if (rt.directEl) {
+        try { rt.directEl.pause(); } catch (e) {}
+        rt.directEl = null;
+      }
+      rt.playing = false;
+    }
+
+    function currentMuted(rt) {
+      try {
+        if (rt.player && rt.player.isMuted) return !!rt.player.isMuted();
+        if (rt.directEl) return !!rt.directEl.muted;
+      } catch (e) {}
+      return !!rt.muted;
+    }
+
+    function getResumeInfo(prefix) {
+      const rt = ytRuntime[prefix];
+      let t = 0;
+      try {
+        if (rt.player && rt.player.getCurrentTime) t = rt.player.getCurrentTime() || 0;
+        else if (rt.directEl) t = rt.directEl.currentTime || 0;
+      } catch (e) {}
+      return { muted: currentMuted(rt), startAt: t > 2 ? t : 0 };
+    }
+
+    function isPlayableVideo(v) {
+      if (!v || unavailableIds.has(v.id)) return false;
+      return v.kind === "direct" ? !!v.directUrl : !!extractYouTubeId(v.ytId);
+    }
+
+    // Next video after currentId in the section's order (no side effects)
+    function findNextPlayable(prefix, currentId) {
+      const order = videoOrderCache[prefix] || [];
+      const idx = order.findIndex((v) => v.id === currentId);
+      for (let i = idx + 1; i < order.length; i++) {
+        const v = order[i];
+        if (isPlayableVideo(v) && !completedIds[prefix].has(v.id)) return { video: v, wrapped: false };
+      }
+      if (autoplayLoop) {
+        for (let i = 0; i < order.length; i++) {
+          if (isPlayableVideo(order[i])) return { video: order[i], wrapped: true };
+        }
+      }
+      return null;
+    }
+
+    // Make sure the card for this video is rendered (it may be beyond the "Load More" batch)
+    function ensureVideoRendered(prefix, id) {
+      const order = videoOrderCache[prefix] || [];
+      const idx = order.findIndex((v) => v.id === id);
+      const limit = videoSectionVisibleLimit[prefix] || VIDEOS_PAGE_BATCH_SIZE;
+      if (idx >= limit) {
+        videoSectionVisibleLimit[prefix] = Math.min(
+          MAX_VIDEOS_CAPACITY,
+          Math.ceil((idx + 1) / VIDEOS_PAGE_BATCH_SIZE) * VIDEOS_PAGE_BATCH_SIZE
+        );
+        renderVideoCards(prefix === "notices" ? "notices-videos-grid" : "full-videos-grid", prefix, MAX_VIDEOS_CAPACITY);
+      }
+    }
+
+    // Single entry point that starts a video; stopping everything first guarantees one video at a time
+    function startVideo(prefix, id, opts = {}) {
+      const videoObj = normalizeVideosList(appState.videos).find((v) => v.id === id);
+      if (!videoObj) {
+        showToast("Video unavailable or removed", "error");
+        return;
+      }
+      stopAllActiveVideos();
+      ensureVideoRendered(prefix, id);
+      activeInlinePlayerState[prefix] = { videoId: videoObj.id, useNoCookie: false, timer: null };
+      mountVideoIntoCard(prefix, videoObj, false, opts);
+      if (opts.scroll) {
+        const grid = document.getElementById(prefix === "notices" ? "notices-videos-grid" : "full-videos-grid");
+        const card = grid && Array.from(grid.querySelectorAll("[data-vid-card]")).find((el) => el.getAttribute("data-vid-card") === id);
+        if (card) {
+          const r = card.getBoundingClientRect();
+          if (r.top < 60 || r.bottom > window.innerHeight - 40) {
+            try { card.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+          }
+        }
+      }
+    }
+
+    // ---- end of video / failure ----
+    function handleVideoEnded(prefix, videoObj) {
+      const rt = ytRuntime[prefix];
+      completedIds[prefix].add(videoObj.id);
+      if (!autoplayEnabled) {
+        setAutoplayStatus(prefix, "Finished", "on");
+        return;
+      }
+      advanceToNext(prefix, videoObj.id);
+    }
+
+    function advanceToNext(prefix, fromId) {
+      const rt = ytRuntime[prefix];
+      const next = findNextPlayable(prefix, fromId);
+      if (!next) {
+        setAutoplayStatus(prefix, "End of list — autoplay stopped", "on");
+        return;
+      }
+      if (next.wrapped) completedIds[prefix].clear();
+      const muted = currentMuted(rt); // keep the viewer's sound choice; never add sound on our own
+      setAutoplayStatus(prefix, `Up next: ${next.video.title}`, "play");
+      startVideo(prefix, next.video.id, { auto: true, muted, scroll: true });
+    }
+
+    function playNextVideo(prefix) {
+      const rt = ytRuntime[prefix];
+      const cur = rt.videoId;
+      const next = cur ? findNextPlayable(prefix, cur) : null;
+      if (!next) { showToast("No more videos in this list", "info"); return; }
+      if (next.wrapped) completedIds[prefix].clear();
+      startVideo(prefix, next.video.id, { auto: false, muted: currentMuted(rt), scroll: true });
+    }
+
+    function handleVideoFailed(prefix, videoObj, token, code) {
+      const rt = ytRuntime[prefix];
+      if (rt.token !== token) return;
+      unavailableIds.add(videoObj.id);
+      document.querySelectorAll(`[data-vid-card="${CSS.escape(videoObj.id)}"] [data-vid-unavail]`).forEach((b) => b.classList.remove("hidden"));
+      const next = findNextPlayable(prefix, videoObj.id);
+      if (autoplayEnabled && next) {
+        setAutoplayStatus(prefix, "Video unavailable — skipping to next", "warn");
+        showToast("A video was unavailable and was skipped", "error");
+        rt.skipTimer = setTimeout(() => {
+          if (rt.token === token) advanceToNext(prefix, videoObj.id);
+        }, 900);
+        return;
+      }
+      const slot = document.querySelector(`[data-vid-card="${CSS.escape(videoObj.id)}"] [data-vid-player-slot]`);
+      if (slot) {
+        const msg = code === 101 || code === 150
+          ? "The owner has disabled playback of this video on other sites."
+          : "This video is unavailable or can't be played.";
+        showSlotMessage(prefix, slot, videoObj, msg);
+      }
+      setAutoplayStatus(prefix, autoplayEnabled ? "Video unavailable — end of list" : "Video unavailable", "warn");
+    }
+
+    function showSlotMessage(prefix, slot, videoObj, text) {
+      const hasNext = !!findNextPlayable(prefix, videoObj.id);
+      slot.innerHTML = `
+        <div class="vid-glass-loader absolute inset-0 flex flex-col items-center justify-center p-4 text-center gap-2">
+          <p class="text-xs font-bold text-rose-400">${escapeHTML(text)}</p>
+          <div class="flex items-center gap-2">
+            ${hasNext ? `<button type="button" onclick="event.stopPropagation(); playNextVideo('${prefix}')" class="px-3 py-1 rounded-lg bg-slate-800 border border-slate-600 text-amber-300 text-[11px] font-bold">Next video</button>` : ""}
+            <button type="button" onclick="event.stopPropagation(); closeInlinePlayer('${prefix}')" class="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold">Close Player</button>
+          </div>
+        </div>`;
+    }
+
+    // ---- auto-start of the first video ----
+    function scheduleAutoFirst(prefix) {
+      if (!autoplayEnabled || autoFirstDone[prefix]) return;
+      clearTimeout(autoFirstTimers[prefix]);
+      autoFirstTimers[prefix] = setTimeout(() => maybeAutoStartFirst(prefix), 450);
+    }
+
+    function disconnectAutoFirstObservers() {
+      ["notices", "videos"].forEach((p) => {
+        if (autoFirstObservers[p]) { autoFirstObservers[p].disconnect(); autoFirstObservers[p] = null; }
+        clearTimeout(autoFirstTimers[p]);
+      });
+    }
+
+    function maybeAutoStartFirst(prefix) {
+      if (!autoplayEnabled || autoFirstDone[prefix]) return;
+      const visibleTab = prefix === "videos" ? "videos" : "home";
+      if (lastTabName !== visibleTab) return;
+      if (ytRuntime.notices.videoId || ytRuntime.videos.videoId) return;
+      const first = (videoOrderCache[prefix] || []).find(isPlayableVideo);
+      if (!first) return;
+      const grid = document.getElementById(prefix === "notices" ? "notices-videos-grid" : "full-videos-grid");
+      if (!grid || grid.offsetParent === null) return;
+
+      const r = grid.getBoundingClientRect();
+      if (r.top > window.innerHeight * 0.8 || r.bottom < 0) {
+        // Player is below the fold: wait until it scrolls into view instead of playing unseen
+        if (!autoFirstObservers[prefix] && "IntersectionObserver" in window) {
+          const obs = new IntersectionObserver((entries) => {
+            if (entries.some((en) => en.isIntersecting)) {
+              obs.disconnect();
+              autoFirstObservers[prefix] = null;
+              maybeAutoStartFirst(prefix);
+            }
+          }, { threshold: 0.2 });
+          obs.observe(grid);
+          autoFirstObservers[prefix] = obs;
+        }
+        return;
+      }
+      autoFirstDone[prefix] = true;
+      startVideo(prefix, first.id, { auto: true, muted: true }); // automatic playback is always muted
+    }
+
+    function autoStartForVisibleTab() {
+      if (lastTabName === "videos") scheduleAutoFirst("videos");
+      else if (lastTabName === "home") scheduleAutoFirst("notices");
+    }
+
+    // ---- toggle / loop / unmute ----
+    function toggleAutoplay(force) {
+      autoplayEnabled = typeof force === "boolean" ? force : !autoplayEnabled;
+      writePref(AUTOPLAY_PREF_KEY, autoplayEnabled);
+      if (autoplayEnabled) {
+        autoFirstDone.notices = autoFirstDone.videos = false;
+        completedIds.notices.clear();
+        completedIds.videos.clear();
+        showToast("Autoplay on — videos start muted", "info");
+        autoStartForVisibleTab();
+      } else {
+        disconnectAutoFirstObservers();
+        ["notices", "videos"].forEach((p) => {
+          const rt = ytRuntime[p];
+          if (rt.skipTimer) { clearTimeout(rt.skipTimer); rt.skipTimer = null; }
+        });
+        showToast("Autoplay off", "info");
+      }
+      refreshAutoplayBars();
+    }
+
+    function toggleAutoplayLoop() {
+      autoplayLoop = !autoplayLoop;
+      writePref(AUTOPLAY_LOOP_KEY, autoplayLoop);
+      if (autoplayLoop) { completedIds.notices.clear(); completedIds.videos.clear(); }
+      refreshAutoplayBars();
+    }
+
+    function unmuteActiveVideo(prefix) {
+      const rt = ytRuntime[prefix];
+      try {
+        if (rt.player) {
+          rt.player.unMute();
+          if (rt.player.getVolume && rt.player.getVolume() === 0) rt.player.setVolume(70);
+        } else if (rt.directEl) {
+          rt.directEl.muted = false;
+        }
+        rt.muted = false;
+      } catch (e) {}
+      refreshAutoplayBars();
+    }
+
+    // ---- bar UI ----
+    function autoplayBarHTML(prefix) {
+      return `
+        <div class="vid-autoplay-bar" data-autoplay-bar="${prefix}">
+          <button type="button" class="vid-ap-btn" role="switch" aria-checked="false" data-autoplay-toggle
+            onclick="toggleAutoplay()" title="Play the next video automatically when one finishes">
+            <span class="vid-ap-switch" aria-hidden="true"></span>
+            <span>Autoplay</span>
+            <span data-autoplay-state class="font-extrabold">OFF</span>
+          </button>
+          <button type="button" class="vid-ap-btn" role="switch" aria-checked="false" data-autoplay-loop
+            onclick="toggleAutoplayLoop()" title="Start over from the first video after the last one">
+            <span>Loop</span><span data-autoplay-loop-state class="font-extrabold">OFF</span>
+          </button>
+          <button type="button" class="vid-ap-btn hidden" data-autoplay-unmute onclick="unmuteActiveVideo('${prefix}')"
+            title="Turn sound on for the playing video">Unmute</button>
+          <div class="vid-ap-status" data-autoplay-status data-tone="off" role="status" aria-live="polite">
+            <span class="vid-ap-dot"></span><span class="txt" data-autoplay-text>Autoplay is off</span>
+          </div>
+        </div>`;
+    }
+
+    function idleStatusText() {
+      return autoplayEnabled
+        ? "Autoplay on — plays the list in order, muted until you unmute"
+        : "Autoplay is off";
+    }
+
+    function setAutoplayStatus(prefix, text, tone) {
+      apStatus[prefix] = { text, tone: tone || "on" };
+      renderAutoplayStatus(prefix);
+    }
+
+    function refreshPlaybackStatus(prefix) {
+      const rt = ytRuntime[prefix];
+      const order = videoOrderCache[prefix] || [];
+      const idx = order.findIndex((v) => v.id === rt.videoId);
+      rt.muted = currentMuted(rt);
+      let text = "Playing";
+      if (autoplayEnabled && idx >= 0) {
+        text = `Playing ${idx + 1} of ${order.length}`;
+        const nxt = findNextPlayable(prefix, rt.videoId);
+        text += nxt ? ` · Next: ${nxt.video.title}` : " · last video";
+      }
+      if (rt.muted) text = text.replace(/^Playing/, "Playing muted");
+      setAutoplayStatus(prefix, text, "play");
+      refreshUnmuteButtons();
+    }
+
+    function renderAutoplayStatus(prefix) {
+      const bar = document.querySelector(`[data-autoplay-bar="${prefix}"]`);
+      if (!bar) return;
+      const rt = ytRuntime[prefix];
+      const st = rt.videoId && apStatus[prefix] ? apStatus[prefix] : null;
+      const text = st ? st.text : idleStatusText();
+      const tone = st ? st.tone : (autoplayEnabled ? "on" : "off");
+      const box = bar.querySelector("[data-autoplay-status]");
+      const txt = bar.querySelector("[data-autoplay-text]");
+      if (box) box.setAttribute("data-tone", tone);
+      if (txt) { txt.textContent = text; txt.title = text; }
+    }
+
+    function refreshUnmuteButtons() {
+      ["notices", "videos"].forEach((p) => {
+        const bar = document.querySelector(`[data-autoplay-bar="${p}"]`);
+        if (!bar) return;
+        const btn = bar.querySelector("[data-autoplay-unmute]");
+        const rt = ytRuntime[p];
+        if (btn) btn.classList.toggle("hidden", !(rt.videoId && rt.playing && rt.muted));
+      });
+    }
+
+    function refreshAutoplayBars() {
+      document.querySelectorAll("[data-autoplay-bar]").forEach((bar) => {
+        const prefix = bar.getAttribute("data-autoplay-bar");
+        const t = bar.querySelector("[data-autoplay-toggle]");
+        const l = bar.querySelector("[data-autoplay-loop]");
+        if (t) {
+          t.setAttribute("aria-checked", autoplayEnabled ? "true" : "false");
+          const sp = t.querySelector("[data-autoplay-state]");
+          if (sp) sp.textContent = autoplayEnabled ? "ON" : "OFF";
+        }
+        if (l) {
+          l.setAttribute("aria-checked", autoplayLoop ? "true" : "false");
+          const sp = l.querySelector("[data-autoplay-loop-state]");
+          if (sp) sp.textContent = autoplayLoop ? "ON" : "OFF";
+        }
+        // If a video is active, keep the playing status current (it mentions autoplay / next)
+        const rt = ytRuntime[prefix];
+        if (rt && rt.videoId && rt.playing) refreshPlaybackStatus(prefix);
+        else renderAutoplayStatus(prefix);
+      });
+      refreshUnmuteButtons();
+    }
+
+    function initAutoplayUI() {
+      document.querySelectorAll("[data-autoplay-bar-mount]").forEach((mount) => {
+        const prefix = mount.getAttribute("data-autoplay-bar-mount");
+        mount.innerHTML = autoplayBarHTML(prefix);
+      });
+      refreshAutoplayBars();
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAutoplayUI);
+    else initAutoplayUI();
 
     // =========================================================================
     // 8. DAILY ATTENDANCE & HOLIDAY CALENDAR

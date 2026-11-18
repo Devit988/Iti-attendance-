@@ -3138,9 +3138,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function portal() { return get(/databases/$(database)/documents/iti_portals/chhotojagulia_elec_2025_27).data; }
     function mode() { return portal().get('settings', {}).get('commentsMode', 'moderated'); }
+    function adminEmail() { return portal().get('settings', {}).get('adminEmail', ''); }
     function isAdmin() {
       return request.auth != null &amp;&amp; request.auth.token.email != null
-        &amp;&amp; portal().settings.adminEmail.lower() == request.auth.token.email.lower();
+        &amp;&amp; adminEmail() != ''
+        &amp;&amp; adminEmail().lower() == request.auth.token.email.lower();
     }
     match /iti_portals/{portalId} {
       allow read: if true;
@@ -11176,6 +11178,7 @@ html.bright-mode{--vl-bg:rgba(255,255,255,.6);--vl-bd:rgba(15,23,42,.14);--vl-tx
 .vl-bar{margin:0 0 .75rem}.vl-row{display:flex;align-items:center;gap:.5rem}
 .vl-scroll{flex:1;min-width:0;position:relative;display:flex;gap:.4rem;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 10px 7px 2px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 18px),transparent)}
 .vl-scroll::-webkit-scrollbar{display:none}
+.vl-bar.vl-all .vl-row{align-items:flex-start}.vl-bar.vl-all .vl-row .vl-scroll{flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none;padding-right:2px;row-gap:.4rem}
 .vl-cat{flex:none;scroll-snap-align:center;position:relative;padding:.4rem .8rem;border-radius:999px;font-size:11.5px;font-weight:600;line-height:1;white-space:nowrap;color:var(--vl-tx);background:var(--vl-bg);border:1px solid var(--vl-bd);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:color .2s,background-color .2s,border-color .2s,transform .15s}
 .vl-cat:active{transform:scale(.96)}
 .vl-cat::after{content:"";position:absolute;left:50%;bottom:-5px;width:14px;height:2px;margin-left:-7px;border-radius:2px;background:var(--vl-on);opacity:0;transform:scaleX(.2);transition:opacity .2s,transform .2s}
@@ -11378,6 +11381,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   /* ---------- category bar ---------- */
   function bar(p) { return document.querySelector('.vl-bar[data-vl="' + p + '"]'); }
   var TB = '<div class="vl-row"><div class="vl-scroll" role="tablist" aria-label="Video categories"></div><div class="vl-tools">' +
+    '<button type="button" class="vl-ico" data-vl-expand aria-expanded="false" title="Show all categories" aria-label="Show all categories">' + svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>') + '</button>' +
     '<button type="button" class="vl-ico" data-vl-search aria-expanded="false" title="Search videos &amp; music" aria-label="Search videos and music">' + svg(I.s) + '</button>' +
     '<button type="button" class="vl-ico" data-vl-manage hidden title="Manage videos &amp; categories" aria-label="Manage videos">' + svg(I.m) + '</button></div></div>' +
     '<div class="vl-subbox"><div><div class="vl-scroll vl-subscroll" role="tablist" aria-label="Music subcategories"></div></div></div>' +
@@ -11389,6 +11393,16 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       var d = document.createElement("div"); d.className = "vl-bar"; d.setAttribute("data-vl", p); d.innerHTML = TB; m.parentNode.insertBefore(d, m);
       d.querySelector(".vl-scroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) setCat(p, b.getAttribute("data-cat"), true); });
       d.querySelector("[data-vl-search]").onclick = function () { toggleSearch(p); };
+      (function () {
+        var eb = d.querySelector("[data-vl-expand]");
+        function setAll(on) {
+          d.classList.toggle("vl-all", on); eb.setAttribute("aria-expanded", String(on));
+          eb.title = on ? "Show one row" : "Show all categories"; eb.setAttribute("aria-label", eb.title);
+          if (!on) { var sc = d.querySelector(".vl-row .vl-scroll"), a = sc.querySelector(".vl-cat[aria-selected=true]"); if (a && sc.clientWidth) sc.scrollLeft = Math.max(0, a.offsetLeft - (sc.clientWidth - a.offsetWidth) / 2); }
+        }
+        try { if (localStorage.getItem("vl_allcats") === "1") setAll(true); } catch (x) {}
+        eb.onclick = function () { var on = !d.classList.contains("vl-all"); setAll(on); try { localStorage.setItem("vl_allcats", on ? "1" : "0"); } catch (x) {} };
+      })();
       d.querySelector("[data-vl-manage]").onclick = openManage;
       d.querySelector(".vl-subscroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) setSub(p, b.getAttribute("data-sub"), true); });
       var inp = d.querySelector("input");
@@ -11694,6 +11708,8 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   window.showToast = function (m, t) { if (prefs.toasts !== "all" && t !== "error") return; return _st.apply(this, arguments); };
   var _mv = window.mountVideoIntoCard;
   window.mountVideoIntoCard = function (p, v, nc, o) { return _mv.call(this, p, v, nc || prefs.nocookie, o); };
+  var holdPush = false, pushHeld = false, _sls = window.saveLocalState;
+  window.saveLocalState = function (push) { if (holdPush && push) { pushHeld = true; push = false; } return _sls.call(this, push); };
   var _hs = window.handleSaveVideo;
   window.handleSaveVideo = function (e) {
     var before = normalizeVideosList(appState.videos).map(function (v) { return v.id; }), sel = document.getElementById("vl-modal-cat"), eid = (document.getElementById("video-edit-id") || {}).value || "";
@@ -11703,19 +11719,51 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       ex = { sub: mx.querySelector("[data-s]").value, artist: mx.querySelector("[data-ar]").value.trim(), thumb: mx.querySelector("[data-th]").value.trim(), tags: mx.querySelector("[data-k]").value.trim() };
       if (ex.thumb && !okThumb(ex.thumb)) { showToast("Thumbnail must be an http(s) image link — it was not saved", "error"); ex.thumb = ""; }
     }
-    var r = _hs.apply(this, arguments);
+    /* hold the cloud push until the category/subcategory is attached, so the video is never synced (or re-rendered from a snapshot) without it */
+    holdPush = true; pushHeld = false; var r;
+    try { r = _hs.apply(this, arguments); } finally { holdPush = false; }
+    var committed = false;
     if (sel) {
       var ids = normalizeVideosList(appState.videos).map(function (v) { return v.id; }).filter(function (i) { return before.indexOf(i) < 0; });
       if (eid) ids = [eid];
-      if (ids.length) commit(function () {
+      if (ids.length) committed = commit(function () {
         ids.forEach(function (i) {
           var m = appState.videoMeta[i] = appState.videoMeta[i] || {}; m.category = cat;
-          if (ex) { m.tags = ex.tags; if (cat === "music") { m.sub = ex.sub; m.artist = ex.artist; m.thumb = ex.thumb; } }
+          if (ex) {
+            m.tags = ex.tags;
+            if (cat === "music") {
+              var sl = subs(), fb = sl.some(function (s) { return s.id === "other"; }) ? "other" : (sl[0] || {}).id;
+              m.sub = rs(ex.sub) || fb || ""; m.artist = ex.artist; m.thumb = ex.thumb;
+            }
+          }
         });
       }, null);
     }
+    if (pushHeld && !committed) saveLocalState(true);
+    pushHeld = false;
     return r;
   };
+  /* one-tap chips that drive a (now hidden) <select>, so existing save logic is untouched */
+  function vlChips(selEl, hid) {
+    var host = document.getElementById(hid);
+    function paintChips() {
+      var cur = selEl.value;
+      host.innerHTML = Array.prototype.map.call(selEl.options, function (o) {
+        var on = o.value === cur;
+        return '<button type="button" data-v="' + esc(o.value) + '" aria-pressed="' + on + '" class="px-3 py-1.5 rounded-full text-[11px] font-semibold border transition btn-tap ' + (on ? "bg-amber-500 border-amber-500 text-slate-950" : "bg-slate-900 border-slate-700 text-slate-300 hover:border-amber-500/60") + '">' + o.textContent + "</button>";
+      }).join("");
+    }
+    if (!host) {
+      host = document.createElement("div"); host.id = hid; host.className = "flex flex-wrap gap-1.5";
+      selEl.parentNode.insertBefore(host, selEl); selEl.style.display = "none";
+      selEl.addEventListener("change", paintChips);
+      host.addEventListener("click", function (ev) {
+        var b = ev.target.closest("button[data-v]"); if (!b) return;
+        selEl.value = b.getAttribute("data-v"); selEl.dispatchEvent(new Event("change"));
+      });
+    }
+    paintChips();
+  }
   var _ov = window.openVideoModal;
   window.openVideoModal = function (id) {
     var r = _ov.apply(this, arguments);
@@ -11740,6 +11788,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       mx.querySelector("[data-s]").innerHTML = sl.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === (curSub || dsub) ? " selected" : "") + ">" + esc(s.name) + (s.hidden ? " (hidden)" : "") + "</option>"; }).join("");
       mx.querySelector("[data-ar]").value = m.artist || ""; mx.querySelector("[data-th]").value = m.thumb || ""; mx.querySelector("[data-k]").value = m.tags || "";
       mx.querySelector("[data-mxm]").hidden = cur !== "music";
+      vlChips(sel, "vl-cat-chips"); vlChips(mx.querySelector("[data-s]"), "vl-sub-chips");
     }
     return r;
   };
@@ -12033,7 +12082,13 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
         $("fbk-text").value = ""; fbkCounter();
         say(m === "open" ? "Thanks! Your comment is live." : "Thanks! Your comment will appear after review.", "ok");
       } catch (err) {
-        say("Could not post right now. Please try again or use Contact via Email.", "err");
+        console.error("Comment post failed:", err);
+        const code = err && err.code;
+        say(code === "permission-denied"
+          ? "Comments are blocked by the cloud security rules. Admin: copy the latest Firestore rules (Admin → Firebase) into the Firebase console and publish them."
+          : code === "unavailable" || code === "deadline-exceeded"
+            ? "No connection to the cloud right now. Please check your internet and try again."
+            : "Could not post right now. Please try again or use Contact via Email.", "err");
       } finally { btn.disabled = false; }
       return false;
     };
@@ -12101,7 +12156,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       if (!isAdminUnlocked) return;
       appState.settings.commentsMode = ["open", "moderated", "off"].includes(v) ? v : "moderated";
       saveLocalState(true); applyMode(); startPublic();
-      showToast("Comment setting saved", "success");
+      showToast("Comment setting saved – sign in with Google Admin so it syncs to the cloud", "success");
     };
     window.fbkAdminSaveEmail = () => {
       if (!isAdminUnlocked) return;

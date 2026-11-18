@@ -5000,73 +5000,27 @@ service cloud.firestore {
         const db = sdk.getFirestore(app);
         const docRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27");
 
-        const UNSYNCED_KEY = "devit_unsynced_at";
-        let pushInFlight = false, pushAgain = false, lastErrToastAt = 0;
-        const syncErrToast = (msg) => {
-          if (Date.now() - lastErrToastAt < 60000) return;
-          lastErrToastAt = Date.now();
-          showToast(msg, "error");
-        };
-        const doPush = async function () {
-          if (pushInFlight) { pushAgain = true; return; }
-          pushInFlight = true;
+        window.pushStateToFirebase = async function () {
           try {
-            const stamp = Date.now();
-            const payload = { ...appState, updatedAt: stamp };
+            const payload = { ...appState, updatedAt: Date.now() };
             const approxBytes = new Blob([JSON.stringify(payload)]).size;
             if (approxBytes > 950000) {
-              /* kept locally and flagged, so a stale cloud copy can never overwrite it on the next load */
-              syncErrToast("Saved on this device only: data is too large for cloud sync (1MB). Remove large photos.");
+              showToast("Cloud sync warning: payload near 1MB limit. Optimize large photos.", "error");
               updateSyncIndicator(false, "Payload Too Large for Cloud");
               return;
             }
-            window.__fbLastPushedAt = stamp;
             await sdk.setDoc(docRef, payload);
-            try { localStorage.removeItem(UNSYNCED_KEY); } catch (e) {}
             updateSyncIndicator(true, "Synced with Cloud");
           } catch (err) {
             updateSyncIndicator(false, "Local Saved (Cloud Write Restricted)");
-            syncErrToast("Saved on this device, but cloud sync failed. It will retry automatically.");
-          } finally {
-            pushInFlight = false;
-            if (pushAgain) { pushAgain = false; doPush(); }
           }
         };
-        /* coalesce rapid saves into one write and remember that the cloud copy is behind */
-        window.pushStateToFirebase = function () {
-          try { if (!localStorage.getItem(UNSYNCED_KEY)) localStorage.setItem(UNSYNCED_KEY, String(Date.now())); } catch (e) {}
-          clearTimeout(window.__fbPushT);
-          window.__fbPushT = setTimeout(doPush, 350);
-          return Promise.resolve();
-        };
-        if (!window.__fbOnlineBound) {
-          window.__fbOnlineBound = true;
-          window.addEventListener("online", () => {
-            try { if (localStorage.getItem(UNSYNCED_KEY) && window.pushStateToFirebase) window.pushStateToFirebase(); } catch (e) {}
-          });
-        }
 
-        /* initFirebaseCloud can run again (config saved); drop the old listener instead of stacking another */
-        if (window.__fbUnsub) { try { window.__fbUnsub(); } catch (e) {} window.__fbUnsub = null; }
-        window.__fbUnsub = sdk.onSnapshot(
+        sdk.onSnapshot(
           docRef,
           (snap) => {
             if (snap.exists()) {
               const remote = snap.data();
-              const rAt = Number(remote && remote.updatedAt) || 0;
-              /* our own write echoing back (pending or acknowledged) or an already-applied version: nothing to redraw */
-              if ((snap.metadata && snap.metadata.hasPendingWrites) || (rAt && (rAt === window.__fbLastPushedAt || rAt <= (window.__fbLastAppliedAt || 0)))) {
-                updateSyncIndicator(true, "Connected to Firebase Cloud");
-                return;
-              }
-              /* this device has newer changes the cloud never received: keep them and retry */
-              let unsyncedAt = 0;
-              try { unsyncedAt = Number(localStorage.getItem("devit_unsynced_at")) || 0; } catch (e) {}
-              if (unsyncedAt && rAt < unsyncedAt) {
-                if (window.pushStateToFirebase) window.pushStateToFirebase();
-                return;
-              }
-              window.__fbLastAppliedAt = rAt;
               if (remote && Array.isArray(remote.trainees)) {
                 appState = {
                   ...appState,
@@ -6787,8 +6741,7 @@ service cloud.firestore {
 
       const st = activeInlinePlayerState[targetPrefix];
       if (st && st.timer) clearTimeout(st.timer);
-      /* YouTube iframes get a fallback timer; direct files dismiss only on real load/play/error events */
-      if (st && videoObj.kind !== "direct") {
+      if (st) {
         st.timer = setTimeout(dismissLoader, 3500);
       }
 
@@ -6844,17 +6797,8 @@ service cloud.firestore {
         vid.playsInline = true;
         vid.setAttribute("playsinline", "");
         vid.muted = !!opts.muted;
-        vid.preload = "auto";
-        const clearStall = () => { clearTimeout(rt.stallTimer); rt.stallTimer = null; };
-        /* a file that never produces data (dead host, blocked URL) must not leave a spinner forever */
-        rt.stallTimer = setTimeout(() => {
-          if (!live() || vid.readyState >= 2) return;
-          dismissLoader();
-          showSlotMessage(targetPrefix, slot, videoObj, "This video is taking too long to load. Check your connection and try again.");
-          setAutoplayStatus(targetPrefix, "Video not loading", "warn");
-        }, 25000);
-        vid.onloadeddata = () => { clearStall(); dismissLoader(); };
-        vid.oncanplay = () => { clearStall(); dismissLoader(); };
+        vid.onloadeddata = dismissLoader;
+        vid.oncanplay = dismissLoader;
         if (startAt) {
           vid.addEventListener("loadedmetadata", () => { try { vid.currentTime = startAt; } catch (e) {} }, { once: true });
         }
@@ -6867,7 +6811,6 @@ service cloud.firestore {
         vid.addEventListener("ended", onEnded);
         vid.onerror = () => {
           if (!live()) return;
-          clearStall();
           dismissLoader();
           handleVideoFailed(targetPrefix, videoObj, token, "direct");
         };
@@ -7067,15 +7010,13 @@ service cloud.firestore {
       clearTimeout(rt.blockTimer);
       clearTimeout(rt.skipTimer);
       clearInterval(rt.pollTimer);
-      clearTimeout(rt.stallTimer);
-      rt.blockTimer = rt.skipTimer = rt.pollTimer = rt.stallTimer = null;
+      rt.blockTimer = rt.skipTimer = rt.pollTimer = null;
       if (rt.player) {
         try { rt.player.destroy(); } catch (e) {}
         rt.player = null;
       }
       if (rt.directEl) {
-        /* pause() alone leaves the file downloading/buffering in the background; release it */
-        try { rt.directEl.pause(); rt.directEl.removeAttribute("src"); rt.directEl.load(); } catch (e) {}
+        try { rt.directEl.pause(); } catch (e) {}
         rt.directEl = null;
       }
       rt.playing = false;
@@ -8989,31 +8930,9 @@ service cloud.firestore {
       openModal("modal-add-video");
     }
 
-    function validateVideoSourceForSave(raw) {
-      const s = String(raw || "").trim();
-      if (/^blob:/i.test(s)) return "A blob: link only exists in this browser tab and disappears after refresh. Use a YouTube link or a permanent https:// video URL.";
-      if (/^data:video\//i.test(s)) return "Embedded video data is too large to store. Use a YouTube link or a permanent https:// video URL.";
-      if (/^https?:\/\//i.test(s) && !extractYouTubeId(s)) {
-        if (location.protocol === "https:" && /^http:\/\//i.test(s)) return "This site is secure (https), so browsers block http:// videos. Use an https:// link.";
-        if (/(^|\.)drive\.google\.com\/file\//i.test(s.replace(/^https?:\/\//i, ""))) return "Google Drive page links can't be played directly. Upload to YouTube (unlisted) and paste that link.";
-        if (/\.(avi|wmv|flv|mkv|mpe?g)(\?|#|$)/i.test(s)) return "This video format isn't supported by most phone browsers. Convert it to MP4 or WebM, or use YouTube.";
-      }
-      return "";
-    }
-
     function handleSaveVideo(e) {
       e.preventDefault();
       if (!isAdminUnlocked) return;
-      /* repeated taps on the submit button must save once */
-      if (window.__videoSaveBusy) return;
-      {
-        const srcErr = validateVideoSourceForSave(document.getElementById("video-url-input").value);
-        if (srcErr) { showToast(srcErr, "error"); return; }
-      }
-      window.__videoSaveBusy = true;
-      const _sb = document.getElementById("video-modal-submit-btn");
-      if (_sb) _sb.disabled = true;
-      setTimeout(() => { window.__videoSaveBusy = false; if (_sb) _sb.disabled = false; }, 800);
       const editId = (document.getElementById("video-edit-id")?.value || "").trim();
       const title = document.getElementById("video-title-input").value.trim();
       const rawUrl = document.getElementById("video-url-input").value.trim();
@@ -9076,7 +8995,6 @@ service cloud.firestore {
 
     function deleteVideo(id) {
       if (!isAdminUnlocked) return;
-      if (!window.confirm("Remove this video from the library?")) return;
       if (
         activeInlinePlayerState.notices?.videoId === id ||
         activeInlinePlayerState.videos?.videoId === id
@@ -9084,10 +9002,6 @@ service cloud.firestore {
         stopAllActiveVideos();
       }
       appState.videos = appState.videos.filter((v) => v.id !== id);
-      if (appState.videoMeta) delete appState.videoMeta[id];
-      if (appState.videoOrders) Object.keys(appState.videoOrders).forEach((k) => {
-        if (Array.isArray(appState.videoOrders[k])) appState.videoOrders[k] = appState.videoOrders[k].filter((x) => x !== id);
-      });
       saveLocalState(true);
       renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
       renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);

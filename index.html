@@ -11252,6 +11252,37 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .vid-ap-nav{padding:2px 7px!important}
 .vl-mx{display:grid;gap:.4rem}.vl-mx[hidden]{display:none}[data-mxm][hidden]{display:none}
 .vl-crow.vl-wrap{flex-wrap:wrap}.vl-crow.vl-wrap input{flex:1 1 100%}
+/* compact add-video modal: category / subcategory pickers + music fields */
+#vl-cat-chips,#vl-sub-chips{flex-wrap:nowrap!important;overflow-x:auto;gap:.3rem!important;padding-bottom:3px;scrollbar-width:none;-webkit-overflow-scrolling:touch;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 16px),transparent)}
+#vl-cat-chips::-webkit-scrollbar,#vl-sub-chips::-webkit-scrollbar{display:none}
+#vl-cat-chips button,#vl-sub-chips button{flex:none;white-space:nowrap;padding:.22rem .6rem!important;font-size:10.5px!important;line-height:1.25}
+.vl-mxc{display:grid!important;grid-template-columns:1fr 1fr;gap:.4rem .5rem!important;margin:0!important;padding:.45rem;border-radius:12px;border:1px solid rgba(148,163,184,.2);background:rgba(15,23,42,.35)}
+.vl-mxc[hidden]{display:none!important}
+.vl-mxc>div{margin:0!important;min-width:0}.vl-mxc>div:first-child{grid-column:1/-1}
+.vl-mxc label{margin-bottom:.15rem!important;font-size:10px!important}
+.vl-mxc input{padding:.35rem .6rem!important;font-size:11.5px!important}
+@media(max-width:380px){.vl-mxc{grid-template-columns:1fr}}
+.vl-chipwrap{display:flex;align-items:flex-start;gap:.35rem}.vl-chipwrap>div{flex:1;min-width:0}
+.vl-chipexp{flex:none;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;color:var(--vl-tx);background:var(--vl-bg);border:1px solid var(--vl-bd)}
+.vl-chipexp svg{width:13px;height:13px;transition:transform .3s cubic-bezier(.22,.8,.3,1)}.vl-chipwrap.vl-exp .vl-chipexp{color:var(--vl-on);border-color:var(--vl-on)}.vl-chipwrap.vl-exp .vl-chipexp svg{transform:rotate(180deg)}
+.vl-chipwrap.vl-exp>div,.vl-chipwrap.vl-exp #vl-cat-chips,.vl-chipwrap.vl-exp #vl-sub-chips{flex-wrap:wrap!important;overflow:visible!important;-webkit-mask-image:none!important;mask-image:none!important;row-gap:.3rem}
+/* minimize music-subcategory palette */
+.vl-subhead{display:flex;align-items:center;gap:.5rem;margin-top:.15rem;min-width:0}
+.vl-submin{flex:none;display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .65rem;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--vl-on);background:var(--vl-onbg);border:1px solid var(--vl-on);white-space:nowrap}
+.vl-submin svg{width:12px;height:12px;transition:transform .2s}
+.vl-bar.vl-subhid .vl-submin svg{transform:rotate(-90deg)}
+.vl-subcur{min-width:0;flex:1;font-size:10.5px;color:var(--vl-ps);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vl-subcur:empty{display:none}
+.vl-bar:not(.vl-subhid) .vl-subcur{display:none}
+.vl-bar.vl-subhid .vl-subscroll{display:none}
+.vl-bar.vl-all .vl-subscroll{flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none;row-gap:.4rem}
+/* admin manager: stop rows overflowing small screens + collapsible sections */
+.vl-crow{flex-wrap:wrap}.vl-crow>input{flex:1 1 140px}
+.vl-mbody>section>h4{display:flex;align-items:center;justify-content:space-between;gap:.5rem;cursor:pointer;user-select:none;padding:.15rem 0}
+.vl-mbody>section>h4::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s;margin-right:.3rem;flex:none}
+.vl-mbody>section.vl-min>h4::after{transform:rotate(-45deg)}
+.vl-mbody>section.vl-min>*:not(h4){display:none!important}
+
 
     /* ===== PERFORMANCE: smoother scrolling / less jitter ===== */
     html.scroll-smooth { scroll-behavior: auto !important; }
@@ -11294,6 +11325,16 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   var prevTab = "home", mOpen = false, mKey = "all", mPreset = null;
   function esc(s) { return escapeHTML(s); }
   function gid(p) { return p === "notices" ? "notices-videos-grid" : "full-videos-grid"; }
+  /* smooth height change for expand/collapse: measure, apply, then animate between the two heights */
+  function smooth(el, fn) {
+    if (!el || !el.animate || prefs.reduce) { fn(); return; }
+    var h0 = el.offsetHeight; /* current (possibly mid-animation) height */
+    if (el._sa) { el._sa.cancel(); el._sa = null; }
+    fn(); var h1 = el.offsetHeight; if (h0 === h1) { el.style.overflow = ""; return; }
+    el.style.overflow = "hidden";
+    var a = el._sa = el.animate([{ height: h0 + "px" }, { height: h1 + "px" }], { duration: 340, easing: "cubic-bezier(.22,.8,.3,1)" });
+    function done() { if (el._sa === a) { el._sa = null; el.style.overflow = ""; } } a.onfinish = done; a.oncancel = done;
+  }
   function svg(d) { return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>"; }
   var I = { s: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', pv: '<polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/>', nx: '<polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/>', m: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="8" cy="18" r="2" fill="currentColor"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>', f: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/>' };
 
@@ -11383,27 +11424,44 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   var TB = '<div class="vl-row"><div class="vl-scroll" role="tablist" aria-label="Video categories"></div><div class="vl-tools">' +
     '<button type="button" class="vl-ico" data-vl-expand aria-expanded="false" title="Show all categories" aria-label="Show all categories">' + svg('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>') + '</button>' +
     '<button type="button" class="vl-ico" data-vl-search aria-expanded="false" title="Search videos &amp; music" aria-label="Search videos and music">' + svg(I.s) + '</button>' +
+    '<button type="button" class="vl-ico" data-vl-add hidden title="Add video" aria-label="Add video">' + svg('<path d="M12 5v14M5 12h14"/>') + '</button>' +
     '<button type="button" class="vl-ico" data-vl-manage hidden title="Manage videos &amp; categories" aria-label="Manage videos">' + svg(I.m) + '</button></div></div>' +
-    '<div class="vl-subbox"><div><div class="vl-scroll vl-subscroll" role="tablist" aria-label="Music subcategories"></div></div></div>' +
+    '<div class="vl-subbox"><div><div class="vl-subhead"><button type="button" class="vl-submin" data-vl-submin aria-expanded="true" title="Minimize subcategories" aria-label="Minimize music subcategories">♪ Subcategories ' + svg('<polyline points="6 9 12 15 18 9"/>') + '</button><span class="vl-subcur"></span></div><div class="vl-scroll vl-subscroll" role="tablist" aria-label="Music subcategories"></div></div></div>' +
     '<div class="vl-sbox"><div><div class="vl-input">' + svg(I.s) + '<input type="search" placeholder="Search videos &amp; music — title, artist, topic" autocomplete="off" aria-label="Search videos" /><button type="button" data-vl-clear hidden aria-label="Clear search">' + svg(I.x) + '</button></div><div class="vl-results" aria-live="polite"></div></div></div>';
   function mount() {
     P.forEach(function (p) {
       if (bar(p)) return;
       var m = document.querySelector('[data-autoplay-bar-mount="' + p + '"]'); if (!m) return;
       var d = document.createElement("div"); d.className = "vl-bar"; d.setAttribute("data-vl", p); d.innerHTML = TB; m.parentNode.insertBefore(d, m);
-      d.querySelector(".vl-scroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) setCat(p, b.getAttribute("data-cat"), true); });
+      d.querySelector(".vl-scroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) { setCat(p, b.getAttribute("data-cat"), true); if (d.classList.contains("vl-all")) setTimeout(function () { if (d.classList.contains("vl-all")) d.querySelector("[data-vl-expand]").click(); }, 250); } });
+      d.querySelector("[data-vl-add]").onclick = function () {
+        if (!isAdminUnlocked) { openAdminModal(); return; }
+        var c = st[p].cat, sb = st[p].sub;
+        mPreset = { key: c === "music" && sb && sb !== "all" ? "music:" + sb : c };
+        openVideoModal();
+      };
       d.querySelector("[data-vl-search]").onclick = function () { toggleSearch(p); };
       (function () {
         var eb = d.querySelector("[data-vl-expand]");
-        function setAll(on) {
-          d.classList.toggle("vl-all", on); eb.setAttribute("aria-expanded", String(on));
+        function setAll(on, instant) {
+          (instant ? function (f) { f(); } : function (f) { smooth(d, f); })(function () { d.classList.toggle("vl-all", on); }); eb.setAttribute("aria-expanded", String(on));
           eb.title = on ? "Show one row" : "Show all categories"; eb.setAttribute("aria-label", eb.title);
           if (!on) { var sc = d.querySelector(".vl-row .vl-scroll"), a = sc.querySelector(".vl-cat[aria-selected=true]"); if (a && sc.clientWidth) sc.scrollLeft = Math.max(0, a.offsetLeft - (sc.clientWidth - a.offsetWidth) / 2); }
         }
-        try { if (localStorage.getItem("vl_allcats") === "1") setAll(true); } catch (x) {}
+        try { if (localStorage.getItem("vl_allcats") === "1") setAll(true, true); } catch (x) {}
         eb.onclick = function () { var on = !d.classList.contains("vl-all"); setAll(on); try { localStorage.setItem("vl_allcats", on ? "1" : "0"); } catch (x) {} };
       })();
       d.querySelector("[data-vl-manage]").onclick = openManage;
+      (function () {
+        var mb = d.querySelector("[data-vl-submin]");
+        function setMin(on) {
+          d.classList.toggle("vl-subhid", on); mb.setAttribute("aria-expanded", String(!on));
+          mb.title = on ? "Show subcategories" : "Minimize subcategories"; mb.setAttribute("aria-label", mb.title);
+          paint(p, false);
+        }
+        try { if (localStorage.getItem("vl_submin") === "1") d.classList.add("vl-subhid"), mb.setAttribute("aria-expanded", "false"); } catch (x) {}
+        mb.onclick = function () { var on = !d.classList.contains("vl-subhid"); setMin(on); try { localStorage.setItem("vl_submin", on ? "1" : "0"); } catch (x) {} };
+      })();
       d.querySelector(".vl-subscroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) setSub(p, b.getAttribute("data-sub"), true); });
       var inp = d.querySelector("input");
       inp.addEventListener("input", function () { runSearch(p); });
@@ -11441,6 +11499,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   }
   function paint(p, scroll) {
     var d = bar(p); if (!d) return;
+    var cu = d.querySelector(".vl-subcur"); if (cu) cu.textContent = st[p].sub === "all" ? "All Music" : sname(st[p].sub);
     [[".vl-row .vl-scroll", "data-cat", st[p].cat], [".vl-subscroll", "data-sub", st[p].sub]].forEach(function (r) {
       var sc = d.querySelector(r[0]); if (!sc) return;
       Array.prototype.forEach.call(sc.children, function (b) {
@@ -11529,6 +11588,9 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     secs[0].insertAdjacentHTML("afterend", '<section><h4>Music subcategories</h4><p class="vl-hint">Independent from the video categories. “All Music” always shows every visible subcategory.</p><div id="vl-ms"></div><form class="vl-add" id="vl-msadd"><input maxlength="40" placeholder="New music subcategory" aria-label="New music subcategory"><button class="vl-b pri">Add</button></form></section>');
     secs[1].querySelector("h4").textContent = "Videos, music & sequence";
     e.querySelector("#vl-mnew").textContent = "+ Add video / music";
+    e.querySelectorAll(".vl-mbody > section > h4").forEach(function (h) { h.setAttribute("role", "button"); h.setAttribute("tabindex", "0"); h.title = "Tap to minimize / expand";
+      function tg() { h.parentNode.classList.toggle("vl-min"); }
+      h.addEventListener("click", tg); h.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); tg(); } }); });
     e.querySelector("#vl-msadd").onsubmit = function (ev) {
       ev.preventDefault(); var inp = ev.target.querySelector("input"), n = inp.value.trim().replace(/\s+/g, " ");
       if (!n) return;
@@ -11755,11 +11817,24 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     }
     if (!host) {
       host = document.createElement("div"); host.id = hid; host.className = "flex flex-wrap gap-1.5";
-      selEl.parentNode.insertBefore(host, selEl); selEl.style.display = "none";
+      var wrap = document.createElement("div"), eb = document.createElement("button");
+      wrap.className = "vl-chipwrap"; eb.type = "button"; eb.className = "vl-chipexp"; eb.setAttribute("aria-expanded", "false");
+      eb.title = "Show all options"; eb.setAttribute("aria-label", "Show all options");
+      eb.innerHTML = svg('<polyline points="6 9 12 15 18 9"/>');
+      eb.onclick = function () { var on = !wrap.classList.contains("vl-exp"); smooth(wrap, function () { wrap.classList.toggle("vl-exp", on); }); eb.setAttribute("aria-expanded", String(on)); eb.title = on ? "Show one row" : "Show all options"; eb.setAttribute("aria-label", eb.title); };
+      selEl.parentNode.insertBefore(wrap, selEl); wrap.appendChild(host); wrap.appendChild(eb); selEl.style.display = "none";
       selEl.addEventListener("change", paintChips);
       host.addEventListener("click", function (ev) {
         var b = ev.target.closest("button[data-v]"); if (!b) return;
         selEl.value = b.getAttribute("data-v"); selEl.dispatchEvent(new Event("change"));
+        /* fold the expanded list back to one row after a pick, keeping the chosen chip in view */
+        var w = host.parentNode;
+        if (w && w.classList.contains("vl-exp")) setTimeout(function () {
+          if (!w.classList.contains("vl-exp")) return;
+          w.querySelector(".vl-chipexp").click();
+          var on = host.querySelector('button[aria-pressed="true"]');
+          if (on) { try { host.scrollTo({ left: Math.max(0, on.getBoundingClientRect().left - host.getBoundingClientRect().left + host.scrollLeft - (host.clientWidth - on.offsetWidth) / 2), behavior: "smooth" }); } catch (e) {} }
+        }, 250);
       });
     }
     paintChips();
@@ -11773,7 +11848,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       var w = document.createElement("div"); w.innerHTML = '<label class="' + lbl + '">Video Category</label><select id="vl-modal-cat" class="' + fld + '"></select>';
       sec.parentNode.parentNode.insertBefore(w, sec.parentNode.nextSibling); sel = w.querySelector("select");
       var x = document.createElement("div"); x.id = "vl-modal-mx"; x.className = "space-y-3";
-      x.innerHTML = '<div class="space-y-3" data-mxm><div><label class="' + lbl + '">Music Subcategory</label><select data-s class="' + fld + '"></select></div><div><label class="' + lbl + '">Artist / Channel</label><input data-ar maxlength="80" placeholder="e.g. Artist name" class="' + fld + '"></div><div><label class="' + lbl + '">Thumbnail Image URL (optional)</label><input data-th placeholder="https://…jpg" class="' + fld + '"></div></div><div><label class="' + lbl + '">Keywords (optional)</label><input data-k maxlength="120" placeholder="comma, separated, words" class="' + fld + '"></div>';
+      x.innerHTML = '<div class="vl-mxc" data-mxm><div><label class="' + lbl + '">Music Subcategory</label><select data-s class="' + fld + '"></select></div><div><label class="' + lbl + '">Artist / Channel</label><input data-ar maxlength="80" placeholder="e.g. Artist name" class="' + fld + '"></div><div><label class="' + lbl + '">Thumbnail Image URL (optional)</label><input data-th placeholder="https://…jpg" class="' + fld + '"></div></div><div><label class="' + lbl + '">Keywords (optional)</label><input data-k maxlength="120" placeholder="comma, separated, words" class="' + fld + '"></div>';
       w.parentNode.insertBefore(x, w.nextSibling);
       sel.addEventListener("change", function () { x.querySelector("[data-mxm]").hidden = sel.value !== "music"; });
     }
@@ -11795,7 +11870,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   var _ra = window.renderAllViews;
   if (_ra) window.renderAllViews = function () { try { seedEdu(); } catch (e) {} var r = _ra.apply(this, arguments); try { chipsAll(); } catch (e) {} return r; };
   window.vlAfterRender = function (p) {
-    P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; });
+    P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; d.querySelector("[data-vl-add]").hidden = !isAdminUnlocked; });
     var g = document.getElementById(gid(p)); if (g) g.querySelectorAll("img").forEach(function (i) { i.decoding = "async"; });
   };
 
@@ -11834,7 +11909,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   /* ---------- init ---------- */
   applyPrefs(); mount(); setupSettings();
   P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); rerender(p); });
-  setInterval(function () { P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; }); }, 1500);
+  setInterval(function () { P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; d.querySelector("[data-vl-add]").hidden = !isAdminUnlocked; }); }, 1500);
 })();
 </script>
 

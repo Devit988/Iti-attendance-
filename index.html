@@ -1706,6 +1706,77 @@
     @media (prefers-reduced-motion: reduce) {
       .vid-loader-orb { animation: none; }
     }
+  
+    /* ===== Notice viewer (expanded glass view) ===== */
+    .nv-root { position: fixed; inset: 0; z-index: 55; display: flex; align-items: center; justify-content: center; padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)); }
+    .nv-root.hidden { display: none; }
+    .nv-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 15, 0.62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transition: opacity .28s ease; }
+    .nv-root.nv-open .nv-backdrop { opacity: 1; }
+    .nv-root.nv-closing .nv-backdrop { opacity: 0; }
+    .nv-panel {
+      position: relative; width: 100%; max-width: 640px; max-height: min(88vh, 860px); max-height: min(88dvh, 860px); display: flex; flex-direction: column;
+      border-radius: 24px; overflow: hidden; color: #e2e8f0;
+      background: linear-gradient(160deg, rgba(30, 41, 66, 0.72), rgba(12, 19, 34, 0.78));
+      backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.7), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
+      opacity: 0; transform: scale(.85) translateY(34px);
+    }
+    .nv-root.nv-open .nv-panel { animation: nvBounceIn .62s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+    .nv-root.nv-closing .nv-panel { animation: nvOut .26s ease-in forwards; }
+    @keyframes nvBounceIn { 0% { opacity: 0; transform: scale(.82) translateY(40px); } 55% { opacity: 1; transform: scale(1.04) translateY(-6px); } 80% { transform: scale(.985) translateY(2px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes nvOut { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(.92) translateY(22px); } }
+    .nv-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; border-bottom: 1px solid rgba(148, 163, 184, 0.18); background: rgba(255, 255, 255, 0.04); }
+    .nv-close { width: 36px; height: 36px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(148, 163, 184, 0.28); color: #e2e8f0; transition: background .2s, transform .15s; }
+    .nv-close:hover { background: rgba(244, 63, 94, 0.25); }
+    .nv-close:active { transform: scale(.92); }
+    .nv-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 16px 18px; overscroll-behavior: contain; }
+    .nv-title { font-size: 1.15rem; line-height: 1.35; font-weight: 800; color: #fff; overflow-wrap: anywhere; }
+    .nv-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 9px; font-size: 11px; font-weight: 700; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #fcd34d; }
+    .nv-chip.sky { background: rgba(14, 165, 233, 0.14); border-color: rgba(14, 165, 233, 0.35); color: #7dd3fc; }
+    .nv-body { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.7; color: #cbd5e1; }
+    .nv-box { border-radius: 16px; padding: 12px 13px; background: rgba(245, 158, 11, 0.09); border: 1px solid rgba(245, 158, 11, 0.32); }
+    .nv-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fbbf24; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .nv-att-img { display: block; width: 100%; max-height: 340px; object-fit: contain; border-radius: 14px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(148, 163, 184, 0.25); }
+    .nv-att-doc { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(148, 163, 184, 0.25); color: #e2e8f0; font-size: 12.5px; font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+    .nv-att-doc:hover { background: rgba(255, 255, 255, 0.12); }
+    .nv-foot { padding: 10px 14px; border-top: 1px solid rgba(148, 163, 184, 0.18); background: rgba(255, 255, 255, 0.03); }
+    html.bright-mode .nv-backdrop { background: rgba(15, 23, 42, 0.38); }
+    html.bright-mode .nv-panel { color: #1e293b; background: linear-gradient(160deg, rgba(255, 255, 255, 0.82), rgba(241, 245, 249, 0.78)); border-color: rgba(148, 163, 184, 0.45); box-shadow: 0 30px 60px -22px rgba(15, 23, 42, 0.35), 0 1px 0 0 rgba(255, 255, 255, 0.9) inset; }
+    html.bright-mode .nv-head, html.bright-mode .nv-foot { background: rgba(255, 255, 255, 0.5); border-color: rgba(148, 163, 184, 0.35); }
+    html.bright-mode .nv-title { color: #0f172a; }
+    html.bright-mode .nv-body { color: #334155; }
+    html.bright-mode .nv-close { background: rgba(255, 255, 255, 0.8); color: #334155; }
+    html.bright-mode .nv-chip { color: #92400e; }
+    html.bright-mode .nv-chip.sky { color: #0369a1; }
+    html.bright-mode .nv-label { color: #b45309; }
+    html.bright-mode .nv-att-doc { background: rgba(255, 255, 255, 0.75); color: #1e293b; }
+    #notices-list-container article[data-notice-id] { cursor: pointer; transition: transform .18s ease, border-color .2s ease; }
+    #notices-list-container article[data-notice-id]:hover { border-color: rgba(245, 158, 11, 0.5) !important; }
+    #notices-list-container article[data-notice-id]:active { transform: scale(.985); }
+    #notices-list-container article[data-notice-id]:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+    .nv-clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+
+    /* ===== Comments & Feedback (glass) ===== */
+    #feedback-card {
+      background-color: rgba(12, 19, 34, 0.52) !important; backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      border-color: rgba(148, 163, 184, 0.22) !important;
+      box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
+    }
+    #feedback-card .fbk-field { width: 100%; padding: 8px 12px; border-radius: 12px; font-size: 13px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(148, 163, 184, 0.28); color: #f1f5f9; outline: none; transition: border-color .2s; }
+    #feedback-card .fbk-field:focus { border-color: #f59e0b; }
+    #feedback-card .fbk-item { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.35); }
+    .fbk-new { animation: fbkIn .55s cubic-bezier(.34, 1.4, .64, 1) both; }
+    @keyframes fbkIn { from { opacity: 0; transform: translateY(-14px) scale(.96); } to { opacity: 1; transform: none; } }
+    .fbk-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .fbk-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+    html.bright-mode #feedback-card { background-color: rgba(255, 255, 255, 0.58) !important; border-color: rgba(148, 163, 184, 0.32) !important; box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset !important; }
+    html.bright-mode #feedback-card .fbk-field { background: rgba(255, 255, 255, 0.75); color: #0f172a; border-color: rgba(148, 163, 184, 0.45); }
+    html.bright-mode #feedback-card .fbk-item { background: rgba(255, 255, 255, 0.65); border-color: rgba(148, 163, 184, 0.35); box-shadow: 0 4px 14px -6px rgba(15, 23, 42, 0.12); }
+    html.bright-mode #feedback-card .fbk-text { color: #1e293b; }
+    @media (prefers-reduced-motion: reduce) {
+      .nv-root.nv-open .nv-panel, .nv-root.nv-closing .nv-panel, .fbk-new { animation-duration: .01s !important; }
+    }
   </style>
 <style id="brand-style">
   .brand-mark{width:40px;height:40px;flex:none;display:block;filter:drop-shadow(0 0 6px rgba(255,122,26,.35))}
@@ -2046,6 +2117,57 @@
         <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
           <div id="notices-videos-pagination" class="hidden mt-3 pt-2.5 border-t border-slate-800/70 flex flex-wrap items-center justify-between gap-2 text-xs"></div>
         </div>
+
+        <!-- ============ COMMENTS & FEEDBACK ============ -->
+        <div id="feedback-card" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="message-square-text" class="w-4 h-4"></i></div>
+              <div class="min-w-0">
+                <h2 class="text-sm sm:text-base font-bold text-white truncate">Comments &amp; Feedback</h2>
+                <p id="fbk-count" class="text-[11px] text-slate-400 leading-snug">Share your opinion or suggestion</p>
+              </div>
+            </div>
+            <a id="fbk-mail-btn" href="#" onclick="return fbkContactEmail(event)" class="w-full sm:w-auto justify-center shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 font-semibold text-xs flex items-center gap-1.5 transition btn-tap">
+              <i data-lucide="mail" class="w-3.5 h-3.5"></i><span>Contact via Email</span>
+            </a>
+          </div>
+
+          <form id="fbk-form" onsubmit="return fbkSubmit(event)" class="space-y-2" autocomplete="off" novalidate>
+            <div id="fbk-closed" class="hidden p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 text-center">Public comments are currently closed. You can still reach us with <b>Contact via Email</b>.</div>
+            <div id="fbk-fields" class="space-y-2">
+              <button type="button" id="fbk-identity-toggle" onclick="fbkToggleIdentity()" aria-expanded="false" class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 btn-tap">
+                <span class="flex items-center gap-2 min-w-0"><i data-lucide="user-round" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i><span class="truncate">Posting as <b id="fbk-as" class="text-white">Guest</b></span></span>
+                <span class="text-[11px] text-amber-400 font-semibold shrink-0">Guest Identity</span>
+              </button>
+              <div id="fbk-identity" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label for="fbk-name" class="block text-[11px] font-semibold text-slate-400 mb-1">Display name <span class="font-normal">(optional)</span></label>
+                  <input id="fbk-name" type="text" maxlength="40" placeholder="Guest" oninput="fbkUpdateAs()" class="fbk-field" />
+                </div>
+                <div>
+                  <label for="fbk-email" class="block text-[11px] font-semibold text-slate-400 mb-1">Email <span class="font-normal">(optional · private, never shown)</span></label>
+                  <input id="fbk-email" type="email" maxlength="120" inputmode="email" placeholder="you@example.com" class="fbk-field" />
+                </div>
+              </div>
+              <div class="fbk-hp" aria-hidden="true"><label>Website<input id="fbk-website" type="text" tabindex="-1" autocomplete="off" /></label></div>
+              <div>
+                <textarea id="fbk-text" rows="3" maxlength="600" placeholder="Write your comment or suggestion…" oninput="fbkCounter()" class="fbk-field" style="resize:vertical;min-height:76px" aria-label="Comment"></textarea>
+                <div class="flex items-center justify-between mt-1 gap-2">
+                  <span id="fbk-msg" class="text-[11px] text-slate-400 min-w-0" role="status" aria-live="polite"></span>
+                  <span id="fbk-chars" class="text-[10px] text-slate-500 shrink-0">0/600</span>
+                </div>
+              </div>
+              <button type="submit" id="fbk-submit" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap flex items-center justify-center gap-1.5">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i><span>Submit</span>
+              </button>
+            </div>
+          </form>
+
+          <div id="fbk-list" class="space-y-2"></div>
+          <button type="button" id="fbk-more" onclick="fbkShowMore()" class="hidden w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-semibold btn-tap">Show more comments</button>
+        </div>
+
       </section>
 
       <!-- ================================================================= -->
@@ -2769,7 +2891,7 @@
       </div>
       <div class="min-w-0">
         <div class="text-xs font-bold text-white truncate">Settings</div>
-        <div class="text-[10px] text-slate-400 truncate">Appearance, video &amp; privacy</div>
+        <div class="text-[10px] text-slate-400 truncate">General, video, music &amp; privacy</div>
       </div>
     </button>
   </div>
@@ -2873,7 +2995,7 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-4 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold">
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold">
           <button type="button" onclick="switchAdminSubTab('roster')" id="admintab-btn-roster"
             class="admintab-btn py-1.5 px-2 rounded-lg bg-amber-500 text-slate-950 transition">Trainees</button>
           <button type="button" onclick="switchAdminSubTab('security')" id="admintab-btn-security"
@@ -2882,6 +3004,8 @@
             class="admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition">Firebase</button>
           <button type="button" onclick="switchAdminSubTab('backup')" id="admintab-btn-backup"
             class="admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition">Backup</button>
+          <button type="button" onclick="switchAdminSubTab('feedback')" id="admintab-btn-feedback"
+            class="admintab-btn py-1.5 px-1 rounded-lg text-slate-400 hover:text-white transition">Feedback</button>
         </div>
 
         <!-- Sub-Tab 1: Roster Management -->
@@ -3012,6 +3136,12 @@
             <pre id="firestore-rules-code" class="text-[10px] font-mono text-slate-400 bg-slate-900 p-2.5 rounded-lg overflow-x-auto leading-relaxed">rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function portal() { return get(/databases/$(database)/documents/iti_portals/chhotojagulia_elec_2025_27).data; }
+    function mode() { return portal().get('settings', {}).get('commentsMode', 'moderated'); }
+    function isAdmin() {
+      return request.auth != null &amp;&amp; request.auth.token.email != null
+        &amp;&amp; portal().settings.adminEmail.lower() == request.auth.token.email.lower();
+    }
     match /iti_portals/{portalId} {
       allow read: if true;
       allow write: if request.auth != null;
@@ -3020,9 +3150,59 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null;
     }
+    // Public comments (no email stored here)
+    match /iti_portals/{portalId}/comments/{cid} {
+      allow read: if resource.data.status == 'visible' || isAdmin();
+      allow create: if mode() != 'off'
+        &amp;&amp; request.resource.data.keys().hasOnly(['name','text','status','hasEmail','createdAt'])
+        &amp;&amp; request.resource.data.name is string &amp;&amp; request.resource.data.name.size() &gt; 0 &amp;&amp; request.resource.data.name.size() &lt;= 40
+        &amp;&amp; request.resource.data.text is string &amp;&amp; request.resource.data.text.size() &gt;= 5 &amp;&amp; request.resource.data.text.size() &lt;= 600
+        &amp;&amp; request.resource.data.hasEmail is bool
+        &amp;&amp; request.resource.data.createdAt == request.time
+        &amp;&amp; request.resource.data.status == (mode() == 'open' ? 'visible' : 'pending');
+      allow update, delete: if isAdmin();
+    }
+    // Private visitor emails: write-only for visitors, readable by admin only
+    match /iti_portals/{portalId}/feedback_private/{cid} {
+      allow create: if mode() != 'off'
+        &amp;&amp; request.resource.data.keys().hasOnly(['name','email','createdAt'])
+        &amp;&amp; request.resource.data.email is string &amp;&amp; request.resource.data.email.size() &lt;= 120
+        &amp;&amp; request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
   }
 }</pre>
           </div>
+        </div>
+
+
+        <!-- Sub-Tab 5: Comments & Feedback moderation -->
+        <div id="admintab-feedback" class="admintab-panel hidden space-y-3">
+          <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label for="fbk-admin-mode" class="block text-[11px] font-semibold text-slate-400 mb-1">Public comments</label>
+                <select id="fbk-admin-mode" onchange="fbkAdminSetMode(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
+                  <option value="moderated">Moderated – approve before public</option>
+                  <option value="open">Open – publish immediately</option>
+                  <option value="off">Off – hide all &amp; stop new comments</option>
+                </select>
+              </div>
+              <div>
+                <label for="fbk-admin-email" class="block text-[11px] font-semibold text-slate-400 mb-1">"Contact via Email" address</label>
+                <div class="flex gap-1.5">
+                  <input id="fbk-admin-email" type="email" placeholder="you@example.com" class="min-w-0 flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+                  <button type="button" onclick="fbkAdminSaveEmail()" class="px-3 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold btn-tap">Save</button>
+                </div>
+              </div>
+            </div>
+            <div id="fbk-admin-auth" class="hidden p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200 space-y-1.5">
+              <p id="fbk-admin-auth-msg"></p>
+              <button type="button" onclick="fbkAdminSignIn()" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 text-[11px] font-bold btn-tap">Sign in with Google Admin</button>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-1.5 text-[11px] font-bold" id="fbk-admin-filters"></div>
+          <div id="fbk-admin-list" class="space-y-1.5 max-h-72 overflow-y-auto pr-1"></div>
         </div>
 
         <!-- Sub-Tab 4: JSON Export / Import Backups -->
@@ -3071,6 +3251,21 @@ service cloud.firestore {
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 mb-1">Message</label>
           <textarea id="notice-body-input" rows="3" required placeholder="Write clear details for Electrician 2025–27 batch..."
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Time <span class="font-normal">(optional)</span></label>
+          <input type="time" id="notice-time-input"
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Important instructions <span class="font-normal">(optional)</span></label>
+          <textarea id="notice-instr-input" rows="2" placeholder="Rules, deadlines, what to bring..."
+            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Attachments <span class="font-normal">(optional · one https link per line, or "Label | link")</span></label>
+          <textarea id="notice-att-input" rows="2" placeholder="Timetable PDF | https://example.com/file.pdf"
             class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></textarea>
         </div>
         <button type="submit"
@@ -6119,7 +6314,7 @@ service cloud.firestore {
 
     function renderNoticeCardHTML(n) {
       return `
-        <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 space-y-1.5">
+        <article class="p-3 rounded-xl bg-slate-950 border border-slate-800/90 space-y-1.5" data-notice-id="${escapeHTML(n.id)}" role="button" tabindex="0" aria-label="Open notice: ${escapeHTML(n.title)}" onclick="openNoticeView(this.dataset.noticeId)">
           <div class="flex items-start justify-between gap-2">
             <h3 class="text-xs sm:text-sm font-bold text-white leading-snug">${escapeHTML(n.title)}${noticeNewBadgeHTML(n)}</h3>
             <div class="flex items-center gap-1.5 shrink-0">
@@ -6128,7 +6323,7 @@ service cloud.firestore {
               </span>
               ${
                 isAdminUnlocked
-                  ? `<button type="button" onclick="deleteNotice('${n.id}')" title="Delete Notice"
+                  ? `<button type="button" onclick="event.stopPropagation(); deleteNotice('${n.id}')" title="Delete Notice"
                       class="p-1 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">
                       <i data-lucide="trash-2" class="w-3 h-3"></i>
                     </button>`
@@ -6136,7 +6331,8 @@ service cloud.firestore {
               }
             </div>
           </div>
-          <p class="text-xs text-slate-300 leading-relaxed">${escapeHTML(n.body)}</p>
+          <p class="nv-clamp text-xs text-slate-300 leading-relaxed">${escapeHTML(n.body)}</p>
+          <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400">Tap to read full notice <i data-lucide="maximize-2" class="w-3 h-3"></i></span>
         </article>
       `;
     }
@@ -6334,7 +6530,8 @@ service cloud.firestore {
     function renderVideoCardItemHTML(v, targetPrefix) {
       const isDirect = v.kind === "direct";
       const cleanId = isDirect ? "" : extractYouTubeId(v.ytId);
-      const thumbUrl = cleanId ? `https://i.ytimg.com/vi/${cleanId}/hqdefault.jpg` : "";
+      const customThumb = v.thumb && /^(https?:\/\/\S+|data:image\/)/i.test(String(v.thumb)) ? String(v.thumb) : "";
+      const thumbUrl = customThumb ? escapeHTML(customThumb) : (cleanId ? `https://i.ytimg.com/vi/${cleanId}/hqdefault.jpg` : "");
       const safeTitle = escapeHTML(v.title);
       const safeId = escapeHTML(v.id);
       const isPlaylistVideo = v.source === "playlist";
@@ -6350,7 +6547,7 @@ service cloud.firestore {
                   <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-1.5">
                     <i data-lucide="${isDirect ? "film" : "zap"}" class="w-4 h-4"></i>
                   </div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${isDirect ? "Direct Workshop Video" : isPlaylistVideo ? "Playlist Video" : "Electrician Lab Demo"}</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${v._cat === "music" ? "Music Track" : isDirect ? "Direct Workshop Video" : isPlaylistVideo ? "Playlist Video" : "Electrician Lab Demo"}</span>
                   <span data-vid-unavail class="hidden mt-1 px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-[9px] font-bold text-rose-300">Video Unavailable</span>
                 </div>
 
@@ -6391,6 +6588,7 @@ service cloud.firestore {
                 <h3 class="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-amber-400 transition flex-1 min-w-0">${safeTitle}</h3>
                 <span data-vid-playing-pill class="hidden shrink-0 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/45 text-[9px] font-extrabold text-amber-300 uppercase tracking-wide">Playing</span>
               </div>
+              ${v.artist || (v._cat === "music" && v._subName) ? `<p class="text-[10.5px] font-semibold text-amber-300/90 truncate">${escapeHTML([v.artist, v._cat === "music" ? v._subName : ""].filter(Boolean).join(" · "))}</p>` : ""}
               ${v.desc ? `<p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${escapeHTML(v.desc)}</p>` : ""}
             </div>
           </div>
@@ -6588,6 +6786,7 @@ service cloud.firestore {
         const vid = document.createElement("video");
         vid.className = "w-full h-full object-contain bg-black";
         vid.src = videoObj.directUrl;
+        try { const pm = (appState.videoMeta || {})[videoObj.id]; if (pm && /^(https?:\/\/\S+|data:image\/)/i.test(pm.thumb || "")) vid.poster = pm.thumb; } catch (e) {}
         vid.controls = true;
         vid.playsInline = true;
         vid.setAttribute("playsinline", "");
@@ -6920,10 +7119,32 @@ service cloud.firestore {
     function playNextVideo(prefix) {
       const rt = ytRuntime[prefix];
       const cur = rt.videoId;
-      const next = cur ? findNextPlayable(prefix, cur) : null;
+      if (!cur) {
+        // nothing playing yet: Next starts the first playable item of the current list (user gesture, so sound is allowed)
+        const first = (videoOrderCache[prefix] || []).find(isPlayableVideo);
+        if (first) startVideo(prefix, first.id, { auto: false, muted: false, scroll: true });
+        else showToast("Nothing to play in this list", "info");
+        return;
+      }
+      const next = findNextPlayable(prefix, cur);
       if (!next) { showToast("No more videos in this list", "info"); return; }
       if (next.wrapped) completedIds[prefix].clear();
       startVideo(prefix, next.video.id, { auto: false, muted: currentMuted(rt), scroll: true });
+    }
+
+    function playPrevVideo(prefix) {
+      const rt = ytRuntime[prefix];
+      const order = videoOrderCache[prefix] || [];
+      const idx = order.findIndex((v) => v.id === rt.videoId);
+      if (idx < 0) { showToast("Start an item first, then use Previous", "info"); return; }
+      let target = null;
+      for (let i = idx - 1; i >= 0; i--) { if (isPlayableVideo(order[i])) { target = order[i]; break; } }
+      if (!target && autoplayLoop) {
+        for (let i = order.length - 1; i > idx; i--) { if (isPlayableVideo(order[i])) { target = order[i]; break; } }
+      }
+      if (!target) { showToast("This is the first item in the list", "info"); return; }
+      completedIds[prefix].delete(target.id);
+      startVideo(prefix, target.id, { auto: false, muted: currentMuted(rt), scroll: true });
     }
 
     function handleVideoFailed(prefix, videoObj, token, code) {
@@ -7057,6 +7278,12 @@ service cloud.firestore {
     function autoplayBarHTML(prefix) {
       return `
         <div class="vid-autoplay-bar" data-autoplay-bar="${prefix}">
+          <button type="button" class="vid-ap-btn vid-ap-nav" onclick="playPrevVideo('${prefix}')" aria-label="Previous in list" title="Previous">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+          </button>
+          <button type="button" class="vid-ap-btn vid-ap-nav" onclick="playNextVideo('${prefix}')" aria-label="Next in list" title="Next">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+          </button>
           <button type="button" class="vid-ap-btn" role="switch" aria-checked="false" data-autoplay-toggle
             onclick="toggleAutoplay()" title="Play the next video automatically when one finishes">
             <span class="vid-ap-switch" aria-hidden="true"></span>
@@ -8166,6 +8393,7 @@ service cloud.firestore {
 
     function lockAdminMode() {
       isAdminUnlocked = false;
+      if (window.fbkAdminStop) window.fbkAdminStop();
       updateAdminUIState();
       closeModal("modal-admin");
       showToast("Admin session locked", "info");
@@ -8181,6 +8409,7 @@ service cloud.firestore {
           ? "admintab-btn py-1.5 px-2 rounded-lg bg-amber-500 text-slate-950 transition"
           : "admintab-btn py-1.5 px-2 rounded-lg text-slate-400 hover:text-white transition";
       });
+      if (tab === "feedback" && window.fbkAdminStart) window.fbkAdminStart();
     }
 
     function loadCustomGalleryPhotos() {
@@ -8577,6 +8806,8 @@ service cloud.firestore {
         return;
       }
       document.getElementById("notice-date-input").value = getTodayISO();
+      const tEl = document.getElementById("notice-time-input");
+      if (tEl) { const d = new Date(); tEl.value = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
       openModal("modal-post-notice");
     }
 
@@ -8586,7 +8817,14 @@ service cloud.firestore {
       const title = document.getElementById("notice-title-input").value.trim();
       const date = document.getElementById("notice-date-input").value;
       const body = document.getElementById("notice-body-input").value.trim();
-      appState.notices.unshift({ id: "not-" + Date.now(), title, date, body });
+      const nn = { id: "not-" + Date.now(), title, date, body };
+      const tv = (document.getElementById("notice-time-input") || {}).value;
+      const iv = ((document.getElementById("notice-instr-input") || {}).value || "").trim();
+      const atts = parseNoticeAttachments((document.getElementById("notice-att-input") || {}).value || "");
+      if (tv) nn.time = tv;
+      if (iv) nn.instructions = iv;
+      if (atts.length) nn.attachments = atts;
+      appState.notices.unshift(nn);
       saveLocalState(true);
       renderNotices();
       e.target.reset();
@@ -11000,31 +11238,51 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .vl-sw[aria-checked=true]{background:#f59e0b}.vl-sw[aria-checked=true] i{transform:translateX(18px)}
 .vl-seg{flex:none;display:inline-flex;border-radius:10px;border:1px solid var(--vl-bd);overflow:hidden}.vl-seg button{padding:.4rem .65rem;font-size:11px;font-weight:700;color:var(--vl-tx)}.vl-seg button[aria-pressed=true]{background:var(--vl-onbg);color:var(--vl-on)}
 .vl-val{font-size:12px;font-weight:600;color:var(--vl-pt);text-align:right;max-width:55%;overflow-wrap:anywhere}
+/* music subcategory bar + admin extras */
+.vl-subbox{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .22s ease,opacity .2s,visibility 0s .22s}
+.vl-bar.vl-music .vl-subbox{grid-template-rows:1fr;opacity:1;visibility:visible;transition-delay:0s}.vl-subbox>div{overflow:hidden;min-height:0}
+.vl-subscroll{margin-top:.15rem}.vl-subscroll .vl-cat{padding:.32rem .7rem;font-size:11px}
+.vid-ap-nav{padding:2px 7px!important}
+.vl-mx{display:grid;gap:.4rem}.vl-mx[hidden]{display:none}[data-mxm][hidden]{display:none}
+.vl-crow.vl-wrap{flex-wrap:wrap}.vl-crow.vl-wrap input{flex:1 1 100%}
 </style>
 <script id="vl-script">
 (function () {
   "use strict";
-  var DEF = [["trade","Videos"],["theory","Electrician Theory"],["practical","Practical Classes"],["workshop","Workshop Videos"],["iti","ITI Lessons"],["exam","Exam Preparation"],["tutorials","Important Tutorials"],["general","General Videos"]];
+  var DEF = [["trade","Videos"],["theory","Electrician Theory"],["practical","Practical Classes"],["workshop","Workshop Videos"],["iti","ITI Lessons"],["exam","Exam Preparation"],["tutorials","Important Tutorials"],["music","Music"],["general","General Videos"]];
   var PK = "iti_vl_prefs_v1", CK = "iti_vl_lastcat_v1", P = ["notices", "videos"];
   function rd(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
   function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-  var PD = { catAuto: true, remember: true, reduce: false, size: "md", toasts: "all", nocookie: false };
+  var PD = { catAuto: true, remember: true, reduce: false, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
   var prefs = Object.assign({}, PD, rd(PK));
-  var st = { notices: { cat: "all", t: null }, videos: { cat: "all", t: null } };
-  if (prefs.remember) { var lc = rd(CK); P.forEach(function (p) { if (lc[p]) st[p].cat = lc[p]; }); }
-  var prevTab = "home", mOpen = false, mKey = "all";
+  var st = { notices: { cat: "all", sub: "all", t: null }, videos: { cat: "all", sub: "all", t: null } };
+  (function () { var lc = rd(CK); P.forEach(function (p) { if (prefs.remember && lc[p]) st[p].cat = lc[p]; if (prefs.musicRemember && lc[p + "_sub"]) st[p].sub = lc[p + "_sub"]; }); })();
+  function persist() {
+    var o = {};
+    if (prefs.remember) P.forEach(function (q) { o[q] = st[q].cat; });
+    if (prefs.musicRemember) P.forEach(function (q) { o[q + "_sub"] = st[q].sub; });
+    if (Object.keys(o).length) wr(CK, o); else { try { localStorage.removeItem(CK); } catch (e) {} }
+  }
+  var prevTab = "home", mOpen = false, mKey = "all", mPreset = null;
   function esc(s) { return escapeHTML(s); }
   function gid(p) { return p === "notices" ? "notices-videos-grid" : "full-videos-grid"; }
   function svg(d) { return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>"; }
   var I = { s: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', pv: '<polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/>', nx: '<polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/>', m: '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="8" cy="18" r="2" fill="currentColor"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>', f: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3z"/>' };
 
   /* ---------- data model (stored inside appState => same localStorage + Firebase path) ---------- */
+  var MDEF = [["relaxing", "Relaxing Music"], ["lofi", "Lo-fi Music"], ["instrumental", "Instrumental Music"], ["motivational", "Motivational Music"], ["background", "Background Music"], ["trending", "Trending Music"], ["devotional", "Devotional Music"], ["other", "Other Music"]];
   function ens() {
     var a = appState;
     if (!Array.isArray(a.videoCategories)) a.videoCategories = DEF.map(function (d) { return { id: d[0], name: d[1] }; });
     a.videoCategories.forEach(function (c) { if (c && c.id === "trade" && c.name === "Trade Videos") c.name = "Videos"; });
     if (!a.videoMeta || typeof a.videoMeta !== "object") a.videoMeta = {};
     if (!a.videoOrders || typeof a.videoOrders !== "object") a.videoOrders = {};
+    /* Music lives in the same video records; it is just a built-in category plus its own subcategory list */
+    if (!a.videoCategories.some(function (c) { return c && c.id === "music"; })) {
+      var gi = a.videoCategories.findIndex(function (c) { return c && c.id === "general"; }), mc = { id: "music", name: "Music" };
+      if (gi < 0) a.videoCategories.push(mc); else a.videoCategories.splice(gi, 0, mc);
+    }
+    if (!Array.isArray(a.musicSubs)) a.musicSubs = MDEF.map(function (d) { return { id: d[0], name: d[1] }; });
   }
   var SEED = [["gs", "General Studies (GS)"], ["competitive", "Competitive Examinations"], ["gk", "General Knowledge"], ["current", "Current Affairs"]];
   var SEEDIDS = SEED.map(function (x) { return x[0]; });
@@ -11038,11 +11296,24 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   }
   function cats() { ens(); return appState.videoCategories; }
   function cname(id) { var c = cats().filter(function (x) { return x.id === id; })[0]; return c ? c.name : "Uncategorised"; }
+  function subs() { ens(); return appState.musicSubs; }
+  function sname(id) { var s = subs().filter(function (x) { return x.id === id; })[0]; return s ? s.name : ""; }
+  function rs(id) { return subs().some(function (x) { return x.id === id; }) ? id : ""; }
+  function okThumb(u) { u = String(u || "").trim(); return (/^https?:\/\/\S+$/i.test(u) || (/^data:image\//i.test(u) && u.length < 100000)) ? u : ""; }
+  function thumbHTML(v, q) {
+    var id = v.kind === "youtube" ? extractYouTubeId(v.ytId) : "", u = okThumb(v.thumb) || (id ? "https://i.ytimg.com/vi/" + id + "/" + q + ".jpg" : "");
+    return u ? '<img loading="lazy" decoding="async" alt="" src="' + esc(u) + '" onerror="this.remove()">' : svg(I.f);
+  }
+  function fixSub(p) { if (st[p].sub !== "all" && !subs().some(function (s) { return s.id === st[p].sub && !s.hidden; })) st[p].sub = "all"; }
   function rc(id) { var c = cats(); if (id && c.some(function (x) { return x.id === id; })) return id; return c.some(function (x) { return x.id === "general"; }) ? "general" : ""; }
   function dec(v) {
     var m = (appState.videoMeta || {})[v.id] || {}, o = Object.assign({}, v);
     if (v.source === "playlist") { if (m.title) o.title = m.title; if (m.desc !== undefined) o.desc = m.desc; }
-    o._cat = rc(m.category); o._hid = !!m.hidden; return o;
+    o._cat = rc(m.category); o._hid = !!m.hidden;
+    o.artist = String(m.artist || "").trim(); o.thumb = m.thumb || ""; o.tags = m.tags || "";
+    o._sub = o._cat === "music" ? rs(m.sub) : ""; o._subName = o._sub ? sname(o._sub) : "";
+    var sb = o._sub ? subs().filter(function (s) { return s.id === o._sub; })[0] : null; o._shid = !!(sb && sb.hidden);
+    return o;
   }
   function sorted(key, arr) {
     var ord = (appState.videoOrders || {})[key]; if (!ord || !ord.length) return arr;
@@ -11052,33 +11323,40 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     }).map(function (a) { return a[0]; });
   }
   function secOK(p, v) { var s = v.section || "both"; return p === "notices" ? (s === "both" || s === "home") : (s === "both" || s === "lab"); }
-  function visAll(p) { ens(); return sorted("all", normalizeVideosList(appState.videos).filter(function (v) { return secOK(p, v); }).map(dec).filter(function (v) { return !v._hid; })); }
+  function visAll(p) { ens(); return sorted("all", normalizeVideosList(appState.videos).filter(function (v) { return secOK(p, v); }).map(dec).filter(function (v) { return !v._hid && !v._shid; })); }
   window.vlApplyView = function (p, list) {
-    ens(); var cat = st[p].cat, out = list.map(dec).filter(function (v) { return !v._hid; });
-    if (cat !== "all") out = out.filter(function (v) { return v._cat === cat; });
-    return sorted(cat, out);
+    ens(); var cat = st[p].cat, sub = st[p].sub, key = cat, out = list.map(dec).filter(function (v) { return !v._hid && !v._shid; });
+    /* educational lists never contain music, so sequential playback can't mix the two */
+    out = cat === "all" ? out.filter(function (v) { return v._cat !== "music"; }) : out.filter(function (v) { return v._cat === cat; });
+    if (cat === "music" && sub !== "all") { out = out.filter(function (v) { return v._sub === sub; }); key = "music:" + sub; }
+    return sorted(key, out);
   };
-  window.vlEmptyText = function (p) { var c = st[p].cat; return c === "all" ? "No trade videos added for this section yet." : "No videos in " + esc(cname(c)) + " yet."; };
+  window.vlEmptyText = function (p) {
+    var c = st[p].cat;
+    if (c === "music") return st[p].sub === "all" ? "No music added yet." : "No tracks in " + esc(sname(st[p].sub)) + " yet.";
+    return c === "all" ? "No trade videos added for this section yet." : "No videos in " + esc(cname(c)) + " yet.";
+  };
 
   function commit(fn, msg) {
     ens();
-    var bk = JSON.stringify({ c: appState.videoCategories, m: appState.videoMeta, o: appState.videoOrders, v: appState.videos });
+    var bk = JSON.stringify({ c: appState.videoCategories, m: appState.videoMeta, o: appState.videoOrders, v: appState.videos, s: appState.musicSubs });
     try { fn(); localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); }
-    catch (e) { var b = JSON.parse(bk); appState.videoCategories = b.c; appState.videoMeta = b.m; appState.videoOrders = b.o; appState.videos = b.v; showToast("Could not save — storage is full or unavailable. Change not applied.", "error"); return false; }
+    catch (e) { var b = JSON.parse(bk); appState.videoCategories = b.c; appState.videoMeta = b.m; appState.videoOrders = b.o; appState.videos = b.v; appState.musicSubs = b.s; showToast("Could not save — storage is full or unavailable. Change not applied.", "error"); return false; }
     saveLocalState(true); refresh(); if (msg) showToast(msg, "success"); return true;
   }
   function refresh() {
     chipsAll();
-    P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; paint(p, false); renderVideoCards(gid(p), p, MAX_VIDEOS_CAPACITY); });
+    P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); renderVideoCards(gid(p), p, MAX_VIDEOS_CAPACITY); });
     if (mOpen) renderManage();
   }
 
   /* ---------- category bar ---------- */
   function bar(p) { return document.querySelector('.vl-bar[data-vl="' + p + '"]'); }
   var TB = '<div class="vl-row"><div class="vl-scroll" role="tablist" aria-label="Video categories"></div><div class="vl-tools">' +
-    '<button type="button" class="vl-ico" data-vl-search aria-expanded="false" title="Search videos" aria-label="Search videos">' + svg(I.s) + '</button>' +
+    '<button type="button" class="vl-ico" data-vl-search aria-expanded="false" title="Search videos &amp; music" aria-label="Search videos and music">' + svg(I.s) + '</button>' +
     '<button type="button" class="vl-ico" data-vl-manage hidden title="Manage videos &amp; categories" aria-label="Manage videos">' + svg(I.m) + '</button></div></div>' +
-    '<div class="vl-sbox"><div><div class="vl-input">' + svg(I.s) + '<input type="search" placeholder="Search videos by title, topic or category" autocomplete="off" aria-label="Search videos" /><button type="button" data-vl-clear hidden aria-label="Clear search">' + svg(I.x) + '</button></div><div class="vl-results" aria-live="polite"></div></div></div>';
+    '<div class="vl-subbox"><div><div class="vl-scroll vl-subscroll" role="tablist" aria-label="Music subcategories"></div></div></div>' +
+    '<div class="vl-sbox"><div><div class="vl-input">' + svg(I.s) + '<input type="search" placeholder="Search videos &amp; music — title, artist, topic" autocomplete="off" aria-label="Search videos" /><button type="button" data-vl-clear hidden aria-label="Clear search">' + svg(I.x) + '</button></div><div class="vl-results" aria-live="polite"></div></div></div>';
   function mount() {
     P.forEach(function (p) {
       if (bar(p)) return;
@@ -11087,6 +11365,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       d.querySelector(".vl-scroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) setCat(p, b.getAttribute("data-cat"), true); });
       d.querySelector("[data-vl-search]").onclick = function () { toggleSearch(p); };
       d.querySelector("[data-vl-manage]").onclick = openManage;
+      d.querySelector(".vl-subscroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) setSub(p, b.getAttribute("data-sub"), true); });
       var inp = d.querySelector("input");
       inp.addEventListener("input", function () { runSearch(p); });
       inp.addEventListener("keydown", function (e) { if (e.key === "Escape") toggleSearch(p, false); });
@@ -11103,15 +11382,32 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
         if (!c.hideEmpty || isAdminUnlocked || st[p].cat === c.id) return true;
         return shown.some(function (v) { return v._cat === c.id; });
       }));
-      d.querySelector(".vl-scroll").innerHTML = list.map(function (c) { return '<button type="button" role="tab" class="vl-cat" data-cat="' + esc(c.id) + '">' + esc(c.name) + "</button>"; }).join("");
+      var sc = d.querySelector(".vl-row .vl-scroll"), html = list.map(function (c) { return '<button type="button" role="tab" class="vl-cat" data-cat="' + esc(c.id) + '">' + esc(c.name) + "</button>"; }).join("");
+      if (sc._sig !== html) { sc.innerHTML = html; sc._sig = html; } /* untouched DOM = no flicker, scroll position kept */
+      subRow(p, shown);
       paint(p, false);
     });
   }
+  function subRow(p, shown) {
+    var d = bar(p); if (!d) return; shown = shown || visAll(p);
+    d.classList.toggle("vl-music", st[p].cat === "music");
+    var sc = d.querySelector(".vl-subscroll"); if (!sc) return;
+    var list = [{ id: "all", name: "All Music" }].concat(subs().filter(function (s) {
+      if (s.hidden) return false;
+      if (!prefs.musicHideEmpty || isAdminUnlocked || st[p].sub === s.id) return true;
+      return shown.some(function (v) { return v._cat === "music" && v._sub === s.id; });
+    }));
+    var html = list.map(function (c) { return '<button type="button" role="tab" class="vl-cat" data-sub="' + esc(c.id) + '">' + esc(c.name) + "</button>"; }).join("");
+    if (sc._sig !== html) { sc.innerHTML = html; sc._sig = html; }
+  }
   function paint(p, scroll) {
-    var d = bar(p); if (!d) return; var sc = d.querySelector(".vl-scroll");
-    Array.prototype.forEach.call(sc.children, function (b) {
-      var on = b.getAttribute("data-cat") === st[p].cat; b.classList.toggle("on", on); b.setAttribute("aria-selected", on);
-      if (on && scroll) { try { sc.scrollTo({ left: b.offsetLeft - (sc.clientWidth - b.offsetWidth) / 2, behavior: prefs.reduce ? "auto" : "smooth" }); } catch (e) {} }
+    var d = bar(p); if (!d) return;
+    [[".vl-row .vl-scroll", "data-cat", st[p].cat], [".vl-subscroll", "data-sub", st[p].sub]].forEach(function (r) {
+      var sc = d.querySelector(r[0]); if (!sc) return;
+      Array.prototype.forEach.call(sc.children, function (b) {
+        var on = b.getAttribute(r[1]) === r[2]; b.classList.toggle("on", on); b.setAttribute("aria-selected", on);
+        if (on && scroll && sc.clientWidth) { try { sc.scrollTo({ left: b.offsetLeft - (sc.clientWidth - b.offsetWidth) / 2, behavior: prefs.reduce ? "auto" : "smooth" }); } catch (e) {} }
+      });
     });
   }
   function rerender(p) {
@@ -11122,7 +11418,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     renderVideoCards(gid(p), p, MAX_VIDEOS_CAPACITY);
   }
   function autoCat(p) {
-    if (!prefs.catAuto) return;
+    if (!(st[p].cat === "music" ? prefs.musicAuto : prefs.catAuto)) return;
     var cur = activeInlinePlayerState[p] && activeInlinePlayerState[p].videoId;
     if (cur) return; /* a video from this list is already playing */
     var first = (videoOrderCache[p] || []).filter(isPlayableVideo)[0];
@@ -11130,11 +11426,8 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     autoFirstDone[p] = true;
     startVideo(p, first.id, { auto: true, muted: true });
   }
-  function setCat(p, id, anim) {
-    var s = st[p]; if (s.cat === id) return;
-    var ids = ["all"].concat(cats().map(function (c) { return c.id; })), dir = ids.indexOf(id) > ids.indexOf(s.cat) ? 1 : -1;
-    s.cat = id; if (prefs.remember) { var o = {}; P.forEach(function (q) { o[q] = st[q].cat; }); wr(CK, o); }
-    paint(p, true); clearTimeout(s.t);
+  function fade(p, dir, anim) {
+    var s = st[p]; clearTimeout(s.t);
     var g = document.getElementById(gid(p)); if (!g) return;
     var fx = anim && !prefs.reduce;
     function go() {
@@ -11142,6 +11435,16 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       if (fx) { g.style.setProperty("--vl-dx", dir * 14 + "px"); g.classList.add("vl-in"); s.t = setTimeout(function () { g.classList.remove("vl-in"); g.style.minHeight = ""; }, 260); } else g.style.minHeight = "";
     }
     if (fx) { g.style.minHeight = g.offsetHeight + "px"; g.style.setProperty("--vl-dx", -dir * 14 + "px"); g.classList.remove("vl-in"); g.classList.add("vl-out"); s.t = setTimeout(go, 130); } else go();
+  }
+  function setCat(p, id, anim) {
+    var s = st[p]; if (s.cat === id) return;
+    var ids = ["all"].concat(cats().map(function (c) { return c.id; })), dir = ids.indexOf(id) > ids.indexOf(s.cat) ? 1 : -1;
+    s.cat = id; fixSub(p); subRow(p); persist(); paint(p, true); fade(p, dir, anim);
+  }
+  function setSub(p, id, anim) {
+    var s = st[p]; if (s.sub === id) return;
+    var ids = ["all"].concat(subs().map(function (x) { return x.id; })), dir = ids.indexOf(id) > ids.indexOf(s.sub) ? 1 : -1;
+    s.sub = id; persist(); paint(p, true); fade(p, dir, anim);
   }
 
   /* ---------- dedicated video search (independent of the trainee/site search) ---------- */
@@ -11154,24 +11457,25 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     var d = bar(p), inp = d.querySelector("input"), q = inp.value.trim().toLowerCase(), box = d.querySelector(".vl-results");
     d.querySelector("[data-vl-clear]").hidden = !q;
     if (!q) { box.classList.remove("on"); box.innerHTML = ""; return; }
-    var terms = q.split(/\s+/), rows = [];
+    var terms = q.replace(/[-_]/g, " ").split(/\s+/).filter(Boolean), rows = [];
     visAll(p).forEach(function (v) {
-      var t = v.title.toLowerCase(), hay = t + " " + (v.desc || "").toLowerCase() + " " + cname(v._cat).toLowerCase() + " " + (v.duration || "").toLowerCase();
-      if (terms.every(function (x) { return hay.indexOf(x) > -1; })) rows.push({ v: v, s: t.indexOf(q) > -1 ? 0 : 1 });
+      var t = v.title.toLowerCase(), hay = (t + " " + (v.artist || "") + " " + (v.desc || "") + " " + cname(v._cat) + " " + (v._subName || "") + " " + (v.tags || "") + " " + (v.duration || "")).toLowerCase().replace(/[-_,]/g, " "), tight = hay.replace(/\s/g, "");
+      if (terms.every(function (x) { return hay.indexOf(x) > -1 || tight.indexOf(x) > -1; })) rows.push({ v: v, s: t.indexOf(q) > -1 ? 0 : (v.artist || "").toLowerCase().indexOf(q) > -1 ? 1 : 2 });
     });
     rows = rows.map(function (r, i) { r.i = i; return r; }).sort(function (a, b) { return a.s - b.s || a.i - b.i; }).slice(0, 30);
     box.classList.add("on");
     box.innerHTML = rows.length
-      ? '<div class="vl-cnt">' + rows.length + (rows.length === 1 ? " video" : " videos") + " found</div>" + rows.map(function (r) {
-          var v = r.v, id = v.kind === "youtube" ? extractYouTubeId(v.ytId) : "";
-          return '<button type="button" class="vl-res" data-vid="' + esc(v.id) + '"><span class="vl-th">' + (id ? '<img loading="lazy" decoding="async" alt="" src="https://i.ytimg.com/vi/' + id + '/mqdefault.jpg" onerror="this.remove()">' : svg(I.f)) + '</span><span class="vl-rt"><b>' + esc(v.title) + "</b><small>" + esc(cname(v._cat)) + (v.duration ? " · " + esc(v.duration) : "") + "</small></span></button>";
+      ? '<div class="vl-cnt">' + rows.length + (rows.length === 1 ? " result" : " results") + " found</div>" + rows.map(function (r) {
+          var v = r.v, sub = [cname(v._cat) + (v._subName ? " › " + v._subName : ""), v.artist, v.duration].filter(Boolean).join(" · ");
+          return '<button type="button" class="vl-res" data-vid="' + esc(v.id) + '"><span class="vl-th">' + thumbHTML(v, "mqdefault") + '</span><span class="vl-rt"><b>' + esc(v.title) + "</b><small>" + esc(sub) + "</small></span></button>";
         }).join("")
-      : '<div class="vl-none"><b>No Videos Found</b>Try a different title, topic or category name.</div>';
+      : '<div class="vl-none"><b>No Results Found</b>Try a different title, artist, topic, category or subcategory.</div>';
   }
   function openResult(p, id) {
     var v = visAll(p).filter(function (x) { return x.id === id; })[0]; if (!v) return;
     var c = v._cat && cats().some(function (x) { return x.id === v._cat; }) ? v._cat : "all";
-    toggleSearch(p, false); st[p].cat = c; paint(p, true); rerender(p);
+    toggleSearch(p, false); st[p].cat = c; if (c === "music") st[p].sub = v._sub || "all"; fixSub(p);
+    subRow(p); persist(); paint(p, true); rerender(p);
     startVideo(p, id, { auto: false, muted: false, scroll: true });
   }
 
@@ -11181,6 +11485,41 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     e = document.createElement("div"); e.id = "vl-manage"; e.className = "vl-m"; e.setAttribute("role", "dialog"); e.setAttribute("aria-label", "Manage video library");
     e.innerHTML = '<div class="vl-mb"><div class="vl-mh"><span>Manage Video Library</span><button type="button" class="vl-ico" data-x aria-label="Close">' + svg(I.x) + '</button></div><div class="vl-mbody"><section><h4>Categories</h4><div id="vl-mc"></div><form class="vl-add" id="vl-madd"><input maxlength="40" placeholder="New category name" aria-label="New category name"><button class="vl-b pri">Add</button></form></section><section><h4>Videos &amp; sequence</h4><select id="vl-mf" aria-label="Category to arrange"></select><p class="vl-hint">Drag ⠿ (or use ▲ ▼) to set the order. Each category keeps its own sequence; Previous/Next and autoplay follow it.</p><ul class="vl-list" id="vl-ml"></ul><button type="button" class="vl-b pri" id="vl-mnew" style="margin-top:.6rem">+ Add video</button></section></div></div>';
     document.body.appendChild(e);
+    e.querySelector(".vl-mh span").textContent = "Manage Video & Music Library";
+    var secs = e.querySelectorAll(".vl-mbody > section");
+    secs[0].insertAdjacentHTML("afterend", '<section><h4>Music subcategories</h4><p class="vl-hint">Independent from the video categories. “All Music” always shows every visible subcategory.</p><div id="vl-ms"></div><form class="vl-add" id="vl-msadd"><input maxlength="40" placeholder="New music subcategory" aria-label="New music subcategory"><button class="vl-b pri">Add</button></form></section>');
+    secs[1].querySelector("h4").textContent = "Videos, music & sequence";
+    e.querySelector("#vl-mnew").textContent = "+ Add video / music";
+    e.querySelector("#vl-msadd").onsubmit = function (ev) {
+      ev.preventDefault(); var inp = ev.target.querySelector("input"), n = inp.value.trim().replace(/\s+/g, " ");
+      if (!n) return;
+      if (subs().some(function (s) { return s.name.toLowerCase() === n.toLowerCase(); }) || n.toLowerCase() === "all music") { showToast("A music subcategory with this name already exists", "error"); return; }
+      if (commit(function () { appState.musicSubs.push({ id: "m-" + Date.now().toString(36), name: n }); }, "Music subcategory added")) inp.value = "";
+    };
+    e.querySelector("#vl-ms").addEventListener("click", function (ev) {
+      var b = ev.target.closest("[data-a]"); if (!b) return; var row = b.closest("[data-id]"), id = row.getAttribute("data-id"), a = b.getAttribute("data-a");
+      if (a === "sup" || a === "sdn") {
+        commit(function () { var arr = appState.musicSubs, i = arr.findIndex(function (s) { return s.id === id; }), j = a === "sup" ? i - 1 : i + 1; if (i < 0 || j < 0 || j >= arr.length) return; var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }, "Subcategory order updated");
+      } else if (a === "sren") {
+        var n = row.querySelector("input").value.trim().replace(/\s+/g, " "); if (!n) { showToast("Name cannot be empty", "error"); return; }
+        if (subs().some(function (s) { return s.id !== id && s.name.toLowerCase() === n.toLowerCase(); }) || n.toLowerCase() === "all music") { showToast("A music subcategory with this name already exists", "error"); return; }
+        commit(function () { appState.musicSubs.forEach(function (s) { if (s.id === id) s.name = n; }); }, "Subcategory renamed");
+      } else if (a === "shide") {
+        commit(function () { appState.musicSubs.forEach(function (s) { if (s.id === id) s.hidden = !s.hidden; }); }, "Visibility updated");
+      } else if (a === "sdel") {
+        arm(b, function () {
+          commit(function () {
+            var dest = id !== "other" && subs().some(function (s) { return s.id === "other"; }) ? "other" : "";
+            Object.keys(appState.videoMeta).forEach(function (k) { var m = appState.videoMeta[k]; if (m && m.category === "music" && m.sub === id) m.sub = dest; });
+            appState.musicSubs = appState.musicSubs.filter(function (s) { return s.id !== id; });
+            delete appState.videoOrders["music:" + id]; if (mKey === "music:" + id) mKey = "music";
+          }, "Subcategory deleted — its tracks were kept");
+        });
+      }
+    });
+    e.querySelector("#vl-ml").addEventListener("change", function (ev) {
+      var s = ev.target.closest("select[data-c]"); if (!s) return; var x = s.closest(".vl-ie").querySelector(".vl-mx"); if (x) x.hidden = s.value !== "music";
+    });
     e.addEventListener("click", function (ev) { if (ev.target === e || ev.target.closest("[data-x]")) closeManage(); });
     e.querySelector("#vl-madd").onsubmit = function (ev) {
       ev.preventDefault(); var inp = ev.target.querySelector("input"), n = inp.value.trim().replace(/\s+/g, " ");
@@ -11188,10 +11527,11 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       if (commit(function () { appState.videoCategories.push({ id: "c-" + Date.now().toString(36), name: n }); }, "Category added")) inp.value = "";
     };
     e.querySelector("#vl-mf").onchange = function (ev) { mKey = ev.target.value; renderManage(); };
-    e.querySelector("#vl-mnew").onclick = function () { closeManage(); openVideoModal(); };
+    e.querySelector("#vl-mnew").onclick = function () { mPreset = { key: mKey }; closeManage(); openVideoModal(); };
     e.querySelector("#vl-mc").addEventListener("click", function (ev) {
       var b = ev.target.closest("[data-a]"); if (!b) return; var row = b.closest("[data-id]"), id = row.getAttribute("data-id");
       var cact = b.getAttribute("data-a");
+      if (cact === "del" && id === "music") { showToast("Music is a built-in category and can't be deleted — hide its subcategories instead", "error"); return; }
       if (cact === "cup" || cact === "cdn") {
         commit(function () { var a = appState.videoCategories, i = a.findIndex(function (c) { return c.id === id; }), j = cact === "cup" ? i - 1 : i + 1; if (i < 0 || j < 0 || j >= a.length) return; var t = a[i]; a[i] = a[j]; a[j] = t; }, "Category order updated");
         return;
@@ -11240,12 +11580,15 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   }
   function saveEdit(li, id) {
     var t = li.querySelector("[data-t]").value.trim(), d = li.querySelector("[data-d]").value.trim(), c = li.querySelector("[data-c]").value;
+    var k = li.querySelector("[data-k]").value.trim(), s = li.querySelector("[data-s]").value, ar = li.querySelector("[data-ar]").value.trim(), th = li.querySelector("[data-th]").value.trim();
     if (!t) { showToast("Title cannot be empty", "error"); return; }
+    if (th && !okThumb(th)) { showToast("Thumbnail must be an http(s) image link", "error"); return; }
     commit(function () {
       var rec = appState.videos.filter(function (v) { return v.id === id; })[0], m = appState.videoMeta[id] = appState.videoMeta[id] || {};
       if (rec && rec.source !== "playlist") { rec.title = t; rec.desc = d; } else { m.title = t; m.desc = d; }
-      m.category = c;
-    }, "Video updated");
+      m.category = c; m.tags = k;
+      if (c === "music") { m.sub = s; m.artist = ar; m.thumb = th; }
+    }, "Updated");
   }
   function delVideo(id) {
     var rec = appState.videos.filter(function (v) { return v.id === id; })[0];
@@ -11254,19 +11597,26 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     commit(function () { appState.videos = appState.videos.filter(function (v) { return v.id !== id; }); delete appState.videoMeta[id]; Object.keys(appState.videoOrders).forEach(function (k) { appState.videoOrders[k] = appState.videoOrders[k].filter(function (x) { return x !== id; }); }); }, "Video deleted");
   }
   function renderManage() {
-    var e = mEl(), cl = cats();
-    e.querySelector("#vl-mc").innerHTML = cl.length ? cl.map(function (c) { return '<div class="vl-crow" data-id="' + esc(c.id) + '"><input value="' + esc(c.name) + '" maxlength="40" aria-label="Category name"><button type="button" class="vl-b" data-a="cup" aria-label="Move category up">▲</button><button type="button" class="vl-b" data-a="cdn" aria-label="Move category down">▼</button><button type="button" class="vl-b" data-a="ren">Rename</button><button type="button" class="vl-b dng" data-a="delc">Delete</button></div>'; }).join("") : '<p class="vl-hint">No categories yet.</p>';
-    e.querySelectorAll('#vl-mc [data-a="delc"]').forEach(function (b) { b.setAttribute("data-a", "del"); });
-    if (mKey !== "all" && !cl.some(function (c) { return c.id === mKey; })) mKey = "all";
-    var f = e.querySelector("#vl-mf"); f.innerHTML = '<option value="all">All Videos</option>' + cl.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === mKey ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join(""); f.value = mKey;
-    var list = allDec(); if (mKey !== "all") list = list.filter(function (v) { return v._cat === mKey; }); list = sorted(mKey, list);
-    var opts = cl.map(function (c) { return [c.id, c.name]; });
+    var e = mEl(), cl = cats(), sl = subs();
+    e.querySelector("#vl-mc").innerHTML = cl.length ? cl.map(function (c) { return '<div class="vl-crow" data-id="' + esc(c.id) + '"><input value="' + esc(c.name) + '" maxlength="40" aria-label="Category name"><button type="button" class="vl-b" data-a="cup" aria-label="Move category up">▲</button><button type="button" class="vl-b" data-a="cdn" aria-label="Move category down">▼</button><button type="button" class="vl-b" data-a="ren">Rename</button><button type="button" class="vl-b dng" data-a="del">Delete</button></div>'; }).join("") : '<p class="vl-hint">No categories yet.</p>';
+    e.querySelector("#vl-ms").innerHTML = sl.length ? sl.map(function (s) { return '<div class="vl-crow vl-wrap" data-id="' + esc(s.id) + '"><input value="' + esc(s.name) + '" maxlength="40" aria-label="Subcategory name"><button type="button" class="vl-b" data-a="sup" aria-label="Move up">▲</button><button type="button" class="vl-b" data-a="sdn" aria-label="Move down">▼</button><button type="button" class="vl-b" data-a="sren">Rename</button><button type="button" class="vl-b" data-a="shide">' + (s.hidden ? "Show" : "Hide") + '</button><button type="button" class="vl-b dng" data-a="sdel">Delete</button></div>'; }).join("") : '<p class="vl-hint">No music subcategories yet.</p>';
+    var keys = [["all", "All Videos & Music"]];
+    cl.forEach(function (c) { keys.push([c.id, c.name]); if (c.id === "music") sl.forEach(function (s) { keys.push(["music:" + s.id, "\u00a0\u00a0↳ " + s.name + (s.hidden ? " (hidden)" : "")]); }); });
+    if (!keys.some(function (k) { return k[0] === mKey; })) mKey = "all";
+    var f = e.querySelector("#vl-mf"); f.innerHTML = keys.map(function (k) { return '<option value="' + esc(k[0]) + '">' + esc(k[1]) + "</option>"; }).join(""); f.value = mKey;
+    var list = allDec();
+    if (mKey.indexOf("music:") === 0) { var sid = mKey.slice(6); list = list.filter(function (v) { return v._cat === "music" && v._sub === sid; }); }
+    else if (mKey !== "all") list = list.filter(function (v) { return v._cat === mKey; });
+    list = sorted(mKey, list);
+    var opts = cl.map(function (c) { return [c.id, c.name]; }), dsub = sl.some(function (s) { return s.id === "other"; }) ? "other" : (sl[0] || {}).id;
     e.querySelector("#vl-ml").innerHTML = list.length ? list.map(function (v) {
-      var id = v.kind === "youtube" ? extractYouTubeId(v.ytId) : "", sel = opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === v._cat ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("");
-      return '<li class="vl-item' + (v._hid ? " hid" : "") + '" data-id="' + esc(v.id) + '"><span class="vl-grip" title="Drag to reorder" aria-label="Drag to reorder">⠿</span><span class="vl-th">' + (id ? '<img loading="lazy" decoding="async" alt="" src="https://i.ytimg.com/vi/' + id + '/default.jpg" onerror="this.remove()">' : svg(I.f)) + '</span><div class="vl-im"><b>' + esc(v.title) + "</b><small>" + esc(cname(v._cat)) + (v._hid ? " · Hidden" : "") + (v.source === "playlist" ? " · Playlist" : "") + '</small></div><div class="vl-ia"><button type="button" class="vl-b" data-a="up" aria-label="Move up">▲</button><button type="button" class="vl-b" data-a="down" aria-label="Move down">▼</button><button type="button" class="vl-b" data-a="edit">Edit</button><button type="button" class="vl-b" data-a="hide">' + (v._hid ? "Show" : "Hide") + '</button><button type="button" class="vl-b dng" data-a="del">Delete</button></div><div class="vl-ie" hidden><input data-t value="' + esc(v.title) + '" placeholder="Title" aria-label="Title"><input data-d value="' + esc(v.desc || "") + '" placeholder="Description" aria-label="Description"><select data-c aria-label="Category">' + sel + '</select><div class="vl-add"><button type="button" class="vl-b pri" data-a="save">Save</button><button type="button" class="vl-b" data-a="cancel">Cancel</button></div></div></li>';
-    }).join("") : '<li class="vl-hint">No videos here yet.</li>';
+      var sel = opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === v._cat ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("");
+      var ssel = sl.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === (v._sub || dsub) ? " selected" : "") + ">" + esc(s.name) + "</option>"; }).join("");
+      var meta = cname(v._cat) + (v._subName ? " › " + v._subName : "") + (v.artist ? " · " + v.artist : "") + (v._hid ? " · Hidden" : "") + (v.source === "playlist" ? " · Playlist" : "");
+      return '<li class="vl-item' + (v._hid ? " hid" : "") + '" data-id="' + esc(v.id) + '"><span class="vl-grip" title="Drag to reorder" aria-label="Drag to reorder">⠿</span><span class="vl-th">' + thumbHTML(v, "default") + '</span><div class="vl-im"><b>' + esc(v.title) + "</b><small>" + esc(meta) + '</small></div><div class="vl-ia"><button type="button" class="vl-b" data-a="up" aria-label="Move up">▲</button><button type="button" class="vl-b" data-a="down" aria-label="Move down">▼</button><button type="button" class="vl-b" data-a="edit">Edit</button><button type="button" class="vl-b" data-a="hide">' + (v._hid ? "Show" : "Hide") + '</button><button type="button" class="vl-b dng" data-a="del">Delete</button></div><div class="vl-ie" hidden><input data-t value="' + esc(v.title) + '" placeholder="Title" aria-label="Title"><input data-d value="' + esc(v.desc || "") + '" placeholder="Description" aria-label="Description"><select data-c aria-label="Category">' + sel + '</select><input data-k value="' + esc(v.tags || "") + '" placeholder="Keywords (comma separated)" aria-label="Keywords"><div class="vl-mx"' + (v._cat === "music" ? "" : " hidden") + '><select data-s aria-label="Music subcategory">' + ssel + '</select><input data-ar value="' + esc(v.artist || "") + '" placeholder="Artist" aria-label="Artist"><input data-th value="' + esc(v.thumb || "") + '" placeholder="Thumbnail image URL (optional)" aria-label="Thumbnail URL"></div><div class="vl-add"><button type="button" class="vl-b pri" data-a="save">Save</button><button type="button" class="vl-b" data-a="cancel">Cancel</button></div></div></li>';
+    }).join("") : '<li class="vl-hint">Nothing here yet.</li>';
   }
-  function openManage() { if (!isAdminUnlocked) { openAdminModal(); return; } mKey = st.notices.cat; var e = mEl(); mOpen = true; renderManage(); e.classList.add("on"); }
+  function openManage() { if (!isAdminUnlocked) { openAdminModal(); return; } mKey = st.notices.cat === "music" && st.notices.sub !== "all" ? "music:" + st.notices.sub : st.notices.cat; var e = mEl(); mOpen = true; renderManage(); e.classList.add("on"); }
   function closeManage() { mOpen = false; var e = document.getElementById("vl-manage"); if (e) e.classList.remove("on"); }
 
   /* ---------- Settings (only controls that actually do something) ---------- */
@@ -11281,15 +11631,16 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   function card(t, body) { return '<div class="vl-card bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 shadow-xl"><h3>' + t + "</h3>" + body + "</div>"; }
   function renderSettings() {
     var root = document.getElementById("vl-settings-root"); if (!root) return;
-    var bright = document.documentElement.classList.contains("bright-mode"), used = 0, sync = document.getElementById("btn-sync-indicator");
+    var bright = document.documentElement.classList.contains("bright-mode"), used = 0, sync = document.getElementById("btn-sync-indicator"), mcount = allDec().filter(function (v) { return v._cat === "music"; }).length, vcount = allDec().length - mcount;
     try { used = Math.round(new Blob([localStorage.getItem(STORAGE_KEY) || ""]).size / 1024); } catch (e) {}
     root.innerHTML = '<div class="vl-sh bg-[#0f172a] border border-slate-800/90 rounded-2xl px-3 py-3 shadow-xl"><button type="button" class="vl-ico" onclick="vlSettingsBack()" aria-label="Back" title="Back"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><h2 class="text-sm sm:text-base font-bold text-white">Settings</h2></div><div class="vl-set">' +
       card("General", act("sync", "Sync with cloud", "Push saved changes to the shared cloud copy now.", "Sync now") + act("cache", "Clear cached playlist data", "Forces the next playlist refresh to fetch fresh data.", "Clear") + act("reset", "Reset these settings", "Restores the options on this page to their defaults.", "Reset")) +
       card("Appearance", seg("theme", [["bright", "Bright"], ["dark", "Dark"]], bright ? "bright" : "dark", "Theme", "Switch between bright and dark mode.") + seg("size", [["sm", "A−"], ["md", "A"], ["lg", "A+"]], prefs.size, "Text size", "Makes text smaller or larger across the site.") + sw("reduce", prefs.reduce, "Reduce motion", "Turns off slide and fade animations.")) +
       card("Video", sw("catAuto", prefs.catAuto, "Autoplay on category change", "When you pick a category, its first video starts automatically (muted) and the rest follow in order.") + sw("autoplay", autoplayEnabled, "Autoplay next video", "Plays the list in order. Starts muted if your browser requires it.") + sw("loop", autoplayLoop, "Loop list", "Start again from the first video after the last one.") + sw("remember", prefs.remember, "Remember last category", "Reopen the category you were watching.")) +
+      card("Music", sw("musicAuto", prefs.musicAuto, "Autoplay on Music open", "Starts the first track (muted if your browser requires it) when you open Music or switch subcategory; the rest follow in order.") + sw("musicRemember", prefs.musicRemember, "Remember last music subcategory", "Reopen the subcategory you were listening to.") + sw("musicHideEmpty", prefs.musicHideEmpty, "Hide empty subcategories", "Only list music subcategories that have tracks.") + inf("Playlists", "Each subcategory has its own order")) +
       card("Notifications", seg("toasts", [["all", "All"], ["errors", "Errors"], ["off", "Off"]], prefs.toasts, "In-app messages", "Pop-up messages such as “Saved” or “Video unavailable”. Errors only hides the rest.")) +
       card("Privacy", sw("nocookie", prefs.nocookie, "Privacy-enhanced YouTube player", "Uses youtube-nocookie.com for videos you start next.") + act("forget", "Forget remembered category", "Clears the saved category choice on this device.", "Forget")) +
-      card("Website Information", inf("Site", "ITI CONNECT &middot; by DEVIT") + inf("Videos", normalizeVideosList(appState.videos).length + " in " + cats().length + " categories") + inf("Data saved on this device", used + " KB") + inf("Cloud status", esc(sync && sync.title ? sync.title : "Unknown"))) + "</div>";
+      card("Website Information", inf("Site", "ITI CONNECT &middot; by DEVIT") + inf("Videos", vcount + " in " + Math.max(0, cats().length - 1) + " categories") + inf("Music", mcount + " tracks in " + subs().length + " subcategories") + inf("Data saved on this device", used + " KB") + inf("Cloud status", esc(sync && sync.title ? sync.title : "Unknown"))) + "</div>";
   }
   function setupSettings() {
     var root = document.getElementById("vl-settings-root"); if (!root) return;
@@ -11297,13 +11648,13 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       var s = e.target.closest("[data-set]"), g = e.target.closest("[data-seg]"), a = e.target.closest("[data-act]");
       if (s) { var k = s.getAttribute("data-set");
         if (k === "autoplay") toggleAutoplay(); else if (k === "loop") toggleAutoplayLoop();
-        else { prefs[k] = !prefs[k]; if (k === "remember" && !prefs[k]) { try { localStorage.removeItem(CK); } catch (x) {} } savePrefs(); applyPrefs(); }
+        else { prefs[k] = !prefs[k]; if (k === "remember" || k === "musicRemember") persist(); savePrefs(); applyPrefs(); }
       } else if (g) { var key = g.getAttribute("data-seg"), v = g.getAttribute("data-v");
         if (key === "theme") applyThemeMode(v); else { prefs[key] = v; savePrefs(); applyPrefs(); }
       } else if (a) { var x = a.getAttribute("data-act");
         if (x === "sync") manualCloudSync();
         else if (x === "cache") { try { localStorage.removeItem(YT_PLAYLIST_CACHE_KEY); showToast("Playlist cache cleared", "success"); } catch (y) {} }
-        else if (x === "forget") { try { localStorage.removeItem(CK); } catch (y) {} showToast("Remembered category cleared", "success"); }
+        else if (x === "forget") { try { localStorage.removeItem(CK); } catch (y) {} showToast("Remembered category and music subcategory cleared", "success"); }
         else if (x === "reset") { prefs = Object.assign({}, PD); savePrefs(); applyPrefs(); showToast("Settings reset", "success"); }
       }
       renderSettings();
@@ -11322,10 +11673,21 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   window.handleSaveVideo = function (e) {
     var before = normalizeVideosList(appState.videos).map(function (v) { return v.id; }), sel = document.getElementById("vl-modal-cat"), eid = (document.getElementById("video-edit-id") || {}).value || "";
     var cat = sel ? sel.value : ""; /* read before the original handler resets the form */
+    var mx = document.getElementById("vl-modal-mx"), ex = null;
+    if (mx) {
+      ex = { sub: mx.querySelector("[data-s]").value, artist: mx.querySelector("[data-ar]").value.trim(), thumb: mx.querySelector("[data-th]").value.trim(), tags: mx.querySelector("[data-k]").value.trim() };
+      if (ex.thumb && !okThumb(ex.thumb)) { showToast("Thumbnail must be an http(s) image link — it was not saved", "error"); ex.thumb = ""; }
+    }
     var r = _hs.apply(this, arguments);
     if (sel) {
       var ids = normalizeVideosList(appState.videos).map(function (v) { return v.id; }).filter(function (i) { return before.indexOf(i) < 0; });
-      if (eid) ids = [eid]; if (ids.length) commit(function () { ids.forEach(function (i) { var m = appState.videoMeta[i] = appState.videoMeta[i] || {}; m.category = cat; }); }, null);
+      if (eid) ids = [eid];
+      if (ids.length) commit(function () {
+        ids.forEach(function (i) {
+          var m = appState.videoMeta[i] = appState.videoMeta[i] || {}; m.category = cat;
+          if (ex) { m.tags = ex.tags; if (cat === "music") { m.sub = ex.sub; m.artist = ex.artist; m.thumb = ex.thumb; } }
+        });
+      }, null);
     }
     return r;
   };
@@ -11333,8 +11695,27 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   window.openVideoModal = function (id) {
     var r = _ov.apply(this, arguments);
     var sec = document.getElementById("video-section-input"), sel = document.getElementById("vl-modal-cat");
-    if (sec && !sel) { var w = document.createElement("div"); w.innerHTML = '<label class="block text-[11px] font-semibold text-slate-400 mb-1">Video Category</label><select id="vl-modal-cat" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500"></select>'; sec.parentNode.parentNode.insertBefore(w, sec.parentNode.nextSibling); sel = w.querySelector("select"); }
-    if (sel) { var cur = id ? rc((appState.videoMeta[id] || {}).category) : (st.notices.cat !== "all" ? st.notices.cat : rc("")); sel.innerHTML = cats().map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === cur ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join(""); }
+    var fld = "w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500", lbl = "block text-[11px] font-semibold text-slate-400 mb-1";
+    if (sec && !sel) {
+      var w = document.createElement("div"); w.innerHTML = '<label class="' + lbl + '">Video Category</label><select id="vl-modal-cat" class="' + fld + '"></select>';
+      sec.parentNode.parentNode.insertBefore(w, sec.parentNode.nextSibling); sel = w.querySelector("select");
+      var x = document.createElement("div"); x.id = "vl-modal-mx"; x.className = "space-y-3";
+      x.innerHTML = '<div class="space-y-3" data-mxm><div><label class="' + lbl + '">Music Subcategory</label><select data-s class="' + fld + '"></select></div><div><label class="' + lbl + '">Artist / Channel</label><input data-ar maxlength="80" placeholder="e.g. Artist name" class="' + fld + '"></div><div><label class="' + lbl + '">Thumbnail Image URL (optional)</label><input data-th placeholder="https://…jpg" class="' + fld + '"></div></div><div><label class="' + lbl + '">Keywords (optional)</label><input data-k maxlength="120" placeholder="comma, separated, words" class="' + fld + '"></div>';
+      w.parentNode.insertBefore(x, w.nextSibling);
+      sel.addEventListener("change", function () { x.querySelector("[data-mxm]").hidden = sel.value !== "music"; });
+    }
+    if (sel) {
+      var q = typeof lastTabName !== "undefined" && lastTabName === "videos" ? "videos" : "notices", cur, curSub = "", m = id ? (appState.videoMeta[id] || {}) : {};
+      if (id) { cur = rc(m.category); curSub = rs(m.sub); }
+      else if (mPreset && mPreset.key) { var k = mPreset.key; if (k.indexOf("music:") === 0) { cur = "music"; curSub = k.slice(6); } else cur = cats().some(function (c) { return c.id === k; }) ? k : rc(""); }
+      else { cur = st[q].cat !== "all" ? st[q].cat : rc(""); if (cur === "music" && st[q].sub !== "all") curSub = st[q].sub; }
+      mPreset = null;
+      sel.innerHTML = cats().map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === cur ? " selected" : "") + ">" + esc(c.name) + "</option>"; }).join("");
+      var mx = document.getElementById("vl-modal-mx"), sl = subs(), dsub = sl.some(function (s) { return s.id === "other"; }) ? "other" : (sl[0] || {}).id;
+      mx.querySelector("[data-s]").innerHTML = sl.map(function (s) { return '<option value="' + esc(s.id) + '"' + (s.id === (curSub || dsub) ? " selected" : "") + ">" + esc(s.name) + (s.hidden ? " (hidden)" : "") + "</option>"; }).join("");
+      mx.querySelector("[data-ar]").value = m.artist || ""; mx.querySelector("[data-th]").value = m.thumb || ""; mx.querySelector("[data-k]").value = m.tags || "";
+      mx.querySelector("[data-mxm]").hidden = cur !== "music";
+    }
     return r;
   };
   var _ra = window.renderAllViews;
@@ -11378,10 +11759,342 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 
   /* ---------- init ---------- */
   applyPrefs(); mount(); setupSettings();
-  P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; paint(p, false); rerender(p); });
+  P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); rerender(p); });
   setInterval(function () { P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; }); }, 1500);
 })();
 </script>
+
+
+  <!-- ===================================================================== -->
+  <!-- NOTICE VIEWER (expanded glass view)                                   -->
+  <!-- ===================================================================== -->
+  <div id="notice-viewer" class="nv-root hidden" role="dialog" aria-modal="true" aria-labelledby="nv-title">
+    <div class="nv-backdrop" onclick="closeNoticeView()"></div>
+    <div class="nv-panel">
+      <div class="nv-head">
+        <span class="nv-chip"><i data-lucide="megaphone" class="w-3.5 h-3.5"></i><span>Notice</span></span>
+        <button type="button" class="nv-close btn-tap" onclick="closeNoticeView()" aria-label="Close notice"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="nv-scroll space-y-3.5" id="nv-content"></div>
+      <div class="nv-foot">
+        <button type="button" onclick="closeNoticeView()" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // NOTICE VIEWER (expanded glass view with bounce animation)
+    // =========================================================================
+    (function () {
+      let closeTimer = null, lastFocus = null;
+      const IMG_RE = /\.(png|jpe?g|gif|webp|avif|svg)(\?.*)?$/i;
+      const safeUrl = (u) => /^https?:\/\//i.test(u) || /^data:image\/(png|jpe?g|gif|webp);base64,/i.test(u);
+
+      function parseAttachments(raw) {
+        const list = Array.isArray(raw) ? raw : String(raw || "").split(/\r?\n/);
+        return list.map((it) => {
+          if (it && typeof it === "object") return { name: String(it.name || ""), url: String(it.url || "").trim() };
+          const s = String(it || "").trim();
+          if (!s) return null;
+          const i = s.indexOf("|");
+          return i > -1 ? { name: s.slice(0, i).trim(), url: s.slice(i + 1).trim() } : { name: "", url: s };
+        }).filter((a) => a && safeUrl(a.url));
+      }
+      window.parseNoticeAttachments = parseAttachments;
+
+      function noticeTime(n) {
+        let d = null;
+        if (n.time && /^\d{2}:\d{2}$/.test(n.time) && /^\d{4}-\d{2}-\d{2}$/.test(n.date || "")) {
+          const [h, m] = n.time.split(":").map(Number);
+          d = parseISO(n.date); d.setHours(h, m, 0, 0);
+        } else {
+          const mt = /^not-(\d{12,})$/.exec(String(n.id || ""));
+          if (mt) d = new Date(Number(mt[1]));
+        }
+        return d && !isNaN(d) ? d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
+      }
+
+      window.openNoticeView = function (id) {
+        const n = (appState.notices || []).find((x) => x.id === id);
+        const root = document.getElementById("notice-viewer");
+        if (!n || !root) return;
+        clearTimeout(closeTimer);
+        const time = noticeTime(n), atts = parseAttachments(n.attachments);
+        const imgs = atts.filter((a) => IMG_RE.test(a.url) || a.url.startsWith("data:image"));
+        const docs = atts.filter((a) => !imgs.includes(a));
+        document.getElementById("nv-content").innerHTML = `
+          <h2 id="nv-title" class="nv-title">${escapeHTML(n.title)}</h2>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="nv-chip"><i data-lucide="calendar" class="w-3 h-3"></i>${escapeHTML(formatDisplayDate(n.date))}</span>
+            ${time ? `<span class="nv-chip sky"><i data-lucide="clock" class="w-3 h-3"></i>${escapeHTML(time)}</span>` : ""}
+            ${noticeNewBadgeHTML(n)}
+          </div>
+          <div class="nv-body">${escapeHTML(n.body)}</div>
+          ${n.instructions ? `<div class="nv-box"><div class="nv-label"><i data-lucide="triangle-alert" class="w-3.5 h-3.5"></i>Important instructions</div><div class="nv-body">${escapeHTML(n.instructions)}</div></div>` : ""}
+          ${imgs.length ? `<div class="space-y-2">${imgs.map((a) => `<a href="${escapeHTML(a.url)}" target="_blank" rel="noopener noreferrer"><img class="nv-att-img" loading="lazy" src="${escapeHTML(a.url)}" alt="${escapeHTML(a.name || "Notice image")}" onerror="this.closest('a').style.display='none'" /></a>`).join("")}</div>` : ""}
+          ${docs.length ? `<div class="space-y-1.5"><div class="nv-label"><i data-lucide="paperclip" class="w-3.5 h-3.5"></i>Attachments</div>${docs.map((a) => `<a class="nv-att-doc" href="${escapeHTML(a.url)}" target="_blank" rel="noopener noreferrer"><i data-lucide="file-text" class="w-4 h-4 text-amber-400 shrink-0"></i><span class="min-w-0">${escapeHTML(a.name || a.url)}</span><i data-lucide="external-link" class="w-3.5 h-3.5 ml-auto shrink-0 opacity-70"></i></a>`).join("")}</div>` : ""}`;
+        lastFocus = document.activeElement;
+        if (typeof lockPageScroll === "function") lockPageScroll();
+        root.classList.remove("hidden", "nv-closing");
+        root.querySelector(".nv-scroll").scrollTop = 0;
+        void root.offsetWidth;
+        root.classList.add("nv-open");
+        try { if (!(history.state && history.state.nv)) history.pushState({ nv: 1 }, ""); } catch (e) {}
+        if (window.lucide) lucide.createIcons();
+        const cb = root.querySelector(".nv-close"); if (cb) cb.focus({ preventScroll: true });
+      };
+
+      window.closeNoticeView = function (fromPop) {
+        const root = document.getElementById("notice-viewer");
+        if (!root || root.classList.contains("hidden") || root.classList.contains("nv-closing")) return;
+        if (fromPop !== true) { try { if (history.state && history.state.nv) { history.back(); return; } } catch (e) {} }
+        root.classList.add("nv-closing");
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => {
+          root.classList.add("hidden");
+          root.classList.remove("nv-open", "nv-closing");
+          if (typeof unlockPageScroll === "function") unlockPageScroll();
+          if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
+        }, 270);
+      };
+
+      window.addEventListener("popstate", () => {
+        const root = document.getElementById("notice-viewer");
+        if (root && !root.classList.contains("hidden")) closeNoticeView(true);
+      });
+      document.addEventListener("keydown", (e) => {
+        const root = document.getElementById("notice-viewer");
+        if (!root || root.classList.contains("hidden")) return;
+        if (e.key === "Escape") { e.preventDefault(); closeNoticeView(); }
+      });
+      document.addEventListener("keydown", (e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target && e.target.matches && e.target.matches("article[data-notice-id]")) {
+          e.preventDefault(); openNoticeView(e.target.dataset.noticeId);
+        }
+      });
+    })();
+  </script>
+
+  <!-- ===================================================================== -->
+  <!-- COMMENTS & FEEDBACK: Firestore-backed (public comments + private email) -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, doc, query, where, orderBy, onSnapshot, writeBatch, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const PID = "chhotojagulia_elec_2025_27";
+    const PAGE = 10;
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => escapeHTML(s);
+    let db = null, pubCol = null, privCol = null;
+    let pubUnsub = null, admUnsub = null, privUnsub = null;
+    let comments = [], seen = null, shown = PAGE, formStart = Date.now();
+    let adminRows = [], adminPriv = {}, adminFilter = "all";
+
+    function ensureDb() {
+      if (db) return true;
+      try {
+        const cfg = getActiveFirebaseConfig();
+        if (!cfg || !cfg.projectId) return false;
+        const app = getApps().length ? getApps()[0] : initializeApp(cfg);
+        try { getAuth(app); } catch (e) {}
+        db = getFirestore(app);
+        pubCol = collection(db, "iti_portals", PID, "comments");
+        privCol = collection(db, "iti_portals", PID, "feedback_private");
+        return true;
+      } catch (e) { return false; }
+    }
+    const mode = () => (appState.settings && appState.settings.commentsMode) || "moderated";
+    const ts = (d) => { const t = d.createdAt && d.createdAt.toMillis ? d.createdAt.toMillis() : 0; return t; };
+    const fmt = (ms) => ms ? new Date(ms).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Just now";
+    const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9\u0980-\u09ff\u0900-\u097f]+/g, "");
+    const say = (t, kind) => { const m = $("fbk-msg"); if (!m) return; m.textContent = t || ""; m.className = "text-[11px] min-w-0 " + (kind === "err" ? "text-rose-400" : kind === "ok" ? "text-emerald-400" : "text-slate-400"); };
+
+    // ---------- Public list ----------
+    function renderPublic() {
+      const list = $("fbk-list"); if (!list) return;
+      const cnt = $("fbk-count");
+      if (cnt) cnt.textContent = comments.length ? `${comments.length} comment${comments.length > 1 ? "s" : ""} · newest first` : "Share your opinion or suggestion";
+      if (!comments.length) { list.innerHTML = `<div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 text-center">No comments yet. Be the first to share feedback.</div>`; $("fbk-more").classList.add("hidden"); return; }
+      list.innerHTML = comments.slice(0, shown).map((c) => `
+        <article class="fbk-item ${seen && !seen.has(c.id) ? "fbk-new" : ""}">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="flex items-center gap-1.5 min-w-0"><i data-lucide="user-round" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i><span class="text-xs font-bold text-white truncate">${esc(c.name || "Guest")}</span><span class="px-1.5 py-px rounded-md bg-slate-800/80 text-[9px] font-bold text-slate-300 shrink-0">GUEST</span></span>
+            <time class="text-[10px] text-slate-400 shrink-0">${esc(fmt(c.ms))}</time>
+          </div>
+          <p class="fbk-text text-xs text-slate-300 leading-relaxed">${esc(c.text)}</p>
+        </article>`).join("");
+      comments.forEach((c) => seen && seen.add(c.id));
+      $("fbk-more").classList.toggle("hidden", comments.length <= shown);
+      if (window.lucide) lucide.createIcons();
+    }
+    window.fbkShowMore = () => { shown += PAGE; renderPublic(); };
+
+    function startPublic() {
+      if (pubUnsub) { pubUnsub(); pubUnsub = null; }
+      if (!ensureDb() || mode() === "off") { comments = []; renderPublic(); return; }
+      pubUnsub = onSnapshot(query(pubCol, where("status", "==", "visible")), (snap) => {
+        comments = snap.docs.map((d) => { const x = d.data({ serverTimestamps: "estimate" }); return { id: d.id, name: x.name, text: x.text, ms: ts(x) }; }).sort((a, b) => b.ms - a.ms);
+        renderPublic();
+        if (!seen) seen = new Set(comments.map((c) => c.id));
+      }, () => {
+        $("fbk-list").innerHTML = `<div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 text-center">Comments are unavailable right now. Please try again later.</div>`;
+      });
+    }
+
+    function applyMode() {
+      const off = mode() === "off";
+      $("fbk-closed").classList.toggle("hidden", !off);
+      $("fbk-fields").classList.toggle("hidden", off);
+      $("fbk-list").classList.toggle("hidden", off);
+      if (off) $("fbk-more").classList.add("hidden");
+    }
+
+    // ---------- Form ----------
+    window.fbkToggleIdentity = () => { const p = $("fbk-identity"), b = $("fbk-identity-toggle"); const open = p.classList.toggle("hidden") === false; b.setAttribute("aria-expanded", String(open)); };
+    window.fbkUpdateAs = () => { $("fbk-as").textContent = ($("fbk-name").value.trim().replace(/\s+/g, " ") || "Guest").slice(0, 40); };
+    window.fbkCounter = () => { $("fbk-chars").textContent = `${$("fbk-text").value.length}/600`; };
+
+    function rateCheck() {
+      try {
+        const now = Date.now();
+        const log = (JSON.parse(localStorage.getItem("devit_fbk_rate") || "[]")).filter((t) => now - t < 3600000);
+        if (log.length && now - log[log.length - 1] < 30000) return "Please wait a few seconds before posting again.";
+        if (log.length >= 5) return "Hourly comment limit reached. Please try again later.";
+      } catch (e) {}
+      return "";
+    }
+    function rateLog(fp) {
+      try {
+        const now = Date.now();
+        const log = (JSON.parse(localStorage.getItem("devit_fbk_rate") || "[]")).filter((t) => now - t < 3600000); log.push(now);
+        localStorage.setItem("devit_fbk_rate", JSON.stringify(log));
+        const fps = JSON.parse(localStorage.getItem("devit_fbk_fps") || "[]"); fps.push(fp);
+        localStorage.setItem("devit_fbk_fps", JSON.stringify(fps.slice(-15)));
+      } catch (e) {}
+    }
+    function seenFp(fp) { try { return JSON.parse(localStorage.getItem("devit_fbk_fps") || "[]").includes(fp); } catch (e) { return false; } }
+
+    window.fbkSubmit = async (e) => {
+      e.preventDefault();
+      if (mode() === "off") { say("Comments are currently closed.", "err"); return false; }
+      if ($("fbk-website").value) return false;                                   // honeypot: silently drop bots
+      if (Date.now() - formStart < 3000) { say("Please take a moment to write your comment.", "err"); return false; }
+      const clean = (s) => String(s).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "");
+      const name = clean($("fbk-name").value).replace(/\s+/g, " ").trim().slice(0, 40) || "Guest";
+      const email = $("fbk-email").value.trim();
+      const text = clean($("fbk-text").value).replace(/\r\n?/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+      if (!text) return say("Please write a comment before submitting.", "err"), false;
+      if (text.length < 5) return say("Comment is too short (min 5 characters).", "err"), false;
+      if (text.length > 600) return say("Comment is too long (max 600 characters).", "err"), false;
+      if (!/[\p{L}\p{N}]/u.test(text) || /(.)\1{9,}/u.test(text)) return say("Please write a meaningful comment.", "err"), false;
+      if ((text.match(/https?:\/\/|www\./gi) || []).length > 2) return say("Too many links in one comment.", "err"), false;
+      if (email && (email.length > 120 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(email))) return say("Please enter a valid email or leave it empty.", "err"), false;
+      const fp = norm(text);
+      if (seenFp(fp) || comments.some((c) => norm(c.text) === fp)) return say("This comment was already submitted.", "err"), false;
+      const rl = rateCheck(); if (rl) return say(rl, "err"), false;
+      if (!ensureDb()) return say("Cloud storage is not connected. Please try later.", "err"), false;
+
+      const btn = $("fbk-submit"); btn.disabled = true; say("Posting…");
+      try {
+        const m = mode(), ref = doc(pubCol);
+        const batch = writeBatch(db);
+        batch.set(ref, { name, text, status: m === "open" ? "visible" : "pending", hasEmail: !!email, createdAt: serverTimestamp() });
+        if (email) batch.set(doc(privCol, ref.id), { name, email, createdAt: serverTimestamp() });
+        await batch.commit();
+        rateLog(fp);
+        $("fbk-text").value = ""; fbkCounter();
+        say(m === "open" ? "Thanks! Your comment is live." : "Thanks! Your comment will appear after review.", "ok");
+      } catch (err) {
+        say("Could not post right now. Please try again or use Contact via Email.", "err");
+      } finally { btn.disabled = false; }
+      return false;
+    };
+
+    // ---------- Email contact (separate from public comments) ----------
+    window.fbkContactEmail = (ev) => {
+      const to = ((appState.settings && (appState.settings.contactEmail || appState.settings.adminEmail)) || "").trim();
+      if (!to) { ev && ev.preventDefault(); showToast("Contact email is not set up yet", "info"); return false; }
+      const subj = encodeURIComponent("ITI CONNECT – Website feedback");
+      const body = encodeURIComponent("Hello DEVIT,\n\nType of message (suggestion / complaint / website feedback):\n\nDetails:\n\n");
+      location.href = `mailto:${to}?subject=${subj}&body=${body}`;
+      ev && ev.preventDefault();
+      return false;
+    };
+
+    // ---------- Admin ----------
+    function admMsg(show, msg) { const b = $("fbk-admin-auth"); if (!b) return; b.classList.toggle("hidden", !show); if (msg) $("fbk-admin-auth-msg").textContent = msg; }
+    function renderAdmin() {
+      const filters = [["all", "All"], ["pending", "Pending"], ["visible", "Visible"], ["hidden", "Hidden"]];
+      const cnt = (s) => s === "all" ? adminRows.length : adminRows.filter((r) => r.status === s).length;
+      $("fbk-admin-filters").innerHTML = filters.map(([k, l]) => `<button type="button" onclick="fbkAdminFilter('${k}')" class="px-2.5 py-1 rounded-lg ${adminFilter === k ? "bg-amber-500 text-slate-950" : "bg-slate-900 border border-slate-700 text-slate-300"}">${l} (${cnt(k)})</button>`).join("");
+      const rows = adminRows.filter((r) => adminFilter === "all" || r.status === adminFilter);
+      $("fbk-admin-list").innerHTML = rows.length ? rows.map((r) => {
+        const em = adminPriv[r.id] ? adminPriv[r.id].email : "";
+        const badge = r.status === "visible" ? "bg-emerald-500/15 text-emerald-300" : r.status === "pending" ? "bg-amber-500/15 text-amber-300" : "bg-slate-700/60 text-slate-300";
+        return `<div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 space-y-1.5">
+          <div class="flex items-center justify-between gap-2"><span class="text-xs font-bold text-white truncate">${esc(r.name)}</span><span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold ${badge}">${esc(r.status)}</span></div>
+          <div class="text-[10px] text-slate-400 break-all">${esc(fmt(r.ms))}${em ? " · " + esc(em) : r.hasEmail ? " · (email private)" : ""}</div>
+          <p class="fbk-text text-xs text-slate-300">${esc(r.text)}</p>
+          <div class="flex flex-wrap gap-1.5">
+            ${r.status !== "visible" ? `<button type="button" onclick="fbkAdminSet('${r.id}','visible')" class="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold btn-tap">Approve / Show</button>` : `<button type="button" onclick="fbkAdminSet('${r.id}','hidden')" class="px-2 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-[10px] font-bold btn-tap">Hide</button>`}
+            <button type="button" onclick="fbkAdminDelete('${r.id}')" class="px-2 py-1 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[10px] font-bold btn-tap">Delete</button>
+          </div></div>`;
+      }).join("") : `<div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 text-center">No comments in this view.</div>`;
+    }
+    window.fbkAdminFilter = (f) => { adminFilter = f; renderAdmin(); };
+    window.fbkAdminStop = () => { [admUnsub, privUnsub].forEach((u) => u && u()); admUnsub = privUnsub = null; adminRows = []; adminPriv = {}; };
+    window.fbkAdminStart = () => {
+      fbkAdminStop();
+      if ($("fbk-admin-mode")) $("fbk-admin-mode").value = mode();
+      if ($("fbk-admin-email")) $("fbk-admin-email").value = appState.settings.contactEmail || appState.settings.adminEmail || "";
+      if (!isAdminUnlocked) return;
+      if (!ensureDb()) { admMsg(true, "Cloud sync is not configured."); return; }
+      const denied = () => admMsg(true, "Moderation needs a verified Google Admin sign-in (the PIN alone can't read private data). Sign in with the authorised admin Google account.");
+      admUnsub = onSnapshot(query(pubCol, orderBy("createdAt", "desc")), (snap) => {
+        admMsg(false);
+        adminRows = snap.docs.map((d) => { const x = d.data({ serverTimestamps: "estimate" }); return { id: d.id, name: x.name || "Guest", text: x.text || "", status: x.status || "pending", hasEmail: !!x.hasEmail, ms: ts(x) }; });
+        renderAdmin();
+      }, denied);
+      privUnsub = onSnapshot(privCol, (snap) => { adminPriv = {}; snap.docs.forEach((d) => (adminPriv[d.id] = d.data())); renderAdmin(); }, () => {});
+    };
+    window.fbkAdminSignIn = async () => { await handleGoogleSignIn(); setTimeout(fbkAdminStart, 400); };
+    window.fbkAdminSet = async (id, status) => {
+      if (!isAdminUnlocked || !ensureDb()) return;
+      try { await updateDoc(doc(pubCol, id), { status }); showToast(status === "visible" ? "Comment is public" : "Comment hidden", "success"); }
+      catch (e) { showToast("Action failed – sign in with Google Admin", "error"); }
+    };
+    window.fbkAdminDelete = async (id) => {
+      if (!isAdminUnlocked || !ensureDb()) return;
+      if (!confirm("Delete this comment permanently?")) return;
+      try { const b = writeBatch(db); b.delete(doc(pubCol, id)); b.delete(doc(privCol, id)); await b.commit(); showToast("Comment deleted", "info"); }
+      catch (e) { showToast("Delete failed – sign in with Google Admin", "error"); }
+    };
+    window.fbkAdminSetMode = (v) => {
+      if (!isAdminUnlocked) return;
+      appState.settings.commentsMode = ["open", "moderated", "off"].includes(v) ? v : "moderated";
+      saveLocalState(true); applyMode(); startPublic();
+      showToast("Comment setting saved", "success");
+    };
+    window.fbkAdminSaveEmail = () => {
+      if (!isAdminUnlocked) return;
+      const v = $("fbk-admin-email").value.trim();
+      if (v && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(v)) return showToast("Enter a valid email", "error");
+      appState.settings.contactEmail = v; saveLocalState(true); showToast("Contact email saved", "success");
+    };
+
+    // Re-apply when cloud settings arrive (commentsMode may change remotely)
+    let lastMode = null, lastMail = null;
+    setInterval(() => {
+      const m = mode(); if (m !== lastMode) { lastMode = m; applyMode(); startPublic(); }
+      const to = ((appState.settings && (appState.settings.contactEmail || appState.settings.adminEmail)) || "").trim();
+      if (to !== lastMail) { lastMail = to; const a = $("fbk-mail-btn"); if (a) a.setAttribute("href", to ? "mailto:" + to + "?subject=" + encodeURIComponent("ITI CONNECT – Website feedback") : "#"); }
+    }, 1200);
+    document.addEventListener("DOMContentLoaded", () => { applyMode(); startPublic(); });
+    if (document.readyState !== "loading") { applyMode(); startPublic(); }
+  </script>
 
 </body>
 </html>

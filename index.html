@@ -3944,6 +3944,8 @@ service cloud.firestore {
     const DEFAULT_ADMIN_PIN = "2508";
     const MAX_VIDEOS_CAPACITY = 200;
     const VIDEOS_PAGE_BATCH_SIZE = 12;
+    const HOME_VIDEOS_BATCH_SIZE = 5; // Home tab shows 5 videos by default
+    const batchFor = (prefix) => (prefix === "notices" ? HOME_VIDEOS_BATCH_SIZE : VIDEOS_PAGE_BATCH_SIZE);
 
     const DEFAULT_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDlK8HTuzdGkwmdUXm6B3WO_0VUkQBqm18",
@@ -5942,15 +5944,17 @@ service cloud.firestore {
       let headerHidden = false;
       let ticking = false;
 
-      function syncStickyOffsets() {
-        const h = header.offsetHeight || 0;
-        wrapEl.style.transform = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
+      let cachedH = 0, lastWrapT = null, lastSearchT = null;
+      function syncStickyOffsets(remeasure) {
+        if (!cachedH || remeasure === true) cachedH = header.offsetHeight || 0;
+        const h = cachedH;
+        const wt = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
+        if (wt !== lastWrapT) { wrapEl.style.transform = wt; lastWrapT = wt; }
         if (sWrap) {
-          if (lastTabName !== "home") {
-            sWrap.style.transform = "";
-          } else {
-            sWrap.style.transform = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
-          }
+          let st;
+          if (lastTabName !== "home") st = "";
+          else st = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
+          if (st !== lastSearchT) { sWrap.style.transform = st; lastSearchT = st; }
         }
       }
 
@@ -5983,13 +5987,13 @@ service cloud.firestore {
         } else if (curY <= 12) {
           headerHidden = false;
           expandSearchBar(false);
-        } else if (curY > 36) {
+        } else if (curY > 80 || (headerHidden && curY > 36)) {
           headerHidden = true;
           if (!hasQuery && !isLocked) {
             if (inp && document.activeElement === inp) inp.blur();
             minimizeSearchBar();
           }
-        } else if (delta < -2) {
+        } else if (delta < -8) {
           headerHidden = false;
         }
         syncStickyOffsets();
@@ -5997,7 +6001,7 @@ service cloud.firestore {
         ticking = false;
       }
 
-      window.addEventListener("resize", syncStickyOffsets, { passive: true });
+      window.addEventListener("resize", () => syncStickyOffsets(true), { passive: true });
       window.addEventListener(
         "scroll",
         () => {
@@ -6439,7 +6443,7 @@ service cloud.firestore {
       const totalAvailable = Math.min(sectionFiltered.length, maxAllowed);
       const currentLimit = Math.min(
         totalAvailable,
-        Math.max(VIDEOS_PAGE_BATCH_SIZE, videoSectionVisibleLimit[targetPrefix] || VIDEOS_PAGE_BATCH_SIZE)
+        Math.max(batchFor(targetPrefix), videoSectionVisibleLimit[targetPrefix] || batchFor(targetPrefix))
       );
       videoSectionVisibleLimit[targetPrefix] = currentLimit;
 
@@ -6456,14 +6460,14 @@ service cloud.firestore {
       grid.innerHTML = items.map((v) => renderVideoCardItemHTML(v, targetPrefix)).join("");
 
       if (pagEl) {
-        if (totalAvailable > VIDEOS_PAGE_BATCH_SIZE) {
+        if (totalAvailable > batchFor(targetPrefix)) {
           const remaining = totalAvailable - currentLimit;
           pagEl.classList.remove("hidden");
           pagEl.innerHTML = `
             <span class="text-[11px] font-semibold text-slate-400">Showing ${currentLimit} of ${totalAvailable} videos (Max ${MAX_VIDEOS_CAPACITY})</span>
             <div class="flex items-center gap-2">
               ${
-                currentLimit > VIDEOS_PAGE_BATCH_SIZE
+                currentLimit > batchFor(targetPrefix)
                   ? `<button type="button" onclick="collapseVideosBatch('${targetPrefix}')"
                       class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 font-bold text-[11px] transition btn-tap">
                       Show Less
@@ -6474,7 +6478,7 @@ service cloud.firestore {
                 remaining > 0
                   ? `<button type="button" onclick="loadMoreVideosBatch('${targetPrefix}')"
                       class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold text-[11px] transition btn-tap">
-                      Load More (+${Math.min(VIDEOS_PAGE_BATCH_SIZE, remaining)})
+                      Load More (+${Math.min(batchFor(targetPrefix), remaining)})
                     </button>`
                   : ""
               }
@@ -6510,20 +6514,20 @@ service cloud.firestore {
     function loadMoreVideosBatch(targetPrefix) {
       videoSectionVisibleLimit[targetPrefix] = Math.min(
         MAX_VIDEOS_CAPACITY,
-        (videoSectionVisibleLimit[targetPrefix] || VIDEOS_PAGE_BATCH_SIZE) + VIDEOS_PAGE_BATCH_SIZE
+        (videoSectionVisibleLimit[targetPrefix] || batchFor(targetPrefix)) + batchFor(targetPrefix)
       );
       const containerId = targetPrefix === "notices" ? "notices-videos-grid" : "full-videos-grid";
       renderVideoCards(containerId, targetPrefix, MAX_VIDEOS_CAPACITY);
     }
 
     function collapseVideosBatch(targetPrefix) {
-      videoSectionVisibleLimit[targetPrefix] = VIDEOS_PAGE_BATCH_SIZE;
+      videoSectionVisibleLimit[targetPrefix] = batchFor(targetPrefix);
       const containerId = targetPrefix === "notices" ? "notices-videos-grid" : "full-videos-grid";
       renderVideoCards(containerId, targetPrefix, MAX_VIDEOS_CAPACITY);
     }
 
     const videoSectionVisibleLimit = {
-      notices: VIDEOS_PAGE_BATCH_SIZE,
+      notices: HOME_VIDEOS_BATCH_SIZE,
       videos: VIDEOS_PAGE_BATCH_SIZE
     };
 
@@ -6940,7 +6944,7 @@ service cloud.firestore {
     // =========================================================================
     // 7B. AUTOPLAY & AUTOPLAY-NEXT (YouTube IFrame Player API)
     // =========================================================================
-    const AUTOPLAY_PREF_KEY = "iti_chhotojagulia_autoplay_v1";
+    const AUTOPLAY_PREF_KEY = "iti_chhotojagulia_autoplay_v2";
     const AUTOPLAY_LOOP_KEY = "iti_chhotojagulia_autoplay_loop_v1";
 
     function readPref(key) {
@@ -6950,12 +6954,12 @@ service cloud.firestore {
       try { localStorage.setItem(key, on ? "on" : "off"); } catch (e) {}
     }
 
-    // Default ON (muted) until the viewer chooses otherwise; their saved choice always wins
+    // Default OFF until the viewer turns it on in Settings; their saved choice always wins
     let autoplayEnabled = (function () {
       try {
         const v = localStorage.getItem(AUTOPLAY_PREF_KEY);
-        return v === null ? true : v === "on";
-      } catch (e) { return true; }
+        return v === null ? false : v === "on";
+      } catch (e) { return false; }
     })();
     let autoplayLoop = readPref(AUTOPLAY_LOOP_KEY);
 
@@ -7059,11 +7063,11 @@ service cloud.firestore {
     function ensureVideoRendered(prefix, id) {
       const order = videoOrderCache[prefix] || [];
       const idx = order.findIndex((v) => v.id === id);
-      const limit = videoSectionVisibleLimit[prefix] || VIDEOS_PAGE_BATCH_SIZE;
+      const limit = videoSectionVisibleLimit[prefix] || batchFor(prefix);
       if (idx >= limit) {
         videoSectionVisibleLimit[prefix] = Math.min(
           MAX_VIDEOS_CAPACITY,
-          Math.ceil((idx + 1) / VIDEOS_PAGE_BATCH_SIZE) * VIDEOS_PAGE_BATCH_SIZE
+          Math.ceil((idx + 1) / batchFor(prefix)) * batchFor(prefix)
         );
         renderVideoCards(prefix === "notices" ? "notices-videos-grid" : "full-videos-grid", prefix, MAX_VIDEOS_CAPACITY);
       }
@@ -11245,6 +11249,26 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .vid-ap-nav{padding:2px 7px!important}
 .vl-mx{display:grid;gap:.4rem}.vl-mx[hidden]{display:none}[data-mxm][hidden]{display:none}
 .vl-crow.vl-wrap{flex-wrap:wrap}.vl-crow.vl-wrap input{flex:1 1 100%}
+
+    /* ===== PERFORMANCE: smoother scrolling / less jitter ===== */
+    html.scroll-smooth { scroll-behavior: auto !important; }
+    @keyframes tabSmoothIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .tab-view { will-change: auto !important; transform: none !important; backface-visibility: visible !important; }
+    /* Drop expensive blur-behind on cards/sections that sit in the scrolling list (kept on header, nav bar, sheets, lightbox) */
+    #daily-trainee-section, #daily-calendar-card, #daily-class-section, #feedback-card,
+    #notices-videos-grid > article, #full-videos-grid > article,
+    #notices-videos-grid .vid-play-btn, #full-videos-grid .vid-play-btn, .pa-btn, .glass-ctl,
+    html.bright-mode #daily-trainee-section, html.bright-mode #daily-calendar-card,
+    html.bright-mode #daily-class-section,
+    html.bright-mode #notices-videos-grid > article, html.bright-mode #full-videos-grid > article {
+      -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    }
+    /* Stop always-running filter animations (repaint every frame) */
+    .rk-name, .rk-shine, .rk-crown, .reward-pill.star-fx, .name-gold-effect,
+    #app-logo, #app-logo::before, #app-logo svg, .new-badge::after, #main-header .hdr-ico::before { animation: none !important; will-change: auto !important; }
+    /* Keep image/video cards from re-laying out the page while loading */
+    #notices-videos-grid > article, #full-videos-grid > article { content-visibility: auto; contain-intrinsic-size: auto 260px; }
+    body { overflow-anchor: none; }
 </style>
 <script id="vl-script">
 (function () {
@@ -11253,8 +11277,9 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   var PK = "iti_vl_prefs_v1", CK = "iti_vl_lastcat_v1", P = ["notices", "videos"];
   function rd(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
   function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-  var PD = { catAuto: true, remember: true, reduce: false, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
+  var PD = { catAuto: false, remember: true, reduce: false, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
   var prefs = Object.assign({}, PD, rd(PK));
+  if (!prefs._apOff) { prefs.catAuto = false; prefs._apOff = 1; wr(PK, prefs); } /* one-time reset: autoplay now off by default */
   var st = { notices: { cat: "all", sub: "all", t: null }, videos: { cat: "all", sub: "all", t: null } };
   (function () { var lc = rd(CK); P.forEach(function (p) { if (prefs.remember && lc[p]) st[p].cat = lc[p]; if (prefs.musicRemember && lc[p + "_sub"]) st[p].sub = lc[p + "_sub"]; }); })();
   function persist() {
@@ -11412,9 +11437,9 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   }
   function rerender(p) {
     var ord = window.vlApplyView(p, normalizeVideosList(appState.videos).filter(function (v) { return secOK(p, v); }));
-    videoSectionVisibleLimit[p] = VIDEOS_PAGE_BATCH_SIZE;
+    videoSectionVisibleLimit[p] = batchFor(p);
     var act = activeInlinePlayerState[p] && activeInlinePlayerState[p].videoId, i = ord.findIndex(function (v) { return v.id === act; });
-    if (i >= VIDEOS_PAGE_BATCH_SIZE) videoSectionVisibleLimit[p] = Math.ceil((i + 1) / VIDEOS_PAGE_BATCH_SIZE) * VIDEOS_PAGE_BATCH_SIZE;
+    if (i >= batchFor(p)) videoSectionVisibleLimit[p] = Math.ceil((i + 1) / batchFor(p)) * batchFor(p);
     renderVideoCards(gid(p), p, MAX_VIDEOS_CAPACITY);
   }
   function autoCat(p) {
@@ -11743,7 +11768,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   };
   window.collapseVideosBatch = function (p) {
     var g = document.getElementById(gid(p)), self = this, args = arguments;
-    var extra = g ? Array.prototype.slice.call(g.querySelectorAll("[data-vid-card]"), VIDEOS_PAGE_BATCH_SIZE) : [];
+    var extra = g ? Array.prototype.slice.call(g.querySelectorAll("[data-vid-card]"), batchFor(p)) : [];
     if (!g || !extra.length || prefs.reduce) return _cv.apply(self, args);
     var h0 = g.offsetHeight;
     extra.forEach(function (el) { el.classList.add("vl-card-out"); });

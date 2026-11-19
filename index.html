@@ -2,7 +2,10 @@
 <html lang="en" class="h-full scroll-smooth bright-mode">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>ITI CONNECT — Your Academic Information Hub</title>
   <meta name="description" content="ITI CONNECT — Your Academic Information Hub. Attendance, results, study materials, educational videos and exam preparation for ITI and technical education students. Independently developed and maintained by DEVIT." />
   <meta name="application-name" content="ITI CONNECT" />
@@ -510,14 +513,11 @@
       will-change: transform;
     }
     #search-bar-wrap {
-      position: sticky;
-      top: 0.65rem;
+      position: relative;
       z-index: 29;
       display: flex;
-      justify-content: flex-end;
-      pointer-events: none;
-      transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
-      will-change: transform;
+      justify-content: flex-start;
+      pointer-events: auto;
     }
     body.non-home-tab #top-sticky {
       transition: transform 0.24s ease-out !important;
@@ -1811,6 +1811,95 @@
   @keyframes blBar{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
   @media (prefers-reduced-motion:reduce){.bl-logo,.bl-bar i{animation:none}#boot-loader{transition:none}}
 </style>
+<style id="dv-upgrade-css">
+/* ===== DEVIT upgrade: overflow safety, loading/error states, Home glance ===== */
+html { overflow-x: hidden; }
+body { overflow-x: clip; max-width: 100%; }
+main, main > section { min-width: 0; max-width: 100%; }
+main img, main video, main iframe, main svg { max-width: 100%; }
+.table-scroll { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+#notices-list-container, #notices-list-container *, #dv-glance, #dv-glance *,
+.nv-title, .nv-body, main a { overflow-wrap: anywhere; }
+
+.dv-skel {
+  border-radius: .9rem;
+  background: linear-gradient(90deg, rgba(148,163,184,.10), rgba(148,163,184,.24), rgba(148,163,184,.10));
+  background-size: 200% 100%;
+  animation: dvShimmer 1.3s ease-in-out infinite;
+}
+@keyframes dvShimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .dv-skel { animation: none; } }
+
+#dv-net-banner {
+  position: fixed; left: .75rem; right: .75rem; z-index: 70;
+  top: calc(env(safe-area-inset-top, 0px) + .5rem);
+  max-width: 34rem; margin: 0 auto;
+  display: none; align-items: center; gap: .6rem;
+  padding: .6rem .75rem; border-radius: 1rem;
+  background: #78350f; color: #fef3c7; border: 1px solid rgba(251,191,36,.55);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35); font-size: 12px; font-weight: 600; line-height: 1.35;
+}
+#dv-net-banner.dv-show { display: flex; }
+#dv-net-banner button {
+  flex: none; padding: .4rem .8rem; border-radius: .7rem; font-weight: 800; font-size: 12px;
+  background: #fbbf24; color: #1c1917;
+}
+#dv-quick { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+#dv-quick::-webkit-scrollbar { display: none; }
+.dv-clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dv-lv-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; background: #0b1220; overflow: hidden; cursor: pointer; border: 0; padding: 0; }
+.dv-lv-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dv-lv-thumb iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+
+#dv-glance .dv-glance-card { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; text-align: left; align-self: stretch; height: 100%; }
+#dv-glance .dv-glance-card > div { width: 100%; text-align: left; }
+#dv-att-main, #dv-notice-main { min-height: 2.6em; }
+#dv-notice-sub { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Top 3 strip colours: dark + bright (light) mode */
+#dv-top3 .dv-cell { flex: 1 1 0; min-width: 3px; height: 14px; border-radius: 3px; }
+#dv-top3 .dv-wkl { flex: 1 1 0; min-width: 3px; text-align: center; font-size: 9px; line-height: 11px; font-weight: 700; color: #94a3b8; }
+#dv-top3 .dv-wkl-end { color: #facc15; font-weight: 800; }
+#dv-top3 .dv-sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 3px; }
+.dv-c-p { background: #34d399; } .dv-c-a { background: #fb7185; } .dv-c-h { background: #facc15; } .dv-c-n { background: rgba(148,163,184,.32); }
+.dv-m1 { color: #fbbf24; } .dv-m2 { color: #cbd5e1; } .dv-m3 { color: #f59e0b; }
+.dv-alert { color: #fb7185 !important; }
+html.bright-mode .dv-c-p { background: #16a34a; }
+html.bright-mode .dv-c-a { background: #e11d48; }
+html.bright-mode .dv-c-h { background: #facc15; box-shadow: inset 0 0 0 1px #b45309; }
+html.bright-mode .dv-c-n { background: #cbd5e1; box-shadow: inset 0 0 0 1px #94a3b8; }
+html.bright-mode #dv-top3 .dv-wkl { color: #475569; }
+html.bright-mode #dv-top3 .dv-wkl-end { color: #b45309; }
+html.bright-mode .dv-m1 { color: #b45309; } html.bright-mode .dv-m2 { color: #475569; } html.bright-mode .dv-m3 { color: #92400e; }
+html.bright-mode .dv-alert { color: #be123c !important; }
+
+/* Translucent glass look for the new Home cards (matches the notice card) */
+#dv-top3, #dv-glance .dv-glance-card, #dv-latest-video > article {
+  background-color: rgba(12, 19, 34, 0.52) !important;
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
+}
+#dv-quick > button {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+html.bright-mode #dv-top3, html.bright-mode #dv-glance .dv-glance-card, html.bright-mode #dv-latest-video > article {
+  background-color: rgba(255, 255, 255, 0.58) !important;
+  backdrop-filter: blur(12px) saturate(1.45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.45);
+  border-color: rgba(148, 163, 184, 0.32) !important;
+  box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset !important;
+}
+html.bright-mode #dv-quick > button {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(148, 163, 184, 0.35) !important;
+}
+</style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="iti-mark" viewBox="0 0 64 64"><defs><linearGradient id="icg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a3c"/><stop offset="1" stop-color="#f25c05"/></linearGradient><linearGradient id="icbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121c33"/><stop offset="1" stop-color="#070b14"/></linearGradient></defs><rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#icbg)" stroke="url(#icg)" stroke-width="2.2"/><path d="M32 8.5 52 16.5 32 24.5 12 16.5Z" fill="url(#icg)"/><path d="M20.5 21v5.5c0 2.6 5 4.8 11.5 4.8s11.5-2.2 11.5-4.8V21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M52 16.5v8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="52" cy="26" r="1.8" fill="url(#icg)"/><rect x="19.5" y="34" width="5" height="13" rx="1.2" fill="#fff"/><path d="M43.6 36.2A7.4 7.4 0 1 0 43.6 45.2" fill="none" stroke="url(#icg)" stroke-width="4.6" stroke-linecap="round"/><path d="M8.5 37.5h6.5v4" fill="none" stroke="#ff9a3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="37.5" r="1.7" fill="#ff9a3c"/><path d="M55.5 44.5H49v-4" fill="none" stroke="#ff9a3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="55.5" cy="44.5" r="1.7" fill="#ff9a3c"/><path d="M11 51.5c7-2.6 14-2.4 21 1.4 7-3.8 14-4 21-1.4v6c-7-2.6-14-2.4-21 1.4-7-3.8-14-4-21-1.4Z" fill="#fff"/><path d="M32 52.8v6.6" stroke="#f25c05" stroke-width="1.3"/></symbol></svg>
@@ -2047,6 +2136,59 @@
       <!-- TAB 1: HOME (Notices inside) + TRADE VIDEOS BELOW                 -->
       <!-- ================================================================= -->
       <section id="view-home" class="tab-view animate-panel space-y-5">
+        <!-- ===== At-a-glance summary + latest video (populated by dvRenderHome) ===== -->
+        <div id="dv-glance" class="space-y-3">
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" id="dv-att-card" onclick="switchTab('daily')"
+              class="dv-glance-card flex flex-col items-start justify-start text-left min-w-0 w-full bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3 shadow-xl transition btn-tap">
+              <div class="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">
+                <i data-lucide="calendar-check-2" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i><span class="truncate">Attendance</span>
+              </div>
+              <div id="dv-att-main" class="mt-1.5 text-sm font-extrabold text-white leading-snug"><div class="dv-skel" style="height:1.1rem"></div></div>
+              <div id="dv-att-sub" class="mt-1 text-[11px] font-semibold text-slate-400 leading-snug"></div>
+              <div id="dv-att-bar" class="hidden mt-2 w-full h-1.5 rounded-full bg-slate-800/80 overflow-hidden"><div id="dv-att-bar-fill" class="h-full rounded-full" style="width:0"></div></div>
+              <div id="dv-att-extra" class="mt-1.5 text-[10.5px] font-semibold text-slate-500 leading-snug"></div>
+            </button>
+            <button type="button" id="dv-notice-card" onclick="dvOpenLatestNotice()"
+              class="dv-glance-card flex flex-col items-start justify-start text-left min-w-0 w-full bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3 shadow-xl transition btn-tap">
+              <div class="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400">
+                <i data-lucide="megaphone" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i><span class="truncate">Latest Notice</span>
+              </div>
+              <div id="dv-notice-main" class="mt-1.5 text-sm font-extrabold text-white leading-snug dv-clamp2"><div class="dv-skel" style="height:1.1rem"></div></div>
+              <div id="dv-notice-sub" class="mt-1 text-[11px] font-semibold text-slate-400 leading-snug"></div>
+              <div id="dv-notice-extra" class="mt-1.5 text-[10.5px] font-semibold text-slate-500 leading-snug"></div>
+            </button>
+          </div>
+
+          <div id="dv-top3" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3 shadow-xl"><div class="dv-skel" style="height:5rem"></div></div>
+
+          <div id="dv-quick" class="flex gap-2 overflow-x-auto pb-0.5" aria-label="Quick jump">
+            <button type="button" onclick="switchTab('daily')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="calendar-check-2" class="w-3.5 h-3.5"></i><span>Daily</span></button>
+            <button type="button" onclick="switchTab('monthly')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i><span>80% Chart</span></button>
+            <button type="button" onclick="switchTab('videos')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="play-circle" class="w-3.5 h-3.5"></i><span>Videos</span></button>
+            <button type="button" onclick="switchTab('results')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="award" class="w-3.5 h-3.5"></i><span>Results</span></button>
+            <button type="button" onclick="switchTab('notes')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="book-open" class="w-3.5 h-3.5"></i><span>Notes</span></button>
+            <button type="button" onclick="switchTab('gallery')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>Gallery</span></button>
+          </div>
+
+          <div id="dv-latest-video"><div class="dv-skel" style="aspect-ratio:16/11"></div></div>
+        </div>
+
+        <!-- ===== Home: Gallery photo slideshow (reads existing gallery data) ===== -->
+        <div id="home-gallery-card" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                <i data-lucide="image" class="w-4 h-4"></i>
+              </div>
+              <h2 class="text-sm sm:text-base font-bold text-white truncate">Gallery</h2>
+            </div>
+            <button type="button" onclick="switchTab('gallery')"
+              class="shrink-0 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 font-bold text-xs transition btn-tap">View All &rarr;</button>
+          </div>
+          <div id="hg-body"><div class="dv-skel" style="aspect-ratio:16/10"></div></div>
+        </div>
+
         <div id="home-notice-card" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl">
           <div class="flex items-center justify-between gap-2 mb-3">
             <div class="flex items-center gap-2 min-w-0">
@@ -2073,7 +2215,7 @@
             </div>
           </div>
 
-          <div id="notices-list-container" class="space-y-2.5"></div>
+          <div id="notices-list-container" class="space-y-2.5"><div class="dv-skel" style="height:4.5rem"></div></div>
         </div>
 
         <!-- Trade Practicals & Video Lectures Directly Below Notices -->
@@ -2114,7 +2256,7 @@
         <div id="home-playlist-status-bar" class="hidden mb-3"></div>
 
         <div data-autoplay-bar-mount="notices"></div>
-        <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><div class="dv-skel" style="aspect-ratio:16/10"></div><div class="dv-skel hidden sm:block" style="aspect-ratio:16/10"></div></div>
           <div id="notices-videos-pagination" class="hidden mt-3 pt-2.5 border-t border-slate-800/70 flex flex-wrap items-center justify-between gap-2 text-xs"></div>
         </div>
 
@@ -2175,6 +2317,7 @@
       <!-- ================================================================= -->
       <section id="view-daily" class="tab-view hidden animate-panel space-y-4">
         <div id="focus-daily" hidden></div>
+        <div id="today-att-strip" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl px-3 py-2.5 shadow-xl"></div>
         <div id="daily-calendar-card" class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
             <div class="flex items-center justify-between gap-2 min-w-0 flex-1">
@@ -2270,10 +2413,15 @@
 
               <button type="button" onclick="toggleAccordion('daily-rollcall')" aria-label="Toggle Trainee Attendance"
                 class="p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 shrink-0 btn-tap">
-                <i id="chevron-daily-rollcall" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron rotate-180"></i>
+                <i id="chevron-daily-rollcall" data-lucide="chevron-down" class="w-4 h-4 accordion-chevron"></i>
               </button>
             </div>
 
+
+          </div>
+
+          <div id="body-daily-rollcall" class="accordion-body">
+            <div class="accordion-inner space-y-2.5">
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/70">
               <div class="glass-ctl inline-flex items-center gap-0.5 pl-1 pr-1 py-0.5 rounded-full text-[11px] font-bold text-amber-300">
                 <button type="button" onclick="shiftSelectedDay(-1)" title="Previous Day" aria-label="Previous day" class="glass-arrow w-6 h-6 rounded-full flex items-center justify-center text-sm leading-none transition btn-tap">‹</button>
@@ -2313,10 +2461,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div id="body-daily-rollcall" class="accordion-body accordion-open">
-            <div class="accordion-inner space-y-2.5">
               <!-- Admin Bulk Roll Call Toolbar -->
               <div class="admin-only hidden flex flex-wrap items-center gap-1.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800">
                 <button type="button" onclick="markAllPresent()"
@@ -2331,6 +2475,18 @@
                   class="px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition btn-tap">
                   Partial P/A
                 </button>
+                <button type="button" onclick="copyPreviousDayAttendance()"
+                  class="px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-[11px] font-bold transition btn-tap">
+                  Copy Previous Day
+                </button>
+                <div class="w-full flex items-center gap-1.5 pt-1">
+                  <span class="text-[11px] font-bold text-slate-400 shrink-0">Roll</span>
+                  <input id="rr-from" type="number" inputmode="numeric" min="1" placeholder="From" class="w-16 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-white" />
+                  <span class="text-slate-500 text-xs">to</span>
+                  <input id="rr-to" type="number" inputmode="numeric" min="1" placeholder="To" class="w-16 px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-white" />
+                  <button type="button" onclick="markRollRange('P')" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold btn-tap">Present</button>
+                  <button type="button" onclick="markRollRange('A')" class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[11px] font-bold btn-tap">Absent</button>
+                </div>
                 <button type="button" onclick="clearDayAttendance()"
                   class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition btn-tap">
                   Clear Day
@@ -2351,7 +2507,7 @@
               </div>
               <div class="min-w-0">
                 <h3 class="text-sm sm:text-base font-bold text-white truncate">Daily Class Attendance</h3>
-                <p class="text-[11px] text-slate-400 truncate">Day-wise views &amp; Top 5 ranking</p>
+                <p class="text-[11px] text-slate-400 truncate">Day-wise views &amp; full ranking</p>
               </div>
             </div>
             <button type="button" class="p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 btn-tap">
@@ -2363,6 +2519,7 @@
             <div class="accordion-inner">
               <div class="space-y-2.5 pt-1">
                 <div id="ca-seg" class="ca-seg glass-row border" role="group" aria-label="Attendance view">
+                  <span id="ca-thumb" aria-hidden="true"></span>
                   <button type="button" data-mode="ranking" onclick="setClassAttMode('ranking')" aria-expanded="false" aria-controls="body-ca-ranking">Ranking</button>
                   <button type="button" data-mode="current" onclick="setClassAttMode('current')">Current</button>
                   <button type="button" data-mode="specific" onclick="setClassAttMode('specific')">Specific</button>
@@ -2453,6 +2610,7 @@
                   <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Shortage</span>
                 </div>
                 <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="openLowAttendanceAlert()" class="admin-only hidden px-2.5 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/40 text-rose-300 text-[11px] font-bold flex items-center gap-1 btn-tap">&lt;80% Alert</button>
                   <button type="button" onclick="downloadAttendanceReportCSV()"
                     class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-emerald-400 font-bold flex items-center gap-1 transition btn-tap">
                     <i data-lucide="download" class="w-3 h-3"></i>
@@ -2673,7 +2831,7 @@
         <div id="videos-playlist-status-bar" class="hidden"></div>
 
         <div data-autoplay-bar-mount="videos"></div>
-        <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+        <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><div class="dv-skel" style="aspect-ratio:16/10"></div><div class="dv-skel hidden sm:block" style="aspect-ratio:16/10"></div></div>
         <div id="full-videos-pagination" class="hidden pt-1 flex flex-wrap items-center justify-between gap-2 text-xs"></div>
       </section>
 
@@ -3146,11 +3304,11 @@ service cloud.firestore {
     }
     match /iti_portals/{portalId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin() || (adminEmail() == '' &amp;&amp; request.auth != null);
     }
     match /iti_portals/{portalId}/media/{mediaId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin() || (adminEmail() == '' &amp;&amp; request.auth != null);
     }
     // Public comments (no email stored here)
     match /iti_portals/{portalId}/comments/{cid} {
@@ -4993,6 +5151,7 @@ service cloud.firestore {
       const cfg = getActiveFirebaseConfig();
       if (!sdk || !cfg || !cfg.projectId) {
         updateSyncIndicator(false, "Offline Mode");
+        try { if (window.dvShowNetBanner) window.dvShowNetBanner(!sdk ? "Can't reach the cloud service right now. Showing saved data." : ""); } catch (e) {}
         return;
       }
       try {
@@ -5003,6 +5162,8 @@ service cloud.firestore {
         window.pushStateToFirebase = async function () {
           try {
             const payload = { ...appState, updatedAt: Date.now() };
+            payload.settings = { ...(payload.settings || {}) };
+            delete payload.settings.adminPin; // PIN stays on this device only
             const approxBytes = new Blob([JSON.stringify(payload)]).size;
             if (approxBytes > 950000) {
               showToast("Cloud sync warning: payload near 1MB limit. Optimize large photos.", "error");
@@ -5016,7 +5177,8 @@ service cloud.firestore {
           }
         };
 
-        sdk.onSnapshot(
+        if (window.__dvUnsub) { try { window.__dvUnsub(); } catch (e) {} }
+        window.__dvUnsub = sdk.onSnapshot(
           docRef,
           (snap) => {
             if (snap.exists()) {
@@ -5033,20 +5195,24 @@ service cloud.firestore {
                       ? remote.galleryPhotos
                       : appState.galleryPhotos,
                   internalMeta: { ...DEFAULT_INTERNAL_META, ...(remote.internalMeta || {}) },
-                  settings: { ...appState.settings, ...(remote.settings || {}) }
+                  settings: { ...appState.settings, ...(remote.settings || {}), adminPin: (appState.settings && appState.settings.adminPin) || DEFAULT_ADMIN_PIN }
                 };
                 saveLocalState(false);
+                if (remote.settings && remote.settings.adminPin && isAdminUnlocked && window.pushStateToFirebase) window.pushStateToFirebase(); // purge old public PIN
                 renderAllViews();
               }
             }
             updateSyncIndicator(true, "Connected to Firebase Cloud");
+            try { if (window.dvHideNetBanner) window.dvHideNetBanner(); } catch (e) {}
           },
-          () => {
+          (err) => {
             updateSyncIndicator(false, "Offline Mode");
+            try { if (window.dvShowNetBanner) window.dvShowNetBanner(); } catch (e) {}
           }
         );
       } catch (e) {
         updateSyncIndicator(false, "Offline Mode");
+        try { if (window.dvShowNetBanner) window.dvShowNetBanner(); } catch (e2) {}
       }
     };
 
@@ -5436,7 +5602,7 @@ service cloud.firestore {
 
     function setClassAttMode(m) {
       if (m === "ranking") {
-        classAttRankOpen = classAttMode === "ranking" ? !classAttRankOpen : true;
+        classAttRankOpen = true;
         classAttMode = "ranking";
       } else {
         classAttMode = m;
@@ -5912,6 +6078,7 @@ service cloud.firestore {
     }
 
     function minimizeSearchBar() {
+      return; // search bar stays fixed in place and is never minimised
       if (lastTabName !== "home") return;
       const sWrap = document.getElementById("search-bar-wrap");
       const inp = document.getElementById("global-trainee-search-input");
@@ -5953,9 +6120,7 @@ service cloud.firestore {
         const wt = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
         if (wt !== lastWrapT) { wrapEl.style.transform = wt; lastWrapT = wt; }
         if (sWrap) {
-          let st;
-          if (lastTabName !== "home") st = "";
-          else st = !headerHidden && window.scrollY > 12 ? `translateY(${h}px)` : "translateY(0px)";
+          const st = ""; // search bar stays in its original place in the page flow
           if (st !== lastSearchT) { sWrap.style.transform = st; lastSearchT = st; }
         }
       }
@@ -6184,7 +6349,7 @@ service cloud.firestore {
       const isOpen = body.classList.toggle("accordion-open");
       if (key === "top-attenders" && isOpen) {
         classAttMode = "ranking";
-        classAttRankOpen = false;
+        classAttRankOpen = true;
         renderClassAttendance(false);
       }
       if (chev) chev.classList.toggle("rotate-180", isOpen);
@@ -6358,7 +6523,7 @@ service cloud.firestore {
 
       const hasMore = appState.notices.length > 1;
       if (toggleBtn) {
-        toggleBtn.classList.toggle("hidden", !hasMore);
+        toggleBtn.classList.remove("hidden");
         if (label) label.textContent = showAllNotices ? "Show Less" : `Show All (${appState.notices.length})`;
         if (chev) chev.classList.toggle("rotate-180", showAllNotices);
       }
@@ -6572,6 +6737,7 @@ service cloud.firestore {
                     : ""
                 }
 
+                ${(window.dvIsWatched && window.dvIsWatched(v)) ? `<span data-vid-watched class="absolute top-2 right-2 z-30 px-2 py-0.5 rounded-md bg-emerald-600/95 text-white text-[10px] font-bold shadow">✓ Watched</span>` : ""}
                 <div class="absolute inset-0 z-20 bg-black/25 group-hover:bg-black/10 flex items-center justify-center transition">
                   <div class="vid-play-btn w-11 h-11 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg shadow-black/50 group-hover:scale-110 transition">
                     <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i>
@@ -7102,6 +7268,7 @@ service cloud.firestore {
     function handleVideoEnded(prefix, videoObj) {
       const rt = ytRuntime[prefix];
       completedIds[prefix].add(videoObj.id);
+      try { if (window.dvMarkWatched) window.dvMarkWatched(videoObj); } catch (e) {}
       if (!autoplayEnabled) {
         setAutoplayStatus(prefix, "Finished", "on");
         return;
@@ -10392,7 +10559,8 @@ service cloud.firestore {
       [renderNotices, renderStudyNotes, renderPlaylistStatusBars,
        function(){ renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY); },
        function(){ renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY); },
-       renderDailySection, renderEligibilityChart, renderResultsSection, renderGallery
+       renderDailySection, renderEligibilityChart, renderResultsSection, renderGallery,
+       function(){ if (window.dvRenderHome) window.dvRenderHome(); }
       ].forEach(function(fn){ try { fn(); } catch (e) { console.error(e); } });
       if (window.lucide) lucide.createIcons();
     }
@@ -11396,13 +11564,16 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   window.vlApplyView = function (p, list) {
     ens(); var cat = st[p].cat, sub = st[p].sub, key = cat, out = list.map(dec).filter(function (v) { return !v._hid && !v._shid; });
     /* educational lists never contain music, so sequential playback can't mix the two */
-    out = cat === "all" ? out.filter(function (v) { return v._cat !== "music"; }) : out.filter(function (v) { return v._cat === cat; });
+    out = cat === "__watched" ? out.filter(function (v) { return window.dvIsWatched ? window.dvIsWatched(v) : false; }) : cat === "all" ? out.filter(function (v) { return v._cat !== "music"; }) : out.filter(function (v) { return v._cat === cat; });
     if (cat === "music" && sub !== "all") { out = out.filter(function (v) { return v._sub === sub; }); key = "music:" + sub; }
     return sorted(key, out);
   };
+  window.vlCatName = function (id) { return cname(id); };
+  window.vlDecorate = function (v) { return dec(v); };
   window.vlEmptyText = function (p) {
     var c = st[p].cat;
     if (c === "music") return st[p].sub === "all" ? "No music added yet." : "No tracks in " + esc(sname(st[p].sub)) + " yet.";
+    if (c === "__watched") return "Nothing watched yet — finish a video and it will show up here.";
     return c === "all" ? "No trade videos added for this section yet." : "No videos in " + esc(cname(c)) + " yet.";
   };
 
@@ -11415,7 +11586,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   }
   function refresh() {
     chipsAll();
-    P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); renderVideoCards(gid(p), p, MAX_VIDEOS_CAPACITY); });
+    P.forEach(function (p) { if (st[p].cat !== "all" && st[p].cat !== "__watched" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); renderVideoCards(gid(p), p, MAX_VIDEOS_CAPACITY); });
     if (mOpen) renderManage();
   }
 
@@ -11436,7 +11607,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       d.querySelector(".vl-scroll").addEventListener("click", function (e) { var b = e.target.closest(".vl-cat"); if (b) { setCat(p, b.getAttribute("data-cat"), true); if (d.classList.contains("vl-all")) setTimeout(function () { if (d.classList.contains("vl-all")) d.querySelector("[data-vl-expand]").click(); }, 250); } });
       d.querySelector("[data-vl-add]").onclick = function () {
         if (!isAdminUnlocked) { openAdminModal(); return; }
-        var c = st[p].cat, sb = st[p].sub;
+        var c = st[p].cat === "__watched" ? "all" : st[p].cat, sb = st[p].sub;
         mPreset = { key: c === "music" && sb && sb !== "all" ? "music:" + sb : c };
         openVideoModal();
       };
@@ -11475,7 +11646,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     P.forEach(function (p) {
       var d = bar(p); if (!d) return;
       var shown = visAll(p);
-      var list = [{ id: "all", name: "All Videos" }].concat(cats().filter(function (c) {
+      var list = [{ id: "all", name: "All Videos" }, { id: "__watched", name: "✓ Watched" }].concat(cats().filter(function (c) {
         if (!c.hideEmpty || isAdminUnlocked || st[p].cat === c.id) return true;
         return shown.some(function (v) { return v._cat === c.id; });
       }));
@@ -11908,7 +12079,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 
   /* ---------- init ---------- */
   applyPrefs(); mount(); setupSettings();
-  P.forEach(function (p) { if (st[p].cat !== "all" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); rerender(p); });
+  P.forEach(function (p) { if (st[p].cat !== "all" && st[p].cat !== "__watched" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); rerender(p); });
   setInterval(function () { P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; d.querySelector("[data-vl-add]").hidden = !isAdminUnlocked; }); }, 1500);
 })();
 </script>
@@ -12251,5 +12422,734 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     if (document.readyState !== "loading") { applyMode(); startPublic(); }
   </script>
 
+<script id="dv-upgrade-script">
+/* ===== DEVIT upgrade: Home glance, latest video, watched tracking, hash routing, network banner ===== */
+(function () {
+  "use strict";
+  var WKEY = "iti_chhotojagulia_watched_v1";
+  var TABS = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "settings"];
+  function $(id) { return document.getElementById(id); }
+  function esc(x) { return escapeHTML(x); }
+
+  /* ---------- Watched (localStorage only) ---------- */
+  var watched = new Set();
+  try { var saved = JSON.parse(localStorage.getItem(WKEY) || "[]"); if (Array.isArray(saved)) saved.forEach(function (k) { watched.add(String(k)); }); } catch (e) {}
+  function saveWatched() {
+    try { localStorage.setItem(WKEY, JSON.stringify(Array.from(watched).slice(-500))); } catch (e) {}
+  }
+  function keyOf(v) {
+    if (!v) return "";
+    if (v.kind === "direct") return String(v.directUrl || v.id || "");
+    return extractYouTubeId(v.ytId) || String(v.id || "");
+  }
+  window.dvIsWatched = function (v) { var k = keyOf(v); return !!k && watched.has(k); };
+  window.dvMarkWatched = function (v) {
+    var k = keyOf(v);
+    if (!k || watched.has(k)) return;
+    watched.add(k);
+    saveWatched();
+    try {
+      var list = normalizeVideosList(appState.videos);
+      document.querySelectorAll("[data-vid-card]").forEach(function (card) {
+        var id = card.getAttribute("data-vid-card");
+        var vv = list.find(function (x) { return x.id === id; });
+        if (!vv || keyOf(vv) !== k) return;
+        var stage = card.querySelector(".aspect-video");
+        if (stage && !stage.querySelector("[data-vid-watched]")) {
+          var b = document.createElement("span");
+          b.setAttribute("data-vid-watched", "");
+          b.className = "absolute top-2 right-2 z-30 px-2 py-0.5 rounded-md bg-emerald-600/95 text-white text-[10px] font-bold shadow";
+          b.textContent = "\u2713 Watched";
+          stage.appendChild(b);
+        }
+      });
+    } catch (e) {}
+    try { renderLatestVideo(); } catch (e) {}
+  };
+
+  /* ---------- Home: at-a-glance cards ---------- */
+  function renderGlance() {
+    var attMain = $("dv-att-main"), attSub = $("dv-att-sub"), attCard = $("dv-att-card");
+    var nMain = $("dv-notice-main"), nSub = $("dv-notice-sub");
+    if (!attMain || !nMain) return;
+
+    try {
+      var today = getTodayISO();
+      var hol = getHolidayEntry(today);
+      var b = getDayAttendanceBuckets(today);
+      var low = 0, counted = 0;
+      (appState.trainees || []).forEach(function (tr) {
+        var st = calculateTraineeStats(tr.id, "ALL");
+        if (st.workingDays > 0) { counted++; if (st.pct < 80) low++; }
+      });
+      if (hol && !b.hasRecord) attMain.textContent = "Holiday today";
+      else if (b.hasRecord) attMain.textContent = b.present.length + " present \u00b7 " + b.absent.length + " absent";
+      else attMain.textContent = "Not marked today";
+      var dayLabel = parseISO(today).toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" });
+      var bits = ["Today, " + dayLabel];
+      if (b.hasRecord && b.unmarked.length) bits.push(b.unmarked.length + " unmarked");
+      if (hol) bits.push(hol.title);
+      attSub.textContent = bits.join(" \u00b7 ");
+      var sum = 0, lowest = null;
+      (appState.trainees || []).forEach(function (tr) {
+        var st2 = calculateTraineeStats(tr.id, "ALL");
+        if (st2.workingDays > 0) { sum += st2.pct; if (!lowest || st2.pct < lowest.pct) lowest = { name: tr.name, pct: st2.pct }; }
+      });
+      var avg = counted ? Math.round(sum / counted) : null;
+      var ex = $("dv-att-extra"), bar = $("dv-att-bar"), fill = $("dv-att-bar-fill");
+      if (ex) {
+        var parts = [];
+        if (avg !== null) parts.push("Class avg " + avg + "%");
+        if (low > 0) parts.push("\u26a0 " + low + " below 80%");
+        else if (counted) parts.push("All at 80%+");
+        if (!counted) parts.push("No attendance records yet");
+        if (lowest && low > 0) parts.push("Lowest: " + lowest.name + " " + lowest.pct + "%");
+        ex.textContent = parts.join(" \u00b7 ");
+        ex.classList.toggle("dv-alert", low > 0);
+      }
+      if (bar && fill) {
+        bar.classList.toggle("hidden", avg === null);
+        if (avg !== null) { fill.style.width = Math.max(0, Math.min(100, avg)) + "%"; fill.className = "h-full rounded-full " + (avg >= 80 ? "dv-c-p" : "dv-c-a"); }
+      }
+      if (attCard) attCard.style.borderColor = low > 0 ? "rgba(244,63,94,.55)" : "";
+    } catch (e) {
+      attMain.textContent = "Attendance"; attSub.textContent = "Tap to open";
+    }
+
+    try {
+      var n = (appState.notices || [])[0];
+      if (!n) { nMain.textContent = "No notices yet"; nSub.textContent = ""; var nx0 = $("dv-notice-extra"); if (nx0) nx0.textContent = ""; }
+      else {
+        nMain.textContent = n.title || "Notice";
+        var prev = String(n.body || "").replace(/\s+/g, " ").trim();
+        if (prev.length > 110) prev = prev.slice(0, 110) + "\u2026";
+        nSub.textContent = prev;
+        var nx = $("dv-notice-extra");
+        if (nx) {
+          var cnt = (appState.notices || []).length;
+          nx.textContent = [n.date ? "Posted " + formatDisplayDate(n.date) : "", cnt > 1 ? cnt + " notices total" : ""].filter(Boolean).join(" \u00b7 ");
+        }
+      }
+    } catch (e) { nMain.textContent = "Notices"; nSub.textContent = ""; }
+  }
+  window.dvOpenLatestNotice = function () {
+    var n = (appState.notices || [])[0];
+    if (n && typeof window.openNoticeView === "function") { try { window.openNoticeView(n.id); return; } catch (e) {} }
+    var el = $("home-notice-card");
+    if (el) { try { el.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }
+  };
+
+  /* ---------- Home: featured latest video (facade) ---------- */
+  function pickLatest() {
+    var list = normalizeVideosList(appState.videos);
+    for (var i = 0; i < list.length; i++) {
+      var v = list[i], sec = v.section || "both";
+      if (!(sec === "both" || sec === "home")) continue;
+      var d = window.vlDecorate ? window.vlDecorate(v) : v;
+      if (d._hid || d._shid || d._cat === "music") continue;
+      return d;
+    }
+    return null;
+  }
+  var latestShown = null;
+  function renderLatestVideo() {
+    var box = $("dv-latest-video");
+    if (!box) return;
+    var v = pickLatest();
+    latestShown = v;
+    if (!v) {
+      box.innerHTML = '<div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No videos added yet.</div>';
+      return;
+    }
+    var id = v.kind === "direct" ? "" : extractYouTubeId(v.ytId);
+    var custom = v.thumb && /^(https?:\/\/\S+|data:image\/)/i.test(String(v.thumb)) ? String(v.thumb) : "";
+    var thumb = custom || (id ? "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg" : "");
+    var cat = window.vlCatName ? window.vlCatName(v._cat) : "";
+    var isW = window.dvIsWatched(v);
+    box.innerHTML =
+      '<article class="bg-[#0f172a] border border-slate-800/90 rounded-2xl overflow-hidden shadow-xl">' +
+        '<div class="px-3.5 pt-3 pb-2 flex items-center justify-between gap-2">' +
+          '<div class="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wide text-slate-400"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i><span>Latest Video</span></div>' +
+          (cat ? '<span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/35 text-[10px] font-bold text-amber-300 truncate max-w-[55%]">' + esc(cat) + '</span>' : "") +
+        '</div>' +
+        '<button type="button" class="dv-lv-thumb" onclick="dvPlayLatest()" aria-label="Play ' + esc(v.title) + '">' +
+          (thumb ? '<img src="' + esc(thumb) + '" alt="" loading="lazy" decoding="async" onerror="this.style.display=\'none\'" />' : "") +
+          '<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25)">' +
+            '<span class="w-12 h-12 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center shadow-lg"><i data-lucide="play" class="w-5 h-5 fill-current" style="margin-left:2px"></i></span></span>' +
+          (v.duration ? '<span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/80 text-white text-[10px] font-mono font-bold">' + esc(v.duration) + '</span>' : "") +
+          (isW ? '<span class="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-emerald-600/95 text-white text-[10px] font-bold shadow">\u2713 Watched</span>' : "") +
+        '</button>' +
+        '<div class="p-3.5 space-y-2.5">' +
+          '<h3 class="text-sm font-bold text-white leading-snug dv-clamp2">' + esc(v.title) + '</h3>' +
+          '<button type="button" onclick="switchTab(\'videos\')" class="w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center justify-center gap-1.5 transition btn-tap"><span>View All Videos \u2192</span></button>' +
+        '</div>' +
+      '</article>';
+    if (window.lucide) { try { lucide.createIcons(); } catch (e) {} }
+  }
+  window.dvPlayLatest = function () {
+    var v = latestShown;
+    if (!v) return;
+    var id = v.kind === "direct" ? "" : extractYouTubeId(v.ytId);
+    if (!id) { switchTab("videos"); return; }
+    var holder = document.querySelector("#dv-latest-video .dv-lv-thumb");
+    if (!holder) return;
+    var f = document.createElement("iframe");
+    f.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?autoplay=1&playsinline=1&rel=0";
+    f.title = v.title || "Video";
+    f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+    f.allowFullscreen = true;
+    holder.onclick = null;
+    holder.removeAttribute("onclick");
+    holder.innerHTML = "";
+    holder.appendChild(f);
+  };
+
+  /* ---------- Tables: keep them inside a scroll container ---------- */
+  function wrapTables() {
+    document.querySelectorAll("table").forEach(function (t) {
+      if (t.closest(".table-scroll") || !t.parentNode) return;
+      var w = document.createElement("div");
+      w.className = "table-scroll";
+      t.parentNode.insertBefore(w, t);
+      w.appendChild(t);
+    });
+  }
+
+  /* ---------- Home: top 3 trainees, this month's daily attendance ---------- */
+  function renderTop3() {
+    var box = $("dv-top3");
+    if (!box) return;
+    var now = new Date(), y = now.getFullYear(), m = now.getMonth();
+    var dim = new Date(y, m + 1, 0).getDate(), todayD = now.getDate();
+    var monthName = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+    function iso(d) { return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0"); }
+    var rows = [];
+    (appState.trainees || []).forEach(function (tr) {
+      var p = 0, a = 0, days = [];
+      for (var d = 1; d <= dim; d++) {
+        var rec = appState.attendance && appState.attendance[iso(d)];
+        var v = rec ? rec[tr.id] : "";
+        if (v === "P") p++; else if (v === "A") a++;
+        days.push(v === "P" || v === "A" ? v : "");
+      }
+      if (p + a > 0) rows.push({ tr: tr, p: p, a: a, pct: Math.round(p / (p + a) * 100), days: days });
+    });
+    rows.sort(function (x, y2) { return y2.pct - x.pct || y2.p - x.p || String(x.tr.rno).localeCompare(String(y2.tr.rno), undefined, { numeric: true }); });
+    rows = rows.slice(0, 3);
+
+    var head =
+      '<div class="flex items-center justify-between gap-2 mb-2">' +
+        '<div class="flex items-center gap-1.5 min-w-0 text-[10.5px] font-bold uppercase tracking-wide text-slate-400"><i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i><span class="truncate">Top 3 \u00b7 ' + esc(monthName) + '</span></div>' +
+        '<button type="button" onclick="switchTab(\'daily\')" class="shrink-0 text-[11px] font-bold text-amber-400 btn-tap">Daily \u2192</button>' +
+      '</div>';
+    if (!rows.length) {
+      box.innerHTML = head + '<div class="text-[11px] font-semibold text-slate-400">No attendance marked in ' + esc(monthName) + ' yet.</div>';
+      if (window.lucide) { try { lucide.createIcons(); } catch (e) {} }
+      return;
+    }
+    var medals = ["dv-m1", "dv-m2", "dv-m3"];
+    var LET = ["S", "M", "T", "W", "T", "F", "S"];
+    var wk = '<div style="display:flex;gap:2px;margin-bottom:2px" aria-hidden="true">';
+    for (var wd = 1; wd <= dim; wd++) {
+      var dw = new Date(y, m, wd).getDay(), wkend = dw === 0 || dw === 6;
+      wk += '<span class="dv-wkl ' + (wkend ? "dv-wkl-end" : "") + '">' + LET[dw] + '</span>';
+    }
+    wk += '</div>';
+    var html = rows.map(function (r, i) {
+      var cells = r.days.map(function (v, idx) {
+        var d = idx + 1, future = d > todayD;
+        var hol = !v ? getHolidayEntry(iso(d)) : null;
+        var cls = v === "P" ? "dv-c-p" : v === "A" ? "dv-c-a" : hol ? "dv-c-h" : "dv-c-n";
+        var label = d + " " + now.toLocaleDateString("en-GB", { month: "short" }) + ": " + (v === "P" ? "Present" : v === "A" ? "Absent" : hol ? "Holiday \u2013 " + hol.title : "Not marked");
+        return '<span title="' + esc(label) + '" class="dv-cell ' + cls + '" style="opacity:' + (future ? ".45" : "1") + '"></span>';
+      }).join("");
+      return '<div class="' + (i ? "mt-2.5 " : "") + 'min-w-0">' +
+        '<div class="flex items-center justify-between gap-2">' +
+          '<div class="flex items-center gap-1.5 min-w-0"><span class="dv-medal ' + medals[i] + ' text-[11px] font-black shrink-0">#' + (i + 1) + '</span>' +
+            '<span class="text-xs font-bold text-white truncate">' + esc(r.tr.name) + '</span></div>' +
+          '<span class="shrink-0 text-[11px] font-extrabold ' + (r.pct >= 80 ? "text-emerald-400" : "text-rose-400") + '">' + r.pct + '% <span class="text-slate-400 font-semibold">(' + r.p + 'P/' + r.a + 'A)</span></span>' +
+        '</div>' +
+        '<div style="display:flex;gap:2px;margin-top:5px" role="img" aria-label="Daily attendance for ' + esc(r.tr.name) + '">' + cells + '</div>' +
+      '</div>';
+    }).join("");
+    var holCount = 0;
+    for (var hd = 1; hd <= dim; hd++) { if (getHolidayEntry(iso(hd))) holCount++; }
+    var legend = '<div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-semibold text-slate-500">' +
+      '<span><i class="dv-sw dv-c-p"></i> Present</span><span><i class="dv-sw dv-c-a"></i> Absent</span><span><i class="dv-sw dv-c-h"></i> Holiday (' + holCount + ')</span><span><i class="dv-sw dv-c-n"></i> Not marked</span><span>Day 1 \u2192 ' + dim + '</span></div>';
+    box.innerHTML = head + wk + html + legend;
+    if (window.lucide) { try { lucide.createIcons(); } catch (e) {} }
+  }
+
+  window.dvRenderHome = function () {
+    try { renderGlance(); } catch (e) { console.error(e); }
+    try { renderTop3(); } catch (e) { console.error(e); }
+    try { renderLatestVideo(); } catch (e) { console.error(e); }
+    try { wrapTables(); } catch (e) {}
+    if (window.lucide) { try { lucide.createIcons(); } catch (e) {} }
+  };
+
+  /* ---------- Network / cloud retry banner ---------- */
+  function banner() {
+    var b = $("dv-net-banner");
+    if (b) return b;
+    b = document.createElement("div");
+    b.id = "dv-net-banner";
+    b.setAttribute("role", "status");
+    b.innerHTML = '<span id="dv-net-msg" style="flex:1;min-width:0"></span><button type="button" onclick="dvRetryCloud()">Retry</button>';
+    document.body.appendChild(b);
+    return b;
+  }
+  window.dvShowNetBanner = function (msg) {
+    var b = banner();
+    var m = $("dv-net-msg");
+    if (m) m.textContent = msg || (navigator.onLine === false
+      ? "You're offline. Showing saved data."
+      : "Couldn't reach the cloud. Showing saved data.");
+    b.classList.add("dv-show");
+  };
+  window.dvHideNetBanner = function () {
+    var b = $("dv-net-banner");
+    if (b) b.classList.remove("dv-show");
+  };
+  window.dvRetryCloud = function () {
+    window.dvHideNetBanner();
+    if (!window.__FB_SDK__) { location.reload(); return; }
+    try { showToast("Reconnecting\u2026", "info"); } catch (e) {}
+    try { window.initFirebaseCloud(); } catch (e) { window.dvShowNetBanner(); }
+  };
+  window.addEventListener("offline", function () { window.dvShowNetBanner(); });
+  window.addEventListener("online", function () { window.dvRetryCloud(); });
+
+  /* ---------- Hash routing (#home, #videos, ...) ---------- */
+  var origSwitch = window.switchTab;
+  var applyingHash = false;
+  var depth = 0; /* 0 = on #home base entry, 1 = one pushed tab entry above it */
+
+  function hashTab() {
+    var h = String(location.hash || "").replace(/^#/, "");
+    return TABS.indexOf(h) >= 0 ? h : "";
+  }
+  function setHash(tab) {
+    try {
+      if (tab === "home") {
+        if (depth > 0) { depth = 0; history.back(); }
+        else if (location.hash !== "#home") history.replaceState(history.state, "", "#home");
+      } else if (location.hash !== "#" + tab) {
+        if (depth === 0) { history.pushState(history.state, "", "#" + tab); depth = 1; }
+        else history.replaceState(history.state, "", "#" + tab);
+      }
+    } catch (e) {}
+  }
+
+  window.switchTab = function (tab) {
+    origSwitch(tab);
+    if (!applyingHash) setHash(tab);
+    if (tab !== "home") { try { renderLatestVideo(); } catch (e) {} } /* drops any playing home iframe */
+    else { try { window.dvRenderHome(); } catch (e) {} }
+    try { wrapTables(); } catch (e) {}
+  };
+
+  function fromHash() {
+    var t = hashTab() || "home";
+    depth = t === "home" ? 0 : 1;
+    applyingHash = true;
+    try { origSwitch(t); } finally { applyingHash = false; }
+    if (t !== "home") { try { renderLatestVideo(); } catch (e) {} }
+    else { try { window.dvRenderHome(); } catch (e) {} }
+  }
+  window.addEventListener("hashchange", fromHash);
+
+  (function initRoute() {
+    var h = String(location.hash || "");
+    if (h.indexOf("#fb=") === 0) return; /* existing Firebase-config share link: leave untouched */
+    var start = hashTab() || "home";
+    try {
+      history.replaceState(history.state, "", "#home");
+      if (start !== "home") { history.pushState(history.state, "", "#" + start); depth = 1; }
+    } catch (e) {}
+    if (start !== "home") {
+      var go = function () {
+        applyingHash = true;
+        try { origSwitch(start); } finally { applyingHash = false; }
+        if (start !== "home") { try { renderLatestVideo(); } catch (e) {} }
+      };
+      /* wait until the portal's own boot (DOMContentLoaded) has rendered its views */
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go);
+      else go();
+    }
+  })();
+
+  /* first paint of the Home cards (data is already in appState from local storage) */
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { window.dvRenderHome(); });
+  else window.dvRenderHome();
+})();
+
+</script>
+
+<style id="home-gallery-style">
+  #hg-body { position: relative; }
+  #hg-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; border-radius: 0.9rem; overscroll-behavior-x: contain; }
+  #hg-track::-webkit-scrollbar { display: none; }
+  .hg-slide { position: relative; flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; aspect-ratio: 16/10; background: #0f172a; overflow: hidden; cursor: pointer; border: 0; padding: 0; display: block; text-align: left; }
+  .hg-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hg-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 2rem; height: 2rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background: rgba(15,23,42,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.25); font-size: 1.1rem; line-height: 1; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .hg-nav.prev { left: 0.4rem; } .hg-nav.next { right: 0.4rem; }
+  #hg-dots { display: flex; justify-content: center; gap: 0.35rem; margin-top: 0.6rem; }
+  .hg-dot { width: 0.4rem; height: 0.4rem; border-radius: 9999px; background: rgba(148,163,184,0.5); border: 0; padding: 0; transition: width 0.25s, background 0.25s; }
+  .hg-dot.active { width: 1.2rem; background: #f59e0b; }
+  @media (prefers-reduced-motion: reduce) { .hg-dot { transition: none; } }
+</style>
+<script id="home-gallery-script">
+(function () {
+  var MAX = 8, DELAY = 4500, timer = null, paused = false, idx = 0, count = 0, scrollRaf = 0;
+
+  function track() { return document.getElementById("hg-track"); }
+
+  function setActive(i) {
+    idx = i;
+    document.querySelectorAll("#hg-dots .hg-dot").forEach(function (d, k) { d.classList.toggle("active", k === i); });
+  }
+
+  function goTo(i, smooth) {
+    var t = track(); if (!t || !count) return;
+    i = (i + count) % count;
+    t.scrollTo({ left: t.clientWidth * i, behavior: smooth === false ? "auto" : "smooth" });
+    setActive(i);
+  }
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+  function start() {
+    stop();
+    if (count < 2 || paused) return;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    timer = setInterval(function () {
+      var t = track();
+      if (!t || t.offsetParent === null || document.hidden) return; // home hidden / tab in background
+      goTo(idx + 1);
+    }, DELAY);
+  }
+  function pause() { paused = true; stop(); }
+  function resume() { paused = false; start(); }
+
+  window.homeGalleryStep = function (d) { goTo(idx + d); start(); };
+  window.homeGalleryGo = function (i) { goTo(i); start(); };
+  window.homeGalleryOpen = function (i) {
+    try {
+      if (typeof GALLERY_PHOTOS !== "undefined") { GALLERY_PHOTOS = getAllGalleryPhotos(); galleryVisible = GALLERY_PHOTOS; }
+      if (typeof openGalleryLightbox === "function") { openGalleryLightbox(i); return; }
+    } catch (e) { console.error(e); }
+    switchTab("gallery");
+  };
+
+  window.renderHomeGallery = function () {
+    var body = document.getElementById("hg-body");
+    if (!body) return;
+    var photos = [];
+    try { photos = getAllGalleryPhotos().slice(0, MAX); } catch (e) {}
+    stop();
+    count = photos.length;
+    if (!count) {
+      body.innerHTML = '<div class="p-6 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 text-center">No photos yet. New gallery photos will appear here.</div>';
+      return;
+    }
+    var fb = (typeof GALLERY_FALLBACK_SVG !== "undefined") ? GALLERY_FALLBACK_SVG : "";
+    var esc = escapeHTML;
+    var slides = photos.map(function (p, i) {
+      return '<button type="button" class="hg-slide" aria-label="Open photo: ' + esc(p.title || "Photo") + '" onclick="homeGalleryOpen(' + i + ')">' +
+        '<img src="' + esc(p.img) + '" alt="' + esc(p.title || "Gallery photo") + '" loading="lazy" draggable="false"' +
+        (fb ? ' onerror="this.onerror=null;this.src=\'' + fb + '\';"' : '') + ' />' +
+        '<span class="gal-cap absolute inset-x-0 bottom-0 px-3 pt-8 pb-2.5"><span class="gal-cap-title block text-xs sm:text-sm font-bold truncate">' + esc(p.title || "") + '</span>' +
+        (p.date ? '<span class="gal-cap-sub block text-[10px] sm:text-xs truncate">' + esc(p.date) + '</span>' : '') + '</span></button>';
+    }).join("");
+    var nav = count > 1
+      ? '<button type="button" class="hg-nav prev" aria-label="Previous photo" onclick="homeGalleryStep(-1)">&#8249;</button>' +
+        '<button type="button" class="hg-nav next" aria-label="Next photo" onclick="homeGalleryStep(1)">&#8250;</button>'
+      : '';
+    var dots = count > 1
+      ? '<div id="hg-dots">' + photos.map(function (_, i) {
+          return '<button type="button" class="hg-dot' + (i === 0 ? ' active' : '') + '" aria-label="Go to photo ' + (i + 1) + '" onclick="homeGalleryGo(' + i + ')"></button>';
+        }).join("") + '</div>'
+      : '';
+    body.innerHTML = '<div class="relative"><div id="hg-track">' + slides + '</div>' + nav + '</div>' + dots;
+    idx = 0;
+
+    var t = track();
+    t.addEventListener("scroll", function () {
+      if (scrollRaf) return;
+      scrollRaf = requestAnimationFrame(function () {
+        scrollRaf = 0;
+        var w = t.clientWidth || 1;
+        var i = Math.max(0, Math.min(count - 1, Math.round(t.scrollLeft / w)));
+        if (i !== idx) setActive(i);
+      });
+    }, { passive: true });
+    t.addEventListener("touchstart", pause, { passive: true });
+    t.addEventListener("touchend", function () { setTimeout(resume, 2500); }, { passive: true });
+    t.addEventListener("touchcancel", function () { setTimeout(resume, 2500); }, { passive: true });
+    body.addEventListener("mouseenter", pause);
+    body.addEventListener("mouseleave", resume);
+    body.addEventListener("focusin", pause);
+    body.addEventListener("focusout", resume);
+    paused = false;
+    start();
+    if (window.lucide) lucide.createIcons();
+  };
+
+  // Re-render whenever the existing gallery renders (add/edit/delete/cloud sync/boot)
+  var orig = window.renderGallery;
+  if (typeof orig === "function") {
+    window.renderGallery = renderGallery = function () {
+      var r = orig.apply(this, arguments);
+      try { window.renderHomeGallery(); } catch (e) { console.error(e); }
+      return r;
+    };
+  }
+  window.addEventListener("resize", function () { var t = track(); if (t && count) t.scrollTo({ left: t.clientWidth * idx, behavior: "auto" }); });
+  try { window.renderHomeGallery(); } catch (e) {}
+})();
+</script>
+
+<script id="admin-convenience-script">
+(function () {
+  function sortedPrevDate() {
+    return Object.keys(appState.attendance || {}).filter(function (d) {
+      return d < selectedDateStr && !isHolidayDate(d) && appState.attendance[d] && Object.keys(appState.attendance[d]).length;
+    }).sort().pop();
+  }
+  window.copyPreviousDayAttendance = function () {
+    if (!isAdminUnlocked) return;
+    if (isHolidayDate(selectedDateStr)) { showToast("Selected date is a holiday", "info"); return; }
+    var prev = sortedPrevDate();
+    if (!prev) { showToast("No earlier attendance to copy", "info"); return; }
+    var cur = appState.attendance[selectedDateStr];
+    if (cur && Object.keys(cur).length && !confirm("Replace today's marks with " + formatDisplayDate(prev) + "?")) return;
+    appState.attendance[selectedDateStr] = Object.assign({}, appState.attendance[prev]);
+    saveLocalState(true); renderDailyRollCall(); renderEligibilityChart();
+    showToast("Copied from " + formatDisplayDate(prev), "success");
+  };
+  window.markRollRange = function (status) {
+    if (!isAdminUnlocked || isHolidayDate(selectedDateStr)) return;
+    var a = parseInt(document.getElementById("rr-from").value, 10);
+    var b = parseInt(document.getElementById("rr-to").value, 10);
+    if (isNaN(a) || isNaN(b)) { showToast("Enter From and To roll numbers", "error"); return; }
+    if (a > b) { var t = a; a = b; b = t; }
+    var day = appState.attendance[selectedDateStr] = appState.attendance[selectedDateStr] || {};
+    var n = 0;
+    appState.trainees.forEach(function (tr) {
+      var r = parseInt(String(tr.rno || "").replace(/\D/g, ""), 10);
+      if (!isNaN(r) && r >= a && r <= b) { day[tr.id] = status; n++; }
+    });
+    if (!n) { showToast("No trainees in that roll range", "info"); return; }
+    saveLocalState(true); renderDailyRollCall(); renderEligibilityChart();
+    showToast(n + " marked " + (status === "P" ? "Present" : "Absent"), "success");
+  };
+  window.openLowAttendanceAlert = function () {
+    if (!isAdminUnlocked) return;
+    var rows = appState.trainees.map(function (tr) { return { tr: tr, st: calculateTraineeStats(tr.id, currentChartPeriod) }; })
+      .filter(function (r) { return r.st.workingDays > 0 && r.st.pct < 80; })
+      .sort(function (x, y) { return x.st.pct - y.st.pct; });
+    var label = currentChartPeriod === "ALL" ? "Overall" : currentChartPeriod === "1M" ? "This month" : "Selected period";
+    var msg = "\u26A0\uFE0F ITI CONNECT \u2013 Attendance Alert (below 80%)\n" + label + "\n\n" +
+      (rows.length ? rows.map(function (r, i) { return (i + 1) + ". " + (r.tr.name || "") + " (R.No " + (r.tr.rno || "-") + ") \u2013 " + r.st.pct + "% (" + r.st.presentDays + "/" + r.st.workingDays + ")"; }).join("\n") : "No trainee is below 80%.") +
+      "\n\nPlease attend regularly to stay eligible.";
+    var old = document.getElementById("low-att-overlay"); if (old) old.remove();
+    var el = document.createElement("div");
+    el.id = "low-att-overlay";
+    el.className = "fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4";
+    el.innerHTML = '<div class="w-full max-w-sm max-h-[85vh] flex flex-col bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl">' +
+      '<div class="px-4 py-3 border-b border-slate-800 flex items-center justify-between"><h3 class="text-sm font-bold text-white">Below 80% \u2013 ' + rows.length + ' trainee' + (rows.length === 1 ? "" : "s") + '</h3>' +
+      '<button type="button" id="la-close" class="text-slate-400 text-lg leading-none px-1">\u2715</button></div>' +
+      '<pre class="p-4 text-[11px] text-slate-300 whitespace-pre-wrap overflow-y-auto flex-1">' + escapeHTML(msg) + '</pre>' +
+      '<div class="p-3 border-t border-slate-800 flex gap-2"><button type="button" id="la-wa" class="flex-1 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold btn-tap">Send on WhatsApp</button>' +
+      '<button type="button" id="la-copy" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold btn-tap">Copy</button></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener("click", function (e) { if (e.target === el) el.remove(); });
+    el.querySelector("#la-close").onclick = function () { el.remove(); };
+    el.querySelector("#la-wa").onclick = function () { window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener"); };
+    el.querySelector("#la-copy").onclick = function () { copyTextFallback(msg); showToast("Message copied", "success"); };
+  };
+
+  // ---- Installable app + offline shell ----
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+  var deferred = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferred = e;
+    try { if (localStorage.getItem("pwa_install_dismissed") === "1") return; } catch (x) {}
+    if (document.getElementById("pwa-install-pill")) return;
+    var b = document.createElement("div");
+    b.id = "pwa-install-pill";
+    b.className = "fixed left-3 bottom-24 z-[55] flex items-center gap-1 bg-amber-500 text-slate-950 rounded-full shadow-xl text-xs font-bold overflow-hidden";
+    b.innerHTML = '<button type="button" id="pwa-go" class="pl-3 pr-2 py-2">Install App</button><button type="button" id="pwa-x" aria-label="Dismiss" class="pr-3 pl-1 py-2">\u2715</button>';
+    document.body.appendChild(b);
+    b.querySelector("#pwa-go").onclick = function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.finally(function () { deferred = null; b.remove(); }); };
+    b.querySelector("#pwa-x").onclick = function () { try { localStorage.setItem("pwa_install_dismissed", "1"); } catch (x) {} b.remove(); };
+  });
+  window.addEventListener("appinstalled", function () { var b = document.getElementById("pwa-install-pill"); if (b) b.remove(); });
+})();
+</script>
+
+<script id="inline-manifest-script">
+(function () {
+  try {
+    var src = document.querySelector('link[rel="apple-touch-icon"]');
+    if (!src || !/^(https?:|file:)/.test(location.protocol)) return;
+    var img = new Image();
+    img.onload = function () {
+      try {
+        function icon(n) { var c = document.createElement("canvas"); c.width = c.height = n; c.getContext("2d").drawImage(img, 0, 0, n, n); return c.toDataURL("image/png"); }
+        var base = location.href.split("#")[0].split("?")[0];
+        var m = { name: "ITI CONNECT", short_name: "ITI CONNECT", start_url: base, scope: base.replace(/[^\/]*$/, ""),
+          display: "standalone", background_color: "#0b1220", theme_color: "#0b1220",
+          icons: [{ src: icon(192), sizes: "192x192", type: "image/png", purpose: "any" }, { src: icon(512), sizes: "512x512", type: "image/png", purpose: "any" }] };
+        var l = document.createElement("link");
+        l.rel = "manifest";
+        l.href = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: "application/manifest+json" }));
+        document.head.appendChild(l);
+      } catch (e) {}
+    };
+    img.src = src.href;
+  } catch (e) {}
+})();
+</script>
+
+<script id="today-att-script">
+(function () {
+  window.renderTodayAttStrip = function () {
+    var el = document.getElementById("today-att-strip");
+    if (!el) return;
+    try {
+      var iso = selectedDateStr || getTodayISO();
+      var label = (iso === getTodayISO() ? "Today \u00B7 " : "") + formatDayAndDate(iso);
+      var hol = getHolidayEntry(iso);
+      var head = '<span class="text-[11px] font-bold text-slate-300 truncate">' + escapeHTML(label) + '</span>';
+      var body, lists = "";
+      function nameList(arr, title, tc, bc) {
+        if (!arr.length) return "";
+        var rows = arr.slice().sort(function (x, y) {
+          return String(x.rno || "").localeCompare(String(y.rno || ""), undefined, { numeric: true });
+        }).map(function (t) {
+          return '<span class="inline-block px-1.5 py-0.5 rounded-md text-[10.5px] font-semibold border ' + bc + '">' +
+            (t.rno ? '<span class="opacity-60">' + escapeHTML(String(t.rno)) + '.</span> ' : '') + escapeHTML(t.name || "") + '</span>';
+        }).join(" ");
+        return '<div class="mt-2 pt-2 border-t border-slate-800/80"><div class="text-[10px] font-extrabold uppercase tracking-wide mb-1 ' + tc + '">' + title + ' (' + arr.length + ')</div>' +
+          '<div class="flex flex-wrap gap-1 max-h-36 overflow-y-auto">' + rows + '</div></div>';
+      }
+      if (hol) {
+        body = '<span class="text-[11px] font-bold text-rose-400 truncate">' + escapeHTML(hol.title || "Holiday") + '</span>';
+      } else {
+        var b = getDayAttendanceBuckets(iso);
+        if (!b.hasRecord) {
+          body = '<span class="text-[11px] font-semibold text-slate-400">Not marked yet</span>';
+        } else {
+          var total = b.present.length + b.absent.length;
+          var pct = total ? Math.round(b.present.length / total * 100) : 0;
+          function chip(n, t, c) { return '<span class="inline-flex items-baseline gap-1 px-2 py-0.5 rounded-lg border ' + c + '"><b class="text-sm font-extrabold">' + n + '</b><span class="text-[10px] font-bold">' + t + '</span></span>'; }
+          body = '<span class="flex items-center gap-1.5 shrink-0">' +
+            chip(b.present.length, "Present", "bg-emerald-500/15 border-emerald-500/30 text-emerald-400") +
+            chip(b.absent.length, "Absent", "bg-rose-500/15 border-rose-500/30 text-rose-400") +
+            chip(total, "Total", "bg-slate-800/70 border-slate-700 text-slate-300") +
+            '<span class="text-[10px] font-bold text-amber-400 pl-0.5">' + pct + '%</span></span>';
+          lists = nameList(b.present, "Present", "text-emerald-400", "bg-emerald-500/10 border-emerald-500/25 text-emerald-300") +
+                  nameList(b.absent, "Absent", "text-rose-400", "bg-rose-500/10 border-rose-500/25 text-rose-300");
+        }
+      }
+      el.innerHTML = '<div class="flex items-center justify-between gap-2 flex-wrap">' + head + body + '</div>' + lists;
+    } catch (e) { console.error(e); }
+  };
+  var orig = window.renderDailyRollCall;
+  if (typeof orig === "function") {
+    window.renderDailyRollCall = renderDailyRollCall = function () {
+      var r = orig.apply(this, arguments);
+      window.renderTodayAttStrip();
+      return r;
+    };
+  }
+  window.renderTodayAttStrip();
+})();
+</script>
+
+<style id="ca-pill-style">
+  .ca-seg { position: relative; border-radius: 9999px; padding: 3px; gap: 0; }
+  .ca-seg button { position: relative; z-index: 1; border-radius: 9999px; }
+  .ca-seg button.ca-on, html.bright-mode .ca-seg button.ca-on { background-color: transparent; box-shadow: none; }
+  #ca-thumb { position: absolute; top: 3px; bottom: 3px; left: 0; width: 0; border-radius: 9999px; opacity: 0;
+    background-color: rgba(245, 158, 11, 0.2); box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.45);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), width 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.15s ease; }
+  #ca-thumb.ready { opacity: 1; }
+  html.bright-mode #ca-thumb { background-color: #fef3c7; box-shadow: inset 0 0 0 1px #f59e0b; }
+  @media (prefers-reduced-motion: reduce) { #ca-thumb { transition: none; } }
+</style>
+<script id="ca-pill-script">
+(function () {
+  function place() {
+    var seg = document.getElementById("ca-seg"), th = document.getElementById("ca-thumb");
+    if (!seg || !th) return;
+    var on = seg.querySelector("button.ca-on");
+    if (!on || !on.offsetWidth) return;
+    var first = !th.classList.contains("ready");
+    if (first) th.style.transition = "none";
+    th.style.width = on.offsetWidth + "px";
+    th.style.transform = "translateX(" + on.offsetLeft + "px)";
+    th.classList.add("ready");
+    if (first) { void th.offsetWidth; th.style.transition = ""; }
+  }
+  var orig = window.renderClassAttendance;
+  if (typeof orig === "function") {
+    window.renderClassAttendance = renderClassAttendance = function () {
+      var r = orig.apply(this, arguments);
+      requestAnimationFrame(place);
+      return r;
+    };
+  }
+  var seg = document.getElementById("ca-seg");
+  if (seg && window.ResizeObserver) new ResizeObserver(place).observe(seg); // also fires when the section is first opened
+  window.addEventListener("resize", place);
+  place();
+})();
+</script>
+
+<style id="toggle-smooth-style">
+  /* keep content clipped while the section grows/shrinks (it was spilling over the next card mid-animation) */
+  #body-daily-rollcall > .accordion-inner, #body-top-attenders > .accordion-inner,
+  #body-ca-ranking > .accordion-inner, #body-ca-day > .accordion-inner, #body-pa-panel > .accordion-inner { overflow: hidden !important; }
+  #daily-trainee-section, #daily-class-section { overflow-anchor: none; }
+  .ca-noanim * { transition: none !important; animation: none !important; } /* children only, so the outer section still animates */
+</style>
+<script id="toggle-smooth-script">
+(function () {
+  var orig = window.toggleAccordion;
+  if (typeof orig !== "function") return;
+  window.toggleAccordion = toggleAccordion = function (key) {
+    if (key === "top-attenders") {
+      var b = document.getElementById("body-top-attenders");
+      if (b && !b.classList.contains("accordion-open")) {
+        // opening: set the inner ranking/day panels instantly, so only ONE animation (the outer one) runs
+        b.classList.add("ca-noanim");
+        classAttMode = "ranking"; classAttRankOpen = true;
+        try { renderClassAttendance(false); } catch (e) {}
+        void b.offsetWidth;
+        orig.apply(this, arguments);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { b.classList.remove("ca-noanim"); }); });
+        return;
+      }
+    }
+    return orig.apply(this, arguments);
+  };
+})();
+</script>
+
+<style id="header-fit-style">
+  /* Header text can no longer run under the theme / menu buttons on narrow screens or large system font sizes */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  #main-header .brand-title, #main-header .brand-sub { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  #main-header .brand-sub { font-size: clamp(7px, calc((100vw - 176px) / 23), 10px); letter-spacing: .05em; }
+  @media (min-width: 400px) { #main-header .brand-sub { letter-spacing: .09em; } }
+  @media (max-width: 374px) {
+    #main-header .brand-mark { width: 34px; height: 34px; }
+    #main-header .brand-title { font-size: clamp(14px, 4.6vw, 17px); letter-spacing: .04em; }
+  }
+</style>
 </body>
 </html>

@@ -3322,6 +3322,18 @@ service cloud.firestore {
         &amp;&amp; request.resource.data.status == (mode() == 'open' ? 'visible' : 'pending');
       allow update, delete: if isAdmin();
     }
+    // Per-video comments (shown under the playing video)
+    match /iti_portals/{portalId}/video_comments/{cid} {
+      allow read: if resource.data.status == 'visible' || isAdmin();
+      allow create: if mode() != 'off'
+        &amp;&amp; request.resource.data.keys().hasOnly(['name','text','status','videoId','createdAt'])
+        &amp;&amp; request.resource.data.name is string &amp;&amp; request.resource.data.name.size() &gt; 0 &amp;&amp; request.resource.data.name.size() &lt;= 40
+        &amp;&amp; request.resource.data.text is string &amp;&amp; request.resource.data.text.size() &gt;= 5 &amp;&amp; request.resource.data.text.size() &lt;= 600
+        &amp;&amp; request.resource.data.videoId is string &amp;&amp; request.resource.data.videoId.size() &gt; 0 &amp;&amp; request.resource.data.videoId.size() &lt;= 120
+        &amp;&amp; request.resource.data.createdAt == request.time
+        &amp;&amp; request.resource.data.status == (mode() == 'open' ? 'visible' : 'pending');
+      allow update, delete: if isAdmin();
+    }
     // Private visitor emails: write-only for visitors, readable by admin only
     match /iti_portals/{portalId}/feedback_private/{cid} {
       allow create: if mode() != 'off'
@@ -6631,8 +6643,7 @@ service cloud.firestore {
           const remaining = totalAvailable - currentLimit;
           pagEl.classList.remove("hidden");
           pagEl.innerHTML = `
-            <span class="text-[11px] font-semibold text-slate-400">Showing ${currentLimit} of ${totalAvailable} videos (Max ${MAX_VIDEOS_CAPACITY})</span>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-center gap-2 w-full">
               ${
                 currentLimit > batchFor(targetPrefix)
                   ? `<button type="button" onclick="collapseVideosBatch('${targetPrefix}')"
@@ -6645,7 +6656,7 @@ service cloud.firestore {
                 remaining > 0
                   ? `<button type="button" onclick="loadMoreVideosBatch('${targetPrefix}')"
                       class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold text-[11px] transition btn-tap">
-                      Load More (+${Math.min(batchFor(targetPrefix), remaining)})
+                      Show More
                     </button>`
                   : ""
               }
@@ -6759,6 +6770,10 @@ service cloud.firestore {
               <div class="flex items-start justify-between gap-2">
                 <h3 class="text-xs font-bold text-white line-clamp-2 leading-snug group-hover:text-amber-400 transition flex-1 min-w-0">${safeTitle}</h3>
                 <span data-vid-playing-pill class="hidden shrink-0 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/45 text-[9px] font-extrabold text-amber-300 uppercase tracking-wide">Playing</span>
+                ${cleanId ? `<button type="button" onclick="event.stopPropagation(); openOnYouTube('${targetPrefix}', '${safeId}')" title="Watch on YouTube" aria-label="Watch on YouTube"
+                  class="shrink-0 w-6 h-6 rounded-lg bg-slate-900 hover:bg-rose-500/20 border border-slate-700/80 hover:border-rose-500/50 text-slate-300 hover:text-rose-300 flex items-center justify-center transition btn-tap">
+                  <i data-lucide="external-link" class="w-3 h-3"></i>
+                </button>` : ""}
               </div>
               ${v.artist || (v._cat === "music" && v._subName) ? `<p class="text-[10.5px] font-semibold text-amber-300/90 truncate">${escapeHTML([v.artist, v._cat === "music" ? v._subName : ""].filter(Boolean).join(" · "))}</p>` : ""}
               ${v.desc ? `<p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${escapeHTML(v.desc)}</p>` : ""}
@@ -6767,21 +6782,35 @@ service cloud.firestore {
 
           <!-- Dedicated Video Control Bar (Visible when playing) + Admin Controls -->
           <div data-vid-footer class="${isAdminUnlocked ? "" : "hidden "}px-3 pb-2.5 pt-1.5 flex items-center justify-between gap-1.5 border-t border-slate-800/70">
-            <div data-vid-active-controls class="hidden flex items-center gap-1.5">
+            <div data-vid-active-controls class="hidden flex items-center gap-1.5 flex-1 min-w-0">
               <button type="button" data-vid-alt-btn onclick="event.stopPropagation(); toggleEmbedServer('${targetPrefix}', '${safeId}')" title="Switch embed server if restricted"
                 class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-[10px] font-bold text-amber-300 transition btn-tap">
                 Alt Player
               </button>
-              <button type="button" onclick="event.stopPropagation(); closeInlinePlayer('${targetPrefix}')" title="Stop and close video"
-                class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-[10px] font-bold text-rose-300 flex items-center gap-1 transition btn-tap">
-                <i data-lucide="square" class="w-2.5 h-2.5 fill-current"></i>
-                <span>Stop</span>
-              </button>
+              ${cleanId ? `<button type="button" onclick="event.stopPropagation(); openOnYouTube('${targetPrefix}', '${safeId}')" title="Watch on YouTube" aria-label="Watch on YouTube"
+                class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-500/15 border border-slate-700/80 hover:border-rose-500/50 text-rose-400 flex items-center justify-center transition btn-tap">
+                <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.1 24.1 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.1 24.1 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z" fill="currentColor"/></svg>
+              </button>` : ""}
+              <div class="ml-auto flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="event.stopPropagation(); closeInlinePlayer('${targetPrefix}')" title="Stop and close video"
+                  class="px-2 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/35 text-[10px] font-bold text-rose-300 flex items-center gap-1 transition btn-tap">
+                  <i data-lucide="square" class="w-2.5 h-2.5 fill-current"></i>
+                  <span>Stop</span>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); playPrevVideo('${targetPrefix}')" title="Previous video" aria-label="Previous video"
+                  class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-300 flex items-center justify-center transition btn-tap">
+                  <i data-lucide="skip-back" class="w-3.5 h-3.5 fill-current"></i>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); playNextVideo('${targetPrefix}')" title="Next video" aria-label="Next video"
+                  class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-300 flex items-center justify-center transition btn-tap">
+                  <i data-lucide="skip-forward" class="w-3.5 h-3.5 fill-current"></i>
+                </button>
+              </div>
             </div>
 
             ${
               isAdminUnlocked
-                ? `<div class="flex items-center gap-1.5 ml-auto">
+                ? `<div class="flex items-center gap-1.5 ml-auto shrink-0">
                     ${
                       isPlaylistVideo
                         ? `<span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-[9px] font-bold text-slate-400">Playlist Synced</span>`
@@ -6802,6 +6831,24 @@ service cloud.firestore {
           </div>
         </article>
       `;
+    }
+
+    // Open a video on YouTube (new tab), continuing from the current playback time
+    function openOnYouTube(targetPrefix, videoId) {
+      try {
+        const v = normalizeVideosList(appState.videos).find((x) => x.id === videoId);
+        const id = v && v.kind !== "direct" ? extractYouTubeId(v.ytId) : "";
+        if (!id) { showToast("This video isn't hosted on YouTube", "info"); return; }
+        let t = 0;
+        const rt = ytRuntime[targetPrefix];
+        if (rt && rt.videoId === videoId && rt.player) {
+          try { t = Math.floor(rt.player.getCurrentTime() || 0); } catch (e) {}
+          try { rt.player.pauseVideo(); } catch (e) {}
+        }
+        const url = "https://www.youtube.com/watch?v=" + encodeURIComponent(id) + (t > 3 ? "&t=" + t + "s" : "");
+        const w = window.open(url, "_blank", "noopener,noreferrer");
+        if (!w) location.href = url;
+      } catch (e) { showToast("Could not open YouTube", "error"); }
     }
 
     const activeInlinePlayerState = {
@@ -7227,7 +7274,7 @@ service cloud.firestore {
       return null;
     }
 
-    // Make sure the card for this video is rendered (it may be beyond the "Load More" batch)
+    // Make sure the card for this video is rendered (it may be beyond the "Show More" batch)
     function ensureVideoRendered(prefix, id) {
       const order = videoOrderCache[prefix] || [];
       const idx = order.findIndex((v) => v.id === id);
@@ -11371,6 +11418,12 @@ html.bright-mode{--vl-bg:rgba(255,255,255,.6);--vl-bd:rgba(15,23,42,.14);--vl-tx
 .vl-in{animation:vlin .24s ease both}@keyframes vlin{from{opacity:0;transform:translateX(var(--vl-dx,0))}to{opacity:1;transform:none}}
 html.vl-reduce *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
+.dv-dots{position:relative;width:30px;height:30px;animation:dvDotsSpin .9s linear infinite}
+.dv-dots i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.55)}
+.dv-dots i:nth-child(1){transform:rotate(0deg) translateY(-11px)}
+.dv-dots i:nth-child(2){transform:rotate(120deg) translateY(-11px)}
+.dv-dots i:nth-child(3){transform:rotate(240deg) translateY(-11px)}
+@keyframes dvDotsSpin{to{transform:rotate(360deg)}}
 @keyframes vlcard{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
 #notices-videos-grid>article.vl-card-out,#full-videos-grid>article.vl-card-out{opacity:0!important;transform:scale(.96) translateY(6px)!important;transition:opacity .18s ease,transform .18s ease!important}
 /* compact autoplay / loop bar */
@@ -12045,7 +12098,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     var g = document.getElementById(gid(p)); if (g) g.querySelectorAll("img").forEach(function (i) { i.decoding = "async"; });
   };
 
-  /* ---------- smooth Load More / Show Less ---------- */
+  /* ---------- smooth Show More / Show Less ---------- */
   var _lm = window.loadMoreVideosBatch, _cv = window.collapseVideosBatch;
   window.loadMoreVideosBatch = function (p) {
     var g = document.getElementById(gid(p)), had = {};
@@ -12075,6 +12128,20 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       setTimeout(function () { g.style.height = ""; g.style.overflow = ""; g.style.transition = ""; }, 340);
       if (g.getBoundingClientRect().top < 0) { try { g.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }
     }, 190);
+  };
+
+  /* ---------- Show More: 3-dot rotating loader, then reveal ---------- */
+  var _lm2 = window.loadMoreVideosBatch, _dvBusy = {};
+  window.loadMoreVideosBatch = function (p) {
+    if (_dvBusy[p]) return;
+    var self = this, args = arguments, pg = document.getElementById(p + "-videos-pagination");
+    if (!pg) return _lm2.apply(self, args);
+    _dvBusy[p] = true;
+    pg.innerHTML = '<div class="w-full flex items-center justify-center py-1" role="status" aria-label="Loading more videos"><div class="dv-dots"><i></i><i></i><i></i></div></div>';
+    setTimeout(function () {
+      _dvBusy[p] = false;
+      _lm2.apply(self, args);
+    }, 900);
   };
 
   /* ---------- init ---------- */
@@ -13151,5 +13218,342 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     #main-header .brand-title { font-size: clamp(14px, 4.6vw, 17px); letter-spacing: .04em; }
   }
 </style>
+
+<!-- ===================================================================== -->
+<!-- VIDEO COMMENTS: comment section under the active (playing) video card  -->
+<!-- ===================================================================== -->
+<style id="vid-controls-anim">
+  /* Smooth show/hide of the playing-video control bar and its buttons */
+  [data-vid-footer] { max-height: 72px; overflow: hidden; transition: max-height .32s cubic-bezier(.22,1,.36,1), opacity .25s ease, padding .32s cubic-bezier(.22,1,.36,1), border-color .25s ease; }
+  [data-vid-footer].hidden { display: flex !important; max-height: 0; opacity: 0; padding-top: 0 !important; padding-bottom: 0 !important; border-color: transparent; visibility: hidden; pointer-events: none; transition: max-height .28s cubic-bezier(.22,1,.36,1), opacity .2s ease, padding .28s cubic-bezier(.22,1,.36,1), border-color .2s ease, visibility 0s linear .3s; }
+  [data-vid-active-controls].hidden { display: flex !important; visibility: hidden; pointer-events: none; transition: visibility 0s linear .26s; }
+  [data-vid-active-controls] > * { transition: opacity .26s ease, transform .34s cubic-bezier(.34,1.4,.64,1), background-color .2s ease, border-color .2s ease; }
+  [data-vid-active-controls].hidden > * { opacity: 0; transform: translateY(6px) scale(.88); transition-duration: .16s; transition-delay: 0s !important; }
+  [data-vid-active-controls]:not(.hidden) > *:nth-child(1) { transition-delay: .04s; }
+  [data-vid-active-controls]:not(.hidden) > *:nth-child(2) { transition-delay: .09s; }
+  [data-vid-active-controls]:not(.hidden) > *:nth-child(3) { transition-delay: .14s; }
+  [data-vid-active-controls]:not(.hidden) > *:nth-child(4) { transition-delay: .19s; }
+  @media (prefers-reduced-motion: reduce) {
+    [data-vid-footer], [data-vid-active-controls] > * { transition: none !important; }
+  }
+</style>
+<style id="vc-style">
+  .vc-panel { margin: 0 10px 10px; padding: 0; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,.05); border: 1px solid rgba(148,163,184,.22); }
+  @keyframes vcIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  /* smooth expand / collapse (grid-rows trick animates to the content's real height) */
+  .vc-wrap { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .32s cubic-bezier(.22,1,.36,1), opacity .25s ease; }
+  .vc-wrap.in { grid-template-rows: 1fr; opacity: 1; }
+  .vc-wrapin { min-height: 0; overflow: hidden; }
+  .vc-bodywrap { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .3s cubic-bezier(.22,1,.36,1), opacity .22s ease; }
+  .vc-bodywrap.open { grid-template-rows: 1fr; opacity: 1; }
+  .vc-body { min-height: 0; overflow: hidden; }
+  .vc-bodywrap:not(.open) .vc-body { visibility: hidden; transition: visibility 0s linear .3s; }
+  .vc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 7px 10px; text-align: left; cursor: pointer; }
+  .vc-head:hover { background: rgba(148,163,184,.1); }
+  .vc-chev { width: 14px; height: 14px; color: #94a3b8; transition: transform .2s; flex-shrink: 0; }
+  .vc-head[aria-expanded="true"] .vc-chev { transform: rotate(180deg); }
+  .vc-bodyin { padding: 0 10px 10px; }
+  .vc-title { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 800; color: #f1f5f9; }
+  .vc-title svg { width: 14px; height: 14px; color: #fbbf24; }
+  .vc-count { min-width: 16px; padding: 0 6px; border-radius: 999px; font-size: 10px; font-weight: 800; line-height: 16px; text-align: center; background: rgba(245,158,11,.18); color: #fcd34d; }
+  .vc-count:empty { display: none; }
+  .vc-field { width: 100%; padding: 6px 9px; border-radius: 9px; font-size: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(148,163,184,.28); color: #f1f5f9; outline: none; transition: border-color .2s; }
+  .vc-field:focus { border-color: #f59e0b; }
+  .vc-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .vc-form { display: flex; flex-direction: column; gap: 5px; }
+  .vc-compose { display: flex; align-items: flex-end; gap: 6px; }
+  .vc-compose .vc-field { flex: 1; min-width: 0; min-height: 34px; max-height: 120px; resize: none; }
+  .vc-nm { display: none; }
+  .vc-form:focus-within .vc-nm { display: block; }
+  .vc-meta { display: none; align-items: center; justify-content: space-between; gap: 8px; }
+  .vc-form:focus-within .vc-meta, .vc-meta.has-msg { display: flex; }
+  .vc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .vc-msg { font-size: 10.5px; color: #94a3b8; min-width: 0; }
+  .vc-msg.err { color: #fb7185; } .vc-msg.ok { color: #34d399; }
+  .vc-chars { font-size: 10px; color: #64748b; flex-shrink: 0; }
+  .vc-send { padding: 0 12px; height: 34px; flex-shrink: 0; border-radius: 9px; background: #f59e0b; color: #0f172a; font-weight: 800; font-size: 12px; transition: background .2s, opacity .2s; }
+  .vc-send:hover { background: #fbbf24; } .vc-send:disabled { opacity: .6; }
+  .vc-list { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; max-height: 200px; overflow-y: auto; padding-right: 2px; }
+  .vc-item { padding: 6px 9px; border-radius: 10px; background: rgba(255,255,255,.05); border: 1px solid rgba(148,163,184,.2); }
+  .vc-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+  .vc-name { font-size: 11.5px; font-weight: 800; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .vc-time { font-size: 9.5px; color: #94a3b8; flex-shrink: 0; }
+  .vc-text { font-size: 11.5px; line-height: 1.45; color: #cbd5e1; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .vc-empty { padding: 7px; border-radius: 10px; font-size: 10.5px; text-align: center; color: #94a3b8; background: rgba(255,255,255,.04); border: 1px dashed rgba(148,163,184,.25); }
+  .vc-badge { padding: 1px 6px; border-radius: 6px; font-size: 9px; font-weight: 800; background: rgba(245,158,11,.18); color: #fcd34d; margin-left: 6px; }
+  .vc-adm { display: flex; gap: 6px; margin-top: 6px; }
+  .vc-adm button { padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; background: rgba(148,163,184,.18); color: #e2e8f0; }
+  .vc-adm button.ok { background: rgba(16,185,129,.18); color: #6ee7b7; }
+  .vc-adm button.del { background: rgba(244,63,94,.18); color: #fda4af; }
+  .vc-more { width: 100%; margin-top: 6px; padding: 6px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fbbf24; background: rgba(148,163,184,.12); }
+  html.bright-mode .vc-panel { background: rgba(255,255,255,.7); border-color: rgba(148,163,184,.4); }
+  html.bright-mode .vc-title, html.bright-mode .vc-name { color: #0f172a; }
+  html.bright-mode .vc-head:hover { background: rgba(15,23,42,.05); }
+  html.bright-mode .vc-count { color: #b45309; }
+  html.bright-mode .vc-field { background: rgba(255,255,255,.85); color: #0f172a; border-color: rgba(148,163,184,.5); }
+  html.bright-mode .vc-item { background: rgba(255,255,255,.75); border-color: rgba(148,163,184,.35); }
+  html.bright-mode .vc-text { color: #1e293b; }
+  html.bright-mode .vc-more, html.bright-mode .vc-title svg { color: #b45309; }
+  @media (prefers-reduced-motion: reduce) { .vc-wrap, .vc-bodywrap, .vc-chev { transition: none !important; } }
+</style>
+
+<script type="module" id="vc-script">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, doc, addDoc, query, where, onSnapshot, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const PID = "chhotojagulia_elec_2025_27";
+  const PAGE = 5;
+  const NAME_KEY = "devit_vc_name";
+  const RATE_KEY = "devit_vc_rate";
+  const FP_KEY = "devit_vc_fps";
+  const esc = (s) => escapeHTML(s);
+  let db = null, col = null;
+  const subs = {};     // videoId -> { unsub, rows, shown, wantAdmin, adminOk, mode, loaded, err }
+  const drafts = {};   // videoId -> unsent text (survives card re-renders)
+  const openState = {}; // videoId -> comments section expanded? (collapsed by default)
+  function setOpen(p, open) {
+    p.querySelector("[data-vc-act='toggle']").setAttribute("aria-expanded", String(open));
+    p.querySelector("[data-vc-body]").classList.toggle("open", open);
+  }
+
+  const mode = () => (appState.settings && appState.settings.commentsMode) || "moderated";
+  const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9\u0980-\u09ff\u0900-\u097f]+/g, "");
+  const fmt = (ms) => ms ? new Date(ms).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "Just now";
+  const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || d); } catch (e) { return JSON.parse(d); } };
+
+  function ensureDb() {
+    if (db) return true;
+    try {
+      const cfg = getActiveFirebaseConfig();
+      if (!cfg || !cfg.projectId) return false;
+      const app = getApps().length ? getApps()[0] : initializeApp(cfg);
+      db = getFirestore(app);
+      col = collection(db, "iti_portals", PID, "video_comments");
+      return true;
+    } catch (e) { return false; }
+  }
+
+  const panelsFor = (vid) => Array.from(document.querySelectorAll("[data-vc-panel]")).filter((p) => p.getAttribute("data-vc-panel") === vid);
+
+  function buildPanel(vid) {
+    const p = document.createElement("div");
+    p.className = "vc-wrap";
+    p.setAttribute("data-vc-panel", vid);
+    p.dataset.t = String(Date.now());
+    p.innerHTML = `<div class="vc-wrapin"><div class="vc-panel">
+      <button type="button" class="vc-head" data-vc-act="toggle" aria-expanded="false" aria-label="Show or hide comments">
+        <span class="vc-title"><i data-lucide="message-circle"></i><span>Comments</span><span class="vc-count" data-vc-count></span></span>
+        <i data-lucide="chevron-down" class="vc-chev"></i>
+      </button>
+      <div class="vc-bodywrap" data-vc-body><div class="vc-body"><div class="vc-bodyin">
+        <div data-vc-closed class="vc-empty hidden">Comments are currently closed.</div>
+        <form class="vc-form" data-vc-form autocomplete="off" novalidate>
+          <div class="vc-hp" aria-hidden="true"><label>Website<input type="text" data-vc-hp tabindex="-1" autocomplete="off" /></label></div>
+          <input class="vc-field vc-nm" data-vc-name type="text" maxlength="40" placeholder="Your name (optional)" aria-label="Your name" />
+          <div class="vc-compose">
+            <textarea class="vc-field" data-vc-text rows="1" maxlength="600" placeholder="Add a comment…" aria-label="Comment"></textarea>
+            <button type="submit" class="vc-send btn-tap" data-vc-send>Post</button>
+          </div>
+          <div class="vc-meta" data-vc-meta>
+            <span class="vc-msg" data-vc-msg role="status" aria-live="polite"></span>
+            <span class="vc-chars" data-vc-chars>0/600</span>
+          </div>
+        </form>
+        <div class="vc-list" data-vc-list></div>
+        <button type="button" class="vc-more hidden" data-vc-act="more">Show more comments</button>
+      </div></div></div>
+    </div></div>`;
+    const nm = p.querySelector("[data-vc-name]"), tx = p.querySelector("[data-vc-text]");
+    try { nm.value = localStorage.getItem(NAME_KEY) || ""; } catch (e) {}
+    tx.value = drafts[vid] || "";
+    p.querySelector("[data-vc-chars]").textContent = `${tx.value.length}/600`;
+    setOpen(p, !!openState[vid]);
+    return p;
+  }
+
+  function render(vid) {
+    const s = subs[vid]; if (!s) return;
+    const off = mode() === "off";
+    panelsFor(vid).forEach((p) => {
+      p.querySelector("[data-vc-closed]").classList.toggle("hidden", !off);
+      p.querySelector("[data-vc-form]").classList.toggle("hidden", off);
+      const list = p.querySelector("[data-vc-list]"), cnt = p.querySelector("[data-vc-count]"), more = p.querySelector("[data-vc-act='more']");
+      if (off) { list.innerHTML = ""; cnt.textContent = ""; more.classList.add("hidden"); return; }
+      const canMod = !!(isAdminUnlocked && s.wantAdmin && s.adminOk);
+      const shownRows = s.rows.filter((r) => canMod || r.status === "visible");
+      const visibleCount = s.rows.filter((r) => r.status === "visible").length;
+      cnt.textContent = s.loaded && visibleCount ? String(visibleCount) : "";
+      if (s.err) { list.innerHTML = `<div class="vc-empty">Comments are unavailable right now.</div>`; more.classList.add("hidden"); return; }
+      if (!s.loaded) { list.innerHTML = ""; more.classList.add("hidden"); return; }
+      if (!shownRows.length) { list.innerHTML = `<div class="vc-empty">No comments yet. Be the first to comment.</div>`; more.classList.add("hidden"); return; }
+      list.innerHTML = shownRows.slice(0, s.shown).map((c) => `
+        <article class="vc-item">
+          <div class="vc-item-top">
+            <span class="vc-name">${esc(c.name || "Guest")}${canMod && c.status !== "visible" ? `<span class="vc-badge">${esc(c.status.toUpperCase())}</span>` : ""}</span>
+            <time class="vc-time">${esc(fmt(c.ms))}</time>
+          </div>
+          <p class="vc-text">${esc(c.text)}</p>
+          ${canMod ? `<div class="vc-adm">
+            ${c.status !== "visible" ? `<button type="button" class="ok" data-vc-act="show" data-id="${esc(c.id)}">Approve</button>` : `<button type="button" data-vc-act="hide" data-id="${esc(c.id)}">Hide</button>`}
+            <button type="button" class="del" data-vc-act="del" data-id="${esc(c.id)}">Delete</button></div>` : ""}
+        </article>`).join("");
+      more.classList.toggle("hidden", shownRows.length <= s.shown);
+    });
+  }
+
+  function listen(vid) {
+    const s = subs[vid]; if (!s) return;
+    if (s.unsub) { s.unsub(); s.unsub = null; }
+    s.mode = mode(); s.wantAdmin = !!isAdminUnlocked; s.adminOk = false; s.loaded = false; s.err = false;
+    if (s.mode === "off" || !ensureDb()) { s.rows = []; s.loaded = true; s.err = s.mode !== "off"; render(vid); return; }
+    const adminTry = s.wantAdmin;
+    const q = adminTry ? query(col, where("videoId", "==", vid)) : query(col, where("videoId", "==", vid), where("status", "==", "visible"));
+    s.unsub = onSnapshot(q, (snap) => {
+      s.rows = snap.docs.map((d) => {
+        const x = d.data({ serverTimestamps: "estimate" });
+        return { id: d.id, name: x.name, text: x.text, status: x.status || "pending", ms: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : 0 };
+      }).sort((a, b) => b.ms - a.ms);
+      s.loaded = true; s.err = false; s.adminOk = adminTry;
+      render(vid);
+    }, () => {
+      if (adminTry) { // PIN-only admin can't read pending items: fall back to the public list
+        if (s.unsub) { s.unsub(); s.unsub = null; }
+        const q2 = query(col, where("videoId", "==", vid), where("status", "==", "visible"));
+        s.unsub = onSnapshot(q2, (snap) => {
+          s.rows = snap.docs.map((d) => { const x = d.data({ serverTimestamps: "estimate" }); return { id: d.id, name: x.name, text: x.text, status: "visible", ms: x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : 0 }; }).sort((a, b) => b.ms - a.ms);
+          s.loaded = true; s.err = false; s.adminOk = false; render(vid);
+        }, () => { s.err = true; s.loaded = true; render(vid); });
+        return;
+      }
+      s.err = true; s.loaded = true; render(vid);
+    });
+  }
+
+  // Keep panels in step with whichever video card is currently active/playing
+  function sync() {
+    const active = new Map();
+    document.querySelectorAll("article[data-vid-card].vid-card-active").forEach((card) => {
+      const id = card.getAttribute("data-vid-card");
+      if (!active.has(id)) active.set(id, []);
+      active.get(id).push(card);
+      const existing = card.querySelector(":scope [data-vc-panel]");
+      if (existing && existing.dataset.leaving) { delete existing.dataset.leaving; existing.classList.add("in"); }
+      if (!existing) {
+        const host = card.firstElementChild || card;
+        const np = buildPanel(id);
+        host.appendChild(np);
+        void np.offsetHeight;
+        requestAnimationFrame(() => requestAnimationFrame(() => np.classList.add("in")));
+        try { if (window.lucide) lucide.createIcons({ nodes: [host] }); } catch (e) {}
+        if (!subs[id]) subs[id] = { unsub: null, rows: [], shown: PAGE, wantAdmin: false, adminOk: false, mode: "", loaded: false, err: false };
+        if (subs[id].loaded) render(id);
+      }
+    });
+    document.querySelectorAll("[data-vc-panel]").forEach((p) => {
+      const card = p.closest("article[data-vid-card]");
+      if (!card || !card.classList.contains("vid-card-active")) {
+        if (!card) { p.remove(); return; }
+        if (!p.dataset.leaving) { p.dataset.leaving = "1"; p.classList.remove("in"); setTimeout(() => { if (p.dataset.leaving) p.remove(); }, 340); }
+      }
+    });
+    active.forEach((_, id) => {
+      if (!subs[id]) subs[id] = { unsub: null, rows: [], shown: PAGE, wantAdmin: false, adminOk: false, mode: "", loaded: false, err: false };
+      const s = subs[id];
+      if (!s.unsub && !s.loaded) listen(id);
+      else if (s.mode !== mode() || s.wantAdmin !== !!isAdminUnlocked) listen(id);
+    });
+    Object.keys(subs).forEach((id) => {
+      if (!active.has(id)) { if (subs[id].unsub) subs[id].unsub(); delete subs[id]; }
+    });
+  }
+
+  let t = null;
+  const schedule = () => { clearTimeout(t); t = setTimeout(sync, 80); };
+  const mo = new MutationObserver(schedule);
+  ["notices-videos-grid", "full-videos-grid"].forEach((id) => {
+    const g = document.getElementById(id);
+    if (g) mo.observe(g, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+  });
+  setInterval(sync, 1500); // picks up admin unlock / comment-mode changes
+  sync();
+
+  // ---- posting ----
+  const say = (p, text, kind) => { const m = p.querySelector("[data-vc-msg]"); m.textContent = text || ""; m.className = "vc-msg" + (kind ? " " + kind : ""); p.querySelector("[data-vc-meta]").classList.toggle("has-msg", !!text); };
+  function rateCheck() {
+    const now = Date.now(), log = lsGet(RATE_KEY, "[]").filter((x) => now - x < 3600000);
+    if (log.length && now - log[log.length - 1] < 20000) return "Please wait a few seconds before posting again.";
+    if (log.length >= 10) return "Hourly comment limit reached. Please try again later.";
+    return "";
+  }
+  function rateLog(fp) {
+    try {
+      const now = Date.now(), log = lsGet(RATE_KEY, "[]").filter((x) => now - x < 3600000); log.push(now);
+      localStorage.setItem(RATE_KEY, JSON.stringify(log));
+      const fps = lsGet(FP_KEY, "[]"); fps.push(fp); localStorage.setItem(FP_KEY, JSON.stringify(fps.slice(-30)));
+    } catch (e) {}
+  }
+
+  document.addEventListener("input", (e) => {
+    const tx = e.target.closest && e.target.closest("[data-vc-text]"); if (!tx) return;
+    const p = tx.closest("[data-vc-panel]"), vid = p.getAttribute("data-vc-panel");
+    drafts[vid] = tx.value;
+    tx.style.height = "auto"; tx.style.height = Math.min(tx.scrollHeight, 120) + "px";
+    p.querySelector("[data-vc-chars]").textContent = `${tx.value.length}/600`;
+  });
+
+  document.addEventListener("submit", async (e) => {
+    const form = e.target.closest && e.target.closest("[data-vc-form]"); if (!form) return;
+    e.preventDefault();
+    const p = form.closest("[data-vc-panel]"), vid = p.getAttribute("data-vc-panel"), s = subs[vid];
+    if (mode() === "off") return say(p, "Comments are currently closed.", "err");
+    if (p.querySelector("[data-vc-hp]").value) return;                                   // honeypot
+    if (Date.now() - Number(p.dataset.t) < 2500) return say(p, "Please take a moment to write your comment.", "err");
+    const clean = (x) => String(x).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "");
+    const name = clean(p.querySelector("[data-vc-name]").value).replace(/\s+/g, " ").trim().slice(0, 40) || "Guest";
+    const text = clean(p.querySelector("[data-vc-text]").value).replace(/\r\n?/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+    if (!text) return say(p, "Please write a comment first.", "err");
+    if (text.length < 5) return say(p, "Comment is too short (min 5 characters).", "err");
+    if (text.length > 600) return say(p, "Comment is too long (max 600 characters).", "err");
+    if (!/[\p{L}\p{N}]/u.test(text) || /(.)\1{9,}/u.test(text)) return say(p, "Please write a meaningful comment.", "err");
+    if ((text.match(/https?:\/\/|www\./gi) || []).length > 2) return say(p, "Too many links in one comment.", "err");
+    const fp = vid + "|" + norm(text);
+    if (lsGet(FP_KEY, "[]").includes(fp) || (s && s.rows.some((c) => norm(c.text) === norm(text)))) return say(p, "This comment was already submitted.", "err");
+    const rl = rateCheck(); if (rl) return say(p, rl, "err");
+    if (!ensureDb()) return say(p, "Cloud storage is not connected. Please try later.", "err");
+
+    const btn = p.querySelector("[data-vc-send]"); btn.disabled = true; say(p, "Posting…");
+    try {
+      const m = mode();
+      await addDoc(col, { name, text, videoId: String(vid).slice(0, 120), status: m === "open" ? "visible" : "pending", createdAt: serverTimestamp() });
+      rateLog(fp);
+      try { localStorage.setItem(NAME_KEY, name === "Guest" ? "" : name); } catch (x) {}
+      drafts[vid] = "";
+      panelsFor(vid).forEach((pp) => { const t2 = pp.querySelector("[data-vc-text]"); t2.value = ""; t2.style.height = ""; pp.querySelector("[data-vc-chars]").textContent = "0/600"; });
+      say(p, m === "open" ? "Thanks! Your comment is live." : "Thanks! Your comment will appear after review.", "ok");
+    } catch (err) {
+      console.error("Video comment failed:", err);
+      const code = err && err.code;
+      say(p, code === "permission-denied"
+        ? "Blocked by cloud rules. Admin: publish the latest Firestore rules (Admin → Firebase)."
+        : code === "unavailable" || code === "deadline-exceeded"
+          ? "No connection right now. Please check your internet."
+          : "Could not post right now. Please try again.", "err");
+    } finally { btn.disabled = false; }
+  });
+
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest && e.target.closest("[data-vc-act]"); if (!b) return;
+    const p = b.closest("[data-vc-panel]"); if (!p) return;
+    const vid = p.getAttribute("data-vc-panel"), s = subs[vid], act = b.getAttribute("data-vc-act"), id = b.getAttribute("data-id");
+    if (act === "toggle") { const open = !openState[vid]; openState[vid] = open; panelsFor(vid).forEach((pp) => setOpen(pp, open)); return; }
+    if (act === "more") { if (s) { s.shown += PAGE; render(vid); } return; }
+    if (!isAdminUnlocked || !ensureDb()) return;
+    try {
+      if (act === "show" || act === "hide") { await updateDoc(doc(col, id), { status: act === "show" ? "visible" : "hidden" }); showToast(act === "show" ? "Comment is public" : "Comment hidden", "success"); }
+      else if (act === "del") { if (!confirm("Delete this comment permanently?")) return; await deleteDoc(doc(col, id)); showToast("Comment deleted", "info"); }
+    } catch (err) { showToast("Action failed – sign in with Google Admin", "error"); }
+  });
+</script>
+
 </body>
 </html>

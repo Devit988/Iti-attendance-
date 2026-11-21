@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth bright-mode">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ITI CONNECT — Your Academic Information Hub</title>
+  <meta name="description" content="ITI CONNECT — Attendance, NCVT results, study materials, gallery & trade videos for Electrician Batch 2025–27." />
+  <meta name="application-name" content="ITI CONNECT" />
+  <meta name="author" content="DEVIT" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="ITI CONNECT" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'] } } }
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .btn-tap:active { transform: scale(0.96); }
+    .tab-btn.tab-active { color: #fbbf24 !important; background: rgba(251,191,36,0.12); }
+    html.bright-mode body { background-color: #f1f5f9 !important; color: #0f172a !important; }
+    html.bright-mode .card-surface { background-color: rgba(255,255,255,0.88) !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
+    html.bright-mode .sub-surface { background-color: #f8fafc !important; border-color: #cbd5e1 !important; }
+    html.bright-mode .text-white { color: #0f172a !important; }
+    html.bright-mode .text-slate-300 { color: #334155 !important; }
+    html.bright-mode .text-slate-400 { color: #475569 !important; }
+    html.bright-mode .tab-btn.tab-active { color: #b45309 !important; background: rgba(217,119,6,0.14); }
+    .card-surface { background-color: rgba(12,19,34,0.85); border-color: rgba(148,163,184,0.22); backdrop-filter: blur(12px); }
+    .sub-surface { background-color: rgba(15,23,42,0.75); border-color: rgba(148,163,184,0.2); }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col pb-24">
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 card-surface border-b px-4 py-3">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <img src="icon-192.png" alt="ITI CONNECT" class="w-9 h-9 rounded-xl shrink-0" />
+        <div class="min-w-0">
+          <h1 class="text-base sm:text-lg font-extrabold tracking-wide text-white truncate">ITI <span class="text-amber-500">CONNECT</span></h1>
+          <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 truncate">Your Academic Information Hub</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" id="btn-install-pwa" onclick="triggerPwaInstall()" class="hidden px-2.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-extrabold btn-tap">Install App</button>
+        <button type="button" onclick="toggleThemeMode()" title="Theme" class="w-9 h-9 rounded-full sub-surface border flex items-center justify-center text-amber-400 btn-tap">
+          <i id="icon-theme" data-lucide="moon" class="w-4 h-4"></i>
+        </button>
+        <button type="button" onclick="manualCloudSync()" title="Cloud Sync" class="w-9 h-9 rounded-full sub-surface border flex items-center justify-center text-emerald-400 btn-tap">
+          <i id="icon-sync" data-lucide="cloud" class="w-4 h-4"></i>
+        </button>
+        <button type="button" onclick="openAdminModal()" title="Admin" class="w-9 h-9 rounded-full sub-surface border flex items-center justify-center text-amber-400 btn-tap">
+          <i data-lucide="key-round" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+    <div class="max-w-5xl mx-auto mt-2 flex items-center justify-between gap-2 text-[11px]">
+      <span id="hdr-date" class="px-2.5 py-0.5 rounded-full sub-surface border font-semibold text-slate-300"></span>
+      <span id="hdr-clock" class="px-2.5 py-0.5 rounded-full sub-surface border font-mono font-bold text-amber-400"></span>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-5 pt-4 space-y-4">
+    <!-- Global Search -->
+    <div class="relative">
+      <div class="card-surface border rounded-2xl px-3.5 py-2.5 flex items-center gap-2">
+        <i data-lucide="search" class="w-4 h-4 text-amber-400 shrink-0"></i>
+        <input id="global-search" oninput="handleGlobalSearch(this.value)" placeholder="Search trainees, notices, notes, videos..." class="w-full bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none" />
+      </div>
+      <div id="global-search-box" class="hidden absolute left-0 right-0 top-full mt-1.5 card-surface border rounded-2xl shadow-2xl max-h-72 overflow-y-auto divide-y divide-slate-800 z-40"></div>
+    </div>
+
+    <!-- TAB 1: HOME -->
+    <section id="view-home" class="tab-view space-y-4">
+      <div class="grid grid-cols-2 gap-2.5">
+        <button type="button" onclick="switchTab('daily')" class="card-surface border rounded-2xl p-3 text-left btn-tap">
+          <div class="text-[10px] font-bold uppercase text-slate-400 flex items-center gap-1"><i data-lucide="calendar-check-2" class="w-3.5 h-3.5 text-amber-400"></i> Attendance</div>
+          <div id="home-att-stat" class="mt-1 text-sm font-extrabold text-white">--</div>
+          <div id="home-att-sub" class="text-[11px] text-slate-400">Tap to open Daily</div>
+        </button>
+        <button type="button" onclick="switchTab('results')" class="card-surface border rounded-2xl p-3 text-left btn-tap">
+          <div class="text-[10px] font-bold uppercase text-slate-400 flex items-center gap-1"><i data-lucide="award" class="w-3.5 h-3.5 text-amber-400"></i> Results</div>
+          <div id="home-res-stat" class="mt-1 text-sm font-extrabold text-white">16 Trainees</div>
+          <div class="text-[11px] text-slate-400">NCVT 1st &amp; 2nd Yr</div>
+        </button>
+      </div>
+
+      <!-- Notices -->
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="megaphone" class="w-4 h-4 text-amber-400"></i> Notices &amp; Circulars</h2>
+          <button type="button" onclick="openNoticeModal()" class="admin-only hidden px-3 py-1 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold btn-tap">+ Post</button>
+        </div>
+        <div id="notices-list" class="space-y-2"></div>
+      </div>
+
+      <!-- Featured Videos -->
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="play-circle" class="w-4 h-4 text-amber-400"></i> Workshop Videos</h2>
+          <button type="button" onclick="switchTab('videos')" class="text-xs font-bold text-amber-400">View All &rarr;</button>
+        </div>
+        <div id="home-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: DAILY ATTENDANCE -->
+    <section id="view-daily" class="tab-view hidden space-y-4">
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold text-white">Daily Roll Call</h2>
+            <p id="daily-day-status" class="text-[11px] text-emerald-400 font-semibold">Working Day</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <input type="date" id="daily-date-picker" onchange="selectAttendanceDate(this.value)" class="px-2.5 py-1.5 rounded-xl sub-surface border text-xs font-semibold text-white" />
+            <button type="button" onclick="selectAttendanceDate(getTodayISO())" class="px-2.5 py-1.5 rounded-xl sub-surface border text-amber-400 text-xs font-bold btn-tap">Today</button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span id="daily-summary-pill" class="px-2.5 py-1 rounded-full sub-surface border font-bold text-amber-400">0 P / 0 A</span>
+          <div class="admin-only hidden flex gap-1.5">
+            <button type="button" onclick="markAllAttendance('P')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold">All P</button>
+            <button type="button" onclick="markAllAttendance('A')" class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 font-bold">All A</button>
+            <button type="button" onclick="clearDayAttendance()" class="px-2.5 py-1 rounded-lg sub-surface border text-slate-300 font-bold">Clear</button>
+          </div>
+        </div>
+        <div id="daily-rollcall-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: 80% ELIGIBILITY CHART -->
+    <section id="view-monthly" class="tab-view hidden space-y-4">
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold text-white">80% NCVT Eligibility Chart</h2>
+            <p class="text-[11px] text-slate-400">Minimum 80% required for AITT CBT Hall Ticket</p>
+          </div>
+          <button type="button" onclick="downloadAttendanceCSV()" class="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold btn-tap">Export CSV</button>
+        </div>
+        <div id="eligibility-summary" class="grid grid-cols-3 gap-2"></div>
+        <div id="eligibility-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: RESULTS -->
+    <section id="view-results" class="tab-view hidden space-y-4">
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">NCVT Results &amp; Marks</h2>
+          <button type="button" onclick="downloadResultsCSV()" class="px-3 py-1.5 rounded-xl sub-surface border text-emerald-400 text-xs font-bold btn-tap">Export CSV</button>
+        </div>
+        <div id="results-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5: STUDY NOTES -->
+    <section id="view-notes" class="tab-view hidden space-y-4">
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">NCVT Study Notes &amp; PDF Bank</h2>
+          <button type="button" onclick="openStudyNoteModal()" class="admin-only hidden px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold btn-tap">+ Add Note</button>
+        </div>
+        <div id="study-notes-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+      </div>
+    </section>
+
+    <!-- TAB 6: VIDEOS -->
+    <section id="view-videos" class="tab-view hidden space-y-4">
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">Trade Videos Library</h2>
+          <button type="button" onclick="openVideoModal()" class="admin-only hidden px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold btn-tap">+ Add Video</button>
+        </div>
+        <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- TAB 7: GALLERY (CLOUD STORAGE) -->
+    <section id="view-gallery" class="tab-view hidden space-y-4">
+      <div class="card-surface border rounded-2xl p-3.5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">Workshop &amp; Lab Gallery</h2>
+          <button type="button" onclick="openModal('modal-add-gallery')" class="admin-only hidden px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-bold btn-tap">+ Upload Photo</button>
+        </div>
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5"></div>
+      </div>
+    </section>
+
+    <footer class="card-surface border rounded-2xl p-4 text-[11px] text-slate-400 space-y-1">
+      <div class="font-extrabold text-white">ITI <span class="text-amber-500">CONNECT</span> — Learn &bull; Connect &bull; Grow</div>
+      <p>Independently developed and maintained by <strong class="text-amber-400">DEVIT</strong>. Not an official government website.</p>
+    </footer>
+  </main>
+
+  <!-- BOTTOM NAVIGATION -->
+  <nav class="fixed bottom-3 inset-x-3 max-w-lg mx-auto z-40 card-surface border rounded-2xl p-1.5 grid grid-cols-6 gap-1 shadow-2xl">
+    <button type="button" id="tab-btn-home" onclick="switchTab('home')" class="tab-btn tab-active flex flex-col items-center py-1.5 rounded-xl text-[10px] font-bold"><i data-lucide="home" class="w-4 h-4"></i><span>Home</span></button>
+    <button type="button" id="tab-btn-daily" onclick="switchTab('daily')" class="tab-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-semibold text-slate-400"><i data-lucide="calendar-check-2" class="w-4 h-4"></i><span>Daily</span></button>
+    <button type="button" id="tab-btn-monthly" onclick="switchTab('monthly')" class="tab-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-semibold text-slate-400"><i data-lucide="bar-chart-3" class="w-4 h-4"></i><span>80%</span></button>
+    <button type="button" id="tab-btn-results" onclick="switchTab('results')" class="tab-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-semibold text-slate-400"><i data-lucide="award" class="w-4 h-4"></i><span>Results</span></button>
+    <button type="button" id="tab-btn-notes" onclick="switchTab('notes')" class="tab-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-semibold text-slate-400"><i data-lucide="book-open" class="w-4 h-4"></i><span>Notes</span></button>
+    <button type="button" id="tab-btn-gallery" onclick="switchTab('gallery')" class="tab-btn flex flex-col items-center py-1.5 rounded-xl text-[10px] font-semibold text-slate-400"><i data-lucide="image" class="w-4 h-4"></i><span>Gallery</span></button>
+  </nav>
+
+  <!-- ADMIN MODAL -->
+  <div id="modal-admin" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-surface border rounded-2xl w-full max-w-md p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white">Instructor Admin Access</h3>
+        <button type="button" onclick="closeModal('modal-admin')" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div id="admin-locked-box" class="space-y-2.5">
+        <form onsubmit="handlePinUnlock(event)" class="space-y-2">
+          <input type="password" id="admin-pin-input" inputmode="numeric" placeholder="Enter Admin PIN" class="w-full px-3 py-2 rounded-xl sub-surface border text-center font-mono text-sm text-white" />
+          <button type="submit" class="w-full py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">Unlock with PIN</button>
+        </form>
+        <button type="button" onclick="handleGoogleSignIn()" class="w-full py-2 rounded-xl sub-surface border text-xs font-bold text-emerald-400">Sign in with Google Admin</button>
+      </div>
+      <div id="admin-unlocked-box" class="hidden space-y-2.5">
+        <p class="text-xs text-emerald-400 font-semibold">Admin Unlocked — Full Edit &amp; Cloud Sync Active</p>
+        <button type="button" onclick="lockAdminMode()" class="w-full py-2 rounded-xl bg-rose-500/20 text-rose-300 font-bold text-xs">Lock Admin Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST NOTICE MODAL -->
+  <div id="modal-post-notice" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-surface border rounded-2xl w-full max-w-md p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white">Post Notice</h3>
+        <button type="button" onclick="closeModal('modal-post-notice')" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handleSaveNotice(event)" class="space-y-2.5">
+        <input id="notice-title-input" required placeholder="Notice Title" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input type="date" id="notice-date-input" required class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <textarea id="notice-body-input" rows="3" required placeholder="Notice details..." class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white"></textarea>
+        <button type="submit" class="w-full py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">Publish</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD NOTE MODAL -->
+  <div id="modal-add-studynote" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-surface border rounded-2xl w-full max-w-md p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white">Add Study Note / PDF</h3>
+        <button type="button" onclick="closeModal('modal-add-studynote')" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handleSaveStudyNote(event)" class="space-y-2.5">
+        <input id="note-title-input" required placeholder="Topic / PDF Title" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input id="note-subject-input" required placeholder="Subject (e.g. Trade Theory)" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input type="url" id="note-url-input" required placeholder="https://..." class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input id="note-desc-input" placeholder="Short description" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <button type="submit" class="w-full py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">Save Note</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD VIDEO MODAL -->
+  <div id="modal-add-video" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-surface border rounded-2xl w-full max-w-md p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white">Add Trade Video</h3>
+        <button type="button" onclick="closeModal('modal-add-video')" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handleSaveVideo(event)" class="space-y-2.5">
+        <input id="video-title-input" required placeholder="Video Title" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input id="video-url-input" required placeholder="YouTube URL, Video ID, or MP4 link" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input id="video-duration-input" placeholder="Duration (e.g. 12:30)" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input id="video-desc-input" placeholder="Short description" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <button type="submit" class="w-full py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">Save Video</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- GALLERY UPLOAD MODAL -->
+  <div id="modal-add-gallery" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="card-surface border rounded-2xl w-full max-w-md p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white">Upload Gallery Photo (Cloud Storage)</h3>
+        <button type="button" onclick="closeModal('modal-add-gallery')" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handleSaveGalleryPhoto(event)" class="space-y-2.5">
+        <input id="gallery-photo-title" required placeholder="Photo Title" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input id="gallery-photo-date" placeholder="Caption / Session" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <input type="file" id="gallery-file-input" accept="image/*" multiple class="w-full text-xs text-slate-300" />
+        <input type="url" id="gallery-photo-url" placeholder="Or direct image URL" class="w-full px-3 py-2 rounded-xl sub-surface border text-xs text-white" />
+        <button type="submit" id="gallery-submit-btn" class="w-full py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs">Upload &amp; Sync</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-box" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none space-y-1.5"></div>
+
+  <!-- FIREBASE MODULE (FIRESTORE + AUTH + STORAGE) -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    window.__FB_SDK__ = {
+      initializeApp, getApps,
+      getFirestore, doc, setDoc, onSnapshot,
+      getAuth, GoogleAuthProvider, signInWithPopup,
+      getStorage, ref, uploadBytes, getDownloadURL
+    };
+    if (window.initFirebaseCloud) window.initFirebaseCloud();
+  </script>
+
+  <!-- COMPLETE APPLICATION ENGINE -->
+  <script>
+    const STORAGE_KEY = "iti_chhotojagulia_elec_2025_27_v2";
+    const THEME_KEY = "iti_chhotojagulia_theme_v4";
+    const DEFAULT_PIN = "2508";
+
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDlK8HTuzdGkwmdUXm6B3WO_0VUkQBqm18",
+      authDomain: "iti-attendance-b1ab1.firebaseapp.com",
+      projectId: "iti-attendance-b1ab1",
+      storageBucket: "iti-attendance-b1ab1.firebasestorage.app",
+      messagingSenderId: "680846674510",
+      appId: "1:680846674510:web:a8affdd473b1c47bfe911f"
+    };
+
+    const DEFAULT_TRAINEES = [
+      { id: "tr-02", rno: "02", name: "Devit Munda", roll: "250819008869", star: true, year1: 555, year2: 556, internal: 94 },
+      { id: "tr-03", rno: "03", name: "Ayan Karmakar", roll: "250819008805", star: false, year1: 512, year2: 520, internal: 88 },
+      { id: "tr-04", rno: "04", name: "Arijit Das", roll: "250819008842", star: false, year1: 498, year2: 506, internal: 85 },
+      { id: "tr-05", rno: "05", name: "Sayani Ghoshal", roll: "250819008858", star: false, year1: 534, year2: 540, internal: 91 },
+      { id: "tr-06", rno: "06", name: "Debarathi Kundu", roll: "250819008830", star: false, year1: 526, year2: 532, internal: 90 },
+      { id: "tr-07", rno: "07", name: "Dipan Halder", roll: "250819007214", star: false, year1: 484, year2: 492, internal: 82 },
+      { id: "tr-08", rno: "08", name: "Shreyasi Ballav", roll: "250819011246", star: false, year1: 519, year2: 524, internal: 89 },
+      { id: "tr-09", rno: "09", name: "Rahul Das", roll: "250819008818", star: false, year1: 472, year2: 486, internal: 80 },
+      { id: "tr-11", rno: "11", name: "Swasti Sarkar", roll: "250819027561", star: false, year1: 508, year2: 514, internal: 87 },
+      { id: "tr-12", rno: "12", name: "Riya Biswas", roll: "250819012840", star: false, year1: 522, year2: 528, internal: 89 },
+      { id: "tr-14", rno: "14", name: "Abhijit Bala", roll: "250819011106", star: false, year1: 488, year2: 496, internal: 84 },
+      { id: "tr-15", rno: "15", name: "Ilias Mondal", roll: "250819012861", star: false, year1: 495, year2: 502, internal: 86 },
+      { id: "tr-16", rno: "16", name: "Barsha Chatterjee", roll: "250819011089", star: false, year1: 530, year2: 538, internal: 92 },
+      { id: "tr-17", rno: "17", name: "Riyad Hossain", roll: "250819011135", star: false, year1: 501, year2: 509, internal: 85 },
+      { id: "tr-18", rno: "18", name: "Shaswat Biswas", roll: "250819008812", star: false, year1: 479, year2: 488, internal: 81 },
+      { id: "tr-20", rno: "20", name: "Anupam Dutta", roll: "250819008877", star: false, year1: 515, year2: 521, internal: 88 }
+    ];
+
+    let appState = {
+      trainees: DEFAULT_TRAINEES,
+      notices: [
+        { id: "not-1", title: "2nd Year Practical Workshop & Safety Briefing", date: "2026-11-16", body: "Report to the Main Electrical Machine Lab at 10:30 AM sharp with insulated pliers and practical record book." },
+        { id: "not-2", title: "NCVT 80% Minimum Attendance Notice", date: "2026-11-12", body: "Minimum 80% cumulative attendance is mandatory for AITT CBT Hall Ticket generation." }
+      ],
+      studyNotes: [
+        { id: "sn-1", subject: "Trade Theory", title: "Bharat Skills NIMI Electrician 2nd Year Question Bank", url: "https://bharatskills.gov.in/Home/StudyMaterial?TradeName=Electrician", desc: "Official DGT / NIMI MCQ PDFs for DC Motors, AC 3-Phase Machines & Transformers." }
+      ],
+      videos: [
+        { id: "vid-1", title: "3-Phase Induction Motor DOL Starter Wiring", ytId: "M7lc1UVf-VE", duration: "12:45", desc: "Control & power circuit wiring with overload relay setting." }
+      ],
+      galleryPhotos: [],
+      attendance: {},
+      holidays: {},
+      settings: { adminPin: DEFAULT_PIN, adminEmail: "" }
+    };
+
+    let isAdminUnlocked = false;
+    let selectedDateStr = "";
+    let deferredInstallPrompt = null;
+
+    function getTodayISO() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    function escapeHTML(s) {
+      return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function showToast(msg, type = "info") {
+      const box = document.getElementById("toast-box");
+      if (!box) return;
+      const el = document.createElement("div");
+      el.className = `px-3.5 py-2 rounded-xl text-xs font-bold shadow-xl ${
+        type === "success" ? "bg-emerald-600 text-white" : type === "error" ? "bg-rose-600 text-white" : "bg-slate-900 text-amber-300 border border-amber-500/40"
+      }`;
+      el.textContent = msg;
+      box.appendChild(el);
+      setTimeout(() => el.remove(), 2600);
+    }
+
+    function isHolidayDate(iso) {
+      if (appState.holidays?.[iso]) return true;
+      const [y, m, d] = iso.split("-").map(Number);
+      const dow = new Date(y, m - 1, d).getDay();
+      return dow === 0 || dow === 6;
+    }
+
+    function calculateStats(traineeId) {
+      let working = 0, present = 0;
+      Object.keys(appState.attendance || {}).forEach((iso) => {
+        if (isHolidayDate(iso)) return;
+        const mark = appState.attendance[iso]?.[traineeId];
+        if (mark === "P" || mark === "A") {
+          working++;
+          if (mark === "P") present++;
+        }
+      });
+      const pct = working ? Math.round((present / working) * 100) : 0;
+      return { working, present, pct, eligible: pct >= 80 };
+    }
+
+    function loadLocalState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) appState = { ...appState, ...JSON.parse(raw) };
+      } catch (e) {}
+      if (!selectedDateStr) selectedDateStr = getTodayISO();
+    }
+
+    function saveLocalState(pushCloud = false) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch (e) {}
+      if (pushCloud && window.pushStateToFirebase) window.pushStateToFirebase();
+    }
+
+    window.initFirebaseCloud = function () {
+      const sdk = window.__FB_SDK__;
+      if (!sdk) return;
+      const app = sdk.getApps().length ? sdk.getApps()[0] : sdk.initializeApp(DEFAULT_FIREBASE_CONFIG);
+      const db = sdk.getFirestore(app);
+      const docRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27");
+
+      window.pushStateToFirebase = async function () {
+        try {
+          const payload = { ...appState, updatedAt: Date.now() };
+          payload.settings = { ...(payload.settings || {}) };
+          delete payload.settings.adminPin;
+          await sdk.setDoc(docRef, payload);
+        } catch (e) {
+          showToast("Saved locally (check Firestore write permissions)", "info");
+        }
+      };
+
+      sdk.onSnapshot(docRef, (snap) => {
+        if (snap.exists()) {
+          const remote = snap.data();
+          if (remote && Array.isArray(remote.trainees)) {
+            appState = {
+              ...appState,
+              ...remote,
+              settings: { ...appState.settings, ...(remote.settings || {}), adminPin: appState.settings.adminPin || DEFAULT_PIN }
+            };
+            saveLocalState(false);
+            renderAllViews();
+          }
+        }
+      });
+    };
+
+    function manualCloudSync() {
+      if (window.pushStateToFirebase) {
+        window.pushStateToFirebase();
+        showToast("Syncing with Firebase...", "info");
+      }
+    }
+
+    // ---- PWA Install Prompt ----
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      document.getElementById("btn-install-pwa")?.classList.remove("hidden");
+    });
+
+    async function triggerPwaInstall() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      document.getElementById("btn-install-pwa")?.classList.add("hidden");
+    }
+
+    // ---- Navigation & Theme ----
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-view").forEach((s) => s.classList.toggle("hidden", s.id !== `view-${tab}`));
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("tab-active", b.id === `tab-btn-${tab}`));
+      window.scrollTo(0, 0);
+    }
+
+    function toggleThemeMode() {
+      const isBright = document.documentElement.classList.toggle("bright-mode");
+      localStorage.setItem(THEME_KEY, isBright ? "bright" : "dark");
+    }
+
+    function openModal(id) { document.getElementById(id)?.classList.remove("hidden"); }
+    function closeModal(id) { document.getElementById(id)?.classList.add("hidden"); }
+
+    function openAdminModal() {
+      document.getElementById("admin-locked-box")?.classList.toggle("hidden", isAdminUnlocked);
+      document.getElementById("admin-unlocked-box")?.classList.toggle("hidden", !isAdminUnlocked);
+      openModal("modal-admin");
+    }
+
+    function handlePinUnlock(e) {
+      e.preventDefault();
+      const val = document.getElementById("admin-pin-input").value.trim();
+      if (val === (appState.settings.adminPin || DEFAULT_PIN)) {
+        isAdminUnlocked = true;
+        document.getElementById("admin-pin-input").value = "";
+        closeModal("modal-admin");
+        renderAllViews();
+        showToast("Admin Mode Unlocked", "success");
+      } else {
+        showToast("Wrong PIN", "error");
+      }
+    }
+
+    async function handleGoogleSignIn() {
+      const sdk = window.__FB_SDK__;
+      if (!sdk?.getAuth) return;
+      try {
+        const auth = sdk.getAuth(sdk.getApps()[0]);
+        await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
+        isAdminUnlocked = true;
+        closeModal("modal-admin");
+        renderAllViews();
+        showToast("Signed in with Google", "success");
+      } catch (e) {
+        showToast("Google sign-in failed", "error");
+      }
+    }
+
+    function lockAdminMode() {
+      isAdminUnlocked = false;
+      closeModal("modal-admin");
+      renderAllViews();
+      showToast("Admin Locked", "info");
+    }
+
+    // ---- Renderers ----
+    function renderNotices() {
+      const el = document.getElementById("notices-list");
+      if (!el) return;
+      el.innerHTML = (appState.notices || []).map((n) => `
+        <article class="p-3 rounded-xl sub-surface border space-y-1">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-xs font-bold text-white">${escapeHTML(n.title)}</h3>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold text-amber-400">${escapeHTML(n.date)}</span>
+              ${isAdminUnlocked ? `<button onclick="deleteNotice('${n.id}')" class="text-rose-400 text-[10px] font-bold">Del</button>` : ""}
+            </div>
+          </div>
+          <p class="text-xs text-slate-300">${escapeHTML(n.body)}</p>
+        </article>`).join("") || `<p class="text-xs text-slate-400">No notices yet.</p>`;
+    }
+
+    function openNoticeModal() {
+      document.getElementById("notice-date-input").value = getTodayISO();
+      openModal("modal-post-notice");
+    }
+
+    function handleSaveNotice(e) {
+      e.preventDefault();
+      appState.notices.unshift({
+        id: `not-${Date.now()}`,
+        title: document.getElementById("notice-title-input").value.trim(),
+        date: document.getElementById("notice-date-input").value,
+        body: document.getElementById("notice-body-input").value.trim()
+      });
+      saveLocalState(true);
+      renderNotices();
+      closeModal("modal-post-notice");
+      e.target.reset();
+      showToast("Notice posted!", "success");
+    }
+
+    function deleteNotice(id) {
+      appState.notices = appState.notices.filter((n) => n.id !== id);
+      saveLocalState(true);
+      renderNotices();
+    }
+
+    function selectAttendanceDate(iso) {
+      selectedDateStr = iso;
+      renderDaily();
+    }
+
+    function toggleAttendance(traineeId, mark) {
+      if (!isAdminUnlocked || isHolidayDate(selectedDateStr)) return;
+      if (!appState.attendance[selectedDateStr]) appState.attendance[selectedDateStr] = {};
+      if (appState.attendance[selectedDateStr][traineeId] === mark) delete appState.attendance[selectedDateStr][traineeId];
+      else appState.attendance[selectedDateStr][traineeId] = mark;
+      saveLocalState(true);
+      renderAllViews();
+    }
+
+    function markAllAttendance(mark) {
+      if (!isAdminUnlocked || isHolidayDate(selectedDateStr)) return;
+      appState.attendance[selectedDateStr] = {};
+      appState.trainees.forEach((t) => { appState.attendance[selectedDateStr][t.id] = mark; });
+      saveLocalState(true);
+      renderAllViews();
+    }
+
+    function clearDayAttendance() {
+      if (!isAdminUnlocked) return;
+      delete appState.attendance[selectedDateStr];
+      saveLocalState(true);
+      renderAllViews();
+    }
+
+    function renderDaily() {
+      const picker = document.getElementById("daily-date-picker");
+      if (picker) picker.value = selectedDateStr;
+      const hol = isHolidayDate(selectedDateStr);
+      const statusEl = document.getElementById("daily-day-status");
+      if (statusEl) {
+        statusEl.textContent = hol ? "Weekend / Holiday (Closed)" : "Working Day";
+        statusEl.className = hol ? "text-[11px] text-rose-400 font-bold" : "text-[11px] text-emerald-400 font-semibold";
+      }
+
+      const dayRec = appState.attendance[selectedDateStr] || {};
+      let p = 0, a = 0;
+      appState.trainees.forEach((t) => { if (dayRec[t.id] === "P") p++; else if (dayRec[t.id] === "A") a++; });
+      const pill = document.getElementById("daily-summary-pill");
+      if (pill) pill.textContent = `${p} P / ${a} A`;
+      const homeStat = document.getElementById("home-att-stat");
+      if (homeStat) homeStat.textContent = `${p} Present / ${a} Absent`;
+
+      const list = document.getElementById("daily-rollcall-list");
+      if (!list) return;
+      if (hol) {
+        list.innerHTML = `<div class="p-4 rounded-xl bg-rose-950/30 border border-rose-500/30 text-xs text-rose-300 text-center font-bold">Institute Closed on ${selectedDateStr}</div>`;
+        return;
+      }
+
+      list.innerHTML = appState.trainees.map((tr) => {
+        const cur = dayRec[tr.id] || "";
+        const st = calculateStats(tr.id);
+        return `
+          <div class="p-2.5 rounded-xl sub-surface border flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <div class="text-xs font-bold text-white truncate"><span class="text-amber-400 font-mono">R.${escapeHTML(tr.rno)}</span> ${escapeHTML(tr.name)}</div>
+              <div class="text-[10px] text-slate-400">${st.present}/${st.working} days (${st.pct}%)</div>
+            </div>
+            ${isAdminUnlocked ? `
+              <div class="flex gap-1.5">
+                <button onclick="toggleAttendance('${tr.id}','P')" class="w-8 h-8 rounded-lg font-extrabold text-xs border ${cur === "P" ? "bg-emerald-500 text-slate-950 border-emerald-400" : "sub-surface text-slate-400"}">P</button>
+                <button onclick="toggleAttendance('${tr.id}','A')" class="w-8 h-8 rounded-lg font-extrabold text-xs border ${cur === "A" ? "bg-rose-500 text-white border-rose-400" : "sub-surface text-slate-400"}">A</button>
+              </div>` : `
+              <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold ${cur === "P" ? "bg-emerald-500/20 text-emerald-400" : cur === "A" ? "bg-rose-500/20 text-rose-400" : "sub-surface text-slate-400"}">
+                ${cur === "P" ? "Present" : cur === "A" ? "Absent" : "Unmarked"}
+              </span>`}
+          </div>`;
+      }).join("");
+    }
+
+    function renderEligibility() {
+      const list = document.getElementById("eligibility-list");
+      const sum = document.getElementById("eligibility-summary");
+      if (!list) return;
+      const rows = appState.trainees.map((tr) => ({ tr, st: calculateStats(tr.id) })).sort((a, b) => b.st.pct - a.st.pct);
+      const elig = rows.filter((r) => r.st.eligible).length;
+      if (sum) {
+        sum.innerHTML = `
+          <div class="p-2.5 rounded-xl sub-surface border text-center"><div class="text-[10px] text-slate-400">Eligible</div><div class="text-sm font-extrabold text-emerald-400">${elig}</div></div>
+          <div class="p-2.5 rounded-xl sub-surface border text-center"><div class="text-[10px] text-slate-400">Shortage</div><div class="text-sm font-extrabold text-rose-400">${rows.length - elig}</div></div>
+          <div class="p-2.5 rounded-xl sub-surface border text-center"><div class="text-[10px] text-slate-400">Total</div><div class="text-sm font-extrabold text-amber-400">${rows.length}</div></div>`;
+      }
+      list.innerHTML = rows.map(({ tr, st }) => `
+        <div class="p-2.5 rounded-xl sub-surface border space-y-1.5">
+          <div class="flex justify-between text-xs font-bold">
+            <span class="text-white"><span class="text-amber-400 font-mono">R.${escapeHTML(tr.rno)}</span> ${escapeHTML(tr.name)}</span>
+            <span class="${st.eligible ? "text-emerald-400" : "text-rose-400"}">${st.pct}% (${st.present}/${st.working})</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full ${st.eligible ? "bg-emerald-500" : "bg-rose-500"}" style="width:${st.pct}%"></div></div>
+        </div>`).join("");
+    }
+
+    function renderResults() {
+      const el = document.getElementById("results-list");
+      if (!el) return;
+      const sorted = [...appState.trainees].sort((a, b) => (b.year1 || 0) - (a.year1 || 0));
+      el.innerHTML = sorted.map((tr) => `
+        <div class="p-2.5 rounded-xl sub-surface border flex items-center justify-between gap-2">
+          <div>
+            <div class="text-xs font-bold text-white"><span class="text-amber-400 font-mono">R.${escapeHTML(tr.rno)}</span> ${escapeHTML(tr.name)}</div>
+            <div class="text-[10px] text-slate-400 font-mono">Reg: ${escapeHTML(tr.roll)} • Internal: ${tr.internal}/100</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-extrabold text-emerald-400">1st Yr: ${tr.year1}/600</div>
+            <div class="text-[10px] font-bold text-amber-400">${((tr.year1 / 600) * 100).toFixed(1)}%</div>
+          </div>
+        </div>`).join("");
+    }
+
+    function renderStudyNotes() {
+      const el = document.getElementById("study-notes-list");
+      if (!el) return;
+      el.innerHTML = (appState.studyNotes || []).map((sn) => `
+        <article class="p-3 rounded-xl sub-surface border flex flex-col justify-between gap-2">
+          <div>
+            <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[10px] font-bold">${escapeHTML(sn.subject)}</span>
+            <h3 class="text-xs font-bold text-white mt-1">${escapeHTML(sn.title)}</h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">${escapeHTML(sn.desc)}</p>
+          </div>
+          <a href="${escapeHTML(sn.url)}" target="_blank" rel="noopener noreferrer" class="py-1.5 px-3 rounded-lg bg-amber-500 text-slate-950 text-center text-xs font-bold">Open Resource</a>
+        </article>`).join("");
+    }
+
+    function openStudyNoteModal() { openModal("modal-add-studynote"); }
+    function handleSaveStudyNote(e) {
+      e.preventDefault();
+      appState.studyNotes.unshift({
+        id: `sn-${Date.now()}`,
+        title: document.getElementById("note-title-input").value.trim(),
+        subject: document.getElementById("note-subject-input").value.trim(),
+        url: document.getElementById("note-url-input").value.trim(),
+        desc: document.getElementById("note-desc-input").value.trim()
+      });
+      saveLocalState(true);
+      renderStudyNotes();
+      closeModal("modal-add-studynote");
+      e.target.reset();
+      showToast("Study note added", "success");
+    }
+
+    function extractYtId(raw) {
+      const s = String(raw || "").trim();
+      if (/^[a-zA-Z0-9_-]{11}$/.test(s)) return s;
+      const m = s.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([a-zA-Z0-9_-]{11})/);
+      return m ? m[1] : "";
+    }
+
+    function renderVideos() {
+      ["home-videos-grid", "full-videos-grid"].forEach((gid) => {
+        const grid = document.getElementById(gid);
+        if (!grid) return;
+        const list = gid === "home-videos-grid" ? appState.videos.slice(0, 3) : appState.videos;
+        grid.innerHTML = list.map((v) => {
+          const yt = extractYtId(v.ytId || v.url);
+          return `
+            <article class="rounded-2xl sub-surface border overflow-hidden">
+              <div id="slot-${gid}-${v.id}" class="relative aspect-video bg-slate-950">
+                ${yt ? `<img src="https://i.ytimg.com/vi/${yt}/hqdefault.jpg" alt="${escapeHTML(v.title)}" class="w-full h-full object-cover" />` : ""}
+                <button onclick="playVideo('${gid}','${v.id}')" class="absolute inset-0 m-auto w-12 h-12 rounded-full bg-amber-500 text-slate-950 font-extrabold flex items-center justify-center shadow-xl">&#9654;</button>
+              </div>
+              <div class="p-3">
+                <h3 class="text-xs font-bold text-white">${escapeHTML(v.title)}</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">${escapeHTML(v.desc || "")}</p>
+              </div>
+            </article>`;
+        }).join("");
+      });
+    }
+
+    function playVideo(gid, vidId) {
+      const v = appState.videos.find((x) => x.id === vidId);
+      const slot = document.getElementById(`slot-${gid}-${vidId}`);
+      if (!v || !slot) return;
+      const yt = extractYtId(v.ytId || v.url);
+      slot.innerHTML = yt
+        ? `<iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+        : `<video class="w-full h-full" controls autoplay src="${escapeHTML(v.url || v.ytId)}"></video>`;
+    }
+
+    function openVideoModal() { openModal("modal-add-video"); }
+    function handleSaveVideo(e) {
+      e.preventDefault();
+      appState.videos.unshift({
+        id: `vid-${Date.now()}`,
+        title: document.getElementById("video-title-input").value.trim(),
+        ytId: document.getElementById("video-url-input").value.trim(),
+        duration: document.getElementById("video-duration-input").value.trim(),
+        desc: document.getElementById("video-desc-input").value.trim()
+      });
+      saveLocalState(true);
+      renderVideos();
+      closeModal("modal-add-video");
+      e.target.reset();
+      showToast("Video added!", "success");
+    }
+
+    // ---- Firebase Storage Gallery Upload ----
+    async function compressImage(file, maxW = 1280, quality = 0.8) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        const objUrl = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(objUrl);
+          const scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => resolve(blob || file), "image/jpeg", quality);
+        };
+        img.onerror = () => resolve(file);
+        img.src = objUrl;
+      });
+    }
+
+    async function handleSaveGalleryPhoto(e) {
+      e.preventDefault();
+      if (!isAdminUnlocked) return;
+      const btn = document.getElementById("gallery-submit-btn");
+      const title = document.getElementById("gallery-photo-title").value.trim();
+      const date = document.getElementById("gallery-photo-date").value.trim() || "Workshop";
+      const urlVal = document.getElementById("gallery-photo-url").value.trim();
+      const files = document.getElementById("gallery-file-input").files;
+
+      btn.disabled = true;
+      btn.textContent = "Uploading...";
+      try {
+        const sdk = window.__FB_SDK__;
+        const storage = sdk?.getStorage ? sdk.getStorage(sdk.getApps()[0]) : null;
+        if (files && files.length && storage) {
+          for (let i = 0; i < files.length; i++) {
+            const blob = await compressImage(files[i]);
+            const storageRef = sdk.ref(storage, `iti_gallery/${Date.now()}_${i}.jpg`);
+            await sdk.uploadBytes(storageRef, blob, { contentType: "image/jpeg" });
+            const downloadURL = await sdk.getDownloadURL(storageRef);
+            appState.galleryPhotos.unshift({
+              id: `gal-${Date.now()}-${i}`,
+              title: files.length > 1 ? `${title} (${i + 1})` : title,
+              date,
+              url: downloadURL
+            });
+          }
+        } else if (urlVal) {
+          appState.galleryPhotos.unshift({ id: `gal-${Date.now()}`, title, date, url: urlVal });
+        }
+        saveLocalState(true);
+        renderGallery();
+        closeModal("modal-add-gallery");
+        e.target.reset();
+        showToast("Photo synced to Cloud Storage!", "success");
+      } catch (err) {
+        showToast("Storage upload error: " + (err.message || "Check rules"), "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Upload & Sync";
+      }
+    }
+
+    function renderGallery() {
+      const grid = document.getElementById("gallery-grid");
+      if (!grid) return;
+      grid.innerHTML = (appState.galleryPhotos || []).map((p) => `
+        <div class="rounded-xl sub-surface border overflow-hidden">
+          <img src="${escapeHTML(p.url)}" alt="${escapeHTML(p.title)}" class="w-full aspect-square object-cover" />
+          <div class="p-2 flex items-center justify-between gap-1">
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-white truncate">${escapeHTML(p.title)}</div>
+              <div class="text-[9px] text-slate-400 truncate">${escapeHTML(p.date || "")}</div>
+            </div>
+            ${isAdminUnlocked ? `<button onclick="deleteGalleryPhoto('${p.id}')" class="text-rose-400 text-[10px] font-bold">Del</button>` : ""}
+          </div>
+        </div>`).join("") || `<p class="col-span-full text-xs text-slate-400 text-center py-4">No photos uploaded yet.</p>`;
+    }
+
+    function deleteGalleryPhoto(id) {
+      appState.galleryPhotos = appState.galleryPhotos.filter((p) => p.id !== id);
+      saveLocalState(true);
+      renderGallery();
+    }
+
+    // ---- CSV Exporters ----
+    function downloadFile(filename, content, mime) {
+      const blob = new Blob([content], { type: mime });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    function downloadAttendanceCSV() {
+      const lines = ["Roll No,Name,Reg ID,Present Days,Working Days,Percentage,NCVT Status"];
+      appState.trainees.forEach((t) => {
+        const st = calculateStats(t.id);
+        lines.push(`${t.rno},"${t.name}",${t.roll},${st.present},${st.working},${st.pct}%,${st.eligible ? "Eligible" : "Shortage"}`);
+      });
+      downloadFile("ITI_CONNECT_Attendance_80_Chart.csv", lines.join("\n"), "text/csv");
+    }
+
+    function downloadResultsCSV() {
+      const lines = ["Roll No,Name,Reg ID,1st Year (/600),Internal (/100)"];
+      appState.trainees.forEach((t) => lines.push(`${t.rno},"${t.name}",${t.roll},${t.year1},${t.internal}`));
+      downloadFile("ITI_CONNECT_NCVT_Results.csv", lines.join("\n"), "text/csv");
+    }
+
+    // ---- Search ----
+    function handleGlobalSearch(q) {
+      const box = document.getElementById("global-search-box");
+      const term = q.trim().toLowerCase();
+      if (!term) { box.classList.add("hidden"); return; }
+      const hits = appState.trainees.filter((t) => t.name.toLowerCase().includes(term) || t.rno.includes(term) || t.roll.includes(term));
+      box.innerHTML = hits.map((t) => {
+        const st = calculateStats(t.id);
+        return `<div onclick="switchTab('daily'); document.getElementById('global-search-box').classList.add('hidden')" class="p-2.5 text-xs hover:bg-slate-800/60 cursor-pointer flex justify-between">
+          <span class="font-bold text-white">R.${escapeHTML(t.rno)} ${escapeHTML(t.name)}</span>
+          <span class="text-amber-400 font-bold">${st.pct}% • ${t.year1}/600</span>
+        </div>`;
+      }).join("") || `<div class="p-3 text-xs text-slate-400 text-center">No matching trainees</div>`;
+      box.classList.remove("hidden");
+    }
+
+    // ---- Clock & Boot ----
+    function updateClock() {
+      const now = new Date();
+      const dEl = document.getElementById("hdr-date");
+      const cEl = document.getElementById("hdr-clock");
+      if (dEl) dEl.textContent = now.toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+      if (cEl) cEl.textContent = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function renderAllViews() {
+      document.querySelectorAll(".admin-only").forEach((el) => el.classList.toggle("hidden", !isAdminUnlocked));
+      renderNotices();
+      renderVideos();
+      renderDaily();
+      renderEligibility();
+      renderResults();
+      renderStudyNotes();
+      renderGallery();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (localStorage.getItem(THEME_KEY) === "dark") document.documentElement.classList.remove("bright-mode");
+      loadLocalState();
+      renderAllViews();
+      updateClock();
+      setInterval(updateClock, 15000);
+      if (window.initFirebaseCloud) window.initFirebaseCloud();
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>

@@ -2101,6 +2101,8 @@ html.bright-mode #dv-quick > button {
             <button type="button" id="dv-quick-music" onclick="itiMusicHub()" aria-label="Open music player" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="music" class="w-3.5 h-3.5"></i><span>Music</span></button>
           </div>
 
+          <div id="dv-sotd" class="hidden"></div>
+
           <div id="dv-latest-video"><div class="dv-skel" style="aspect-ratio:16/11"></div></div>
         </div>
 
@@ -2943,7 +2945,7 @@ html.bright-mode #dv-quick > button {
     <div class="mu-row">
       <div class="mu-info">
         <div id="music-track-title" class="mu-title" aria-live="polite"><span>No track selected</span></div>
-        <div class="mu-sub"><span id="music-track-artist">Music</span><span id="music-track-count"></span><span id="music-sleep-badge"></span></div>
+        <div class="mu-sub"><span class="viz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span id="music-track-artist">Music</span><span id="music-track-count"></span><span id="music-sleep-badge"></span></div>
       </div>
       <button type="button" id="music-mini-play" class="mu-btn mu-main mu-sm mu-mini-only btn-tap" onclick="itiMusicToggle()" aria-label="Play">
         <i data-lucide="play" class="w-4 h-4"></i>
@@ -2985,6 +2987,36 @@ html.bright-mode #dv-quick > button {
       <i data-lucide="list-music" class="w-3.5 h-3.5"></i><span>Manage Playlist</span>
     </button>
     </div></div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: REQUEST A SONG (STUDENTS)                                        -->
+  <!-- ===================================================================== -->
+  <div id="modal-song-request" class="fixed inset-0 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4" style="z-index:80">
+    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="mic-vocal" class="w-4 h-4 text-amber-400"></i>Request a song</h3>
+        <button type="button" onclick="itiSongReqClose()" aria-label="Close" class="p-1 rounded-lg text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="songreq-form" class="p-4 space-y-2.5" autocomplete="off" novalidate>
+        <div style="position:absolute;left:-9999px" aria-hidden="true"><label>Website<input type="text" id="songreq-hp" tabindex="-1" autocomplete="off" /></label></div>
+        <div>
+          <label for="songreq-title" class="block text-[11px] font-semibold text-slate-400 mb-1">Song name &amp; artist *</label>
+          <input type="text" id="songreq-title" maxlength="120" placeholder="e.g. Kesariya &ndash; Arijit Singh" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label for="songreq-link" class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube link (optional)</label>
+          <input type="url" id="songreq-link" maxlength="300" placeholder="https://youtu.be/..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label for="songreq-name" class="block text-[11px] font-semibold text-slate-400 mb-1">Your name (optional)</label>
+          <input type="text" id="songreq-name" maxlength="40" placeholder="Guest" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <p id="songreq-msg" class="text-[11px] min-h-[1rem]" role="status" aria-live="polite"></p>
+        <button type="submit" id="songreq-send" class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap disabled:opacity-50">Send request</button>
+        <p class="text-[10px] text-slate-400">Requests are reviewed by the admin before a song is added.</p>
+      </form>
+    </div>
   </div>
 
   <!-- ===================================================================== -->
@@ -3069,6 +3101,16 @@ html.bright-mode #dv-quick > button {
             <button type="button" id="music-bulk-go" onclick="itiMusicBulkImport()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap disabled:opacity-50">Import</button>
           </div>
           <div id="music-bulk-report" class="hidden text-[11px] text-slate-300 whitespace-pre-line"></div>
+        </div>
+        <div id="songreq-admin" class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5"><i data-lucide="mic-vocal" class="w-3.5 h-3.5"></i>Song requests <span id="songreq-count" class="px-1.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px]">0</span></span>
+            <button type="button" id="songreq-toggle" class="text-[11px] text-slate-400 hover:text-white">Show</button>
+          </div>
+          <div id="songreq-body" class="hidden space-y-1.5">
+            <div id="songreq-auth" class="hidden p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200"></div>
+            <div id="songreq-list" class="space-y-1.5"></div>
+          </div>
         </div>
         <div id="music-check-status" class="hidden text-[11px] text-slate-300 px-1"></div>
         <div class="flex items-center gap-2">
@@ -3428,6 +3470,16 @@ service cloud.firestore {
         &amp;&amp; request.resource.data.createdAt == request.time
         &amp;&amp; request.resource.data.status == (mode() == 'open' ? 'visible' : 'pending');
       allow update, delete: if isAdmin();
+    }
+    // Song requests from students (private: only the admin can read)
+    match /iti_portals/{portalId}/song_requests/{cid} {
+      allow create: if request.resource.data.keys().hasOnly(['name','title','link','status','createdAt'])
+        &amp;&amp; request.resource.data.name is string &amp;&amp; request.resource.data.name.size() &gt; 0 &amp;&amp; request.resource.data.name.size() &lt;= 40
+        &amp;&amp; request.resource.data.title is string &amp;&amp; request.resource.data.title.size() &gt;= 2 &amp;&amp; request.resource.data.title.size() &lt;= 120
+        &amp;&amp; request.resource.data.link is string &amp;&amp; request.resource.data.link.size() &lt;= 300
+        &amp;&amp; request.resource.data.status == 'pending'
+        &amp;&amp; request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
     }
     // Private visitor emails: write-only for visitors, readable by admin only
     match /iti_portals/{portalId}/feedback_private/{cid} {
@@ -4395,7 +4447,7 @@ service cloud.firestore {
           sub
         });
       });
-      return out.slice(0, 100);
+      return out.slice(0, 1000);
     }
 
     let appState = {
@@ -11089,10 +11141,18 @@ service cloud.firestore {
   body::after {
     content: "";
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    /* cover the FULL screen even when the phone's address bar hides/shows (large viewport) */
+    height: 100vh;
+    height: 100lvh;
+    min-height: 100%;
     z-index: -1;
     pointer-events: none;
-    transform: translateZ(0);
+    /* no transform here: on Android WebViews a transformed fixed layer can scroll away with the page */
+    will-change: opacity;
   }
   body::before {
     background:
@@ -14236,6 +14296,136 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   });
 </script>
 
+<script type="module" id="song-requests">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, doc, addDoc, deleteDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const PID = "chhotojagulia_elec_2025_27";
+  const NAME_KEY = "devit_sr_name", LOG_KEY = "devit_sr_log";
+  const $ = (id) => document.getElementById(id);
+  let db = null, col = null, unsub = null, pending = null, openedAt = 0;
+
+  function ensureDb() {
+    if (db) return true;
+    try {
+      const cfg = getActiveFirebaseConfig();
+      if (!cfg || !cfg.projectId) return false;
+      const app = getApps().length ? getApps()[0] : initializeApp(cfg);
+      db = getFirestore(app); col = collection(db, "iti_portals", PID, "song_requests");
+      return true;
+    } catch (e) { return false; }
+  }
+  const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || d); } catch (e) { return JSON.parse(d); } };
+  const clean = (x) => String(x == null ? "" : x).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim();
+  const norm = (x) => clean(x).toLowerCase().replace(/[^a-z0-9\u0980-\u09ff\u0900-\u097f]+/g, "");
+  function say(t, kind) { const m = $("songreq-msg"); if (!m) return; m.textContent = t || ""; m.style.color = kind === "err" ? "#fb7185" : kind === "ok" ? "#34d399" : "#94a3b8"; }
+  const icons = () => { try { if (window.lucide) lucide.createIcons(); } catch (e) {} };
+
+  /* ---------- student side ---------- */
+  window.itiSongReqOpen = function () {
+    const m = $("modal-song-request"); if (!m) return;
+    try { $("songreq-name").value = localStorage.getItem(NAME_KEY) || ""; } catch (e) {}
+    say(""); openedAt = Date.now(); m.classList.remove("hidden"); icons();
+    setTimeout(() => { try { $("songreq-title").focus(); } catch (e) {} }, 60);
+  };
+  window.itiSongReqClose = function () { const m = $("modal-song-request"); if (m) m.classList.add("hidden"); };
+  document.addEventListener("click", (e) => { if (e.target && e.target.id === "modal-song-request") window.itiSongReqClose(); });
+
+  $("songreq-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if ($("songreq-hp").value) return;                                           // honeypot
+    if (Date.now() - openedAt < 2500) return say("Please take a moment to fill in the song.", "err");
+    const title = clean($("songreq-title").value).slice(0, 120);
+    const name = clean($("songreq-name").value).slice(0, 40) || "Guest";
+    let link = clean($("songreq-link").value);
+    if (title.length < 2 || !/[\p{L}\p{N}]/u.test(title)) return say("Please enter the song name (and artist).", "err");
+    if (link && (!/^https:\/\/\S+$/i.test(link) || link.length > 300)) return say("The link must be a full https:// URL, or leave it empty.", "err");
+    const log = lsGet(LOG_KEY, "[]").filter((x) => Date.now() - x.t < 86400000), fp = norm(title);
+    if (log.some((x) => x.f === fp)) return say("You already requested this song.", "err");
+    if (log.length && Date.now() - log[log.length - 1].t < 60000) return say("Please wait a minute before sending another request.", "err");
+    if (log.length >= 5) return say("Daily limit reached (5 requests). Try again tomorrow.", "err");
+    if (!ensureDb()) return say("Cloud storage is not connected. Please try later.", "err");
+    const btn = $("songreq-send"); btn.disabled = true; say("Sending…");
+    try {
+      await addDoc(col, { name, title, link, status: "pending", createdAt: serverTimestamp() });
+      log.push({ t: Date.now(), f: fp }); try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); localStorage.setItem(NAME_KEY, name === "Guest" ? "" : name); } catch (x) {}
+      $("songreq-title").value = ""; $("songreq-link").value = "";
+      say("Thanks! The admin will review your request.", "ok");
+      try { showToast("Song request sent", "success"); } catch (x) {}
+      setTimeout(window.itiSongReqClose, 1400);
+    } catch (err) {
+      const code = err && err.code;
+      say(code === "permission-denied" ? "Requests are not enabled yet. Admin: publish the latest Firestore rules (Admin → Firebase)."
+        : code === "unavailable" || code === "deadline-exceeded" ? "No connection right now. Please check your internet."
+        : "Could not send (" + (code || "error") + "). Please try again.", "err");
+    } finally { btn.disabled = false; }
+  });
+
+  /* ---------- admin side (inside Manage Music Playlist) ---------- */
+  function ago(ms) { if (!ms) return "Just now"; const m = Math.floor((Date.now() - ms) / 60000); return m < 1 ? "Just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.floor(m / 60) + " h ago" : Math.floor(m / 1440) + " d ago"; }
+  function renderReqs(rows) {
+    const cnt = $("songreq-count"), list = $("songreq-list"); if (!cnt || !list) return;
+    cnt.textContent = String(rows.length);
+    list.innerHTML = rows.length ? rows.map((r) =>
+      '<div class="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-1">' +
+      '<div class="font-bold text-white break-words">' + escapeHTML(r.title) + '</div>' +
+      '<div class="text-[10px] text-slate-400">' + escapeHTML(r.name || "Guest") + ' &bull; ' + ago(r.ms) + '</div>' +
+      (r.link ? '<a href="' + escapeHTML(r.link) + '" target="_blank" rel="noopener noreferrer" class="block text-[10px] text-sky-400 truncate">' + escapeHTML(r.link) + '</a>' : '') +
+      '<div class="flex gap-1.5 pt-0.5"><button type="button" data-sr="add" data-id="' + escapeHTML(r.id) + '" class="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold text-[10px]">Add to library</button>' +
+      '<button type="button" data-sr="del" data-id="' + escapeHTML(r.id) + '" class="px-2 py-1 rounded-lg bg-rose-500/15 text-rose-300 font-bold text-[10px]">Dismiss</button></div></div>'
+    ).join("") : '<div class="p-2 text-[11px] text-slate-400 text-center">No pending requests.</div>';
+    list._rows = rows;
+  }
+  function startAdmin() {
+    if (!isAdminUnlocked || unsub || !ensureDb()) return;
+    const auth = $("songreq-auth");
+    try {
+      unsub = onSnapshot(query(col, orderBy("createdAt", "desc"), limit(100)), (snap) => {
+        if (auth) auth.classList.add("hidden");
+        renderReqs(snap.docs.map((d) => { const v = d.data() || {}; return { id: d.id, title: String(v.title || ""), name: String(v.name || ""), link: String(v.link || ""), ms: v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : 0 }; }));
+      }, (err) => {
+        unsub = null;
+        if (auth) {
+          auth.classList.remove("hidden");
+          auth.innerHTML = (err && err.code === "permission-denied")
+            ? 'Sign in as admin to see requests (and publish the latest Firestore rules). <button type="button" id="songreq-signin" class="underline font-bold">Sign in with Google</button>'
+            : 'Could not load requests (' + escapeHTML((err && err.code) || "error") + ').';
+          const b = $("songreq-signin"); if (b) b.onclick = async () => { try { if (window.fbkAdminSignIn) await window.fbkAdminSignIn(); } catch (e) {} setTimeout(startAdmin, 600); };
+        }
+      });
+    } catch (e) { unsub = null; }
+  }
+  $("songreq-toggle").addEventListener("click", () => {
+    const b = $("songreq-body"), open = b.classList.toggle("hidden") === false;
+    $("songreq-toggle").textContent = open ? "Hide" : "Show"; if (open) startAdmin();
+  });
+  $("songreq-list").addEventListener("click", async (e) => {
+    const b = e.target.closest && e.target.closest("[data-sr]"); if (!b || !isAdminUnlocked) return;
+    const id = b.getAttribute("data-id"), rows = $("songreq-list")._rows || [], r = rows.find((x) => x.id === id); if (!r) return;
+    if (b.getAttribute("data-sr") === "del") {
+      try { await deleteDoc(doc(col, id)); showToast("Request dismissed", "info"); } catch (err) { showToast("Action failed – sign in as admin", "error"); }
+      return;
+    }
+    /* add: prefill the track form; the request is removed once the track is saved */
+    try {
+      if (window.resetMusicForm) window.resetMusicForm();
+      $("music-title-input").value = r.title;
+      const yt = r.link && typeof extractYouTubeId === "function" ? extractYouTubeId(r.link) : "";
+      if (yt) $("music-url-input").value = r.link; else if (r.link) $("music-audio-input").value = r.link;
+      pending = id; $("music-title-input").scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast(yt || !r.link ? "Review the details, then tap Save Track" : "Prefilled the link – review, then tap Save Track", "info");
+    } catch (err) {}
+  });
+  const origSave = window.handleSaveMusicTrack;
+  window.handleSaveMusicTrack = function (ev) {
+    const before = (appState.musicTracks || []).length, r = origSave.apply(this, arguments);
+    if (pending && (appState.musicTracks || []).length > before && ensureDb()) { const id = pending; pending = null; deleteDoc(doc(col, id)).catch(() => {}); }
+    return r;
+  };
+  const origOpen = window.openManageMusic;
+  window.openManageMusic = function () { const r = origOpen.apply(this, arguments); if (isAdminUnlocked) startAdmin(); icons(); return r; };
+</script>
+
 <script id="vx-video-extras">
 (function () {
   "use strict";
@@ -15162,6 +15352,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
         <div class="mh-now">
           <img id="mh-cover" class="mh-cover" alt="" hidden onerror="this.hidden=true" />
           <div class="mh-nt"><b id="mh-title">Nothing playing</b><small id="mh-sub">Pick a song below</small></div>
+          <span class="viz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
           <button type="button" id="mh-fav-cur" class="mh-ic mh-fav" data-mh="fav-cur" aria-label="Favourite this song"><i data-lucide="heart" class="w-4 h-4"></i></button>
         </div>
         <div class="mh-ctrls">
@@ -15194,12 +15385,95 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
           <button type="button" class="mh-tab" data-mh="tab" data-tab="q">Queue <span id="mh-c-q">0</span></button>
         </div>
         <div id="mh-tools" class="mh-tools"><i data-lucide="search" class="w-4 h-4"></i><input id="mh-search" type="search" placeholder="Search songs" autocomplete="off" /></div>
+        <div class="mh-reqrow"><button type="button" class="mh-pill" onclick="itiSongReqOpen()"><i data-lucide="mic-vocal" class="w-3.5 h-3.5"></i><span>Request a song</span></button><button type="button" class="mh-pill mh-kbbtn" onclick="itiKbHelp()"><i data-lucide="keyboard" class="w-3.5 h-3.5"></i><span>Shortcuts</span></button></div>
         <div id="mh-list"></div>
       </div>
     </div>
   </div>
   <style id="iti-music-hub-style">
     /* Music Hub: same translucent glass as the tab bar / player, theme-aware, one shared easing, transform+opacity only */
+
+    /* ---- Keyboard shortcuts: HUD + help sheet (glass) ---- */
+    #mu-kb-hud { position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 4.5rem); transform:translate(-50%,-8px); z-index:95; padding:.45rem .95rem; border-radius:9999px;
+      font-size:.78rem; font-weight:800; color:#f1f5f9; background:rgba(12,19,34,.52); border:1px solid rgba(148,163,184,.22);
+      backdrop-filter:blur(12px) saturate(1.4); -webkit-backdrop-filter:blur(12px) saturate(1.4);
+      box-shadow:0 10px 30px -8px rgba(0,0,0,.42), 0 1px 0 0 rgba(255,255,255,.05) inset; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; }
+    #mu-kb-hud.on { opacity:1; transform:translate(-50%,0); }
+    #mu-kb-help { position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; padding:1rem; background:rgba(2,6,23,.55);
+      backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+    #mu-kb-help.hidden { display:none; }
+    #mu-kb-help .kb-card { width:min(100%,24rem); max-height:86vh; overflow:auto; padding:.9rem 1rem 1rem; border-radius:1.2rem; color:#f1f5f9;
+      background:rgba(12,19,34,.52); border:1px solid rgba(148,163,184,.22); backdrop-filter:blur(12px) saturate(1.4); -webkit-backdrop-filter:blur(12px) saturate(1.4);
+      box-shadow:0 10px 30px -8px rgba(0,0,0,.42), 0 1px 0 0 rgba(255,255,255,.05) inset; }
+    #mu-kb-help .kb-h { display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem; font-size:.9rem; }
+    #mu-kb-help .kb-x { width:1.8rem; height:1.8rem; border-radius:9999px; border:1px solid rgba(148,163,184,.28); background:rgba(255,255,255,.06); color:inherit; cursor:pointer; }
+    #mu-kb-help .kb-r { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.42rem 0; border-top:1px solid rgba(148,163,184,.18); font-size:.78rem; }
+    #mu-kb-help .kb-r:first-child { border-top:0; }
+    #mu-kb-help .kb-d { color:#94a3b8; text-align:right; }
+    #mu-kb-help kbd { display:inline-block; min-width:1.4rem; padding:.12rem .42rem; border-radius:.45rem; text-align:center; font:700 .72rem/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
+      background:rgba(255,255,255,.08); border:1px solid rgba(148,163,184,.3); box-shadow:0 1px 0 rgba(255,255,255,.08) inset; }
+    html.bright-mode #mu-kb-hud, html.bright-mode #mu-kb-help .kb-card { color:#0f172a; background:rgba(255,255,255,.58); border-color:rgba(148,163,184,.32);
+      box-shadow:0 10px 28px -8px rgba(15,23,42,.14), 0 1px 0 0 rgba(255,255,255,.7) inset; }
+    html.bright-mode #mu-kb-help { background:rgba(100,116,139,.3); }
+    html.bright-mode #mu-kb-help .kb-d { color:#475569; }
+    html.bright-mode #mu-kb-help kbd, html.bright-mode #mu-kb-help .kb-x { background:rgba(255,255,255,.75); border-color:rgba(148,163,184,.45); }
+    /* ---- Mini visualizer (animated bars, shown only while music plays) ---- */
+    .viz { display: none; align-items: flex-end; gap: 2px; height: .85rem; flex: none; vertical-align: middle; margin-right: .4rem; }
+    body.music-playing .viz { display: inline-flex; }
+    .viz i { width: 3px; height: 100%; border-radius: 2px; background: linear-gradient(to top, #d97706, #fbbf24); transform-origin: bottom; transform: scaleY(.4);
+      animation: viz-b .8s ease-in-out infinite; will-change: transform; }
+    .viz i:nth-child(1) { animation-duration: .70s; animation-delay: -.10s; }
+    .viz i:nth-child(2) { animation-duration: .95s; animation-delay: -.45s; }
+    .viz i:nth-child(3) { animation-duration: .60s; animation-delay: -.25s; }
+    .viz i:nth-child(4) { animation-duration: .85s; animation-delay: -.60s; }
+    .viz i:nth-child(5) { animation-duration: .75s; animation-delay: -.35s; }
+    @keyframes viz-b { 0%, 100% { transform: scaleY(.28); } 22% { transform: scaleY(.95); } 48% { transform: scaleY(.45); } 74% { transform: scaleY(1); } }
+    @media (prefers-reduced-motion: reduce) { .viz i { animation: none; } .viz i:nth-child(odd) { transform: scaleY(.9); } .viz i:nth-child(even) { transform: scaleY(.5); } }
+    .mh-now .viz { height: 1.2rem; margin: 0 .3rem 0 0; }
+    #dv-sotd .viz { height: .7rem; margin: 0 0 0 .1rem; }
+    /* ---- Song of the Day (Home card) ---- */
+    #dv-sotd { margin: 1rem 0 .75rem; }
+    #dv-sotd .sd-card { display:flex; align-items:center; gap:.75rem; padding:.65rem .75rem; border-radius:1.1rem;
+      background: linear-gradient(135deg, rgba(251,191,36,.16), rgba(245,158,11,.05)); border:1px solid rgba(251,191,36,.35); }
+    #dv-sotd .sd-cov { width:3.4rem; height:3.4rem; border-radius:.8rem; object-fit:cover; flex:none; background:rgba(148,163,184,.2); }
+    #dv-sotd .sd-cov.ph { display:flex; align-items:center; justify-content:center; color:#fbbf24; }
+    #dv-sotd .sd-tx { min-width:0; flex:1; text-align:left; }
+    #dv-sotd .sd-k { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#fbbf24; display:flex; align-items:center; gap:.3rem; }
+    #dv-sotd .sd-t { font-size:13.5px; font-weight:800; line-height:1.25; color:#f1f5f9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #dv-sotd .sd-a { font-size:11px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    #dv-sotd .sd-n { font-size:11px; color:#cbd5e1; margin-top:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    #dv-sotd .sd-go { flex:none; width:2.6rem; height:2.6rem; border-radius:9999px; border:0; cursor:pointer; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(135deg,#fcd34d,#f59e0b); color:#1f1300; box-shadow:0 4px 14px rgba(251,191,36,.4); }
+    html.bright-mode #dv-sotd .sd-card { background: linear-gradient(135deg, rgba(245,158,11,.16), rgba(255,255,255,.7)); border-color: rgba(217,119,6,.4); }
+    html.bright-mode #dv-sotd .sd-t { color:#0f172a; } html.bright-mode #dv-sotd .sd-a { color:#475569; } html.bright-mode #dv-sotd .sd-n { color:#334155; }
+    html.bright-mode #dv-sotd .sd-k { color:#b45309; }
+
+    /* ---- Glass look for Song of the Day + Song requests (same recipe as the notice / feedback cards) ---- */
+    #dv-sotd .sd-card, #songreq-admin, #modal-song-request > div {
+      background-color: rgba(12, 19, 34, 0.52) !important; background-image: none !important;
+      backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      border: 1px solid rgba(148, 163, 184, 0.22) !important;
+      box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
+    }
+    #dv-sotd .sd-cov { box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.5); border: 1px solid rgba(148, 163, 184, 0.28); }
+    #dv-sotd .sd-go:active { transform: scale(.92); }
+    #modal-song-request > div > div:first-child { background-color: rgba(255, 255, 255, 0.04) !important; border-color: rgba(148, 163, 184, 0.22) !important; }
+    #modal-song-request input { background-color: rgba(255, 255, 255, 0.06) !important; border-color: rgba(148, 163, 184, 0.28) !important;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    #modal-song-request input:focus { border-color: #f59e0b !important; }
+    #songreq-list > div { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(148, 163, 184, 0.2) !important;
+      box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.35); }
+    html.bright-mode #dv-sotd .sd-card, html.bright-mode #songreq-admin, html.bright-mode #modal-song-request > div {
+      background-color: rgba(255, 255, 255, 0.58) !important; border-color: rgba(148, 163, 184, 0.32) !important;
+      box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset !important;
+    }
+    html.bright-mode #modal-song-request > div > div:first-child { background-color: rgba(255, 255, 255, 0.5) !important; }
+    html.bright-mode #modal-song-request h3, html.bright-mode #songreq-list .text-white { color: #0f172a !important; }
+    html.bright-mode #modal-song-request label, html.bright-mode #modal-song-request p, html.bright-mode #songreq-list .text-slate-400 { color: #475569 !important; }
+    html.bright-mode #modal-song-request input { background-color: rgba(255, 255, 255, 0.75) !important; color: #0f172a !important; border-color: rgba(148, 163, 184, 0.45) !important; }
+    html.bright-mode #songreq-list > div { background-color: rgba(255, 255, 255, 0.65) !important; border-color: rgba(148, 163, 184, 0.35) !important; box-shadow: 0 4px 14px -6px rgba(15, 23, 42, 0.12); }
+    html.bright-mode #songreq-admin .text-slate-400, html.bright-mode #songreq-admin .text-slate-300 { color: #475569 !important; }
+    html.bright-mode #songreq-admin .text-amber-400 { color: #b45309 !important; }
     .mh { --mh-ease: cubic-bezier(.22, 1, .36, 1);
       --mh-fg: #f1f5f9; --mh-sub: #94a3b8; --mh-chip: rgba(148,163,184,.16); --mh-card: rgba(255,255,255,.06);
       --mh-glass: rgba(12,19,34,.55); --mh-sticky: rgba(14,22,38,.62); --mh-back: rgba(2,6,23,.4);
@@ -15282,6 +15556,9 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     .mh-tab.on { color: var(--mh-ind-fg); }
     .mh-tools { display: flex; align-items: center; gap: .5rem; margin: .6rem 0 .45rem; padding: 0 .85rem; border-radius: .95rem; background: var(--mh-chip); border: 1px solid var(--tape-border); color: var(--mh-sub); }
     .mh-tools.hidden { display: none; }
+    .mh-reqrow { display:flex; justify-content:center; flex-wrap:wrap; gap:.45rem; margin:.2rem 0 .4rem; }
+    .mh-kbbtn { display:none; }
+    @media (hover: hover) and (pointer: fine) { .mh-kbbtn { display:inline-flex; } }
     .mh-tools input { flex: 1; min-width: 0; padding: .62rem 0; background: transparent; border: 0; outline: 0; color: var(--mh-fg); font-size: .8rem; }
     .mh-tools input::placeholder, .mh-new input::placeholder { color: var(--mh-sub); opacity: .8; }
 
@@ -15999,6 +16276,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     renderList();
     if ("mediaSession" in navigator && mode === "audio") { try { navigator.mediaSession.playbackState = playing ? "playing" : "paused"; } catch (e) {} }
     var chip = $("dv-quick-music"); if (chip) chip.classList.toggle("mu-live", playing);
+    try { document.body.classList.toggle("music-playing", !!playing); } catch (e) {}
+    renderSotd();
     hubRefresh();
   }
 
@@ -16197,6 +16476,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       } else meta();
     } else if (t.length && !bar.classList.contains("hidden")) { curId = t[0].id; meta(); }
     renderAdminList();
+    renderSotd();
     hubRefresh();
   }
 
@@ -16240,7 +16520,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       return;
     }
     list.innerHTML = rows.map(function (tr) {
-      var now = tr.id === curId && playing, cv = coverFor(tr), s = linkSt[tr.id], sn = subName(tr.sub);
+      var now = tr.id === curId && playing, cv = coverFor(tr), s = linkSt[tr.id], sn = subName(tr.sub), pinned = !!(appState.songOfDay && appState.songOfDay.id === tr.id);
       var st = s ? [tr.audioUrl ? badge("Audio", s.a) : "", tr.ytId ? badge("YouTube", s.y) : ""].filter(Boolean).join(" \u00b7 ") : "";
       return '<div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">' +
         (cv ? '<img src="' + escapeHTML(cv) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'" class="w-9 h-9 rounded-lg object-cover shrink-0 bg-slate-800" />' : '') +
@@ -16249,6 +16529,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
         (st ? '<div class="text-[10px] truncate">' + st + '</div>' : '') + '</div>' +
         '<div class="flex items-center gap-1 shrink-0">' +
         '<button type="button" onclick="itiMusicPlayId(\'' + tr.id + '\')" aria-label="Play track" class="p-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/25"><i data-lucide="play" class="w-3 h-3"></i></button>' +
+        '<button type="button" onclick="itiSotdPin(\'' + tr.id + '\')" aria-label="' + (pinned ? 'Unpin Song of the Day' : 'Pin as Song of the Day') + '" title="' + (pinned ? 'Unpin Song of the Day' : 'Pin as Song of the Day') + '" class="p-1.5 rounded-lg border ' + (pinned ? 'bg-amber-400 text-slate-950 border-amber-300' : 'bg-amber-500/15 border-amber-500/40 text-amber-300') + '"><i data-lucide="star" class="w-3 h-3"></i></button>' +
         '<button type="button" onclick="editMusicTrack(\'' + tr.id + '\')" class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold text-[10px]">Edit</button>' +
         '<button type="button" onclick="deleteMusicTrack(\'' + tr.id + '\')" aria-label="Delete track" class="p-1.5 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
         '</div></div>';
@@ -16295,7 +16576,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (appState.musicTracks.some(function (t) { return t.id !== editId && ((ytId && t.ytId === ytId) || (audioUrl && t.audioUrl === audioUrl)); })) {
       toast("That song is already in the playlist", "error"); return;
     }
-    if (!editId && appState.musicTracks.length >= 100) { toast("Playlist limit reached (100 tracks)", "error"); return; }
+    if (!editId && appState.musicTracks.length >= 1000) { toast("Playlist limit reached (1000 tracks)", "error"); return; }
     var entry = {
       id: editId || ("mus-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6)),
       title: ($("music-title-input").value.trim() || "Untitled Track").slice(0, 120),
@@ -16329,6 +16610,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (!isAdminUnlocked) return;
     var i = idxOf(id); if (i < 0) return;
     appState.musicTracks.splice(i, 1);
+    if (appState.songOfDay && appState.songOfDay.id === id) appState.songOfDay = null;
     if ($("music-edit-id").value === id) window.resetMusicForm();
     saveLocalState(true);
     onTracksChanged();
@@ -16454,7 +16736,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (!lines.length) { toast("Paste at least one link", "error"); return; }
     var sub = ($("music-bulk-sub") || {}).value || ""; if (sub && !subName(sub)) sub = "";
     var seen = {}; tracks().forEach(function (t) { if (t.audioUrl) seen[t.audioUrl] = 1; if (t.ytId) seen["yt:" + t.ytId] = 1; });
-    var room = 100 - tracks().length, rows = [], dup = 0, full = 0, invalid = [];
+    var room = 1000 - tracks().length, rows = [], dup = 0, full = 0, invalid = [];
     lines.forEach(function (line) {
       var p = line.split("|").map(trim), link = p[0];
       var ytLike = /^[A-Za-z0-9_-]{11}$/.test(link) || /^https?:\/\/(www\.|m\.|music\.)?(youtube\.com|youtu\.be|youtube-nocookie\.com)\//i.test(link);
@@ -16498,7 +16780,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       if (added) { saveLocalState(true); onTracksChanged(); }
       var msg = "\u2713 Added " + added + " track(s)";
       if (dup) msg += " \u00b7 " + dup + " duplicate(s) skipped";
-      if (full) msg += " \u00b7 " + full + " not added (100-track limit)";
+      if (full) msg += " \u00b7 " + full + " not added (1000-track limit)";
       if (invalid.length) msg += " \u00b7 " + invalid.length + " invalid line(s)";
       if (skipped.length) msg += " \u00b7 " + skipped.length + " skipped";
       var detail = skipped.concat(invalid.map(function (l) { return l + " \u2014 not a valid link"; })).slice(0, 5);
@@ -16590,7 +16872,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   /* ---------- Up Next queue: "Play next" / "Add to queue" list first, then the active list ---------- */
   function qAdd(id, top) {
     var i = idxOf(id); if (i < 0) return;
-    if (UQ.length >= 100 && UQ.indexOf(id) < 0) { toast("Queue is full (100 songs)", "error"); return; }
+    if (UQ.length >= 500 && UQ.indexOf(id) < 0) { toast("Queue is full (500 songs)", "error"); return; }
     var k = UQ.indexOf(id); if (k >= 0) UQ.splice(k, 1);
     if (top) UQ.unshift(id); else UQ.push(id);
     toast((top ? "Playing next: " : "Added to queue: ") + String(tracks()[i].title).slice(0, 40), "success");
@@ -16964,14 +17246,14 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function newPlaylist(name) {
     name = String(name || "").trim().slice(0, 40);
     if (!name) { toast("Type a playlist name first", "error"); return null; }
-    if (U.pls.length >= 30) { toast("Playlist limit reached (30)", "error"); return null; }
+    if (U.pls.length >= 100) { toast("Playlist limit reached (100)", "error"); return null; }
     var p = { id: "pl-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: name, ids: [] };
     U.pls.push(p); saveU(); return p;
   }
   function togglePl(p, id) {
     var i = p.ids.indexOf(id);
     if (i >= 0) p.ids.splice(i, 1);
-    else { if (p.ids.length >= 200) { toast("Playlist is full (200 songs)", "error"); return; } p.ids.push(id); }
+    else { if (p.ids.length >= 1000) { toast("Playlist is full (1000 songs)", "error"); return; } p.ids.push(id); }
     saveU();
   }
 
@@ -17043,6 +17325,120 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") saveResume(true); });
   window.addEventListener("pagehide", function () { saveResume(true); });
   applyVol(); volUi();
+
+  /* ---------- Song of the Day: admin pins a track (synced), otherwise a daily pick ---------- */
+  function sotdToday() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function sotdPick() {
+    var t = tracks(); if (!t.length) return null;
+    var pin = appState && appState.songOfDay;
+    if (pin && pin.id) { var i = idxOf(pin.id); if (i >= 0) return { tr: t[i], note: String(pin.note || ""), pinned: true }; }
+    var n = Math.floor(Date.now() / 86400000);   /* same pick all day for everyone */
+    return { tr: t[n % t.length], note: "", pinned: false };
+  }
+  function renderSotd() {
+    var box = $("dv-sotd"); if (!box) return;
+    var pk = sotdPick();
+    if (!pk) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+    var tr = pk.tr, cv = coverFor(tr), now = tr.id === curId && playing;
+    box.innerHTML = '<div class="sd-card">' +
+      (cv ? '<img class="sd-cov" src="' + escapeHTML(cv) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'" />'
+          : '<div class="sd-cov ph"><i data-lucide="music" class="w-5 h-5"></i></div>') +
+      '<div class="sd-tx"><div class="sd-k"><i data-lucide="sparkles" class="w-3 h-3"></i>Song of the Day' + (now ? '<span class="viz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>' : '') + '</div>' +
+      '<div class="sd-t">' + escapeHTML(tr.title) + '</div>' +
+      '<div class="sd-a">' + escapeHTML(tr.artist || "Music") + '</div>' +
+      (pk.note ? '<div class="sd-n">' + escapeHTML(pk.note) + '</div>' : '') + '</div>' +
+      '<button type="button" class="sd-go btn-tap" onclick="itiSotdPlay()" aria-label="' + (now ? "Pause" : "Play") + ' song of the day">' +
+      '<i data-lucide="' + (now ? "pause" : "play") + '" class="w-5 h-5"></i></button></div>';
+    box.classList.remove("hidden");
+    icons(box);
+  }
+  window.itiSotdPlay = function () {
+    var pk = sotdPick(); if (!pk) return;
+    if (pk.tr.id === curId && mode) { toggle(); return; }
+    window.itiMusicPlayId(pk.tr.id);
+  };
+  window.itiSotdPin = function (id) {
+    if (!isAdminUnlocked) return;
+    var i = idxOf(id); if (i < 0) return;
+    var cur = appState.songOfDay;
+    if (cur && cur.id === id) { appState.songOfDay = null; saveLocalState(true); renderSotd(); renderAdminList(); toast("Song of the Day unpinned", "info"); return; }
+    var note = window.prompt("Optional message for students (leave blank for none):", "");
+    if (note === null) return;
+    appState.songOfDay = { id: id, note: String(note).trim().slice(0, 140), at: sotdToday() };
+    saveLocalState(true); renderSotd(); renderAdminList();
+    toast("Pinned as Song of the Day", "success");
+  };
+  window.itiSotdRender = renderSotd;
+
+  /* ---------- Keyboard shortcuts (desktop): work while the player is open; typing in fields is never touched ---------- */
+  var hudT = null;
+  function hud(txt) {
+    var h = $("mu-kb-hud");
+    if (!h) { h = document.createElement("div"); h.id = "mu-kb-hud"; h.setAttribute("role", "status"); h.setAttribute("aria-live", "polite"); document.body.appendChild(h); }
+    h.textContent = txt; h.classList.add("on"); clearTimeout(hudT); hudT = setTimeout(function () { h.classList.remove("on"); }, 1100);
+  }
+  var KB_ROWS = [["Space / K", "Play / pause"], ["\u2190 / \u2192", "Back / forward 10 s"], ["Shift + \u2190 / \u2192", "Previous / next song"], ["P / N", "Previous / next song"],
+    ["- / +", "Volume down / up"], ["M", "Mute"], ["S", "Shuffle"], ["R", "Repeat"], ["L", "Favourite this song"], ["V", "Show / hide video"], ["?", "Show this help"]];
+  function kbKeys(t) { return t.split(" / ").map(function (g) { return g.split(" + ").map(function (k) { return "<kbd>" + k + "</kbd>"; }).join("+"); }).join(" / "); }
+  function kbHelp(open) {
+    var el = $("mu-kb-help");
+    if (!el) {
+      el = document.createElement("div"); el.id = "mu-kb-help"; el.className = "hidden"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", "Keyboard shortcuts");
+      el.innerHTML = '<div class="kb-card"><div class="kb-h"><b>Keyboard shortcuts</b><button type="button" class="kb-x" aria-label="Close">\u2715</button></div>' +
+        KB_ROWS.map(function (r) { return '<div class="kb-r"><span>' + kbKeys(r[0]) + '</span><span class="kb-d">' + r[1] + '</span></div>'; }).join("") + '</div>';
+      el.addEventListener("click", function (e) { if (e.target === el || (e.target.closest && e.target.closest(".kb-x"))) kbHelp(false); });
+      document.body.appendChild(el);
+    }
+    var show = typeof open === "boolean" ? open : el.classList.contains("hidden");
+    el.classList.toggle("hidden", !show);
+  }
+  window.itiKbHelp = function () { kbHelp(true); };
+  function kbBlocked(e) {
+    var t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return true;
+    var els = document.querySelectorAll('#gallery-lightbox, #notice-viewer, [id^="modal-"]');
+    for (var i = 0; i < els.length; i++) { if (!els[i].classList.contains("hidden") && els[i].getClientRects().length) return true; }
+    return false;
+  }
+  function kbSkip(d) {
+    if (mode === "audio") seekBy(d);
+    else if (mode === "yt" && ready && player && player.getCurrentTime) { try { player.seekTo(Math.max(0, player.getCurrentTime() + d), true); } catch (x) {} }
+    else return;
+    hud((d > 0 ? "+" : "\u2212") + Math.abs(d) + " s");
+  }
+  function kbVol(d) {
+    if (!volOK) return;
+    U.muted = false; U.vol = Math.max(0, Math.min(1, Math.round((U.vol + d) * 100) / 100));
+    applyVol(); saveU(); volUi(); hud("Volume " + Math.round(U.vol * 100) + "%");
+  }
+  function kbClick(id) { var b = $(id); if (b) b.click(); }
+  document.addEventListener("keydown", function (e) {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+    var k = e.key, help = $("mu-kb-help");
+    if (help && !help.classList.contains("hidden")) { if (k === "Escape" || k === "?") { e.preventDefault(); kbHelp(false); } return; }
+    if (kbBlocked(e)) return;
+    if (k === "?") { e.preventDefault(); kbHelp(true); return; }
+    if (bar.classList.contains("hidden")) return;                       /* player closed: leave the page alone */
+    var t = e.target, onCtl = t && t.closest && t.closest("button, a, summary, [role=button], [role=option]");
+    var lk = k.length === 1 ? k.toLowerCase() : k, done = true;
+    switch (lk) {
+      case " ": if (onCtl) return; hud(playing ? "Paused" : "Playing"); toggle(); break;
+      case "k": hud(playing ? "Paused" : "Playing"); toggle(); break;
+      case "ArrowRight": if (e.shiftKey) { next(); hud("Next song"); } else kbSkip(10); break;
+      case "ArrowLeft": if (e.shiftKey) { prev(); hud("Previous song"); } else kbSkip(-10); break;
+      case "n": next(); hud("Next song"); break;
+      case "p": prev(); hud("Previous song"); break;
+      case "+": case "=": kbVol(0.05); break;
+      case "-": case "_": kbVol(-0.05); break;
+      case "m": toggleMute(); hud(U.muted ? "Muted" : "Volume " + Math.round(U.vol * 100) + "%"); break;
+      case "s": kbClick("mh-shuffle"); break;
+      case "r": kbClick("mh-repeat"); break;
+      case "l": if (curId) kbClick("mh-fav-cur"); else toast("Play a song first", "info"); break;
+      case "v": toggleVideo(); break;
+      default: done = false;
+    }
+    if (done) e.preventDefault();
+  });
 
   window.itiMusicOpen = open;
   window.itiMusicHub = hubOpen;

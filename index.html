@@ -2178,6 +2178,78 @@ html.bright-mode #view-tools .tl-st-bad  { color: #9f1239; background-color: #ff
     button:focus-visible,a:focus-visible,select:focus-visible,summary:focus-visible,[role="button"]:focus-visible,[tabindex="0"]:focus-visible{outline:2px solid #ff9a3c !important;outline-offset:2px !important}
     #main-content:focus{outline:none}
   </style>
+<style id="trace-draw-css">
+/* ===== TRACE DRAW (ITI CONNECT) ===== */
+@media (max-width:639px){#tl-tablist .tl-seg{flex-direction:column;gap:.15rem;font-size:10.5px;padding:.45rem .2rem}}
+#view-tools .tr-prev{min-height:7rem;background:#fff;border:1px solid rgba(148,163,184,.3);border-radius:.75rem;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:.5rem}
+#view-tools .tr-prev img{max-height:10rem;max-width:100%;object-fit:contain}
+.tr-go{background-color:rgba(16,185,129,.22);color:#6ee7b7;border:1px solid rgba(52,211,153,.48);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);touch-action:manipulation}
+html.bright-mode .tr-go{background-color:rgba(209,250,229,.85);color:#065f46;border-color:#6ee7b7}
+.tr-go:disabled{opacity:.5}
+
+#trace-overlay{position:fixed;inset:0;z-index:9000;display:none;overflow:hidden;background:#05080f;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-family:Inter,system-ui,sans-serif}
+#trace-overlay.tr-open{display:block}
+#trace-overlay.tr-screen{background:#fff}
+#tr-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;display:none}
+#trace-overlay.tr-cam #tr-video{display:block}
+#tr-stage{position:absolute;inset:0;cursor:grab;touch-action:none}
+#tr-img{position:absolute;left:50%;top:50%;max-width:92%;max-height:78%;transform-origin:50% 50%;will-change:transform;pointer-events:none;-webkit-user-drag:none}
+#trace-overlay.tr-f-hc #tr-img{filter:grayscale(1) contrast(1.9) brightness(1.08);mix-blend-mode:multiply}
+#trace-overlay.tr-f-inv #tr-img{filter:grayscale(1) invert(1) contrast(1.7);mix-blend-mode:screen}
+#tr-grid{position:absolute;inset:0;pointer-events:none;display:none;background-image:linear-gradient(rgba(245,158,11,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.4) 1px,transparent 1px);background-size:32px 32px;background-position:center}
+#trace-overlay.tr-grid-on #tr-grid{display:block}
+
+#tr-topbar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:.5rem;padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 0;z-index:5}
+#tr-panel{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:calc(100% - 16px);max-width:34rem;margin-bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:.65rem .75rem;border-radius:1rem;z-index:5;touch-action:manipulation}
+#trace-overlay.tr-ui-off #tr-panel,#trace-overlay.tr-ui-off #tr-topbar>:not(#tr-ui-toggle){display:none}
+#trace-overlay.tr-ui-off #tr-topbar{justify-content:flex-end}
+#trace-overlay.tr-locked #tr-panel,#trace-overlay.tr-locked #tr-topbar{display:none}
+#trace-overlay.tr-locked #tr-stage{cursor:default}
+#trace-overlay.tr-screen #tr-torch,#trace-overlay.tr-screen [data-tr-filter="inv"]{display:none}
+#trace-overlay.tr-screen .lb-caption-card,#trace-overlay.tr-screen .lb-ctrl-btn{box-shadow:0 6px 22px -6px rgba(15,23,42,.45)}
+#tr-torch[aria-pressed="true"]{background-color:rgba(251,191,36,.95);color:#1f1300;border-color:#fbbf24}
+.lb-ctrl-btn.tr-close{color:#fda4af;background-color:rgba(244,63,94,.28);border-color:rgba(251,113,133,.55)}
+html.bright-mode .lb-ctrl-btn.tr-close{color:#be123c;background-color:rgba(255,228,230,.85);border-color:rgba(225,29,72,.45)}
+
+.tr-modes{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:.85rem;flex:1;min-width:0}
+.tr-chip,.tr-act{color:#cbd5e1;background-color:rgba(255,255,255,.07);border:1px solid rgba(148,163,184,.25);border-radius:.7rem;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:.35rem;min-height:2.3rem;min-width:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background-color .2s,color .2s,border-color .2s}
+.tr-act{flex-direction:column;gap:.1rem;font-size:10px;min-height:2.9rem;padding:.2rem}
+.tr-chip.tr-on,.tr-act.tr-on{color:#fbbf24;background-color:rgba(245,158,11,.18);border-color:rgba(245,158,11,.55)}
+.tr-act.tr-amber{color:#fde68a;border-color:rgba(251,191,36,.45)}
+html.bright-mode .tr-chip,html.bright-mode .tr-act{color:#334155;background-color:rgba(255,255,255,.75);border-color:rgba(148,163,184,.4)}
+html.bright-mode .tr-chip.tr-on,html.bright-mode .tr-act.tr-on{color:#92400e;background-color:rgba(245,158,11,.2);border-color:#d97706}
+html.bright-mode .tr-act.tr-amber{color:#92400e}
+.tr-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:.5rem}
+.tr-grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:.5rem}
+.tr-row{display:flex;align-items:center;gap:.6rem;color:#fde68a}
+.tr-row+.tr-row{margin-top:.35rem}
+html.bright-mode .tr-row{color:#92400e}
+.tr-val{font-size:11px;font-weight:800;min-width:2.6rem;text-align:right;font-variant-numeric:tabular-nums;color:#e2e8f0}
+html.bright-mode .tr-val{color:#334155}
+.tr-range{flex:1;min-width:0;height:28px;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
+.tr-range::-webkit-slider-runnable-track{height:6px;border-radius:9999px;background:rgba(148,163,184,.4)}
+.tr-range::-moz-range-track{height:6px;border-radius:9999px;background:rgba(148,163,184,.4)}
+.tr-range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:9999px;background:#f59e0b;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.tr-range::-moz-range-thumb{width:20px;height:20px;border-radius:9999px;background:#f59e0b;border:2px solid #fff}
+html.bright-mode .tr-range::-webkit-slider-thumb{background:#d97706}
+
+#tr-toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);max-width:min(92%,22rem);padding:.5rem .8rem;border-radius:.8rem;font-size:12px;font-weight:700;text-align:center;color:#fde68a;opacity:0;pointer-events:none;transition:opacity .25s;z-index:6;background-color:rgba(12,19,34,.82);border:1px solid rgba(251,191,36,.45);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+#tr-toast.tr-show{opacity:1}
+html.bright-mode #tr-toast{color:#92400e;background-color:rgba(255,255,255,.92);border-color:rgba(180,83,9,.4)}
+#tr-cam-err{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 32px);max-width:21rem;padding:1rem;border-radius:1rem;text-align:center;display:none;z-index:4}
+#trace-overlay.tr-cam-failed #tr-cam-err{display:block}
+#tr-cam-msg{color:#e2e8f0;font-size:12px;font-weight:600;line-height:1.5}
+html.bright-mode #tr-cam-msg{color:#334155}
+
+#tr-unlock{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);display:none;align-items:center;gap:.4rem;padding:.3rem .7rem .3rem .35rem;border-radius:9999px;font-size:10px;font-weight:800;opacity:.45;z-index:7;color:#fde68a;background-color:rgba(15,23,42,.56);border:1px solid rgba(251,191,36,.42);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);touch-action:none}
+html.bright-mode #tr-unlock{color:#92400e;background-color:rgba(255,255,255,.8);border-color:rgba(180,83,9,.4)}
+#trace-overlay.tr-locked #tr-unlock{display:flex}
+#tr-unlock.tr-hold{opacity:1}
+#tr-unlock svg.tr-ring{width:30px;height:30px;transform:rotate(-90deg)}
+#tr-ring-c{fill:none;stroke:#f59e0b;stroke-width:3;stroke-linecap:round;stroke-dasharray:69.1;stroke-dashoffset:69.1}
+html.bright-mode #tr-ring-c{stroke:#d97706}
+</style>
+
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
 <a href="#main-content" class="iti-skip">Skip to main content</a>
@@ -3062,16 +3134,17 @@ html.bright-mode #view-tools .tl-st-bad  { color: #9f1239; background-color: #ff
                 <span class="w-1 h-4 rounded-full bg-amber-500 shrink-0"></span>
                 <h2 class="text-sm sm:text-base font-extrabold tracking-tight text-white truncate">Trade Tools</h2>
               </div>
-              <p class="text-[11px] text-slate-400 truncate mt-0.5 pl-3">Symbols, calculators, decoders, lab tools &amp; guides &bull; ITI CONNECT</p>
+              <p class="text-[11px] text-slate-400 truncate mt-0.5 pl-3">Symbols, calculators, decoders, lab tools, guides &amp; trace &bull; ITI CONNECT</p>
             </div>
           </div>
           <!-- NEW: 4-tab switcher (Symbols / Calculators / Decoders & Pinouts / 2nd Yr Lab) -->
-          <div id="tl-tablist" class="tl-inner rounded-xl p-1 grid grid-cols-2 sm:grid-cols-4 gap-1" role="tablist" aria-label="Trade tools">
+          <div id="tl-tablist" class="tl-inner rounded-xl p-1 grid grid-cols-3 sm:grid-cols-6 gap-1" role="tablist" aria-label="Trade tools">
             <button type="button" id="tl-tab-symbols" role="tab" aria-selected="true" aria-controls="tl-pane-symbols" data-tl-pane="symbols" class="tl-seg tl-on btn-tap min-w-0"><i data-lucide="shapes" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Symbols</span></button>
             <button type="button" id="tl-tab-calc" role="tab" aria-selected="false" aria-controls="tl-pane-calc" data-tl-pane="calc" class="tl-seg btn-tap min-w-0"><i data-lucide="calculator" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Calculators</span></button>
             <button type="button" id="tl-tab-decoders" role="tab" aria-selected="false" aria-controls="tl-pane-decoders" data-tl-pane="decoders" class="tl-seg btn-tap min-w-0"><i data-lucide="cpu" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Decoders &amp; Pinouts</span></button>
             <button type="button" id="tl-tab-lab" role="tab" aria-selected="false" aria-controls="tl-pane-lab" data-tl-pane="lab" class="tl-seg btn-tap min-w-0"><i data-lucide="flask-conical" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">2nd Yr Lab</span></button>
             <button type="button" id="tl-tab-guides" role="tab" aria-selected="false" aria-controls="tl-pane-guides" data-tl-pane="guides" class="tl-seg btn-tap min-w-0"><i data-lucide="book-open" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Guides</span></button>
+            <button type="button" id="tl-tab-trace" role="tab" aria-selected="false" aria-controls="tl-pane-trace" data-tl-pane="trace" class="tl-seg btn-tap min-w-0"><i data-lucide="pen-tool" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Trace Draw</span></button>
           </div>
         </div>
 
@@ -3173,10 +3246,39 @@ html.bright-mode #view-tools .tl-st-bad  { color: #9f1239; background-color: #ff
           <div id="tl-lab-body" class="tl-card rounded-2xl p-3.5 sm:p-4 space-y-3.5"></div>
         </div>
 
+        <!-- NEW: F. Trace Draw launcher -->
+        <div id="tl-pane-trace" class="hidden space-y-4">
+          <div class="tl-card rounded-2xl p-3.5 sm:p-4 space-y-3.5">
+            <div class="flex items-center gap-2.5 min-w-0 pb-3 border-b" style="border-color:rgba(148,163,184,0.22)">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400 shrink-0"><i data-lucide="pen-tool" class="w-4 h-4"></i></div>
+              <div class="min-w-0"><div class="text-sm font-extrabold text-white truncate">Trace Drawing</div><div class="text-[11px] text-slate-400">Copy circuits &amp; symbols onto your practical sheet</div></div>
+            </div>
+            <div class="space-y-2">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400">1 &middot; Choose a diagram</div>
+              <div id="tr-prev" class="tr-prev"><span class="text-[11px] font-semibold" style="color:#64748b">No diagram yet</span></div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" data-tr-l="pick" class="tl-chip tl-on btn-tap"><i data-lucide="image-plus" class="w-3.5 h-3.5"></i><span>Upload image</span></button>
+                <button type="button" data-tr-l="symbols" class="tl-chip btn-tap"><i data-lucide="shapes" class="w-3.5 h-3.5"></i><span>Pick a symbol</span></button>
+                <button type="button" data-tr-l="clear" class="tl-chip btn-tap"><i data-lucide="x" class="w-3.5 h-3.5"></i><span>Clear</span></button>
+              </div>
+              <p class="text-[10px] text-slate-400 leading-relaxed">Tip: in any gallery photo tap <b>Trace</b>, or open a symbol and tap <b>Trace Symbol</b>.</p>
+              <input type="file" id="tr-file" accept="image/*" class="hidden">
+            </div>
+            <div class="space-y-2">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400">2 &middot; Choose a mode</div>
+              <div class="tl-inner rounded-xl p-1 grid grid-cols-2 gap-1">
+                <button type="button" data-tr-l="mode" data-m="camera" class="tl-seg tl-on btn-tap min-w-0"><i data-lucide="camera" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">AR Camera</span></button>
+                <button type="button" data-tr-l="mode" data-m="screen" class="tl-seg btn-tap min-w-0"><i data-lucide="smartphone" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Screen Lightbox</span></button>
+              </div>
+              <p id="tr-mode-desc" class="text-[11px] text-slate-400 leading-relaxed"></p>
+            </div>
+            <button type="button" id="tr-l-start" data-tr-l="start" class="tr-go w-full rounded-xl px-3 py-3 text-xs font-extrabold flex items-center justify-center gap-2 btn-tap"><i data-lucide="play" class="w-4 h-4"></i><span>Start tracing</span></button>
+          </div>
+        </div>
+
         <!-- NEW: E. Guides (reference charts) -->
         <style>
-          @media (max-width: 639px) { #tl-tab-guides { grid-column: span 2; } }
-          @media (min-width: 640px) { #tl-tablist { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+          /* Trace Draw: 6 tabs use grid-cols-3 / sm:grid-cols-6 on #tl-tablist (old 5-col + span-2 rules removed) */
         </style>
         <div id="tl-pane-guides" class="hidden space-y-4">
           <div class="tl-card rounded-2xl p-3 sm:p-3.5">
@@ -3317,6 +3419,7 @@ html.bright-mode #view-tools .tl-st-bad  { color: #9f1239; background-color: #ff
         <button type="button" id="lb-clean-btn" onclick="enterLightboxClean()" aria-label="Full screen without buttons" title="Full screen (tap once to exit)" class="lb-ctrl-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition btn-tap"><i data-lucide="maximize" class="w-3.5 h-3.5"></i><span>Full Screen</span></button>
         <button type="button" id="lb-rotate-btn" onclick="rotateLightbox()" aria-label="Rotate photo" title="Rotate 90°" class="lb-ctrl-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition btn-tap"><i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i><span>Rotate</span></button>
         <button type="button" id="lb-lock-btn" onclick="toggleLightboxLock()" aria-pressed="false" aria-label="Lock photo" title="Lock photo (stops zoom, pan, swipe and accidental close)" class="lb-ctrl-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition btn-tap"><span id="lb-ic-open" class="inline-flex"><i data-lucide="lock-open" class="w-3.5 h-3.5"></i></span><span id="lb-ic-locked" class="hidden inline-flex"><i data-lucide="lock" class="w-3.5 h-3.5"></i></span><span id="lb-lock-label">Lock</span></button>
+        <button type="button" id="lb-trace-btn" onclick="window.TraceDraw&&TraceDraw.fromGallery()" aria-label="Trace this photo" title="Trace this photo on paper" class="lb-ctrl-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition btn-tap"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i><span>Trace</span></button>
         <button type="button" onclick="downloadActiveLightboxPhoto()" class="lb-download-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition btn-tap"><i data-lucide="download" class="w-3.5 h-3.5"></i><span>Download Photo</span></button>
         <button type="button" onclick="editActiveLightboxPhoto()" class="admin-only hidden lb-ctrl-btn px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition btn-tap"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i><span>Edit Photo</span></button>
         <button type="button" onclick="deleteActiveLightboxPhoto()" class="admin-only hidden lb-white px-3.5 py-2 rounded-xl bg-rose-500/80 hover:bg-rose-500 text-xs font-extrabold flex items-center gap-1.5 shadow transition btn-tap"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Delete</span></button>
@@ -3599,9 +3702,56 @@ html.bright-mode #view-tools .tl-st-bad  { color: #9f1239; background-color: #ff
             <p id="tl-m-app" class="text-xs text-slate-300 mt-0.5 leading-relaxed"></p>
           </div>
         </div>
+        <button type="button" onclick="window.TraceDraw&&TraceDraw.fromSymbol()" class="w-full rounded-xl px-3 py-2.5 text-xs font-extrabold flex items-center justify-center gap-2 btn-tap bg-amber-500/15 border border-amber-500/35 text-amber-400"><i data-lucide="pen-tool" class="w-4 h-4"></i><span>Trace Symbol</span></button>
         <p class="text-[10px] text-slate-400 leading-relaxed">Drawn to BIS (IS 12032) / IEC 60617 conventions. Always follow the symbol sheet given in your NCVT syllabus for exams.</p>
       </div>
     </div>
+  </div>
+
+  <!-- ===== TRACE DRAW full-screen overlay ===== -->
+  <div id="trace-overlay" role="dialog" aria-modal="true" aria-label="Trace drawing" aria-hidden="true">
+    <video id="tr-video" playsinline muted autoplay></video>
+    <div id="tr-stage"><img id="tr-img" alt="Diagram to trace" draggable="false"></div>
+    <div id="tr-grid"></div>
+    <div id="tr-cam-err" class="lb-caption-card">
+      <div class="mx-auto mb-2 w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400"><i data-lucide="camera-off" class="w-4 h-4"></i></div>
+      <p id="tr-cam-msg"></p>
+      <div class="mt-3 grid gap-2">
+        <button type="button" data-tr-act="screen" class="tr-go rounded-xl px-3 py-2.5 text-xs font-extrabold flex items-center justify-center gap-2"><i data-lucide="smartphone" class="w-4 h-4"></i><span>Use Screen Lightbox instead</span></button>
+        <button type="button" data-tr-act="retry" class="tr-chip"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>Try camera again</span></button>
+      </div>
+    </div>
+    <div id="tr-topbar">
+      <button type="button" id="tr-close" data-tr-act="close" aria-label="Close trace" class="lb-ctrl-btn tr-close w-10 h-10 rounded-full flex items-center justify-center shrink-0 btn-tap"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <div class="tr-modes lb-caption-card" role="group" aria-label="Trace mode">
+        <button type="button" data-tr-act="mode" data-m="camera" class="tr-chip"><i data-lucide="camera" class="w-3.5 h-3.5"></i><span>Camera</span></button>
+        <button type="button" data-tr-act="mode" data-m="screen" class="tr-chip"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i><span>Screen</span></button>
+      </div>
+      <button type="button" id="tr-torch" data-tr-act="torch" aria-pressed="false" aria-label="Torch" class="lb-ctrl-btn w-10 h-10 rounded-full flex items-center justify-center shrink-0 btn-tap"><i data-lucide="zap" class="w-4 h-4"></i></button>
+      <button type="button" id="tr-ui-toggle" data-tr-act="ui" aria-label="Hide or show controls" class="lb-ctrl-btn w-10 h-10 rounded-full flex items-center justify-center shrink-0 btn-tap"><i data-lucide="eye-off" class="w-4 h-4"></i></button>
+    </div>
+    <div id="tr-toast" role="status" aria-live="polite"></div>
+    <div id="tr-panel" class="lb-caption-card">
+      <div class="tr-row"><i data-lucide="droplet" class="w-4 h-4 shrink-0"></i><input id="tr-op" class="tr-range" type="range" min="10" max="100" step="1" value="60" aria-label="Opacity"><span id="tr-op-v" class="tr-val">60%</span></div>
+      <div class="tr-row"><i data-lucide="rotate-cw" class="w-4 h-4 shrink-0"></i><input id="tr-rot" class="tr-range" type="range" min="-180" max="180" step="1" value="0" aria-label="Rotation"><span id="tr-rot-v" class="tr-val">0&deg;</span><button type="button" data-tr-act="rot90" aria-label="Rotate 90 degrees" class="tr-chip px-2 shrink-0">90&deg;</button></div>
+      <div class="tr-grid3">
+        <button type="button" data-tr-act="filter" data-f="normal" class="tr-chip"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>Normal</span></button>
+        <button type="button" data-tr-act="filter" data-f="hc" data-tr-filter="hc" class="tr-chip"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i><span>Black lines</span></button>
+        <button type="button" data-tr-act="filter" data-f="inv" data-tr-filter="inv" class="tr-chip"><i data-lucide="moon" class="w-3.5 h-3.5"></i><span>White lines</span></button>
+      </div>
+      <div class="tr-grid5">
+        <button type="button" data-tr-act="grid" class="tr-act"><i data-lucide="grid-3x3" class="w-4 h-4"></i><span>Grid</span></button>
+        <button type="button" data-tr-act="flip" class="tr-act"><i data-lucide="flip-horizontal" class="w-4 h-4"></i><span>Flip</span></button>
+        <button type="button" data-tr-act="reset" class="tr-act"><i data-lucide="locate-fixed" class="w-4 h-4"></i><span>Reset</span></button>
+        <button type="button" data-tr-act="upload" class="tr-act"><i data-lucide="image-plus" class="w-4 h-4"></i><span>Photo</span></button>
+        <button type="button" data-tr-act="lock" class="tr-act tr-amber"><i data-lucide="lock" class="w-4 h-4"></i><span>Lock</span></button>
+      </div>
+    </div>
+    <button type="button" id="tr-unlock" aria-label="Hold for 1.5 seconds to unlock">
+      <span class="relative inline-flex items-center justify-center" style="width:30px;height:30px"><svg class="tr-ring absolute inset-0" viewBox="0 0 30 30"><circle id="tr-ring-c" cx="15" cy="15" r="11"/></svg><i data-lucide="lock" class="w-3 h-3"></i></span>
+      <span>Hold to unlock</span>
+    </button>
+    <input type="file" id="tr-file2" accept="image/*" class="hidden">
   </div>
 
   <div id="more-backdrop" onclick="closeMoreSheet()" class="fixed inset-0 z-[45] bg-black/45"></div>
@@ -23105,7 +23255,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
 
   /* ---------- pane switch (Symbols / Calculators / Decoders / Lab / Guides) ---------- */
-  var PANES = ["symbols", "calc", "decoders", "lab", "guides"];
+  var PANES = ["symbols", "calc", "decoders", "lab", "guides", "trace"];
   function setPane(p) {
     if (PANES.indexOf(p) < 0) p = "symbols";
     PANES.forEach(function (k) {
@@ -23493,5 +23643,261 @@ document.addEventListener("keydown", function (e) {
   };
 })();
 </script>
+<script id="trace-draw-script">
+/* ===== TRACE DRAW (ITI CONNECT) — 100% client-side, works offline ===== */
+(function () {
+  "use strict";
+  var $ = function (i) { return document.getElementById(i); };
+  var ov = $("trace-overlay"); if (!ov) return;
+  var img = $("tr-img"), video = $("tr-video"), stage = $("tr-stage"), MK = "iti_trace_mode";
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
+  var S = { open: false, mode: ls(MK) === "screen" ? "screen" : "camera", url: null, owned: false, x: 0, y: 0, s: 1, r: 0, flip: false, op: 0.6,
+            filter: "normal", grid: false, locked: false, ui: true, stream: null, track: null, torch: false, wake: null, req: 0 };
+  var P = { blob: null, name: "", prev: null }, lm = S.mode, lastFocus = null, prevOv = "", tT = 0;
+  function icons() { try { window.lucide && lucide.createIcons(); } catch (e) {} }
+  function mainToast(m, t) { try { window.showToast && window.showToast(m, t || "info"); } catch (e) {} }
+  function toast(m, ms) {
+    var t = $("tr-toast"); t.textContent = m; t.classList.add("tr-show");
+    clearTimeout(tT); tT = setTimeout(function () { t.classList.remove("tr-show"); }, ms || 2600);
+  }
+  function setIcon(b, n) { b.innerHTML = '<i data-lucide="' + n + '" class="w-4 h-4"></i>'; icons(); }
+
+  /* ---------- transform / UI sync ---------- */
+  function apply() {
+    img.style.transform = "translate(-50%,-50%) translate(" + S.x.toFixed(1) + "px," + S.y.toFixed(1) + "px) rotate(" + S.r.toFixed(2) + "deg) scale(" + (S.flip ? -S.s : S.s).toFixed(4) + "," + S.s.toFixed(4) + ")";
+    img.style.opacity = S.op;
+    $("tr-op").value = Math.round(S.op * 100); $("tr-op-v").textContent = Math.round(S.op * 100) + "%";
+    $("tr-rot").value = Math.round(S.r); $("tr-rot-v").textContent = Math.round(S.r) + "\u00B0";
+    ov.classList.toggle("tr-f-hc", S.filter === "hc"); ov.classList.toggle("tr-f-inv", S.filter === "inv");
+    ov.classList.toggle("tr-grid-on", S.grid);
+    ov.querySelectorAll("[data-tr-act=filter]").forEach(function (b) { b.classList.toggle("tr-on", b.dataset.f === S.filter); });
+    ov.querySelectorAll("[data-tr-act=mode]").forEach(function (b) { b.classList.toggle("tr-on", b.dataset.m === S.mode); });
+    ov.querySelector("[data-tr-act=grid]").classList.toggle("tr-on", S.grid);
+    ov.querySelector("[data-tr-act=flip]").classList.toggle("tr-on", S.flip);
+  }
+  function resetPos() { S.x = 0; S.y = 0; S.s = 1; S.r = 0; }
+  function wrap(a) { a = ((a + 180) % 360 + 360) % 360 - 180; return a; }
+
+  /* ---------- camera / torch / wake lock ---------- */
+  function stopCamera() {
+    S.req++;
+    try { if (S.stream) S.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+    S.stream = null; S.track = null; S.torch = false;
+    try { video.pause(); } catch (e) {} video.srcObject = null;
+    $("tr-torch").setAttribute("aria-pressed", "false");
+  }
+  function camFail(err) {
+    var n = err && err.name, m = "Couldn\u2019t start the camera.";
+    if (n === "NotAllowedError" || n === "SecurityError") m = "Camera permission was denied. Allow camera access in your browser settings, or trace using the screen instead.";
+    else if (n === "NotFoundError" || n === "OverconstrainedError") m = "No usable rear camera was found on this device.";
+    else if (!window.isSecureContext || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) m = "Camera isn\u2019t available here (it needs HTTPS and a supported browser).";
+    $("tr-cam-msg").textContent = m; ov.classList.add("tr-cam-failed");
+  }
+  function startCamera() {
+    stopCamera(); var id = S.req; ov.classList.remove("tr-cam-failed");
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { camFail(); return; }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function (st) {
+      if (id !== S.req || !S.open || S.mode !== "camera") { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+      S.stream = st; S.track = st.getVideoTracks()[0]; video.srcObject = st;
+      var p = video.play(); if (p && p.catch) p.catch(function () {});
+    }).catch(function (e) { if (id === S.req) camFail(e); });
+  }
+  function torch() {
+    var t = S.track, c = {};
+    try { c = t && t.getCapabilities ? t.getCapabilities() : {}; } catch (e) {}
+    if (!t || !c.torch) { toast("Torch isn\u2019t supported on this device or browser."); return; }
+    t.applyConstraints({ advanced: [{ torch: !S.torch }] }).then(function () {
+      S.torch = !S.torch; $("tr-torch").setAttribute("aria-pressed", S.torch ? "true" : "false");
+    }).catch(function () { toast("Couldn\u2019t switch the torch."); });
+  }
+  function wakeOn() {
+    try { if (navigator.wakeLock && S.open && !S.wake) navigator.wakeLock.request("screen").then(function (w) { if (!S.open) { w.release(); return; } S.wake = w; w.addEventListener("release", function () { if (S.wake === w) S.wake = null; }); }).catch(function () {}); } catch (e) {}
+  }
+  function wakeOff() { try { if (S.wake) S.wake.release(); } catch (e) {} S.wake = null; }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible" || !S.open) return;
+    wakeOn(); if (S.mode === "camera" && !ov.classList.contains("tr-cam-failed") && (!S.track || S.track.readyState === "ended")) startCamera();
+  });
+
+  /* ---------- modes ---------- */
+  function setMode(m) {
+    S.mode = m; ls(MK, m); lm = m;
+    ov.classList.toggle("tr-cam", m === "camera"); ov.classList.toggle("tr-screen", m === "screen");
+    ov.classList.remove("tr-cam-failed"); S.op = m === "camera" ? 0.6 : 1;
+    if (m === "screen") { stopCamera(); if (S.filter === "inv") S.filter = "normal"; toast("Tip: raise screen brightness to 100%, then rest your sheet on the screen.", 6000); }
+    else startCamera();
+    apply(); launcher();
+  }
+
+  /* ---------- open / close ---------- */
+  function release() { if (S.owned && S.url) { try { URL.revokeObjectURL(S.url); } catch (e) {} } S.url = null; S.owned = false; }
+  function openTrace(o) {
+    if (!o || !o.url) return;
+    release(); S.url = o.url; S.owned = !!o.owned; resetPos(); S.flip = false; S.filter = "normal"; S.grid = false; S.locked = false; S.ui = true;
+    ov.classList.remove("tr-locked", "tr-ui-off"); setIcon($("tr-ui-toggle"), "eye-off");
+    img.onerror = function () { toast("Couldn\u2019t load this image."); }; img.src = S.url;
+    if (!S.open) {
+      S.open = true; lastFocus = document.activeElement; prevOv = document.body.style.overflow; document.body.style.overflow = "hidden";
+      ov.classList.add("tr-open"); ov.setAttribute("aria-hidden", "false");
+    }
+    wakeOn(); setMode(o.mode || S.mode); icons();
+    try { $("tr-close").focus({ preventScroll: true }); } catch (e) {}
+  }
+  function close() {
+    if (!S.open) return;
+    S.open = false; stopCamera(); wakeOff(); release(); holdEnd(); ptrs.clear();
+    img.removeAttribute("src"); ov.classList.remove("tr-open", "tr-locked", "tr-cam", "tr-screen", "tr-cam-failed");
+    ov.setAttribute("aria-hidden", "true"); document.body.style.overflow = prevOv;
+    try { lastFocus && lastFocus.focus && lastFocus.focus({ preventScroll: true }); } catch (e) {}
+  }
+
+  /* ---------- gestures: drag, pinch-zoom, twist ---------- */
+  var ptrs = new Map();
+  function xform(m0, m1, k, dt) {
+    var b = stage.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    var ns = Math.min(12, Math.max(0.1, S.s * k)); k = ns / S.s;
+    var vx = cx + S.x - m0.x, vy = cy + S.y - m0.y, c = Math.cos(dt), s = Math.sin(dt);
+    S.x = m1.x - cx + k * (vx * c - vy * s); S.y = m1.y - cy + k * (vx * s + vy * c);
+    S.s = ns; S.r = wrap(S.r + dt * 180 / Math.PI); apply();
+  }
+  stage.addEventListener("pointerdown", function (e) {
+    e.preventDefault(); if (S.locked) return;
+    try { stage.setPointerCapture(e.pointerId); } catch (x) {} ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  });
+  stage.addEventListener("pointermove", function (e) {
+    var p = ptrs.get(e.pointerId); if (!p || S.locked) return;
+    if (ptrs.size === 1) { S.x += e.clientX - p.x; S.y += e.clientY - p.y; p.x = e.clientX; p.y = e.clientY; apply(); return; }
+    var ids = Array.from(ptrs.keys()).slice(0, 2); if (ids.indexOf(e.pointerId) < 0) return;
+    var a = ptrs.get(ids[0]), b = ptrs.get(ids[1]);
+    var m0 = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, d0 = Math.hypot(a.x - b.x, a.y - b.y), t0 = Math.atan2(b.y - a.y, b.x - a.x);
+    p.x = e.clientX; p.y = e.clientY;
+    var m1 = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, d1 = Math.hypot(a.x - b.x, a.y - b.y), t1 = Math.atan2(b.y - a.y, b.x - a.x);
+    if (d0 < 8) return; var dt = t1 - t0; if (dt > Math.PI) dt -= 2 * Math.PI; if (dt < -Math.PI) dt += 2 * Math.PI;
+    xform(m0, m1, d1 / d0, dt);
+  });
+  ["pointerup", "pointercancel"].forEach(function (n) { stage.addEventListener(n, function (e) { ptrs.delete(e.pointerId); }); });
+  stage.addEventListener("wheel", function (e) {
+    e.preventDefault(); if (S.locked) return; var m = { x: e.clientX, y: e.clientY }; xform(m, m, Math.exp(-e.deltaY * 0.0015), 0);
+  }, { passive: false });
+  ov.addEventListener("touchmove", function (e) { if (!(e.target.closest && e.target.closest("input[type=range]"))) e.preventDefault(); }, { passive: false });
+  ov.addEventListener("gesturestart", function (e) { e.preventDefault(); });
+  ov.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+  /* ---------- touch lock + 1.5 s hold-to-unlock ---------- */
+  var HOLD = 1500, ring = $("tr-ring-c"), pill = $("tr-unlock"), raf = 0, t0 = 0;
+  function holdTick() {
+    var p = Math.min(1, (performance.now() - t0) / HOLD); ring.style.strokeDashoffset = 69.1 * (1 - p);
+    if (p >= 1) { holdEnd(); S.locked = false; ov.classList.remove("tr-locked"); toast("Unlocked"); return; }
+    raf = requestAnimationFrame(holdTick);
+  }
+  function holdEnd() { cancelAnimationFrame(raf); raf = 0; t0 = 0; ring.style.strokeDashoffset = 69.1; pill.classList.remove("tr-hold"); }
+  pill.addEventListener("pointerdown", function (e) {
+    e.preventDefault(); try { pill.setPointerCapture(e.pointerId); } catch (x) {}
+    t0 = performance.now(); pill.classList.add("tr-hold"); raf = requestAnimationFrame(holdTick);
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (n) { pill.addEventListener(n, holdEnd); });
+
+  /* ---------- panel actions ---------- */
+  function newFile(f) {
+    if (!f || !/^image\//.test(f.type)) { toast("Please choose an image file."); return; }
+    var u = URL.createObjectURL(f); release(); S.url = u; S.owned = true; img.src = u; resetPos(); apply();
+  }
+  ov.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tr-act]"); if (!b || S.locked) return;
+    switch (b.dataset.trAct) {
+      case "close": close(); break;
+      case "mode": setMode(b.dataset.m); break;
+      case "screen": setMode("screen"); break;
+      case "retry": startCamera(); break;
+      case "torch": torch(); break;
+      case "ui": S.ui = !S.ui; ov.classList.toggle("tr-ui-off", !S.ui); setIcon(b, S.ui ? "eye-off" : "eye"); break;
+      case "rot90": S.r = wrap(S.r + 90); apply(); break;
+      case "flip": S.flip = !S.flip; apply(); break;
+      case "grid": S.grid = !S.grid; apply(); break;
+      case "reset": resetPos(); apply(); toast("Position reset"); break;
+      case "filter": S.filter = b.dataset.f; apply(); break;
+      case "upload": $("tr-file2").click(); break;
+      case "lock": S.locked = true; ptrs.clear(); ov.classList.add("tr-locked"); toast("Locked. Hold the corner pill for 1.5 s to unlock.", 2200); break;
+    }
+  });
+  $("tr-op").addEventListener("input", function () { S.op = this.value / 100; apply(); });
+  $("tr-rot").addEventListener("input", function () { S.r = +this.value; apply(); });
+  $("tr-file2").addEventListener("change", function () { newFile(this.files[0]); this.value = ""; });
+  document.addEventListener("keydown", function (e) {
+    if (!S.open) return;
+    if (["Escape", "ArrowLeft", "ArrowRight", "+", "-", "="].indexOf(e.key) >= 0) { e.stopImmediatePropagation(); if (e.key === "Escape" && !S.locked) close(); }
+  }, true);
+
+  /* ---------- launcher pane (#tl-pane-trace) ---------- */
+  var DESC = { camera: "Rear camera with your diagram floating over the live view. Prop the phone above the sheet and trace what you see.",
+               screen: "Pure-white screen with your diagram. Raise brightness to 100%, rest the sheet on the phone and trace through the paper." };
+  function launcher() {
+    var pv = $("tr-prev"); if (!pv) return;
+    pv.innerHTML = P.prev ? "" : '<span class="text-[11px] font-semibold" style="color:#64748b">No diagram yet</span>';
+    if (P.prev) { var im = document.createElement("img"); im.src = P.prev; im.alt = "Selected diagram"; pv.appendChild(im); }
+    document.querySelectorAll('#tl-pane-trace [data-tr-l="mode"]').forEach(function (b) { b.classList.toggle("tl-on", b.dataset.m === lm); });
+    $("tr-mode-desc").textContent = DESC[lm];
+  }
+  function clearPending() { if (P.prev) { try { URL.revokeObjectURL(P.prev); } catch (e) {} } P.blob = null; P.prev = null; launcher(); }
+  var pane = $("tl-pane-trace");
+  if (pane) {
+    pane.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-tr-l]"); if (!b) return;
+      switch (b.dataset.trL) {
+        case "pick": $("tr-file").click(); break;
+        case "symbols": var t = $("tl-tab-symbols"); if (t) { t.click(); mainToast("Open a symbol, then tap \u201CTrace Symbol\u201D"); } break;
+        case "clear": clearPending(); break;
+        case "mode": lm = b.dataset.m; launcher(); break;
+        case "start":
+          if (!P.blob) { $("tr-file").click(); break; }
+          openTrace({ url: URL.createObjectURL(P.blob), owned: true, mode: lm }); break;
+      }
+    });
+    $("tr-file").addEventListener("change", function () {
+      var f = this.files[0]; this.value = ""; if (!f) return;
+      if (!/^image\//.test(f.type)) { mainToast("Please choose an image file", "error"); return; }
+      clearPending(); P.blob = f; P.name = f.name; P.prev = URL.createObjectURL(f); launcher();
+    });
+    launcher();
+  }
+
+  /* ---------- SVG symbol -> transparent PNG (strokes forced black) ---------- */
+  function svgToPng(svg) {
+    return new Promise(function (res, rej) {
+      var vb = (svg.getAttribute("viewBox") || "0 0 100 60").split(/[\s,]+/).map(Number), K = 16, w = vb[2] * K, h = vb[3] * K;
+      var c = svg.cloneNode(true); c.setAttribute("xmlns", "http://www.w3.org/2000/svg"); c.setAttribute("width", w); c.setAttribute("height", h); c.style.color = "#000";
+      var st = document.createElementNS("http://www.w3.org/2000/svg", "style");
+      st.textContent = ".tl-sym{fill:none;stroke:#000;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.tl-sym text{font-family:Inter,Arial,sans-serif;font-weight:800}";
+      c.insertBefore(st, c.firstChild);
+      var xml = new XMLSerializer().serializeToString(c).replace(/currentColor/g, "#000");
+      var u = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml;charset=utf-8" })), im = new Image();
+      im.onload = function () {
+        var pad = Math.round(w * 0.06), cv = document.createElement("canvas"); cv.width = w + pad * 2; cv.height = h + pad * 2;
+        cv.getContext("2d").drawImage(im, pad, pad, w, h); URL.revokeObjectURL(u);
+        cv.toBlob(function (b) { b ? res(b) : rej(new Error("toBlob")); }, "image/png");
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); rej(new Error("svg")); }; im.src = u;
+    });
+  }
+
+  /* ---------- public API (used by the Gallery + Symbol buttons) ---------- */
+  window.TraceDraw = {
+    fromGallery: function () {
+      var im = $("gallery-lightbox-img"), src = im && (im.currentSrc || im.src);
+      if (!src) { mainToast("No photo to trace", "error"); return; }
+      openTrace({ url: src, owned: false });
+    },
+    fromSymbol: function () {
+      var svg = document.querySelector("#tl-m-svg svg"); if (!svg) { mainToast("No symbol to trace", "error"); return; }
+      svgToPng(svg).then(function (b) { openTrace({ url: URL.createObjectURL(b), owned: true }); })
+        .catch(function () { mainToast("Couldn\u2019t prepare this symbol", "error"); });
+    },
+    openUrl: function (url, mode) { openTrace({ url: url, owned: false, mode: mode }); },
+    close: close
+  };
+  icons();
+})();
+</script>
+
 </body>
 </html>

@@ -4256,6 +4256,9 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
 
     <div class="mu-fold"><div class="mu-foldi">
     <div class="mu-row mu-ctrl">
+      <button type="button" id="music-prev-btn" class="mu-btn btn-tap" onclick="itiMusicPrev()" aria-label="Previous track" title="Previous track (tap again within 3s of start)">
+        <i data-lucide="skip-back" class="w-4 h-4"></i>
+      </button>
       <button type="button" id="music-play-btn" class="mu-btn mu-main btn-tap" onclick="itiMusicToggle()" aria-label="Play">
         <i data-lucide="play" class="w-5 h-5"></i>
       </button>
@@ -17449,7 +17452,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 
   /* controls / manage / list fold away together when minimizing */
   .mu-fold { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--mu-dur) var(--mu-ease), opacity 0.25s ease; }
-  .mu-foldi { min-height: 0; overflow: hidden; padding: 4px 2px; margin: -4px -2px; }
+  .mu-foldi { min-height: 0; overflow: hidden; padding: 7px 7px; margin: -7px -7px; }
   #iti-music-bar.mu-mini .mu-fold { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
 
   /* song picker slides open */
@@ -17474,6 +17477,15 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   /* micro-interactions */
   #music-play-btn svg, #music-mini-play svg { animation: mu-pop 0.28s var(--mu-ease); }
   @keyframes mu-pop { from { transform: scale(0.55) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  /* loading ring around the play buttons while a song is being fetched / buffered */
+  #music-play-btn, #music-mini-play { position: relative; }
+  .mu-btn.mu-loading::before, .mu-btn.mu-loading::after { content: ""; position: absolute; inset: -4px; border-radius: 9999px; pointer-events: none; box-sizing: border-box; }
+  .mu-btn.mu-loading::before { border: 2.5px solid rgba(148, 163, 184, 0.28); }
+  .mu-btn.mu-loading::after { border: 2.5px solid transparent; border-top-color: var(--mu-accent); border-right-color: var(--mu-accent); animation: mu-spin 0.8s linear infinite; }
+  .mu-btn.mu-sm.mu-loading::before, .mu-btn.mu-sm.mu-loading::after { inset: -3px; border-width: 2px; }
+  @keyframes mu-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .mu-btn.mu-loading::after { animation-duration: 2.4s; } }
+  #iti-music-bar.mu-mini .mu-mini-only.mu-loading { overflow: visible; }   /* mini button is overflow:hidden — let the ring show */
   .mu-item { transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.12s ease; }
   #music-seek { transition: none; }
   #music-seek::-webkit-slider-thumb { transition: transform 0.15s ease; }
@@ -17528,6 +17540,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   var player = null, apiState = "idle", ready = false, pendingPlay = false;
   var MINIMIZE_KEEPS_PLAYING = true; /* false = minimizing pauses (strict YouTube "video stays visible" policy) */
   var wantPlay = false, lastResume = 0;
+  var buffering = false, loadSince = 0;   /* drives the loading ring on the play buttons */
   var LOW_Q = "tiny"; /* lowest quality (144p) for the YouTube backup; YouTube may treat this as a hint only */
   function lowQ() { try { player.setPlaybackQuality(LOW_Q); } catch (e) {} }
   var introFor = null;
@@ -17614,7 +17627,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       });
       apiState = "ready";
     }).catch(function () {
-      apiState = "idle"; player = null;
+      apiState = "idle"; player = null; pendingPlay = false; wantPlay = false;
       toast("Couldn't load the YouTube player. Check your connection.", "error");
     });
   }
@@ -17630,6 +17643,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function onState(e) {
     var S = window.YT && YT.PlayerState; if (!S) return;
     if (mode !== "yt") { if (e.data === S.PLAYING) { try { player.pauseVideo(); } catch (er) {} } return; }
+    buffering = e.data === S.BUFFERING;
     if (e.data === S.PLAYING) {
       playing = true; errStreak = 0; lowQ(); stopVideos(); ui(); startTick(); tick();
       if (resumeAt > 0) { var ra = resumeAt; resumeAt = 0; try { player.seekTo(ra, true); } catch (er) {} }
@@ -17687,7 +17701,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (p && p.catch) p.catch(function (err) {
       if (!err || mode !== "audio") return;
       if (err.name === "AbortError") return;
-      if (err.name === "NotAllowedError") { clearStall(); playing = false; ui(); toast("Tap play to start", "info"); return; }
+      if (err.name === "NotAllowedError") { clearStall(); wantPlay = false; playing = false; ui(); toast("Tap play to start", "info"); return; }
       onAudioError();
     });
   }
@@ -17718,6 +17732,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     playing = false; ui(); tick();
   });
   audio.addEventListener("ended", function () { if (mode !== "audio") return; onEnded(); });
+  audio.addEventListener("waiting", function () { if (mode === "audio") buffering = true; });
+  ["playing", "pause", "error", "emptied", "ended"].forEach(function (ev) { audio.addEventListener(ev, function () { buffering = false; }); });
   audio.addEventListener("error", onAudioError);
   audio.addEventListener("loadedmetadata", function () {
     if (mode === "audio" && resumeAt > 0 && audio.duration > resumeAt + 2) { try { audio.currentTime = resumeAt; } catch (e) {} }
@@ -17901,6 +17917,15 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
 
   /* ---------- UI ---------- */
+  function paintLoading() {
+    var want = !!(wantPlay || pendingPlay) && (!playing || buffering), now = Date.now();
+    if (want) { if (!loadSince) loadSince = now; if (now - loadSince > 25000) want = false; } else loadSince = 0;   /* never spin forever */
+    ["music-play-btn", "music-mini-play"].forEach(function (id) {
+      var b = $(id); if (!b) return;
+      if (b.classList.contains("mu-loading") !== want) { b.classList.toggle("mu-loading", want); b.setAttribute("aria-busy", String(want)); }
+    });
+  }
+  setInterval(function () { if (!document.hidden) paintLoading(); }, 250);
   function ui() {
     adCheck(true);
     var btn = $("music-play-btn");
@@ -17920,6 +17945,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     var chip = $("dv-quick-music"); if (chip) chip.classList.toggle("mu-live", playing);
     try { document.body.classList.toggle("music-playing", !!playing); } catch (e) {}
     renderSotd();
+    paintLoading();
     hubRefresh();
   }
 
@@ -19244,6 +19270,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     });
   })();
   window.itiMusicNext = next;
+  window.itiMusicPrev = function () { prev(); };   /* >3s into a song: restart it; otherwise go to the previous song */
   window.itiMusicToggleVideo = toggleVideo;
   window.itiMusicMinimize = minimize;
   window.itiMusicToggleList = toggleList;
@@ -21054,7 +21081,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   var D_STRIPE = "repeating-linear-gradient(135deg,#16a34a 0 7px,#facc15 7px 14px)";
 
   /* ---------- D1. AC & DC cable colour code ---------- */
-  var CAB = {
+  var CABCOL = {   /* renamed from CAB: the Lab "Cable Guide" below also declared CAB and overwrote this table */
     old: { t: "Old Indian Standard", sub: "R-Y-B-N-E \u2022 IS 375 / pre-2007 wiring",
       rows: [["Phase R (Line 1)", "Red", "#dc2626"], ["Phase Y (Line 2)", "Yellow", "#facc15"], ["Phase B (Line 3)", "Blue", "#2563eb"], ["Neutral (N)", "Black", "#111827"], ["Earth (E)", "Green", "#16a34a"]],
       hint: "Single phase: any phase colour (usually Red) = Line, Black = Neutral, Green = Earth." },
@@ -21066,7 +21093,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       hint: "Batteries, solar and 12/24/48 V DC systems. Connect + (red) first and remove it last. Never swap polarity on a battery or inverter." }
   };
   function renderCable() {
-    var c = CAB[DS.cable.std];
+    var c = CABCOL[DS.cable.std];
     var rows = c.rows.map(function (r) {
       return '<div class="tl-inner rounded-xl px-3 py-2 flex items-center justify-between gap-3"><div class="min-w-0"><div class="text-[11px] font-semibold text-slate-400">' + r[0] + '</div><div class="text-xs font-extrabold text-white">' + r[1] + "</div></div>" +
         '<span class="inline-flex items-center shrink-0"><span style="display:inline-block;width:76px;height:14px;border-radius:7px 0 0 7px;background:' + r[2] + ';border:1px solid rgba(148,163,184,0.6)"></span><span style="display:inline-block;width:12px;height:8px;border-radius:0 3px 3px 0;background:linear-gradient(90deg,#b45309,#f59e0b)"></span></span></div>';

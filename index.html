@@ -1955,6 +1955,235 @@ html.bright-mode #dv-quick > button {
 #dv-latest-video .dv-lv-cap b { font-size: 15px; font-weight: 800; line-height: 1.25; }
 #dv-latest-video .dv-lv-cap small { font-size: 11.5px; opacity: .85; }
 </style>
+<style id="cal-style">
+/* =====================================================================
+   CALCULATOR & CONVERTER  (#view-calc) — glass UI matched to #view-tools
+   ===================================================================== */
+#view-calc .cal-card {
+  background-color: rgba(12, 19, 34, 0.52);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
+}
+#view-calc .cal-inner {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+#view-calc button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#view-calc .cal-seg, #view-calc .cal-hbtn { background-color: transparent; font-family: inherit; }
+#view-calc .cal-key sup { font-size: 0.62em; line-height: 0; vertical-align: super; position: static; }
+
+/* segmented switcher + small pills */
+#view-calc .cal-seg {
+  padding: 0.5rem 0.5rem; border-radius: 0.75rem; font-size: 12px; font-weight: 800; color: #cbd5e1;
+  border: 1px solid transparent; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease, transform .12s ease;
+}
+#view-calc .cal-seg.cal-on,
+#view-calc .cal-pill.cal-on {
+  color: #fbbf24; background-color: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.55);
+}
+#view-calc .cal-pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 0.4rem 0.75rem; border-radius: 9999px;
+  font-size: 11px; font-weight: 800; white-space: nowrap; color: #cbd5e1;
+  background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease, transform .12s ease;
+}
+#view-calc .cal-pill:hover { background-color: rgba(255, 255, 255, 0.1); }
+#view-calc .cal-pill svg { transition: transform .25s ease; }
+#view-calc .cal-pill[aria-expanded="true"] .cal-chev { transform: rotate(180deg); }
+
+/* display */
+#view-calc .cal-expr {
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; white-space: nowrap; overflow-x: auto;
+  text-align: right; font-size: 30px; line-height: 1.2; font-weight: 700; color: #f1f5f9; scrollbar-width: none;
+  min-height: 36px; letter-spacing: -0.01em;
+}
+#view-calc .cal-expr::-webkit-scrollbar { display: none; }
+#view-calc .cal-expr.cal-empty { color: rgba(148, 163, 184, 0.7); }
+#view-calc .cal-preview {
+  font-variant-numeric: tabular-nums; text-align: right; min-height: 22px; font-size: 16px; font-weight: 700;
+  color: #fbbf24; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#view-calc .cal-preview.cal-bad { color: #fb7185; font-size: 13px; }
+#view-calc .cal-shake { animation: cal-shake .32s ease; }
+@keyframes cal-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* keys */
+#view-calc .cal-key {
+  height: 56px; border-radius: 1rem; font-size: 21px; font-weight: 700; color: #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2);
+  display: flex; align-items: center; justify-content: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  transition: background-color .15s ease, border-color .2s ease, color .2s ease, transform .12s ease;
+}
+#view-calc .cal-key:hover { background-color: rgba(255, 255, 255, 0.1); }
+#view-calc .cal-key:active { transform: scale(0.95); background-color: rgba(255, 255, 255, 0.16); }
+#view-calc .cal-key.cal-op { color: #fbbf24; background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.35); font-size: 24px; }
+#view-calc .cal-key.cal-op:active { background-color: rgba(245, 158, 11, 0.3); }
+#view-calc .cal-key.cal-clr { color: #fb7185; background-color: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.35); font-size: 19px; }
+#view-calc .cal-key.cal-clr:active { background-color: rgba(244, 63, 94, 0.28); }
+#view-calc .cal-key.cal-eq { color: #04210f; background-color: rgba(16, 185, 129, 0.92); border-color: rgba(52, 211, 153, 0.8); font-size: 26px; }
+#view-calc .cal-key.cal-eq:hover { background-color: #10b981; }
+#view-calc .cal-key.cal-sci { height: 40px; border-radius: 0.75rem; font-size: 14px; font-weight: 800; color: #fcd34d; }
+#view-calc .cal-key:focus-visible, #view-calc .cal-pill:focus-visible, #view-calc .cal-seg:focus-visible,
+#view-calc .cal-tile:focus-visible, #view-calc .cal-hbtn:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+
+/* scientific drawer */
+#view-calc .cal-sci-wrap { display: grid; grid-template-rows: 0fr; visibility: hidden; transition: grid-template-rows .3s ease, visibility 0s linear .3s; }
+#view-calc .cal-sci-wrap.cal-open { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows .3s ease, visibility 0s; }
+#view-calc .cal-sci-wrap > div { overflow: hidden; min-height: 0; }
+
+/* history */
+#view-calc .cal-hist { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+#view-calc .cal-hist.cal-open { max-height: 260px; overflow-y: auto; }
+#view-calc .cal-hrow { display: flex; align-items: center; gap: 6px; padding: 6px 0; border-top: 1px solid rgba(148, 163, 184, 0.15); }
+#view-calc .cal-hbtn { min-width: 0; font-variant-numeric: tabular-nums; border-radius: 0.5rem; padding: 4px 6px; transition: background-color .2s ease; }
+#view-calc .cal-hbtn:hover { background-color: rgba(255, 255, 255, 0.08); }
+#view-calc .cal-hexpr { flex: 1 1 auto; text-align: left; font-size: 12px; font-weight: 600; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#view-calc .cal-hres { flex: 0 1 auto; max-width: 48%; text-align: right; font-size: 14px; font-weight: 800; color: #fbbf24; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* converter launcher tiles */
+#view-calc .cal-tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  min-height: 88px; padding: 10px 6px; border-radius: 1rem; text-align: center; color: #e2e8f0;
+  background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease, transform .12s ease;
+}
+#view-calc .cal-tile:hover { background-color: rgba(255, 255, 255, 0.1); border-color: rgba(245, 158, 11, 0.45); }
+#view-calc .cal-tile:active { transform: scale(0.96); }
+#view-calc .cal-tile .cal-tico {
+  width: 34px; height: 34px; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;
+  color: #fbbf24; background-color: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35);
+}
+#view-calc .cal-tile .cal-tlbl { font-size: 11px; font-weight: 800; line-height: 1.15; }
+
+/* inputs (used by the converter engines in Part 2) */
+#view-calc .cal-input {
+  width: 100%; min-width: 0; padding: 0.55rem 0.75rem; border-radius: 0.75rem; font-size: 14px; font-weight: 600;
+  color: #fff; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2);
+  outline: none; font-variant-numeric: tabular-nums; transition: border-color .2s ease, background-color .2s ease;
+}
+#view-calc .cal-input::placeholder { color: rgba(148, 163, 184, 0.75); font-weight: 500; }
+#view-calc .cal-input:focus { border-color: #f59e0b; }
+#view-calc .cal-input.cal-bad { border-color: rgba(244, 63, 94, 0.7); }
+#view-calc .cal-input.cal-auto { border-color: rgba(52, 211, 153, 0.55); background-color: rgba(16, 185, 129, 0.10); color: #6ee7b7; }
+#view-calc input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+#view-calc input[type="number"]::-webkit-outer-spin-button,
+#view-calc input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  #view-calc .cal-sci-wrap, #view-calc .cal-hist, #view-calc .cal-key, #view-calc .cal-tile { transition: none; }
+  #view-calc .cal-shake { animation: none; }
+}
+@media (max-width: 359px) {
+  #view-calc .cal-key { height: 50px; font-size: 19px; }
+  #view-calc .cal-expr { font-size: 26px; }
+}
+
+/* ---------------------- Bright (light) mode ---------------------- */
+html.bright-mode #view-calc .cal-card {
+  background-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(12px) saturate(1.45); -webkit-backdrop-filter: blur(12px) saturate(1.45);
+  border-color: rgba(148, 163, 184, 0.32);
+  box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset;
+}
+html.bright-mode #view-calc .cal-inner { background-color: rgba(255, 255, 255, 0.65); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-calc .cal-seg,
+html.bright-mode #view-calc .cal-pill { color: #334155; }
+html.bright-mode #view-calc .cal-pill { background-color: rgba(255, 255, 255, 0.65); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-calc .cal-pill:hover { background-color: rgba(255, 255, 255, 0.9); }
+html.bright-mode #view-calc .cal-seg.cal-on,
+html.bright-mode #view-calc .cal-pill.cal-on { color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.6); }
+html.bright-mode #view-calc .cal-expr { color: #0f172a; }
+html.bright-mode #view-calc .cal-expr.cal-empty { color: #64748b; }
+html.bright-mode #view-calc .cal-preview { color: #92400e; }
+html.bright-mode #view-calc .cal-preview.cal-bad { color: #be123c; }
+html.bright-mode #view-calc .cal-key { color: #0f172a; background-color: rgba(255, 255, 255, 0.65); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-calc .cal-key:hover { background-color: rgba(255, 255, 255, 0.9); }
+html.bright-mode #view-calc .cal-key:active { background-color: rgba(226, 232, 240, 0.95); }
+html.bright-mode #view-calc .cal-key.cal-op { color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.45); }
+html.bright-mode #view-calc .cal-key.cal-op:active { background-color: rgba(217, 119, 6, 0.28); }
+html.bright-mode #view-calc .cal-key.cal-clr { color: #be123c; background-color: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.4); }
+html.bright-mode #view-calc .cal-key.cal-eq { color: #fff; background-color: #059669; border-color: #047857; }
+html.bright-mode #view-calc .cal-key.cal-eq:hover { background-color: #047857; }
+html.bright-mode #view-calc .cal-key.cal-sci { color: #92400e; }
+html.bright-mode #view-calc .cal-hrow { border-top-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-calc .cal-hbtn:hover { background-color: rgba(15, 23, 42, 0.06); }
+html.bright-mode #view-calc .cal-hexpr { color: #475569; }
+html.bright-mode #view-calc .cal-hres { color: #92400e; }
+html.bright-mode #view-calc .cal-tile { color: #0f172a; background-color: rgba(255, 255, 255, 0.65); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-calc .cal-tile:hover { background-color: rgba(255, 255, 255, 0.9); border-color: rgba(217, 119, 6, 0.55); }
+html.bright-mode #view-calc .cal-tile .cal-tico { color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.45); }
+html.bright-mode #view-calc .cal-input { color: #0f172a; background-color: rgba(255, 255, 255, 0.65); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-calc .cal-input::placeholder { color: #64748b; }
+html.bright-mode #view-calc .cal-input:focus { border-color: #d97706; }
+html.bright-mode #view-calc .cal-input.cal-auto { color: #065f46; background-color: #d1fae5; border-color: #6ee7b7; }
+</style>
+
+<!-- ===== CAL PART 2 CSS: START ===== -->
+<style id="calconv-style">
+/* =====================================================================
+   CALCULATOR & CONVERTER — Part 2 (converter engines inside #cal-conv-body)
+   Reuses Part 1: .cal-card .cal-inner .cal-input .cal-key .cal-pill .cal-seg .btn-tap
+   ===================================================================== */
+#cal-conv-body .calconv { display: flex; flex-direction: column; gap: 12px; }
+#cal-conv-body [hidden] { display: none !important; }
+#cal-conv-body .calconv-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(94px, 36%); gap: 8px; align-items: end; }
+#cal-conv-body .calconv-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#cal-conv-body .calconv-g3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+#cal-conv-body .calconv-f { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+#cal-conv-body .calconv-lbl { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #94a3b8; }
+#cal-conv-body .calconv-mid { display: flex; justify-content: center; margin: -4px 0; }
+#view-calc .cal-key.calconv-swap { width: 42px; height: 42px; border-radius: 9999px; font-size: 19px; color: #fbbf24; background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.35); }
+#cal-conv-body .calconv-sel { cursor: pointer; text-overflow: ellipsis; }
+#view-calc select.cal-input option { color: #0f172a; background-color: #fff; }
+#cal-conv-body input[type="date"].cal-input { color-scheme: dark; min-height: 40px; }
+#cal-conv-body .calconv-seg { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 0.75rem; }
+#cal-conv-body .calconv-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+#cal-conv-body .calconv-res { border-radius: 0.75rem; padding: 2px 12px; }
+#cal-conv-body .calconv-kv { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(148, 163, 184, 0.15); font-size: 12px; font-weight: 700; color: #94a3b8; }
+#cal-conv-body .calconv-kv:first-child { border-top: 0; }
+#cal-conv-body .calconv-kv b { min-width: 0; text-align: right; font-size: 15px; font-weight: 800; color: #f1f5f9; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+#cal-conv-body .calconv-big b { font-size: 19px; color: #fbbf24; }
+#cal-conv-body .calconv-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#cal-conv-body .calconv-note, #cal-conv-body .calconv-stat { font-size: 11px; font-weight: 600; color: #94a3b8; min-width: 0; overflow-wrap: anywhere; }
+#cal-conv-body .calconv-note.calconv-err { color: #fb7185; }
+#cal-conv-body .calconv-cat { display: inline-block; padding: 3px 12px; border-radius: 9999px; font-size: 12px; font-weight: 800; border: 1px solid transparent; }
+#cal-conv-body .calconv-cat[data-c="under"] { color: #7dd3fc; background-color: rgba(56, 189, 248, .15); border-color: rgba(56, 189, 248, .5); }
+#cal-conv-body .calconv-cat[data-c="normal"] { color: #6ee7b7; background-color: rgba(16, 185, 129, .15); border-color: rgba(52, 211, 153, .5); }
+#cal-conv-body .calconv-cat[data-c="over"] { color: #fcd34d; background-color: rgba(245, 158, 11, .15); border-color: rgba(245, 158, 11, .5); }
+#cal-conv-body .calconv-cat[data-c="obese"] { color: #fda4af; background-color: rgba(244, 63, 94, .15); border-color: rgba(244, 63, 94, .5); }
+#cal-conv-body .calconv-bmibar { position: relative; display: flex; height: 10px; border-radius: 9999px; margin: 12px 2px 20px; }
+#cal-conv-body .calconv-bmibar > i { display: block; height: 100%; }
+#cal-conv-body .calconv-bmibar > i:first-child { border-radius: 9999px 0 0 9999px; }
+#cal-conv-body .calconv-bmibar > i:last-of-type { border-radius: 0 9999px 9999px 0; }
+#cal-conv-body .calconv-mark { position: absolute; top: -4px; width: 4px; height: 18px; border-radius: 2px; background: #fff; box-shadow: 0 0 0 2px rgba(15, 23, 42, .85); transform: translateX(-50%); transition: left .25s ease; }
+#cal-conv-body .calconv-tick { position: absolute; top: 15px; font-size: 9px; font-weight: 800; color: #94a3b8; transform: translateX(-50%); }
+#cal-conv-body .calconv-bmival { font-size: 30px; font-weight: 800; color: #fbbf24; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { #cal-conv-body .calconv-mark { transition: none; } }
+
+/* Bright mode */
+html.bright-mode #cal-conv-body .calconv-lbl,
+html.bright-mode #cal-conv-body .calconv-note,
+html.bright-mode #cal-conv-body .calconv-stat,
+html.bright-mode #cal-conv-body .calconv-kv,
+html.bright-mode #cal-conv-body .calconv-tick { color: #475569; }
+html.bright-mode #cal-conv-body .calconv-note.calconv-err { color: #be123c; }
+html.bright-mode #cal-conv-body .calconv-kv { border-top-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #cal-conv-body .calconv-kv b { color: #0f172a; }
+html.bright-mode #cal-conv-body .calconv-big b { color: #92400e; }
+html.bright-mode #view-calc .cal-key.calconv-swap { color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.45); }
+html.bright-mode #cal-conv-body input[type="date"].cal-input { color-scheme: light; }
+html.bright-mode #cal-conv-body .calconv-cat[data-c="under"] { color: #075985; background-color: #e0f2fe; border-color: #7dd3fc; }
+html.bright-mode #cal-conv-body .calconv-cat[data-c="normal"] { color: #065f46; background-color: #d1fae5; border-color: #6ee7b7; }
+html.bright-mode #cal-conv-body .calconv-cat[data-c="over"] { color: #92400e; background-color: #fef3c7; border-color: #fcd34d; }
+html.bright-mode #cal-conv-body .calconv-cat[data-c="obese"] { color: #9f1239; background-color: #ffe4e6; border-color: #fda4af; }
+html.bright-mode #cal-conv-body .calconv-bmival { color: #92400e; }
+html.bright-mode #cal-conv-body .calconv-mark { background: #0f172a; box-shadow: 0 0 0 2px #fff; }
+</style>
+<!-- ===== CAL PART 2 CSS: END ===== -->
+
 <style id="tl-style">
 /* =====================================================================
    TRADE TOOLS  (#view-tools)  — glass UI matched to Home / Daily cards
@@ -2130,6 +2359,174 @@ html.bright-mode #tl-modal .tl-sym-box { color: #92400e; }
 html.bright-mode #view-tools .tl-sw { border-color: rgba(100, 116, 139, 0.6); }
 html.bright-mode #view-tools .tl-sw[aria-pressed="true"] { border-color: #d97706; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.3); }
 html.bright-mode #view-tools .tl-dot { border-color: rgba(100, 116, 139, 0.7); }
+/* =====================================================================
+   DOC TOOLS (#view-docs) — glass UI matched to #view-tools
+   ===================================================================== */
+#view-docs .doc-card {
+  background-color: rgba(12, 19, 34, 0.52);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
+}
+#view-docs .doc-inner {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+#view-docs .doc-seg {
+  padding: 0.55rem 0.5rem; border-radius: 0.75rem; font-size: 12px; font-weight: 800; color: #cbd5e1;
+  border: 1px solid transparent; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.12s ease;
+}
+#view-docs .doc-seg.doc-on, #view-docs .doc-pill.doc-on {
+  color: #fbbf24; background-color: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.55);
+}
+#view-docs .doc-pill {
+  flex: 0 0 auto; padding: 0.45rem 0.8rem; border-radius: 9999px; font-size: 11.5px; font-weight: 700;
+  white-space: nowrap; color: #cbd5e1; background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.12s ease;
+}
+#view-docs .doc-pill:hover { background-color: rgba(255, 255, 255, 0.1); }
+#view-docs .doc-pill.doc-on:hover { background-color: rgba(245, 158, 11, 0.24); }
+#view-docs .doc-input {
+  width: 100%; min-width: 0; padding: 0.6rem 0.75rem; border-radius: 0.75rem; font-size: 13px; font-weight: 600;
+  color: #fff; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2);
+  outline: none; transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+#view-docs .doc-input::placeholder { color: rgba(148, 163, 184, 0.75); font-weight: 500; }
+#view-docs .doc-input:focus { border-color: #f59e0b; }
+#view-docs .doc-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #94a3b8; }
+#view-docs .doc-seg:focus-visible, #view-docs .doc-pill:focus-visible, #view-docs .doc-ic:focus-visible,
+#view-docs .doc-add:focus-visible, #view-docs .doc-clear:focus-visible, #view-docs .doc-go:focus-visible { outline: 2px solid #f59e0b; outline-offset: 2px; }
+
+/* action buttons */
+#view-docs .doc-add, #view-docs .doc-clear {
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem; font-size: 12px; font-weight: 800; border: 1px solid transparent;
+  transition: background-color 0.25s ease, opacity 0.2s ease, transform 0.12s ease;
+}
+#view-docs .doc-add { color: #fbbf24; background-color: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); }
+#view-docs .doc-add:hover { background-color: rgba(245, 158, 11, 0.24); }
+#view-docs .doc-clear { color: #fda4af; background-color: rgba(244, 63, 94, 0.14); border-color: rgba(251, 113, 133, 0.45); }
+#view-docs .doc-clear:hover { background-color: rgba(244, 63, 94, 0.22); }
+#view-docs .doc-go {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.8rem 1rem;
+  border-radius: 0.875rem; font-size: 13px; font-weight: 800; color: #fff;
+  background: linear-gradient(180deg, #10b981, #059669); border: 1px solid rgba(52, 211, 153, 0.6);
+  box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.55); transition: opacity 0.2s ease, transform 0.12s ease;
+}
+#view-docs .doc-add:disabled, #view-docs .doc-clear:disabled, #view-docs .doc-go:disabled,
+#view-docs .doc-pill:disabled { opacity: 0.5; cursor: not-allowed; }
+#view-docs .doc-go:disabled { box-shadow: none; }
+
+/* page cards */
+#view-docs .doc-page { border-radius: 0.875rem; padding: 0.6rem; }
+#view-docs .doc-thumb {
+  position: relative; width: 64px; height: 80px; flex: 0 0 auto; overflow: hidden; border-radius: 0.55rem;
+  background-color: rgba(148, 163, 184, 0.14); border: 1px solid rgba(148, 163, 184, 0.28);
+}
+#view-docs .doc-thumb img {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(0deg);
+  max-width: 64px; max-height: 80px; display: block; user-select: none; -webkit-user-drag: none;
+}
+#view-docs .doc-ic {
+  display: flex; align-items: center; justify-content: center; height: 2.4rem; border-radius: 0.65rem;
+  color: #cbd5e1; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(148, 163, 184, 0.2);
+  transition: background-color 0.2s ease, opacity 0.2s ease, transform 0.12s ease;
+}
+#view-docs .doc-ic:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.12); }
+#view-docs .doc-ic:disabled { opacity: 0.3; cursor: not-allowed; }
+#view-docs .doc-ic.doc-rose { color: #fda4af; background-color: rgba(244, 63, 94, 0.12); border-color: rgba(251, 113, 133, 0.4); }
+#view-docs .doc-empty { border: 1.5px dashed rgba(148, 163, 184, 0.35); border-radius: 0.875rem; }
+#view-docs .doc-spin {
+  width: 16px; height: 16px; border-radius: 9999px; flex: 0 0 auto;
+  border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; animation: docspin 0.7s linear infinite;
+}
+@keyframes docspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #view-docs .doc-spin { animation-duration: 1.6s; } }
+
+/* ---------------------- Bright (light) mode ---------------------- */
+html.bright-mode #view-docs .doc-card {
+  background-color: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(12px) saturate(1.45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.45);
+  border-color: rgba(148, 163, 184, 0.32);
+  box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset;
+}
+html.bright-mode #view-docs .doc-inner { background-color: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-docs .doc-seg, html.bright-mode #view-docs .doc-pill { color: #334155; }
+html.bright-mode #view-docs .doc-pill { background-color: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-docs .doc-pill:hover { background-color: rgba(255, 255, 255, 0.85); }
+html.bright-mode #view-docs .doc-seg.doc-on, html.bright-mode #view-docs .doc-pill.doc-on {
+  color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.6);
+}
+html.bright-mode #view-docs .doc-input { color: #0f172a; background-color: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-docs .doc-input::placeholder { color: #64748b; }
+html.bright-mode #view-docs .doc-input:focus { border-color: #d97706; }
+html.bright-mode #view-docs .doc-lbl { color: #475569; }
+html.bright-mode #view-docs .doc-add { color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.55); }
+html.bright-mode #view-docs .doc-add:hover { background-color: rgba(217, 119, 6, 0.22); }
+html.bright-mode #view-docs .doc-clear { color: #9f1239; background-color: #ffe4e6; border-color: #fda4af; }
+html.bright-mode #view-docs .doc-clear:hover { background-color: #fecdd3; }
+html.bright-mode #view-docs .doc-go { color: #fff; }
+html.bright-mode #view-docs .doc-ic { color: #334155; background-color: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.35); }
+html.bright-mode #view-docs .doc-ic:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.9); }
+html.bright-mode #view-docs .doc-ic.doc-rose { color: #9f1239; background-color: #ffe4e6; border-color: #fda4af; }
+html.bright-mode #view-docs .doc-thumb { background-color: rgba(100, 116, 139, 0.12); border-color: rgba(148, 163, 184, 0.4); }
+html.bright-mode #view-docs .doc-empty { border-color: rgba(100, 116, 139, 0.4); }
+
+
+/* ---------------------------------------------------------------------
+   DOC TOOLS · IMAGE RESIZE add-ons (paste right after the Part 1 #view-docs CSS)
+   --------------------------------------------------------------------- */
+#view-docs .doc-scroll { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+#view-docs .doc-scroll::-webkit-scrollbar { display: none; }
+#view-docs input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+#view-docs input[type="number"]::-webkit-outer-spin-button,
+#view-docs input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#view-docs .doc-range { width: 100%; accent-color: #f59e0b; height: 1.75rem; }
+#view-docs .doc-prev {
+  display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 120px; overflow: hidden;
+  border-radius: 0.75rem; border: 1px solid rgba(148, 163, 184, 0.28); background-color: rgba(148, 163, 184, 0.12);
+  background-image:
+    linear-gradient(45deg, rgba(148, 163, 184, 0.2) 25%, transparent 25%, transparent 75%, rgba(148, 163, 184, 0.2) 75%),
+    linear-gradient(45deg, rgba(148, 163, 184, 0.2) 25%, transparent 25%, transparent 75%, rgba(148, 163, 184, 0.2) 75%);
+  background-size: 16px 16px; background-position: 0 0, 8px 8px;
+}
+#view-docs .doc-prev img { display: block; max-width: 100%; max-height: 280px; object-fit: contain; }
+#view-docs .doc-stat-v { font-size: 14px; font-weight: 800; color: #f1f5f9; }
+#view-docs .doc-stat-s { font-size: 10.5px; font-weight: 600; color: #94a3b8; }
+#view-docs .doc-badge-em {
+  display: inline-flex; align-items: center; padding: 0.12rem 0.55rem; border-radius: 9999px; font-size: 13px; font-weight: 800;
+  color: #6ee7b7; background-color: rgba(16, 185, 129, 0.16); border: 1px solid rgba(52, 211, 153, 0.5);
+}
+#view-docs .doc-save { color: #6ee7b7; font-weight: 800; }
+#view-docs .doc-bad { color: #fda4af; font-weight: 800; }
+#view-docs .doc-note {
+  display: flex; align-items: flex-start; gap: 0.45rem; padding: 0.5rem 0.65rem; border-radius: 0.7rem;
+  font-size: 11px; font-weight: 700; line-height: 1.4; border: 1px solid transparent;
+}
+#view-docs .doc-note > svg, #view-docs .doc-note > i { flex: 0 0 auto; margin-top: 1px; }
+#view-docs .doc-note-rose { color: #fda4af; background-color: rgba(244, 63, 94, 0.12); border-color: rgba(251, 113, 133, 0.45); }
+#view-docs .doc-note-amber { color: #fcd34d; background-color: rgba(245, 158, 11, 0.12); border-color: rgba(251, 191, 36, 0.4); }
+#view-docs .doc-note-em { color: #6ee7b7; background-color: rgba(16, 185, 129, 0.14); border-color: rgba(52, 211, 153, 0.5); }
+#view-docs .doc-spin-amber { border-color: rgba(245, 158, 11, 0.3); border-top-color: #f59e0b; }
+#view-docs .doc-pill:disabled { opacity: 0.45; cursor: not-allowed; }
+
+html.bright-mode #view-docs .doc-range { accent-color: #d97706; }
+html.bright-mode #view-docs .doc-prev { border-color: rgba(148, 163, 184, 0.4); background-color: rgba(255, 255, 255, 0.55); }
+html.bright-mode #view-docs .doc-stat-v { color: #0f172a; }
+html.bright-mode #view-docs .doc-stat-s { color: #475569; }
+html.bright-mode #view-docs .doc-badge-em { color: #065f46; background-color: #d1fae5; border-color: #6ee7b7; }
+html.bright-mode #view-docs .doc-save { color: #047857; }
+html.bright-mode #view-docs .doc-bad { color: #be123c; }
+html.bright-mode #view-docs .doc-note-rose { color: #9f1239; background-color: #ffe4e6; border-color: #fda4af; }
+html.bright-mode #view-docs .doc-note-amber { color: #92400e; background-color: #fef3c7; border-color: #fbbf24; }
+html.bright-mode #view-docs .doc-note-em { color: #065f46; background-color: #d1fae5; border-color: #6ee7b7; }
+html.bright-mode #view-docs .doc-spin-amber { border-color: rgba(217, 119, 6, 0.3); border-top-color: #d97706; }
+#view-docs .doc-ic.doc-on { color: #fbbf24; background-color: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.55); }
+html.bright-mode #view-docs .doc-ic.doc-on { color: #92400e; background-color: rgba(217, 119, 6, 0.14); border-color: rgba(217, 119, 6, 0.6); }
 </style>
 
 <style id="tl-career-style">
@@ -2410,6 +2807,10 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
             <button type="button" onclick="switchTab('gallery')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>Gallery</span></button>
             <!-- TRADE TOOLS quick-jump (insert inside #dv-quick, after the Gallery button) -->
             <button type="button" onclick="switchTab('tools')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="wrench" class="w-3.5 h-3.5"></i><span>Tools</span></button>
+            <!-- DOC TOOLS quick-jump (insert inside #dv-quick, right after the Tools button) -->
+            <button type="button" onclick="switchTab('docs')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>Doc Tools</span></button>
+            <!-- CALCULATOR quick-jump (insert inside #dv-quick, right after the Doc Tools button) -->
+            <button type="button" onclick="switchTab('calc')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="calculator" class="w-3.5 h-3.5"></i><span>Calculator</span></button>
             <button type="button" id="dv-quick-music" onclick="itiMusicHub()" aria-label="Open music player" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="music" class="w-3.5 h-3.5"></i><span>Music</span></button>
           </div>
 
@@ -3306,6 +3707,358 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
         </div>
       </section>
 
+      <!-- ===== DOC TOOLS TAB (insert right after </section> of #view-tools, before <section id="view-gallery">) ===== -->
+      <section id="view-docs" class="tab-view hidden animate-panel space-y-4">
+        <!-- Header + 2-tab switcher -->
+        <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400 shrink-0">
+              <i data-lucide="file-text" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="w-1 h-4 rounded-full bg-amber-500 shrink-0"></span>
+                <h2 class="text-sm sm:text-base font-extrabold tracking-tight text-white truncate">Doc Tools</h2>
+              </div>
+              <p class="text-[11px] text-slate-400 truncate mt-0.5 pl-3">Offline PDF maker &amp; form image resizer &bull; ITI CONNECT</p>
+            </div>
+          </div>
+          <div id="doc-tablist" class="doc-inner rounded-xl p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Doc tools">
+            <button type="button" id="doc-tab-pdf" role="tab" aria-selected="true" aria-controls="doc-pane-pdf" data-doc-pane="pdf" class="doc-seg doc-on btn-tap min-w-0"><i data-lucide="file-image" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Photo &rarr; PDF</span></button>
+            <button type="button" id="doc-tab-resize" role="tab" aria-selected="false" aria-controls="doc-pane-resize" data-doc-pane="resize" class="doc-seg btn-tap min-w-0"><i data-lucide="scaling" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Image Resize</span></button>
+          </div>
+        </div>
+
+        <!-- ============ PANE 1: PHOTO -> PDF ============ -->
+        <div id="doc-pane-pdf" role="tabpanel" aria-labelledby="doc-tab-pdf" class="space-y-4">
+          <!-- Photos -->
+          <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="doc-lbl">Photos</span>
+              <span id="doc-count-badge" class="text-[11px] font-extrabold text-amber-400">0 pages</span>
+            </div>
+            <input type="file" id="doc-file" accept="image/*" multiple class="hidden">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="doc-add-btn" class="doc-add btn-tap"><i data-lucide="image-plus" class="w-4 h-4"></i><span>Add Photos</span></button>
+              <button type="button" id="doc-clear-btn" class="doc-clear btn-tap" disabled><i data-lucide="trash-2" class="w-4 h-4"></i><span>Clear All</span></button>
+            </div>
+            <div id="doc-empty" class="doc-empty px-4 py-7 text-center">
+              <div class="w-10 h-10 mx-auto rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400"><i data-lucide="images" class="w-5 h-5"></i></div>
+              <p class="text-xs font-bold text-slate-300 mt-2.5">No photos yet</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Tap <b>Add Photos</b> to pick notebook pages, practical sheets or certificates.</p>
+            </div>
+            <div id="doc-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+          </div>
+
+          <!-- Settings -->
+          <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3.5">
+            <div class="space-y-1.5">
+              <div class="doc-lbl">Scan Filter (all pages)</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="doc-pill doc-on btn-tap" data-doc-set="filter" data-val="orig" aria-pressed="true">Original</button>
+                <button type="button" class="doc-pill btn-tap" data-doc-set="filter" data-val="enh" aria-pressed="false">Enhance</button>
+                <button type="button" class="doc-pill btn-tap" data-doc-set="filter" data-val="bw" aria-pressed="false">B&amp;W Scan</button>
+              </div>
+              <p id="doc-filter-hint" class="text-[10.5px] text-slate-400">Photos are used exactly as taken.</p>
+            </div>
+            <div class="space-y-1.5">
+              <div class="doc-lbl">Page Size</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="doc-pill doc-on btn-tap" data-doc-set="size" data-val="p" aria-pressed="true">A4 Portrait</button>
+                <button type="button" class="doc-pill btn-tap" data-doc-set="size" data-val="l" aria-pressed="false">A4 Landscape</button>
+                <button type="button" class="doc-pill btn-tap" data-doc-set="size" data-val="fit" aria-pressed="false">Fit to Image</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div class="space-y-1.5">
+                <div class="doc-lbl">Margin</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <button type="button" class="doc-pill doc-on btn-tap" data-doc-set="margin" data-val="small" aria-pressed="true">Small Margin</button>
+                  <button type="button" class="doc-pill btn-tap" data-doc-set="margin" data-val="none" aria-pressed="false">No Margin</button>
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <div class="doc-lbl">Quality</div>
+                <div class="flex flex-wrap gap-1.5">
+                  <button type="button" class="doc-pill btn-tap" data-doc-set="quality" data-val="high" aria-pressed="false">High (Print)</button>
+                  <button type="button" class="doc-pill doc-on btn-tap" data-doc-set="quality" data-val="bal" aria-pressed="true">Balanced</button>
+                  <button type="button" class="doc-pill btn-tap" data-doc-set="quality" data-val="small" aria-pressed="false">Compact (Small KB)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export -->
+          <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+            <div class="space-y-1.5">
+              <label for="doc-name" class="doc-lbl">File name</label>
+              <div class="flex items-center gap-2">
+                <input type="text" id="doc-name" class="doc-input" value="ITI_Document" maxlength="60" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="ITI_Document">
+                <span class="text-xs font-extrabold text-slate-400 shrink-0">.pdf</span>
+              </div>
+            </div>
+            <div class="doc-inner rounded-xl px-3 py-2 flex items-center gap-2">
+              <i data-lucide="files" class="w-4 h-4 text-amber-400 shrink-0"></i>
+              <span id="doc-summary" class="text-[11.5px] font-bold text-slate-300 min-w-0">0 pages &bull; A4 Portrait &bull; Balanced</span>
+            </div>
+            <button type="button" id="doc-create-btn" class="doc-go btn-tap" disabled>
+              <span id="doc-spin" class="doc-spin hidden"></span>
+              <i id="doc-create-icon" data-lucide="download" class="w-4 h-4"></i>
+              <span id="doc-create-label">Create &amp; Download PDF</span>
+            </button>
+            <p class="text-[10.5px] text-slate-400 flex items-start gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-px"></i><span>Everything is made on your phone. Photos are never uploaded or saved &mdash; works offline.</span></p>
+          </div>
+        </div>
+
+        <!-- ============ PANE 2: IMAGE RESIZE (placeholder — filled in Part 2) ============ -->
+        <div id="doc-pane-resize" role="tabpanel" aria-labelledby="doc-tab-resize" class="hidden space-y-4">
+          <!-- ===== DOC TOOLS · IMAGE RESIZE =====
+               Replace the empty placeholder  <div class="doc-card ..." id="doc-resize-root"></div>
+               that sits inside #doc-pane-resize with everything below. -->
+          <div id="doc-resize-root" class="space-y-4">
+
+            <!-- 1. Image input + live info -->
+            <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+              <div class="flex items-center justify-between gap-2">
+                <span class="doc-lbl">Image</span>
+                <span id="doc-rs-badge" class="text-[11px] font-extrabold text-amber-400">No image</span>
+              </div>
+              <input type="file" id="doc-rs-file" accept="image/*" class="hidden">
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" id="doc-rs-pick" class="doc-add btn-tap"><i data-lucide="image-plus" class="w-4 h-4"></i><span id="doc-rs-pick-label">Choose Image</span></button>
+                <button type="button" id="doc-rs-reset" class="doc-clear btn-tap" disabled><i data-lucide="rotate-ccw" class="w-4 h-4"></i><span>Reset</span></button>
+              </div>
+              <div id="doc-rs-empty" class="doc-empty px-4 py-7 text-center">
+                <div class="w-10 h-10 mx-auto rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400"><i data-lucide="scaling" class="w-5 h-5"></i></div>
+                <p class="text-xs font-bold text-slate-300 mt-2.5">Pick a photo, signature or scan</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Resize to exact pixels and compress to a target KB for exam &amp; job forms.</p>
+              </div>
+              <div id="doc-rs-orig" class="doc-inner rounded-xl p-2.5 flex items-center gap-3 hidden">
+                <div class="doc-prev" style="width:84px;min-height:84px;height:84px;padding:0.25rem;flex:0 0 auto;"><img id="doc-rs-orig-img" alt="Original image preview" style="max-height:76px;"></div>
+                <div class="min-w-0 space-y-0.5">
+                  <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Original</div>
+                  <div id="doc-rs-orig-name" class="text-xs font-extrabold text-white truncate">&ndash;</div>
+                  <div id="doc-rs-orig-dim" class="text-[11.5px] font-bold text-amber-400">&ndash;</div>
+                  <div id="doc-rs-orig-meta" class="text-[11px] text-slate-400">&ndash;</div>
+                </div>
+              </div>
+            </div>
+
+            <div id="doc-rs-work" class="space-y-4 hidden">
+
+              <!-- 2. Presets -->
+              <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-2.5">
+                <div class="doc-lbl">Exam &amp; Form Presets</div>
+                <div id="doc-rs-presets" class="doc-scroll">
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="passport" aria-pressed="false"><i data-lucide="user-round" class="w-3.5 h-3.5"></i>Passport Photo</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="sigssc" aria-pressed="false"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i>Signature (SSC)</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="sigrrb" aria-pressed="false"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i>Signature (RRB)</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="doc" aria-pressed="false"><i data-lucide="file-text" class="w-3.5 h-3.5"></i>Marksheet / Doc</button>
+                  <button type="button" class="doc-pill doc-on btn-tap inline-flex items-center gap-1.5" data-rs-preset="custom" aria-pressed="true"><i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>Custom</button>
+                </div>
+                <p id="doc-rs-preset-hint" class="text-[10.5px] text-slate-400"></p>
+              </div>
+
+              <!-- 3. Dimensions -->
+              <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+                <div class="doc-lbl">Dimensions (px)</div>
+                <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+                  <div class="space-y-1"><label for="doc-rs-w" class="text-[10.5px] font-bold text-slate-400">Width</label><input type="number" id="doc-rs-w" class="doc-input" min="1" max="8000" inputmode="numeric" placeholder="W"></div>
+                  <button type="button" id="doc-rs-lock" class="doc-ic btn-tap px-3 gap-1.5 text-[11px] font-extrabold" aria-pressed="true" aria-label="Toggle aspect ratio lock" style="height:2.6rem;"></button>
+                  <div class="space-y-1"><label for="doc-rs-h" class="text-[10.5px] font-bold text-slate-400">Height</label><input type="number" id="doc-rs-h" class="doc-input" min="1" max="8000" inputmode="numeric" placeholder="H"></div>
+                </div>
+                <div id="doc-rs-fitrow" class="space-y-1.5 hidden">
+                  <div class="text-[10.5px] font-bold text-slate-400">Fit to the box</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" class="doc-pill doc-on btn-tap inline-flex items-center gap-1.5" data-rs-fit="cover" aria-pressed="true"><i data-lucide="crop" class="w-3.5 h-3.5"></i>Cover (crop, no stretch)</button>
+                    <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-fit="stretch" aria-pressed="false"><i data-lucide="move-diagonal" class="w-3.5 h-3.5"></i>Exact fit (stretch)</button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-5 gap-1.5">
+                  <button type="button" class="doc-pill btn-tap text-center" data-rs-scale="25">25%</button>
+                  <button type="button" class="doc-pill btn-tap text-center" data-rs-scale="50">50%</button>
+                  <button type="button" class="doc-pill btn-tap text-center" data-rs-scale="75">75%</button>
+                  <button type="button" class="doc-pill btn-tap text-center" data-rs-scale="100">100%</button>
+                  <button type="button" id="doc-rs-rotate" class="doc-pill btn-tap inline-flex items-center justify-center gap-1" aria-label="Rotate 90 degrees clockwise"><i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>90&deg;</button>
+                </div>
+              </div>
+
+              <!-- 4. Compression -->
+              <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+                <div class="space-y-1.5">
+                  <div class="doc-lbl">Output Format</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" class="doc-pill doc-on btn-tap" data-rs-fmt="jpg" aria-pressed="true">JPG</button>
+                    <button type="button" class="doc-pill btn-tap" data-rs-fmt="webp" aria-pressed="false">WebP</button>
+                    <button type="button" class="doc-pill btn-tap" data-rs-fmt="png" aria-pressed="false">PNG</button>
+                  </div>
+                </div>
+                <div id="doc-rs-moderow" class="space-y-1.5">
+                  <div class="doc-lbl">Compression Mode</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-mode="target" aria-pressed="false"><i data-lucide="target" class="w-3.5 h-3.5"></i>Target Size (KB)</button>
+                    <button type="button" class="doc-pill doc-on btn-tap inline-flex items-center gap-1.5" data-rs-mode="manual" aria-pressed="true"><i data-lucide="gauge" class="w-3.5 h-3.5"></i>Manual Quality</button>
+                  </div>
+                </div>
+                <div id="doc-rs-target-row" class="space-y-1.5 hidden">
+                  <label for="doc-rs-kb" class="text-[10.5px] font-bold text-slate-400">Keep file under</label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="doc-rs-kb" class="doc-input" min="1" max="20000" step="1" inputmode="decimal" value="40">
+                    <span class="text-xs font-extrabold text-slate-400 shrink-0">KB</span>
+                  </div>
+                  <p class="text-[10.5px] text-slate-400">Quality is tuned automatically to land just under this size (1 KB = 1024 bytes).</p>
+                </div>
+                <div id="doc-rs-q-row" class="space-y-1">
+                  <div class="flex items-center justify-between"><label for="doc-rs-q" class="text-[10.5px] font-bold text-slate-400">Quality</label><span id="doc-rs-qv" class="text-xs font-extrabold text-amber-400">85%</span></div>
+                  <input type="range" id="doc-rs-q" class="doc-range" min="10" max="100" step="1" value="85">
+                </div>
+                <div id="doc-rs-png-note" class="doc-note doc-note-amber hidden"><i data-lucide="info" class="w-3.5 h-3.5"></i><span>PNG is lossless, so quality can&rsquo;t be tuned. Lower the width &amp; height to reduce its size, or use JPG / WebP.</span></div>
+              </div>
+
+              <!-- 5. Result -->
+              <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="doc-lbl">Before &rarr; After</span>
+                  <span id="doc-rs-spin" class="doc-spin doc-spin-amber hidden"></span>
+                </div>
+                <div class="doc-inner rounded-xl p-2.5 flex items-stretch gap-2">
+                  <div class="min-w-0 flex-1 space-y-0.5">
+                    <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Original</div>
+                    <div id="doc-rs-s-osize" class="doc-stat-v">&ndash;</div>
+                    <div id="doc-rs-s-odim" class="doc-stat-s">&ndash;</div>
+                  </div>
+                  <div class="flex items-center text-slate-400 shrink-0"><i data-lucide="arrow-right" class="w-4 h-4"></i></div>
+                  <div class="min-w-0 flex-1 space-y-0.5">
+                    <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Resized</div>
+                    <div><span id="doc-rs-s-nsize" class="doc-badge-em">&ndash;</span></div>
+                    <div id="doc-rs-s-ndim" class="doc-stat-s">&ndash;</div>
+                    <div id="doc-rs-s-save" class="text-[11px] doc-save"></div>
+                  </div>
+                </div>
+                <div id="doc-rs-band"></div>
+                <div class="doc-prev"><img id="doc-rs-out-img" alt="Resized image preview" class="hidden"><span id="doc-rs-out-ph" class="text-[11px] font-bold text-slate-400">Preview appears here</span></div>
+                <div id="doc-rs-notes" class="space-y-1.5"></div>
+                <div class="space-y-1.5">
+                  <label for="doc-rs-name" class="doc-lbl">File name</label>
+                  <div class="flex items-center gap-2">
+                    <input type="text" id="doc-rs-name" class="doc-input" value="image_resized" maxlength="60" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+                    <span id="doc-rs-ext" class="text-xs font-extrabold text-slate-400 shrink-0">.jpg</span>
+                  </div>
+                </div>
+                <button type="button" id="doc-rs-download" class="doc-go btn-tap" disabled><i data-lucide="download" class="w-4 h-4"></i><span>Download Resized Image</span></button>
+                <p class="text-[10.5px] text-slate-400 flex items-start gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-px"></i><span>Processed on your phone only. Images are never uploaded or saved &mdash; works offline.</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== CALCULATOR TAB (insert right before <section id="view-gallery"> ) ===== -->
+      <section id="view-calc" class="tab-view hidden animate-panel space-y-4">
+        <!-- Header + 2-tab switcher -->
+        <div class="cal-card rounded-2xl p-3.5 sm:p-4 space-y-3.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400 shrink-0">
+              <i data-lucide="calculator" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="w-1 h-4 rounded-full bg-amber-500 shrink-0"></span>
+                <h2 class="text-sm sm:text-base font-extrabold tracking-tight text-white truncate">Calculator &amp; Converter</h2>
+              </div>
+              <p class="text-[11px] text-slate-400 truncate mt-0.5 pl-3">Standard, scientific &amp; 15 converters &bull; ITI CONNECT</p>
+            </div>
+          </div>
+          <div id="cal-tablist" class="cal-inner rounded-xl p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Calculator sections">
+            <button type="button" id="cal-tab-basic" role="tab" aria-selected="true" aria-controls="cal-pane-basic" data-cal-pane="basic" class="cal-seg cal-on btn-tap min-w-0"><i data-lucide="calculator" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Calculator</span></button>
+            <button type="button" id="cal-tab-conv" role="tab" aria-selected="false" aria-controls="cal-pane-conv" data-cal-pane="conv" tabindex="-1" class="cal-seg btn-tap min-w-0"><i data-lucide="arrow-left-right" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Converter</span></button>
+          </div>
+        </div>
+
+        <!-- A. Standard + Scientific calculator -->
+        <div id="cal-pane-basic" role="tabpanel" aria-labelledby="cal-tab-basic" class="space-y-3">
+          <div class="cal-card rounded-2xl p-3.5 sm:p-4 space-y-2.5">
+            <div id="cal-screen" class="cal-inner rounded-xl px-3.5 pt-3 pb-2.5 space-y-1">
+              <div id="cal-expr" class="cal-expr cal-empty" role="textbox" aria-readonly="true" aria-label="Expression" tabindex="-1">0</div>
+              <div id="cal-preview" class="cal-preview" aria-live="polite"></div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button type="button" id="cal-sci-btn" class="cal-pill btn-tap" aria-expanded="false" aria-controls="cal-sci"><i data-lucide="function-square" class="w-3.5 h-3.5"></i><span>Sci</span><i data-lucide="chevron-down" class="cal-chev w-3.5 h-3.5"></i></button>
+              <button type="button" id="cal-angle-btn" class="cal-pill btn-tap" aria-label="Angle unit: degrees. Tap to switch to radians"><span id="cal-angle-lbl">DEG</span></button>
+              <span class="flex-1"></span>
+              <button type="button" id="cal-copy-btn" class="cal-pill btn-tap" aria-label="Copy result"><i data-lucide="copy" class="w-3.5 h-3.5"></i><span id="cal-copy-lbl">Copy</span></button>
+              <button type="button" id="cal-hist-btn" class="cal-pill btn-tap" aria-expanded="false" aria-controls="cal-hist"><i data-lucide="history" class="w-3.5 h-3.5"></i><span>History</span></button>
+            </div>
+            <div id="cal-hist" class="cal-hist cal-inner rounded-xl" aria-hidden="true">
+              <div class="px-3 py-2.5">
+                <div class="flex items-center justify-between gap-2 pb-1">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Last 15 calculations</span>
+                  <button type="button" id="cal-hist-clear" class="text-[11px] font-extrabold text-rose-400 px-2 py-1 rounded-lg btn-tap">Clear history</button>
+                </div>
+                <div id="cal-hist-list"></div>
+              </div>
+            </div>
+            <div id="cal-sci" class="cal-sci-wrap" aria-hidden="true">
+              <div>
+                <div class="grid grid-cols-7 gap-1.5 pb-1">
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="sin(" >sin</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="cos(" >cos</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="tan(" >tan</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="log(" >log</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="ln(" >ln</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="√(" >√</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="sq" >x<sup>2</sup></button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="pow" >x<sup>y</sup></button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="(" >(</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k=")" >)</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="π" >π</button>
+              <button type="button" class="cal-key cal-sci  btn-tap" data-k="e" >e</button>
+              <button type="button" class="cal-key cal-sci col-span-2 btn-tap" data-k="!" >!</button>
+                </div>
+              </div>
+            </div>
+            <div id="cal-keypad" class="grid grid-cols-4 gap-2" role="group" aria-label="Keypad">
+            <button type="button" class="cal-key cal-clr btn-tap" data-k="AC" aria-label="All clear">AC</button><button type="button" class="cal-key cal-clr btn-tap" data-k="bs" aria-label="Backspace"><i data-lucide="delete" class="w-5 h-5"></i></button><button type="button" class="cal-key cal-op btn-tap" data-k="%" aria-label="Percent">%</button><button type="button" class="cal-key cal-op btn-tap" data-k="÷" aria-label="Divide">÷</button>
+            <button type="button" class="cal-key  btn-tap" data-k="7">7</button><button type="button" class="cal-key  btn-tap" data-k="8">8</button><button type="button" class="cal-key  btn-tap" data-k="9">9</button><button type="button" class="cal-key cal-op btn-tap" data-k="×" aria-label="Multiply">×</button>
+            <button type="button" class="cal-key  btn-tap" data-k="4">4</button><button type="button" class="cal-key  btn-tap" data-k="5">5</button><button type="button" class="cal-key  btn-tap" data-k="6">6</button><button type="button" class="cal-key cal-op btn-tap" data-k="−" aria-label="Subtract">−</button>
+            <button type="button" class="cal-key  btn-tap" data-k="1">1</button><button type="button" class="cal-key  btn-tap" data-k="2">2</button><button type="button" class="cal-key  btn-tap" data-k="3">3</button><button type="button" class="cal-key cal-op btn-tap" data-k="+" aria-label="Add">+</button>
+            <button type="button" class="cal-key  btn-tap" data-k="00">00</button><button type="button" class="cal-key  btn-tap" data-k="0">0</button><button type="button" class="cal-key  btn-tap" data-k="." aria-label="Decimal point">.</button><button type="button" class="cal-key cal-eq btn-tap" data-k="=" aria-label="Equals">=</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- B. Converter launcher (3 x 5 grid) + detail slot (Part 2 mounts engines into #cal-conv-body) -->
+        <div id="cal-pane-conv" role="tabpanel" aria-labelledby="cal-tab-conv" class="hidden space-y-3">
+          <div id="cal-conv-grid" class="cal-card rounded-2xl p-3 sm:p-3.5">
+            <div class="grid grid-cols-3 gap-2.5">
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="currency" onclick="CalHub.openConverter('currency')" aria-label="Currency converter"><span class="cal-tico"><i data-lucide="coins" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Currency</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="length" onclick="CalHub.openConverter('length')" aria-label="Length converter"><span class="cal-tico"><i data-lucide="ruler" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Length</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="mass" onclick="CalHub.openConverter('mass')" aria-label="Mass converter"><span class="cal-tico"><i data-lucide="scale" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Mass</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="area" onclick="CalHub.openConverter('area')" aria-label="Area converter"><span class="cal-tico"><i data-lucide="square" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Area</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="time" onclick="CalHub.openConverter('time')" aria-label="Time converter"><span class="cal-tico"><i data-lucide="clock" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Time</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="finance" onclick="CalHub.openConverter('finance')" aria-label="Finance converter"><span class="cal-tico"><i data-lucide="landmark" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Finance</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="data" onclick="CalHub.openConverter('data')" aria-label="Data converter"><span class="cal-tico"><i data-lucide="hard-drive" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Data</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="date" onclick="CalHub.openConverter('date')" aria-label="Date converter"><span class="cal-tico"><i data-lucide="calendar" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Date</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="discount" onclick="CalHub.openConverter('discount')" aria-label="Discount converter"><span class="cal-tico"><i data-lucide="tag" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Discount</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="volume" onclick="CalHub.openConverter('volume')" aria-label="Volume converter"><span class="cal-tico"><i data-lucide="box" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Volume</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="numeral" onclick="CalHub.openConverter('numeral')" aria-label="Numeral system converter"><span class="cal-tico"><i data-lucide="binary" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Numeral system</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="speed" onclick="CalHub.openConverter('speed')" aria-label="Speed converter"><span class="cal-tico"><i data-lucide="gauge" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Speed</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="temperature" onclick="CalHub.openConverter('temperature')" aria-label="Temperature converter"><span class="cal-tico"><i data-lucide="thermometer" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">Temperature</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="bmi" onclick="CalHub.openConverter('bmi')" aria-label="BMI converter"><span class="cal-tico"><i data-lucide="activity" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">BMI</span></button>
+            <button type="button" class="cal-tile btn-tap" data-cal-conv="gst" onclick="CalHub.openConverter('gst')" aria-label="GST converter"><span class="cal-tico"><i data-lucide="receipt" class="w-[18px] h-[18px]"></i></span><span class="cal-tlbl">GST</span></button>
+            </div>
+          </div>
+          <div id="cal-conv-detail" class="hidden space-y-3">
+            <div class="cal-card rounded-2xl p-2.5 flex items-center gap-2.5">
+              <button type="button" id="cal-conv-back" onclick="CalHub.closeConverter()" class="cal-pill btn-tap" aria-label="Back to converter grid"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i><span>Back</span></button>
+              <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400 shrink-0"><span id="cal-conv-ico" class="flex"></span></div>
+              <h3 id="cal-conv-title" class="text-sm font-extrabold text-white truncate min-w-0">Converter</h3>
+            </div>
+            <div id="cal-conv-body" class="cal-card rounded-2xl p-3.5 sm:p-4 space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="view-gallery" class="tab-view hidden animate-panel space-y-4">
         <div class="bg-[#0f172a] border border-slate-800/90 rounded-2xl p-3.5 sm:p-4 shadow-xl space-y-3.5">
           <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-slate-800/80">
@@ -3809,6 +4562,30 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
       <div class="min-w-0">
         <div class="text-xs font-bold text-white truncate">Trade Tools</div>
         <div class="text-[10px] text-slate-400 truncate">Symbols &amp; Calculators</div>
+      </div>
+    </button>
+
+    <!-- DOC TOOLS entry (insert inside #more-sheet, right below #more-item-tools) -->
+    <button type="button" id="more-item-docs" onclick="selectMoreTab('docs')"
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+        <i data-lucide="file-text" class="w-4 h-4"></i>
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-bold text-white truncate">Doc Tools</div>
+        <div class="text-[10px] text-slate-400 truncate">Photo to PDF &amp; Image Resize</div>
+      </div>
+    </button>
+
+    <!-- CALCULATOR entry (insert inside #more-sheet, right below #more-item-docs) -->
+    <button type="button" id="more-item-calc" onclick="selectMoreTab('calc')"
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+        <i data-lucide="calculator" class="w-4 h-4"></i>
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-bold text-white truncate">Calculator</div>
+        <div class="text-[10px] text-slate-400 truncate">Standard, Scientific &amp; 15 Converters</div>
       </div>
     </button>
 
@@ -7073,7 +7850,7 @@ service cloud.firestore {
         btn.className = btn.id === `tab-btn-${activeKey}` ? ACTIVE_TAB_CLS : INACTIVE_TAB_CLS;
       });
       positionTabIndicator(false);
-      ["results", "notes", "videos", "gallery", "tools", "settings"].forEach((k) => {
+      ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"].forEach((k) => {
         const item = document.getElementById(`more-item-${k}`);
         if (!item) return;
         const isCurrent = lastTabName === k;
@@ -7122,7 +7899,7 @@ service cloud.firestore {
         btn.blur();
       }
       if (!skipHighlightReset) {
-        const inMore = ["results", "notes", "videos", "gallery", "tools", "settings"].includes(lastTabName);
+        const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"].includes(lastTabName);
         updateNavHighlights(inMore ? "more" : lastTabName);
       }
     }
@@ -7142,7 +7919,7 @@ service cloud.firestore {
     }
 
     let lastTabName = "home";
-    const TAB_ORDER = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "settings"];
+    const TAB_ORDER = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"];
 
     function switchTab(tabName) {
       closeMoreSheet(true);
@@ -7175,7 +7952,7 @@ service cloud.firestore {
         renderEligibilityChart();
       }
 
-      const inMore = ["results", "notes", "videos", "gallery", "tools", "settings"].includes(tabName);
+      const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"].includes(tabName);
       updateNavHighlights(inMore ? "more" : tabName);
       window.scrollTo(0, 0);
       expandSearchBar(false);
@@ -13933,7 +14710,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 (function () {
   "use strict";
   var WKEY = "iti_chhotojagulia_watched_v1";
-  var TABS = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "settings"];
+  var TABS = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"];
   function $(id) { return document.getElementById(id); }
   function esc(x) { return escapeHTML(x); }
 
@@ -23898,6 +24675,1760 @@ document.addEventListener("keydown", function (e) {
   icons();
 })();
 </script>
+
+<script id="doc-tools-script">
+/* ===== DOC TOOLS — Photo → PDF (100% client-side, no libraries, nothing stored) ===== */
+(function () {
+  "use strict";
+  var root = document.getElementById("view-docs");
+  if (!root) return;
+  function $(id) { return document.getElementById(id); }
+  function toast(m, t) { try { if (typeof showToast === "function") showToast(m, t || "info"); } catch (e) {} }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function icons(el) {
+    if (!window.lucide) return;
+    try {
+      var n = Array.prototype.slice.call(el.querySelectorAll("[data-lucide]"));
+      if (n.length) lucide.createIcons({ nodes: n });
+    } catch (e) { try { lucide.createIcons(); } catch (_) {} }
+  }
+
+  var MAX_PAGES = 60;
+  var Q = { high: { px: 3000, q: 0.92, n: "High" }, bal: { px: 2000, q: 0.82, n: "Balanced" }, small: { px: 1400, q: 0.65, n: "Compact" } };
+  var SIZES = { p: "A4 Portrait", l: "A4 Landscape", fit: "Fit to Image" };
+  var FCSS = { orig: "", enh: "brightness(1.08) contrast(1.2)", bw: "grayscale(1) contrast(1.7) brightness(1.1)" };
+  var FHINT = {
+    orig: "Photos are used exactly as taken.",
+    enh: "Brighter, higher contrast \u2014 good for notebook & practical sheets.",
+    bw: "Crisp black & white \u2014 good for diagrams and printed forms."
+  };
+  var S = { items: [], filter: "orig", size: "p", margin: "small", quality: "bal", busy: false, seq: 0 };
+
+  /* ---------------- tab switcher ---------------- */
+  function setPane(name) {
+    var pdf = name !== "resize";
+    var a = $("doc-tab-pdf"), b = $("doc-tab-resize");
+    a.classList.toggle("doc-on", pdf); a.setAttribute("aria-selected", String(pdf));
+    b.classList.toggle("doc-on", !pdf); b.setAttribute("aria-selected", String(!pdf));
+    $("doc-pane-pdf").classList.toggle("hidden", !pdf);
+    $("doc-pane-resize").classList.toggle("hidden", pdf);
+    if (!pdf) icons($("doc-pane-resize"));
+  }
+
+  /* ---------------- helpers ---------------- */
+  function loadImg(url) {
+    return new Promise(function (res, rej) {
+      var im = new Image();
+      im.onload = function () { (im.naturalWidth && im.naturalHeight) ? res(im) : rej(new Error("empty")); };
+      im.onerror = function () { rej(new Error("decode")); };
+      im.src = url;
+    });
+  }
+  function tick() { return new Promise(function (r) { setTimeout(r, 0); }); }
+  function fmtSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(2) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB"; }
+  function fileBase() {
+    var v = ($("doc-name").value || "").replace(/\.pdf$/i, "").replace(/[\\\/:*?"<>|\u0000-\u001f]/g, "").replace(/\s+/g, "_").replace(/^[._]+|[._]+$/g, "").slice(0, 60);
+    return v || "ITI_Document";
+  }
+
+  /* ---------------- add / remove / reorder ---------------- */
+  async function addFiles(fl) {
+    if (S.busy) return;
+    var arr = Array.prototype.slice.call(fl || []).filter(function (f) {
+      return /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i.test(f.name);
+    });
+    if (!arr.length) { toast("Please choose image files", "error"); return; }
+    var room = MAX_PAGES - S.items.length;
+    if (room <= 0) { toast("Maximum " + MAX_PAGES + " pages per PDF", "error"); return; }
+    if (arr.length > room) { arr = arr.slice(0, room); toast("Only " + MAX_PAGES + " pages allowed \u2014 extra photos skipped"); }
+    var bad = 0;
+    for (var i = 0; i < arr.length; i++) {
+      var url = URL.createObjectURL(arr[i]);
+      try {
+        var im = await loadImg(url);
+        S.items.push({ id: ++S.seq, name: arr[i].name || "photo", url: url, w: im.naturalWidth, h: im.naturalHeight, rot: 0 });
+      } catch (e) { URL.revokeObjectURL(url); bad++; }
+    }
+    renderList();
+    if (bad) toast(bad + " photo" + (bad > 1 ? "s" : "") + " could not be read (unsupported format)", "error");
+  }
+  function idx(id) { for (var i = 0; i < S.items.length; i++) if (S.items[i].id === id) return i; return -1; }
+  function removeItem(id) {
+    var i = idx(id); if (i < 0) return;
+    try { URL.revokeObjectURL(S.items[i].url); } catch (e) {}
+    S.items.splice(i, 1); renderList();
+  }
+  function clearAll() {
+    if (S.busy || !S.items.length) return;
+    if (S.items.length > 1 && !window.confirm("Remove all " + S.items.length + " photos?")) return;
+    S.items.forEach(function (it) { try { URL.revokeObjectURL(it.url); } catch (e) {} });
+    S.items = []; renderList();
+  }
+  function move(id, d) {
+    var i = idx(id), j = i + d;
+    if (i < 0 || j < 0 || j >= S.items.length) return;
+    var t = S.items[i]; S.items[i] = S.items[j]; S.items[j] = t; renderList();
+  }
+  function rotate(id) {
+    var i = idx(id); if (i < 0) return;
+    S.items[i].rot = (S.items[i].rot + 90) % 360; renderList();
+  }
+
+  /* ---------------- UI render ---------------- */
+  function thumbStyle(it) {
+    var swap = it.rot === 90 || it.rot === 270;
+    return "max-width:" + (swap ? 80 : 64) + "px;max-height:" + (swap ? 64 : 80) + "px;" +
+      "transform:translate(-50%,-50%) rotate(" + it.rot + "deg);" + (FCSS[S.filter] ? "filter:" + FCSS[S.filter] + ";" : "");
+  }
+  function renderList() {
+    var list = $("doc-list"), n = S.items.length;
+    list.innerHTML = S.items.map(function (it, i) {
+      return '<div class="doc-inner doc-page flex flex-col gap-2" data-doc-id="' + it.id + '">' +
+        '<div class="flex items-center gap-2.5 min-w-0">' +
+          '<div class="doc-thumb"><img src="' + it.url + '" alt="Page ' + (i + 1) + ' preview" draggable="false" style="' + thumbStyle(it) + '"></div>' +
+          '<div class="min-w-0">' +
+            '<div class="text-xs font-extrabold text-white">Page ' + (i + 1) + '</div>' +
+            '<div class="text-[10.5px] text-slate-400 truncate">' + esc(it.name) + '</div>' +
+            '<div class="text-[10px] text-slate-500">' + it.w + ' &times; ' + it.h + (it.rot ? ' &bull; ' + it.rot + '&deg;' : '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="grid grid-cols-4 gap-1.5">' +
+          '<button type="button" class="doc-ic btn-tap" data-doc-act="up" data-id="' + it.id + '" aria-label="Move page ' + (i + 1) + ' up"' + (i === 0 ? " disabled" : "") + '><i data-lucide="arrow-up" class="w-4 h-4"></i></button>' +
+          '<button type="button" class="doc-ic btn-tap" data-doc-act="down" data-id="' + it.id + '" aria-label="Move page ' + (i + 1) + ' down"' + (i === n - 1 ? " disabled" : "") + '><i data-lucide="arrow-down" class="w-4 h-4"></i></button>' +
+          '<button type="button" class="doc-ic btn-tap" data-doc-act="rot" data-id="' + it.id + '" aria-label="Rotate page ' + (i + 1) + ' 90 degrees clockwise"><i data-lucide="rotate-cw" class="w-4 h-4"></i></button>' +
+          '<button type="button" class="doc-ic doc-rose btn-tap" data-doc-act="del" data-id="' + it.id + '" aria-label="Remove page ' + (i + 1) + '"><i data-lucide="trash-2" class="w-4 h-4"></i></button>' +
+        '</div></div>';
+    }).join("");
+    icons(list);
+    $("doc-empty").classList.toggle("hidden", n > 0);
+    refresh();
+  }
+  function refresh() {
+    var n = S.items.length;
+    $("doc-count-badge").textContent = n + (n === 1 ? " page" : " pages");
+    $("doc-summary").textContent = n + (n === 1 ? " page" : " pages") + " \u2022 " + SIZES[S.size] + " \u2022 " + Q[S.quality].n;
+    $("doc-filter-hint").textContent = FHINT[S.filter];
+    root.querySelectorAll("[data-doc-set]").forEach(function (b) {
+      var on = S[b.getAttribute("data-doc-set")] === b.getAttribute("data-val");
+      b.classList.toggle("doc-on", on); b.setAttribute("aria-pressed", String(on)); b.disabled = S.busy;
+    });
+    $("doc-add-btn").disabled = S.busy || n >= MAX_PAGES;
+    $("doc-clear-btn").disabled = S.busy || n === 0;
+    $("doc-create-btn").disabled = S.busy || n === 0;
+    $("doc-name").disabled = S.busy;
+    root.querySelectorAll("[data-doc-act]").forEach(function (b) { if (S.busy) b.disabled = true; });
+    $("doc-spin").classList.toggle("hidden", !S.busy);
+    $("doc-create-icon").classList.toggle("hidden", S.busy);
+    if (!S.busy) $("doc-create-label").textContent = "Create & Download PDF";
+  }
+  function refreshThumbs() {
+    root.querySelectorAll("#doc-list [data-doc-id]").forEach(function (c) {
+      var i = idx(+c.getAttribute("data-doc-id")), img = c.querySelector("img");
+      if (i >= 0 && img) img.setAttribute("style", thumbStyle(S.items[i]));
+    });
+  }
+
+  /* ---------------- image processing ---------------- */
+  function applyFilter(ctx, w, h, mode) {
+    var id = ctx.getImageData(0, 0, w, h), d = id.data, n = d.length, hist = new Uint32Array(256), i, g;
+    for (i = 0; i < n; i += 4) hist[(d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8]++;
+    var tot = w * h, bw = mode === "bw";
+    var loT = tot * 0.01, hiT = tot * (bw ? 0.85 : 0.95), acc = 0, lo = 0, hi = 255, gotLo = false;
+    for (i = 0; i < 256; i++) {
+      acc += hist[i];
+      if (!gotLo && acc >= loT) { lo = i; gotLo = true; }
+      if (acc >= hiT) { hi = i; break; }
+    }
+    if (hi - lo < 40) { lo = 0; hi = 255; }          /* flat image: skip auto-levels */
+    var span = hi - lo, lut = new Uint8ClampedArray(256), v;
+    for (i = 0; i < 256; i++) {
+      v = (i - lo) / span; v = v < 0 ? 0 : v > 1 ? 1 : v;
+      v = bw ? (v - 0.5) * 1.7 + 0.5 : (v - 0.5) * 1.12 + 0.53;
+      lut[i] = v * 255;
+    }
+    if (bw) {
+      for (i = 0; i < n; i += 4) { g = lut[(d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8]; d[i] = d[i + 1] = d[i + 2] = g; }
+    } else {
+      for (i = 0; i < n; i += 4) { d[i] = lut[d[i]]; d[i + 1] = lut[d[i + 1]]; d[i + 2] = lut[d[i + 2]]; }
+    }
+    ctx.putImageData(id, 0, 0);
+  }
+  async function renderPage(it) {
+    var im = await loadImg(it.url), q = Q[S.quality];
+    var swap = it.rot === 90 || it.rot === 270, sw = im.naturalWidth, sh = im.naturalHeight;
+    var ow = swap ? sh : sw, oh = swap ? sw : sh;
+    var sc = Math.min(1, q.px / Math.max(ow, oh));
+    var cw = Math.max(1, Math.round(ow * sc)), ch = Math.max(1, Math.round(oh * sc));
+    var c = document.createElement("canvas"); c.width = cw; c.height = ch;
+    var x = c.getContext("2d", { willReadFrequently: true });
+    x.fillStyle = "#fff"; x.fillRect(0, 0, cw, ch);
+    x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high";
+    x.save(); x.translate(cw / 2, ch / 2); x.rotate(it.rot * Math.PI / 180);
+    var dw = sw * sc, dh = sh * sc;
+    x.drawImage(im, -dw / 2, -dh / 2, dw, dh); x.restore();
+    if (S.filter !== "orig") applyFilter(x, cw, ch, S.filter);
+    var blob = await new Promise(function (r) { c.toBlob(r, "image/jpeg", q.q); });
+    if (!blob) throw new Error("encode");
+    var bytes = new Uint8Array(await blob.arrayBuffer());
+    c.width = c.height = 0;                           /* release canvas memory */
+    return { bytes: bytes, w: cw, h: ch };
+  }
+
+  /* ---------------- PDF writer (JPEG/DCTDecode, XRef table) ---------------- */
+  function pageBox(p) {
+    var m = S.margin === "small" ? 18 : 0, W, H;
+    if (S.size === "p") { W = 595.28; H = 841.89; }
+    else if (S.size === "l") { W = 841.89; H = 595.28; }
+    else { var s = 842 / Math.max(p.w, p.h); W = p.w * s + 2 * m; H = p.h * s + 2 * m; }
+    var k = Math.min((W - 2 * m) / p.w, (H - 2 * m) / p.h), dw = p.w * k, dh = p.h * k;
+    return { W: W, H: H, dw: dw, dh: dh, x: (W - dw) / 2, y: (H - dh) / 2 };
+  }
+  function buildPdf(pages, title) {
+    var enc = new TextEncoder(), parts = [], off = 0, offs = [], n = pages.length;
+    function put(d) { if (typeof d === "string") d = enc.encode(d); parts.push(d); off += d.length; }
+    function f2(v) { return v.toFixed(2); }
+    var infoId = 3 + 3 * n, size = infoId + 1, kids = [], i;
+    for (i = 0; i < n; i++) kids.push((3 + 3 * i) + " 0 R");
+    put(new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a, 0x25, 0xe2, 0xe3, 0xcf, 0xd3, 0x0a]));
+    offs[1] = off; put("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+    offs[2] = off; put("2 0 obj\n<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + n + " >>\nendobj\n");
+    for (i = 0; i < n; i++) {
+      var p = pages[i], b = pageBox(p), pid = 3 + 3 * i, cid = pid + 1, iid = pid + 2;
+      offs[pid] = off;
+      put(pid + " 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + f2(b.W) + " " + f2(b.H) + "] " +
+        "/Resources << /XObject << /Im0 " + iid + " 0 R >> /ProcSet [/PDF /ImageC] >> /Contents " + cid + " 0 R >>\nendobj\n");
+      var cs = "q\n" + f2(b.dw) + " 0 0 " + f2(b.dh) + " " + f2(b.x) + " " + f2(b.y) + " cm\n/Im0 Do\nQ\n";
+      offs[cid] = off;
+      put(cid + " 0 obj\n<< /Length " + cs.length + " >>\nstream\n" + cs + "endstream\nendobj\n");
+      offs[iid] = off;
+      put(iid + " 0 obj\n<< /Type /XObject /Subtype /Image /Width " + p.w + " /Height " + p.h +
+        " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + p.bytes.length + " >>\nstream\n");
+      put(p.bytes); put("\nendstream\nendobj\n");
+      p.bytes = null;
+    }
+    var t = String(title).replace(/[^\x20-\x7e]/g, "").replace(/([\\()])/g, "\\$1");
+    var now = new Date(), z = function (v) { return ("0" + v).slice(-2); };
+    var cd = "D:" + now.getFullYear() + z(now.getMonth() + 1) + z(now.getDate()) + z(now.getHours()) + z(now.getMinutes()) + z(now.getSeconds());
+    offs[infoId] = off;
+    put(infoId + " 0 obj\n<< /Title (" + t + ") /Producer (ITI CONNECT) /Creator (ITI CONNECT) /CreationDate (" + cd + ") >>\nendobj\n");
+    var xr = off, x = "xref\n0 " + size + "\n0000000000 65535 f \n";
+    for (i = 1; i < size; i++) x += ("0000000000" + offs[i]).slice(-10) + " 00000 n \n";
+    put(x + "trailer\n<< /Size " + size + " /Root 1 0 R /Info " + infoId + " 0 R >>\nstartxref\n" + xr + "\n%%EOF\n");
+    return new Blob(parts, { type: "application/pdf" });
+  }
+
+  /* ---------------- export ---------------- */
+  async function generate() {
+    if (S.busy) return;
+    if (!S.items.length) { toast("Add at least one photo first", "error"); return; }
+    S.busy = true; refresh();
+    var n = S.items.length, pages = [];
+    try {
+      for (var i = 0; i < n; i++) {
+        $("doc-create-label").textContent = "Processing page " + (i + 1) + " of " + n + "\u2026";
+        await tick();
+        pages.push(await renderPage(S.items[i]));
+      }
+      $("doc-create-label").textContent = "Building PDF\u2026";
+      await tick();
+      var base = fileBase(), blob = buildPdf(pages, base);
+      pages = null;
+      var url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = base + ".pdf"; a.rel = "noopener"; a.style.display = "none";
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 60000);
+      toast("PDF ready \u2022 " + n + (n === 1 ? " page" : " pages") + " \u2022 " + fmtSize(blob.size), "success");
+    } catch (e) {
+      try { console.error("Doc Tools PDF error", e); } catch (_) {}
+      toast("Could not create the PDF. Try Compact quality or fewer photos.", "error");
+    } finally {
+      pages = null; S.busy = false; refresh();
+    }
+  }
+
+  /* ---------------- events ---------------- */
+  root.addEventListener("click", function (e) {
+    var b;
+    if ((b = e.target.closest("[data-doc-pane]"))) { setPane(b.getAttribute("data-doc-pane")); return; }
+    if ((b = e.target.closest("[data-doc-set]"))) {
+      if (S.busy) return;
+      S[b.getAttribute("data-doc-set")] = b.getAttribute("data-val");
+      refresh(); refreshThumbs(); return;
+    }
+    if ((b = e.target.closest("[data-doc-act]"))) {
+      if (S.busy || b.disabled) return;
+      var id = +b.getAttribute("data-id"), act = b.getAttribute("data-doc-act");
+      if (act === "up") move(id, -1); else if (act === "down") move(id, 1);
+      else if (act === "rot") rotate(id); else if (act === "del") removeItem(id);
+      return;
+    }
+    if (e.target.closest("#doc-add-btn")) { if (!S.busy) $("doc-file").click(); return; }
+    if (e.target.closest("#doc-clear-btn")) { clearAll(); return; }
+    if (e.target.closest("#doc-create-btn")) { generate(); return; }
+  });
+  $("doc-file").addEventListener("change", function () {
+    var files = this.files; addFiles(files).then(function () { try { $("doc-file").value = ""; } catch (e) {} });
+  });
+  $("doc-tablist").addEventListener("keydown", function (e) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    var next = document.activeElement === $("doc-tab-pdf") ? "resize" : "pdf";
+    setPane(next); $("doc-tab-" + next).focus(); e.preventDefault();
+  });
+  $("doc-name").addEventListener("keydown", function (e) { if (e.key === "Enter") this.blur(); });
+
+  renderList();
+})();
+</script>
+<script id="doc-resize-script">
+/* ===== DOC TOOLS — Smart Image Resizer & KB Compressor (100% client-side, canvas only, nothing stored) ===== */
+(function () {
+  "use strict";
+  if (!document.getElementById("doc-rs-file")) return;
+  function rs$(id) { return document.getElementById(id); }
+  function docResizeToast(m, t) { try { if (typeof showToast === "function") showToast(m, t || "info"); } catch (e) {} }
+  function docResizeEsc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function docResizeIcons(el) {
+    if (!window.lucide || !el) return;
+    try {
+      var n = Array.prototype.slice.call(el.querySelectorAll("[data-lucide]"));
+      if (n.length) lucide.createIcons({ nodes: n });
+    } catch (e) { try { lucide.createIcons(); } catch (_) {} }
+  }
+
+  var DOC_RS_MAXSIDE = 8000, DOC_RS_MAXPIXELS = 16000000;   /* iOS Safari canvas limit is ~16.7 MP */
+  var DOC_RS_MIME = { jpg: "image/jpeg", webp: "image/webp", png: "image/png" };
+  var DOC_RS_PRESETS = {
+    passport: { fixed: true, w: 350, h: 450, kb: 40, min: 20, max: 50, slug: "passport",
+      hint: "350 \u00D7 450 px \u2022 JPG \u2022 target 40 KB (form limit 20\u201350 KB). Cover keeps faces un-stretched." },
+    sigssc:   { fixed: true, w: 200, h: 80, kb: 15, min: 10, max: 20, slug: "signature_ssc",
+      hint: "200 \u00D7 80 px \u2022 JPG \u2022 target 15 KB (form limit 10\u201320 KB)." },
+    sigrrb:   { fixed: true, w: 200, h: 80, kb: 40, min: 30, max: 49, slug: "signature_rrb",
+      hint: "200 \u00D7 80 px \u2022 JPG \u2022 target 40 KB (form limit 30\u201349 KB, never below 30 KB)." },
+    doc:      { fixed: false, maxW: 1200, kb: 140, slug: "marksheet",
+      hint: "Max width 1200 px, aspect ratio kept \u2022 JPG \u2022 target 140 KB." },
+    custom:   { fixed: false, slug: "resized", hint: "Free control \u2014 set size, format and quality yourself." }
+  };
+  var RS = {
+    file: null, url: null, img: null, source: null, ow: 0, oh: 0, sw: 0, sh: 0, rot: 0, base: "image", fmtOrig: "",
+    preset: "custom", w: 0, h: 0, lock: true, fit: "cover", fmt: "jpg", mode: "manual", kb: 100, q: 85,
+    res: null, resUrl: null, tok: 0, timer: 0, busy: false, nameDirty: false, notes: [], fmtFallback: false, lockState: ""
+  };
+
+  /* ---------------- small helpers ---------------- */
+  function docResizeBytes(b) {
+    if (b < 1024) return b + " B";
+    if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+    return (b / 1048576).toFixed(2) + " MB";
+  }
+  function docResizeFormatName(f) {
+    var t = (f.type || "").toLowerCase(), m = { "image/jpeg": "JPG", "image/png": "PNG", "image/webp": "WebP", "image/gif": "GIF", "image/bmp": "BMP", "image/avif": "AVIF", "image/heic": "HEIC", "image/heif": "HEIF" };
+    if (m[t]) return m[t];
+    var x = /\.([a-z0-9]+)$/i.exec(f.name || "");
+    return x ? x[1].toUpperCase().replace("JPEG", "JPG") : "Image";
+  }
+  function docResizeClean(s) {
+    return String(s || "").replace(/\.[a-z0-9]{2,5}$/i, "").replace(/[\\\/:*?"<>|\u0000-\u001f]/g, "").replace(/\s+/g, "_").replace(/^[._]+|[._]+$/g, "").slice(0, 60);
+  }
+  function docResizeLoadImg(url) {
+    return new Promise(function (res, rej) {
+      var im = new Image();
+      im.onload = function () { (im.naturalWidth && im.naturalHeight) ? res(im) : rej(new Error("empty")); };
+      im.onerror = function () { rej(new Error("decode")); };
+      im.src = url;
+    });
+  }
+  function docResizeCanvas(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+  function docResizeEncode(c, mime, q) {
+    return new Promise(function (r) { try { c.toBlob(function (b) { r(b); }, mime, q); } catch (e) { r(null); } });
+  }
+  function docResizeFree() {
+    if (RS.url) { try { URL.revokeObjectURL(RS.url); } catch (e) {} RS.url = null; }
+    if (RS.resUrl) { try { URL.revokeObjectURL(RS.resUrl); } catch (e) {} RS.resUrl = null; }
+    if (RS.source && RS.source !== RS.img && RS.source.width) { RS.source.width = RS.source.height = 0; }
+    RS.source = null; RS.img = null; RS.res = null;
+    var oi = rs$("doc-rs-orig-img"), ni = rs$("doc-rs-out-img");
+    if (oi) oi.removeAttribute("src");
+    if (ni) { ni.removeAttribute("src"); }
+  }
+
+  /* ---------------- load / reset ---------------- */
+  async function docResizeLoad(file) {
+    if (!file) return;
+    if (!/^image\//.test(file.type) && !/\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i.test(file.name || "")) {
+      docResizeToast("Please choose an image file", "error"); return;
+    }
+    var url = URL.createObjectURL(file), im;
+    try { im = await docResizeLoadImg(url); }
+    catch (e) { try { URL.revokeObjectURL(url); } catch (_) {} docResizeToast("Couldn\u2019t read this image (unsupported format)", "error"); return; }
+    clearTimeout(RS.timer); RS.tok++;
+    docResizeFree();
+    RS.file = file; RS.url = url; RS.img = im; RS.ow = im.naturalWidth; RS.oh = im.naturalHeight; RS.rot = 0;
+    RS.source = im; RS.sw = RS.ow; RS.sh = RS.oh; RS.fmtOrig = docResizeFormatName(file);
+    RS.base = docResizeClean(file.name) || "image"; RS.nameDirty = false;
+    rs$("doc-rs-orig-img").src = url;
+    rs$("doc-rs-orig-name").textContent = file.name || "image";
+    rs$("doc-rs-orig-dim").textContent = RS.ow + " \u00D7 " + RS.oh + " px";
+    rs$("doc-rs-orig-meta").textContent = RS.fmtOrig + " \u2022 " + docResizeBytes(file.size);
+    rs$("doc-rs-badge").textContent = docResizeBytes(file.size);
+    rs$("doc-rs-empty").classList.add("hidden");
+    rs$("doc-rs-orig").classList.remove("hidden");
+    rs$("doc-rs-work").classList.remove("hidden");
+    rs$("doc-rs-reset").disabled = false;
+    rs$("doc-rs-pick-label").textContent = "Change Image";
+    docResizeApplyPreset(RS.preset, true);
+    docResizeIcons(rs$("doc-rs-work"));
+  }
+  function docResizeReset() {
+    clearTimeout(RS.timer); RS.tok++;
+    docResizeFree();
+    RS.file = null; RS.rot = 0; RS.preset = "custom"; RS.lock = true; RS.fit = "cover"; RS.fmt = "jpg"; RS.mode = "manual"; RS.kb = 100; RS.q = 85;
+    RS.w = RS.h = RS.sw = RS.sh = RS.ow = RS.oh = 0; RS.notes = []; RS.busy = false; RS.nameDirty = false; RS.lockState = "";
+    try { rs$("doc-rs-file").value = ""; } catch (e) {}
+    rs$("doc-rs-work").classList.add("hidden");
+    rs$("doc-rs-orig").classList.add("hidden");
+    rs$("doc-rs-empty").classList.remove("hidden");
+    rs$("doc-rs-badge").textContent = "No image";
+    rs$("doc-rs-reset").disabled = true;
+    rs$("doc-rs-pick-label").textContent = "Choose Image";
+    rs$("doc-rs-notes").innerHTML = ""; rs$("doc-rs-band").innerHTML = "";
+    rs$("doc-rs-out-img").classList.add("hidden"); rs$("doc-rs-out-ph").classList.remove("hidden");
+    rs$("doc-rs-s-nsize").textContent = "\u2013"; rs$("doc-rs-s-ndim").textContent = "\u2013"; rs$("doc-rs-s-save").textContent = "";
+    rs$("doc-rs-download").disabled = true; rs$("doc-rs-spin").classList.add("hidden");
+    docResizeSyncUI();
+  }
+
+  /* ---------------- source (rotation) ---------------- */
+  function docResizeBuildSource() {
+    var old = RS.source, swap = RS.rot % 180 !== 0;
+    if (RS.rot === 0) { RS.source = RS.img; RS.sw = RS.ow; RS.sh = RS.oh; }
+    else {
+      var sw = swap ? RS.oh : RS.ow, sh = swap ? RS.ow : RS.oh, c = docResizeCanvas(sw, sh), x = c.getContext("2d");
+      x.translate(sw / 2, sh / 2); x.rotate(RS.rot * Math.PI / 180); x.drawImage(RS.img, -RS.ow / 2, -RS.oh / 2);
+      RS.source = c; RS.sw = sw; RS.sh = sh;
+    }
+    if (old && old !== RS.img && old !== RS.source) old.width = old.height = 0;
+  }
+  function docResizeRotate() {
+    if (!RS.img) return;
+    RS.rot = (RS.rot + 90) % 360;
+    try { docResizeBuildSource(); } catch (e) { docResizeToast("Not enough memory to rotate this image", "error"); RS.rot = (RS.rot + 270) % 360; docResizeBuildSource(); return; }
+    if (RS.preset === "doc") docResizeApplyPreset("doc", false);
+    else if (RS.lock) { RS.h = Math.max(1, Math.round(RS.w * RS.sh / RS.sw)); }
+    else if (!DOC_RS_PRESETS[RS.preset].fixed) { var t = RS.w; RS.w = RS.h; RS.h = t; }
+    docResizeSyncUI(); docResizeSchedule();
+  }
+
+  /* ---------------- presets ---------------- */
+  function docResizeApplyPreset(key, fresh) {
+    var p = DOC_RS_PRESETS[key]; if (!p || !RS.img) return;
+    RS.preset = key;
+    if (p.fixed) { RS.w = p.w; RS.h = p.h; RS.lock = false; RS.fmt = "jpg"; RS.mode = "target"; RS.kb = p.kb; }
+    else if (key === "doc") {
+      RS.lock = true; RS.w = Math.max(1, Math.min(RS.sw, p.maxW)); RS.h = Math.max(1, Math.round(RS.w * RS.sh / RS.sw));
+      RS.fmt = "jpg"; RS.mode = "target"; RS.kb = p.kb;
+    } else if (fresh) { RS.lock = true; RS.w = RS.sw; RS.h = RS.sh; RS.mode = "manual"; }
+    if (!RS.nameDirty) rs$("doc-rs-name").value = RS.base + "_" + p.slug;
+    docResizeSyncUI(); docResizeSchedule(0);
+  }
+  function docResizeToCustom() { if (RS.preset !== "custom") RS.preset = "custom"; }
+
+  /* ---------------- UI sync ---------------- */
+  function docResizeSyncUI() {
+    var act = document.activeElement;
+    function mark(sel, attr, val) {
+      pane().querySelectorAll(sel).forEach(function (b) {
+        var on = b.getAttribute(attr) === String(val);
+        b.classList.toggle("doc-on", on); b.setAttribute("aria-pressed", String(on));
+      });
+    }
+    mark("[data-rs-preset]", "data-rs-preset", RS.preset);
+    mark("[data-rs-fmt]", "data-rs-fmt", RS.fmt);
+    mark("[data-rs-mode]", "data-rs-mode", RS.mode);
+    mark("[data-rs-fit]", "data-rs-fit", RS.fit);
+    rs$("doc-rs-preset-hint").textContent = DOC_RS_PRESETS[RS.preset].hint;
+    if (act !== rs$("doc-rs-w")) rs$("doc-rs-w").value = RS.w || "";
+    if (act !== rs$("doc-rs-h")) rs$("doc-rs-h").value = RS.h || "";
+    if (act !== rs$("doc-rs-kb")) rs$("doc-rs-kb").value = RS.kb;
+    rs$("doc-rs-q").value = RS.q; rs$("doc-rs-qv").textContent = RS.q + "%";
+    var png = RS.fmt === "png";
+    rs$("doc-rs-moderow").classList.toggle("hidden", png);
+    rs$("doc-rs-target-row").classList.toggle("hidden", png || RS.mode !== "target");
+    rs$("doc-rs-q-row").classList.toggle("hidden", png || RS.mode !== "manual");
+    rs$("doc-rs-png-note").classList.toggle("hidden", !png);
+    rs$("doc-rs-fitrow").classList.toggle("hidden", RS.lock);
+    rs$("doc-rs-ext").textContent = "." + RS.fmt;
+    var ls = RS.lock ? "on" : "off", lb = rs$("doc-rs-lock");
+    lb.setAttribute("aria-pressed", String(RS.lock));
+    if (RS.lockState !== ls) {
+      RS.lockState = ls;
+      lb.innerHTML = '<i data-lucide="' + (RS.lock ? "link" : "unlink") + '" class="w-4 h-4"></i><span>' + (RS.lock ? "Locked" : "Free") + "</span>";
+      docResizeIcons(lb);
+    }
+    lb.classList.toggle("doc-on", RS.lock);
+  }
+  function pane() { return rs$("doc-pane-resize"); }
+  function docResizeSetBusy(b) {
+    RS.busy = b;
+    rs$("doc-rs-spin").classList.toggle("hidden", !b);
+    rs$("doc-rs-download").disabled = b || !RS.res;
+    rs$("doc-rs-out-img").style.opacity = b ? "0.55" : "";
+  }
+  function docResizeSchedule(delay) {
+    if (!RS.img) return;
+    clearTimeout(RS.timer); docResizeSetBusy(true);
+    RS.timer = setTimeout(docResizeRun, delay == null ? 250 : delay);
+  }
+
+  /* ---------------- drawing (high-quality stepwise downscale) ---------------- */
+  function docResizeDraw(W, H) {
+    var src = RS.source, sw = RS.sw, sh = RS.sh, sx = 0, sy = 0, cw = sw, ch = sh;
+    if (!RS.lock && RS.fit === "cover") {
+      var tr = W / H, sr = sw / sh;
+      if (sr > tr) { cw = Math.max(1, Math.round(sh * tr)); sx = Math.round((sw - cw) / 2); }
+      else { ch = Math.max(1, Math.round(sw / tr)); sy = Math.round((sh - ch) / 2); }
+    }
+    var cur = src, cx = sx, cy = sy;
+    while (cw / 2 >= W && ch / 2 >= H) {
+      var nw = Math.round(cw / 2), nh = Math.round(ch / 2), t = docResizeCanvas(nw, nh), tx = t.getContext("2d");
+      tx.imageSmoothingEnabled = true; tx.imageSmoothingQuality = "high";
+      tx.drawImage(cur, cx, cy, cw, ch, 0, 0, nw, nh);
+      if (cur !== src) cur.width = cur.height = 0;
+      cur = t; cx = cy = 0; cw = nw; ch = nh;
+    }
+    var out = docResizeCanvas(W, H), ox = out.getContext("2d");
+    if (RS.fmt !== "png") { ox.fillStyle = "#fff"; ox.fillRect(0, 0, W, H); }
+    ox.imageSmoothingEnabled = true; ox.imageSmoothingQuality = "high";
+    ox.drawImage(cur, cx, cy, cw, ch, 0, 0, W, H);
+    if (cur !== src) cur.width = cur.height = 0;
+    return out;
+  }
+
+  /* ---------------- target-KB engine ---------------- */
+  async function docResizeFit(mime, W, H, target, tok) {
+    var k = 1, w = W, h = H, tries = 0, c, top, bot, lo, hi, best, bq, i, mid, b, f;
+    for (;;) {
+      c = docResizeDraw(w, h);
+      top = await docResizeEncode(c, mime, 0.98);
+      if (!top) { c.width = c.height = 0; throw new Error("encode"); }
+      if (tok !== RS.tok) { c.width = c.height = 0; return null; }
+      if (top.size <= target) { c.width = c.height = 0; return { blob: top, w: w, h: h, q: 0.98, down: k < 1 }; }
+      bot = await docResizeEncode(c, mime, 0.1);
+      if (!bot) { c.width = c.height = 0; throw new Error("encode"); }
+      if (tok !== RS.tok) { c.width = c.height = 0; return null; }
+      if (bot.size <= target) {                      /* binary search on quality */
+        lo = 0.1; hi = 0.98; best = bot; bq = 0.1;
+        for (i = 0; i < 8; i++) {
+          mid = (lo + hi) / 2;
+          b = await docResizeEncode(c, mime, mid);
+          if (tok !== RS.tok) { c.width = c.height = 0; return null; }
+          if (b && b.size <= target) { best = b; bq = mid; lo = mid; } else hi = mid;
+        }
+        c.width = c.height = 0;
+        return { blob: best, w: w, h: h, q: bq, down: k < 1 };
+      }
+      c.width = c.height = 0;                        /* even q=0.1 is too big: shrink gently */
+      if (tries >= 24 || Math.min(w, h) <= 16) return { blob: bot, w: w, h: h, q: 0.1, down: k < 1, miss: true };
+      tries++;
+      f = Math.max(0.7, Math.min(0.95, Math.sqrt(target / bot.size) * 1.03));
+      k *= f; w = Math.max(8, Math.round(W * k)); h = Math.max(8, Math.round(H * k));
+    }
+  }
+  /* JPEG only: add invisible COM (comment) segments after JFIF so file reaches a form's minimum KB */
+  async function docResizePad(blob, padTo) {
+    var need = padTo - blob.size; if (need <= 0) return null;
+    var buf = new Uint8Array(await blob.arrayBuffer());
+    if (buf[0] !== 0xFF || buf[1] !== 0xD8) return null;
+    var at = 2; if (buf[2] === 0xFF && buf[3] === 0xE0) at = 4 + ((buf[4] << 8) | buf[5]);
+    var segs = [], left = need, data, seg;
+    while (left > 0) {
+      data = Math.min(65533, Math.max(1, left - 4));
+      seg = new Uint8Array(4 + data); seg[0] = 0xFF; seg[1] = 0xFE; seg[2] = ((data + 2) >> 8) & 255; seg[3] = (data + 2) & 255; seg.fill(0x20, 4);
+      segs.push(seg); left -= 4 + data;
+    }
+    return new Blob([buf.subarray(0, at)].concat(segs, [buf.subarray(at)]), { type: "image/jpeg" });
+  }
+
+  /* ---------------- main run ---------------- */
+  function docResizeNote(kind, msg) { RS.notes.push({ k: kind, m: msg }); }
+  async function docResizeRun() {
+    if (!RS.img) return;
+    var tok = ++RS.tok;
+    RS.notes = [];
+    if (RS.fmtFallback) { docResizeNote("warn", "WebP isn\u2019t supported by this browser \u2014 switched to JPG."); RS.fmtFallback = false; }
+    var W = Math.max(1, Math.min(DOC_RS_MAXSIDE, Math.round(RS.w) || 1)), H = Math.max(1, Math.min(DOC_RS_MAXSIDE, Math.round(RS.h) || 1));
+    if (W * H > DOC_RS_MAXPIXELS) {
+      var kk = Math.sqrt(DOC_RS_MAXPIXELS / (W * H)); W = Math.max(1, Math.floor(W * kk)); H = Math.max(1, Math.floor(H * kk));
+      docResizeNote("warn", "Size is too large for this device \u2014 limited to " + W + " \u00D7 " + H + " px.");
+    }
+    var mime = DOC_RS_MIME[RS.fmt], out = null, c;
+    try {
+      if (RS.fmt === "png" || RS.mode === "manual") {
+        c = docResizeDraw(W, H);
+        var b = await docResizeEncode(c, mime, RS.fmt === "png" ? undefined : RS.q / 100);
+        c.width = c.height = 0;
+        if (!b) throw new Error("encode");
+        out = { blob: b, w: W, h: H };
+      } else {
+        out = await docResizeFit(mime, W, H, Math.max(1024, Math.round(RS.kb * 1024)), tok);
+      }
+      if (tok !== RS.tok || !out) return;
+      if (RS.fmt === "webp" && out.blob.type !== "image/webp") {   /* encoder fell back to PNG: not supported */
+        RS.fmt = "jpg"; RS.fmtFallback = true; docResizeSyncUI(); docResizeRun(); return;
+      }
+      var p = DOC_RS_PRESETS[RS.preset], ratioDiff = Math.abs((RS.sw / RS.sh) / (W / H) - 1);
+      if (out.down) docResizeNote("warn", "Reduced to " + out.w + " \u00D7 " + out.h + " px so the file fits under " + RS.kb + " KB.");
+      if (out.miss) docResizeNote("warn", "Couldn\u2019t reach " + RS.kb + " KB even at the smallest size. Try a higher KB or a smaller image.");
+      if (p && p.min && RS.mode === "target" && RS.fmt === "jpg" && !out.miss && out.blob.size < p.min * 1024) {
+        var padTo = Math.round((p.min * 1024 + Math.min(p.max * 1024, RS.kb * 1024)) / 2), pb = await docResizePad(out.blob, padTo);
+        if (tok !== RS.tok) return;
+        if (pb) { out.blob = pb; out.padded = true; docResizeNote("info", "Image was already at top quality and under " + p.min + " KB, so invisible metadata was added to reach the form\u2019s minimum."); }
+      }
+      if (RS.fmt === "png" && RS.mode === "target") { /* not reachable (mode row hidden), kept for safety */ }
+      if (!RS.lock && RS.fit === "cover" && ratioDiff > 0.01) docResizeNote("info", "Centre-cropped to " + out.w + " \u00D7 " + out.h + " so nothing is stretched. Use \u201CExact fit\u201D to squeeze the whole photo in instead.");
+      if (!RS.lock && RS.fit === "stretch" && ratioDiff > 0.03) docResizeNote("warn", "The photo is stretched to fit \u2014 faces may look distorted.");
+      if (RS.file && !out.padded && out.blob.size > RS.file.size) docResizeNote("warn", "The result is larger than the original. Lower the quality, KB target or dimensions.");
+      RS.res = { blob: out.blob, w: out.w, h: out.h, q: out.q, padded: !!out.padded };
+      docResizeShowResult();
+    } catch (e) {
+      try { console.error("Doc Tools resize error", e); } catch (_) {}
+      if (tok === RS.tok) { RS.res = null; docResizeToast("Couldn\u2019t process this image. Try a smaller size.", "error"); docResizeSetBusy(false); }
+      return;
+    }
+    if (tok === RS.tok) docResizeSetBusy(false);
+  }
+
+  /* ---------------- result UI ---------------- */
+  function docResizeShowResult() {
+    var r = RS.res, p = DOC_RS_PRESETS[RS.preset];
+    if (RS.resUrl) { try { URL.revokeObjectURL(RS.resUrl); } catch (e) {} }
+    RS.resUrl = URL.createObjectURL(r.blob);
+    var im = rs$("doc-rs-out-img"); im.src = RS.resUrl; im.classList.remove("hidden"); rs$("doc-rs-out-ph").classList.add("hidden");
+    rs$("doc-rs-s-osize").textContent = docResizeBytes(RS.file.size);
+    rs$("doc-rs-s-odim").textContent = RS.ow + " \u00D7 " + RS.oh + " px \u2022 " + RS.fmtOrig;
+    rs$("doc-rs-s-nsize").textContent = docResizeBytes(r.blob.size);
+    rs$("doc-rs-s-ndim").textContent = r.w + " \u00D7 " + r.h + " px \u2022 " + RS.fmt.toUpperCase();
+    var diff = (1 - r.blob.size / RS.file.size) * 100, sv = rs$("doc-rs-s-save");
+    sv.className = "text-[11px] " + (diff >= 0 ? "doc-save" : "doc-bad");
+    sv.textContent = diff >= 0 ? Math.round(diff) + "% saved" : Math.round(-diff) + "% larger";
+    var kb = r.blob.size / 1024, band = rs$("doc-rs-band"), notes = RS.notes.slice();
+    band.innerHTML = "";
+    if (p && p.min) {
+      var ok = kb >= p.min && kb <= p.max;
+      band.innerHTML = '<div class="doc-note ' + (ok ? "doc-note-em" : "doc-note-rose") + '"><i data-lucide="' + (ok ? "circle-check" : "triangle-alert") + '" class="w-3.5 h-3.5"></i><span>' +
+        (ok ? "Within the form limit of " + p.min + "\u2013" + p.max + " KB" : kb > p.max ? "Above the " + p.max + " KB form limit \u2014 lower the KB target" : "Below the " + p.min + " KB minimum \u2014 raise quality or the KB target") + "</span></div>";
+      if (p.fixed && (r.w !== p.w || r.h !== p.h)) notes.push({ k: "warn", m: "Size is " + r.w + " \u00D7 " + r.h + " px but this form needs " + p.w + " \u00D7 " + p.h + " px." });
+    }
+    rs$("doc-rs-notes").innerHTML = notes.map(function (n) {
+      return '<div class="doc-note ' + (n.k === "warn" ? "doc-note-rose" : "doc-note-amber") + '"><i data-lucide="' + (n.k === "warn" ? "triangle-alert" : "info") + '" class="w-3.5 h-3.5"></i><span>' + docResizeEsc(n.m) + "</span></div>";
+    }).join("");
+    docResizeIcons(band); docResizeIcons(rs$("doc-rs-notes"));
+  }
+  function docResizeDownload() {
+    if (!RS.res || RS.busy) return;
+    var name = (docResizeClean(rs$("doc-rs-name").value) || (RS.base + "_resized")) + "." + RS.fmt;
+    var url = URL.createObjectURL(RS.res.blob), a = document.createElement("a");
+    a.href = url; a.download = name; a.rel = "noopener"; a.style.display = "none";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 60000);
+    docResizeToast("Saved " + name + " \u2022 " + docResizeBytes(RS.res.blob.size), "success");
+  }
+
+  /* ---------------- events ---------------- */
+  var root = rs$("doc-pane-resize");
+  root.addEventListener("click", function (e) {
+    var b;
+    if (e.target.closest("#doc-rs-pick")) { rs$("doc-rs-file").click(); return; }
+    if (e.target.closest("#doc-rs-reset")) { docResizeReset(); docResizeToast("Cleared \u2014 nothing was saved"); return; }
+    if (e.target.closest("#doc-rs-download")) { docResizeDownload(); return; }
+    if (!RS.img) return;
+    if ((b = e.target.closest("[data-rs-preset]"))) { docResizeApplyPreset(b.getAttribute("data-rs-preset"), false); return; }
+    if ((b = e.target.closest("[data-rs-fmt]"))) { RS.fmt = b.getAttribute("data-rs-fmt"); docResizeSyncUI(); docResizeSchedule(); return; }
+    if ((b = e.target.closest("[data-rs-mode]"))) { RS.mode = b.getAttribute("data-rs-mode"); docResizeSyncUI(); docResizeSchedule(); return; }
+    if ((b = e.target.closest("[data-rs-fit]"))) { RS.fit = b.getAttribute("data-rs-fit"); docResizeSyncUI(); docResizeSchedule(); return; }
+    if ((b = e.target.closest("[data-rs-scale]"))) {
+      var pc = +b.getAttribute("data-rs-scale") / 100;
+      RS.w = Math.max(1, Math.round(RS.sw * pc)); RS.h = Math.max(1, Math.round(RS.sh * pc));
+      RS.lock = true; docResizeToCustom(); docResizeSyncUI(); docResizeSchedule(); return;
+    }
+    if (e.target.closest("#doc-rs-rotate")) { docResizeRotate(); return; }
+    if (e.target.closest("#doc-rs-lock")) {
+      RS.lock = !RS.lock;
+      if (RS.lock) { RS.h = Math.max(1, Math.round(RS.w * RS.sh / RS.sw)); docResizeToCustom(); }
+      docResizeSyncUI(); docResizeSchedule(); return;
+    }
+  });
+  root.addEventListener("input", function (e) {
+    var id = e.target.id, v;
+    if (id === "doc-rs-w" || id === "doc-rs-h") {
+      v = parseInt(e.target.value, 10); if (!(v > 0)) return;
+      v = Math.min(DOC_RS_MAXSIDE, v);
+      if (id === "doc-rs-w") { RS.w = v; if (RS.lock) RS.h = Math.max(1, Math.round(v * RS.sh / RS.sw)); }
+      else { RS.h = v; if (RS.lock) RS.w = Math.max(1, Math.round(v * RS.sw / RS.sh)); }
+      docResizeToCustom(); docResizeSyncUI(); docResizeSchedule(350);
+    } else if (id === "doc-rs-kb") {
+      v = parseFloat(e.target.value); if (!(v > 0)) return;
+      RS.kb = Math.min(20000, v); docResizeSchedule(350);
+    } else if (id === "doc-rs-q") {
+      RS.q = parseInt(e.target.value, 10) || 85; rs$("doc-rs-qv").textContent = RS.q + "%"; docResizeSchedule(200);
+    } else if (id === "doc-rs-name") { RS.nameDirty = true; }
+  });
+  rs$("doc-rs-file").addEventListener("change", function () {
+    var f = this.files && this.files[0], inp = this;
+    docResizeLoad(f).then(function () { try { inp.value = ""; } catch (e) {} });
+  });
+  rs$("doc-rs-name").addEventListener("keydown", function (e) { if (e.key === "Enter") this.blur(); });
+  docResizeSyncUI();
+})();
+</script>
+
+
+<script id="calc-script">
+/* ===== CALCULATOR & CONVERTER (#view-calc) — Part 1 ===== */
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var HIST_KEY = "iti_calc_hist_v1", PREF_KEY = "iti_calc_prefs_v1", MAX_HIST = 15, MAX_LEN = 120;
+
+  /* ------------------------------------------------------------------
+     SAFE EVALUATOR — tokenizer + recursive-descent parser. No eval().
+     Supports + - × ÷ ^ % ! ( ) sin cos tan log ln √ π e, implicit multiplication,
+     percent math (200+10% = 220), DEG/RAD, auto-closing of open brackets.
+     ------------------------------------------------------------------ */
+  function MathErr(msg) { this.message = msg; this.math = true; }
+  function SynErr() { this.message = "Syntax error"; this.math = false; }
+  var NUM = /(?:\d+\.?\d*|\.\d+)(?:E[+-]?\d+)?/y;
+  var NAMES = ["sqrt", "sin", "cos", "tan", "log", "ln", "pi", "e"];
+  var FUNCS = { sqrt: 1, sin: 1, cos: 1, tan: 1, log: 1, ln: 1 };
+
+  function tokenize(s) {
+    var out = [], i = 0, n = s.length, c, m, j, nm;
+    while (i < n) {
+      c = s.charAt(i);
+      if (c === " " || c === " ") { i++; continue; }
+      if ((c >= "0" && c <= "9") || c === ".") {
+        NUM.lastIndex = i; m = NUM.exec(s);
+        if (!m) throw new SynErr();
+        out.push({ t: "n", v: parseFloat(m[0]) }); i += m[0].length; continue;
+      }
+      if (c === "+") { out.push({ t: "+" }); i++; continue; }
+      if (c === "-" || c === "−" || c === "–") { out.push({ t: "-" }); i++; continue; }
+      if (c === "*" || c === "×") { out.push({ t: "*" }); i++; continue; }
+      if (c === "/" || c === "÷") { out.push({ t: "/" }); i++; continue; }
+      if (c === "^" || c === "(" || c === ")" || c === "!" || c === "%") { out.push({ t: c }); i++; continue; }
+      if (c === "π") { out.push({ t: "c", v: Math.PI }); i++; continue; }
+      if (c === "√") { out.push({ t: "f", v: "sqrt" }); i++; continue; }
+      nm = null;
+      for (j = 0; j < NAMES.length; j++) if (s.substr(i, NAMES[j].length).toLowerCase() === NAMES[j]) { nm = NAMES[j]; break; }
+      if (!nm) throw new SynErr();
+      i += nm.length;
+      if (nm === "pi") out.push({ t: "c", v: Math.PI });
+      else if (nm === "e") out.push({ t: "c", v: Math.E });
+      else out.push({ t: "f", v: nm });
+    }
+    return out;
+  }
+
+  function fact(n) {
+    if (n < 0 || n !== Math.floor(n) || n > 170) throw new MathErr("Invalid input");
+    var r = 1; for (var i = 2; i <= n; i++) r *= i; return r;
+  }
+
+  function evaluate(src, deg) {
+    var tk = tokenize(src), p = 0, depth = 0;
+    function peek() { return p < tk.length ? tk[p].t : null; }
+    function startsOperand(t) { return t === "n" || t === "(" || t === "c" || t === "f"; }
+
+    function expr() {                       /* + and − (a ± b% means a ± a×b/100) */
+      var l = term();
+      while (peek() === "+" || peek() === "-") {
+        var op = tk[p++].t, r = term(), rv = r.v;
+        if (r.p) rv = l.v * r.v;
+        l = { v: op === "+" ? l.v + rv : l.v - rv, p: false };
+      }
+      return l;
+    }
+    function term() {                       /* ×  ÷  and implicit multiplication */
+      var l = unary();
+      for (;;) {
+        var t = peek();
+        if (t === "*") { p++; l = { v: l.v * unary().v, p: false }; }
+        else if (t === "/") {
+          p++; var r = unary();
+          if (r.v === 0) throw new MathErr("Can’t divide by 0");
+          l = { v: l.v / r.v, p: false };
+        } else if (startsOperand(t)) l = { v: l.v * unary().v, p: false };   /* 2π, 2(3+4), (1)(2) */
+        else return l;
+      }
+    }
+    function unary() {
+      var t = peek();
+      if (t === "-") { p++; var o = unary(); return { v: -o.v, p: false }; }
+      if (t === "+") { p++; return unary(); }
+      return power();
+    }
+    function power() {                      /* right-associative; exponent may carry a sign */
+      var b = postfix();
+      if (peek() === "^") {
+        p++; var e = unary();
+        var v = Math.pow(b.v, e.v);
+        if (b.v === 0 && e.v < 0) throw new MathErr("Can’t divide by 0");
+        if (v !== v) throw new MathErr("Invalid input");
+        return { v: v, p: false };
+      }
+      return b;
+    }
+    function postfix() {
+      var o = primary();
+      for (;;) {
+        var t = peek();
+        if (t === "!") { p++; o = { v: fact(o.v), p: false }; }
+        else if (t === "%") { p++; o = { v: o.v / 100, p: true }; }
+        else return o;
+      }
+    }
+    function group() {                      /* "(" expr ")"  — a missing ")" at the end is auto-closed */
+      if (++depth > 60) throw new SynErr();
+      p++; var r = expr();
+      if (peek() === ")") p++; else if (p < tk.length) throw new SynErr();
+      depth--; return r;
+    }
+    function primary() {
+      var t = tk[p];
+      if (!t) throw new SynErr();
+      if (t.t === "n" || t.t === "c") { p++; return { v: t.v, p: false }; }
+      if (t.t === "(") return group();
+      if (t.t === "f") {
+        p++;
+        var a = peek() === "(" ? group() : postfix();
+        return { v: applyFn(t.v, a.v), p: false };
+      }
+      throw new SynErr();
+    }
+    function applyFn(name, x) {
+      var r;
+      if (name === "sqrt") { if (x < 0) throw new MathErr("Invalid input"); return Math.sqrt(x); }
+      if (name === "log") { if (x <= 0) throw new MathErr("Invalid input"); return Math.log10(x); }
+      if (name === "ln") { if (x <= 0) throw new MathErr("Invalid input"); return Math.log(x); }
+      if (deg && name === "tan" && Math.abs(((x % 180) + 180) % 180 - 90) < 1e-9) throw new MathErr("Undefined");
+      var rad = deg ? x * Math.PI / 180 : x;
+      r = name === "sin" ? Math.sin(rad) : name === "cos" ? Math.cos(rad) : Math.tan(rad);
+      if (Math.abs(r) < 1e-14) r = 0;
+      if (Math.abs(r) > 1e14) throw new MathErr("Undefined");
+      return r;
+    }
+
+    if (!tk.length) throw new SynErr();
+    var res = expr();
+    if (p < tk.length) throw new SynErr();
+    if (res.v !== res.v) throw new MathErr("Invalid input");
+    if (!isFinite(res.v)) throw new MathErr("Result too large");
+    return res.v;
+  }
+
+  /* Numbers are written back with an uppercase "E" exponent so they can never be mistaken for the constant e. */
+  function fmt(v) {
+    if (v === 0 || Object.is(v, -0)) return "0";
+    var a = Math.abs(v);
+    if (Number.isInteger(v) && a < 1e15) return String(v);
+    if (a >= 1e15 || a < 1e-6) {
+      var s = v.toExponential(9).split("e"), m = s[0].replace(/\.?0+$/, "");
+      return m + "E" + (parseInt(s[1], 10));
+    }
+    return String(parseFloat(v.toPrecision(12)));
+  }
+
+  /* ------------------------------ state ------------------------------ */
+  var expr = "", justEval = false, lastAns = "", deg = true, sciOpen = false, hist = [], histOpen = false, errShown = false;
+  try { var pr = JSON.parse(localStorage.getItem(PREF_KEY) || "{}"); if (pr.deg === false) deg = false; if (pr.sci === true) sciOpen = true; } catch (e) {}
+  try {
+    var h = JSON.parse(localStorage.getItem(HIST_KEY) || "[]");
+    if (Array.isArray(h)) hist = h.filter(function (x) { return x && typeof x.e === "string" && typeof x.r === "string"; })
+      .slice(0, MAX_HIST).map(function (x) { return { e: x.e.slice(0, MAX_LEN), r: x.r.slice(0, 40) }; });
+  } catch (e) {}
+  function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify({ deg: deg, sci: sciOpen })); } catch (e) {} }
+  function saveHist() { try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); } catch (e) {} }
+
+  var RE_OP = /[+−×÷^-]$/, RE_OPERAND = /[0-9.)%!πe]$/, RE_FN = /(?:sin|cos|tan|log|ln|√)\($/;
+  function stripTail(s) { while (s && (RE_OP.test(s) || RE_FN.test(s) || /\($/.test(s))) s = RE_FN.test(s) ? s.replace(RE_FN, "") : s.slice(0, -1); return s; }
+  function openCount(s) { return (s.match(/\(/g) || []).length - (s.match(/\)/g) || []).length; }
+
+  /* ------------------------------ render ------------------------------ */
+  function currentResult() {
+    if (justEval) return expr;
+    var src = stripTail(expr);
+    if (!src) return "";
+    try { return fmt(evaluate(src, deg)); } catch (e) { return ""; }
+  }
+  function render(errMsg) {
+    var ex = $("cal-expr"), pv = $("cal-preview");
+    if (!ex || !pv) return;
+    var shown = expr.replace(/([0-9)%!πe])([+−×÷])/g, "$1 $2 ");   /* pad binary operators only */
+    ex.textContent = expr ? shown : "0";
+    ex.classList.toggle("cal-empty", !expr);
+    ex.scrollLeft = ex.scrollWidth;
+    pv.classList.remove("cal-bad");
+    if (errMsg) { pv.textContent = errMsg; pv.classList.add("cal-bad"); return; }
+    pv.textContent = "";
+    if (justEval || !expr) return;
+    var src = stripTail(expr);
+    if (!src) return;
+    try {
+      var r = fmt(evaluate(src, deg));
+      if (r !== src && /[+−×÷^%!(πe√]|sin|cos|tan|log|ln/.test(src)) pv.textContent = "= " + r;
+    } catch (e) { if (e && e.math) { pv.textContent = e.message; pv.classList.add("cal-bad"); } }
+  }
+
+  /* ------------------------------ key handling ------------------------------ */
+  function fresh() { if (justEval) { expr = ""; justEval = false; } }
+  function press(k) {
+    var last = expr.slice(-1), m;
+    errShown = false;
+    if (k === "AC") { expr = ""; justEval = false; return render(); }
+    if (k === "bs") {
+      justEval = false;
+      expr = RE_FN.test(expr) ? expr.replace(RE_FN, "") : expr.slice(0, -1);
+      return render();
+    }
+    if (k === "=") return equals();
+    if (expr.length >= MAX_LEN && !/^(?:bs|AC)$/.test(k)) return;
+
+    if (/^[0-9]$|^00$/.test(k)) {
+      fresh(); last = expr.slice(-1);
+      m = /[0-9.]*$/.exec(expr)[0];
+      if (m === "0" && !/\./.test(m)) { expr = expr.slice(0, -1) + (k === "00" ? "0" : k); }
+      else if (k === "00" && !m) expr += "0";
+      else expr += k;
+      return render();
+    }
+    if (k === ".") {
+      fresh();
+      m = /[0-9.]*$/.exec(expr)[0];
+      if (m.indexOf(".") >= 0) return;
+      expr += m ? "." : "0.";
+      return render();
+    }
+    if (k === "+" || k === "−" || k === "×" || k === "÷" || k === "^") {
+      justEval = false;
+      if (!expr) { expr = (k === "−") ? "−" : (lastAns || "0") + k; return render(); }
+      if (last === "(") { if (k === "−") expr += k; return render(); }
+      if (RE_OP.test(expr)) {
+        if (k === "−" && /[×÷^]$/.test(expr)) expr += k;         /* 5×−3 */
+        else { expr = expr.replace(/[+−×÷^-]+$/, ""); expr = expr ? expr + k : (k === "−" ? k : "0" + k); }
+        return render();
+      }
+      expr += k; return render();
+    }
+    if (k === "%") { if (RE_OPERAND.test(expr)) { justEval = false; expr += "%"; } return render(); }
+    if (k === "(") { fresh(); expr += "("; return render(); }
+    if (k === ")") {
+      if (openCount(expr) > 0 && RE_OPERAND.test(expr)) { justEval = false; expr += ")"; }
+      return render();
+    }
+    if (/\($/.test(k)) { fresh(); expr += k; return render(); }                       /* sin( cos( tan( log( ln( √( */
+    if (k === "π" || k === "e") { fresh(); expr += k; return render(); }
+    if (k === "!") { if (RE_OPERAND.test(expr)) { justEval = false; expr += "!"; } return render(); }
+    if (k === "sq") { if (RE_OPERAND.test(expr)) { justEval = false; expr += "^2"; } return render(); }
+    if (k === "pow") { if (RE_OPERAND.test(expr)) { justEval = false; expr += "^"; } return render(); }
+  }
+
+  function equals() {
+    if (!expr || justEval) return;
+    var src = stripTail(expr);
+    if (!src) return render();
+    try {
+      var r = fmt(evaluate(src, deg));
+      if (r !== src) pushHist(expr, r);
+      expr = r; justEval = true; lastAns = r;
+      render();
+    } catch (e) {
+      var d = $("cal-screen");
+      if (d) { d.classList.remove("cal-shake"); void d.offsetWidth; d.classList.add("cal-shake"); }
+      errShown = true;
+      render(e && e.message ? e.message : "Error");
+    }
+  }
+
+  /* ------------------------------ history ------------------------------ */
+  function pushHist(e, r) {
+    if (hist[0] && hist[0].e === e && hist[0].r === r) return;
+    hist.unshift({ e: e, r: r });
+    if (hist.length > MAX_HIST) hist.length = MAX_HIST;
+    saveHist(); renderHist();
+  }
+  function renderHist() {
+    var box = $("cal-hist-list"); if (!box) return;
+    box.textContent = "";
+    if (!hist.length) {
+      var em = document.createElement("div");
+      em.className = "text-[11px] text-slate-400 py-2"; em.textContent = "No calculations yet.";
+      box.appendChild(em); return;
+    }
+    hist.forEach(function (it, i) {
+      var row = document.createElement("div"); row.className = "cal-hrow";
+      var a = document.createElement("button"); a.type = "button"; a.className = "cal-hbtn cal-hexpr btn-tap";
+      a.setAttribute("data-hexpr", i); a.textContent = it.e; a.setAttribute("aria-label", "Reuse expression " + it.e);
+      var b = document.createElement("button"); b.type = "button"; b.className = "cal-hbtn cal-hres btn-tap";
+      b.setAttribute("data-hres", i); b.textContent = "= " + it.r; b.setAttribute("aria-label", "Use result " + it.r);
+      row.appendChild(a); row.appendChild(b); box.appendChild(row);
+    });
+  }
+  function setHist(open) {
+    histOpen = open;
+    var p = $("cal-hist"), b = $("cal-hist-btn");
+    if (p) { p.classList.toggle("cal-open", open); p.setAttribute("aria-hidden", String(!open)); }
+    if (b) { b.setAttribute("aria-expanded", String(open)); b.classList.toggle("cal-on", open); }
+  }
+  function setSci(open) {
+    sciOpen = open;
+    var w = $("cal-sci"), b = $("cal-sci-btn");
+    if (w) { w.classList.toggle("cal-open", open); w.setAttribute("aria-hidden", String(!open)); }
+    if (b) { b.setAttribute("aria-expanded", String(open)); b.classList.toggle("cal-on", open); }
+    savePrefs();
+  }
+  function setAngle(isDeg) {
+    deg = isDeg;
+    var l = $("cal-angle-lbl"), b = $("cal-angle-btn");
+    if (l) l.textContent = deg ? "DEG" : "RAD";
+    if (b) b.setAttribute("aria-label", deg ? "Angle unit: degrees. Tap to switch to radians" : "Angle unit: radians. Tap to switch to degrees");
+    savePrefs(); render();
+  }
+
+  /* ------------------------------ copy ------------------------------ */
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+    return new Promise(function (res, rej) {
+      try {
+        var ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", "");
+        ta.style.cssText = "position:fixed;opacity:0;top:0;left:0"; document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand("copy"); document.body.removeChild(ta); ok ? res() : rej();
+      } catch (e) { rej(e); }
+    });
+  }
+  var copyT;
+  function doCopy() {
+    var r = currentResult(), l = $("cal-copy-lbl");
+    function flash(msg) { if (l) { l.textContent = msg; clearTimeout(copyT); copyT = setTimeout(function () { l.textContent = "Copy"; }, 1300); } }
+    if (!r) return flash("Nothing");
+    copyText(r.replace(/E(-?\d+)$/, "e$1").replace(/−/g, "-")).then(function () { flash("Copied"); }, function () { flash("Failed"); });
+  }
+
+  /* ------------------------------ panes ------------------------------ */
+  var pane = "basic";
+  function showPane(name) {
+    pane = name === "conv" ? "conv" : "basic";
+    var map = { basic: ["cal-tab-basic", "cal-pane-basic"], conv: ["cal-tab-conv", "cal-pane-conv"] };
+    Object.keys(map).forEach(function (k) {
+      var t = $(map[k][0]), p = $(map[k][1]), on = k === pane;
+      if (t) { t.classList.toggle("cal-on", on); t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; }
+      if (p) p.classList.toggle("hidden", !on);
+    });
+    if (window.lucide) { try { lucide.createIcons({ root: $("view-calc") }); } catch (e) {} }
+  }
+
+  /* ------------------------------ Converter hub (Part 2 plugs in here) ------------------------------ */
+  var CONV = {
+    currency: ["coins", "Currency"], length: ["ruler", "Length"], mass: ["scale", "Mass"], area: ["square", "Area"],
+    time: ["clock", "Time"], finance: ["landmark", "Finance"], data: ["hard-drive", "Data"], date: ["calendar", "Date"],
+    discount: ["tag", "Discount"], volume: ["box", "Volume"], numeral: ["binary", "Numeral system"], speed: ["gauge", "Speed"],
+    temperature: ["thermometer", "Temperature"], bmi: ["activity", "BMI"], gst: ["receipt", "GST"]
+  };
+  var engines = {}, openKey = null;
+  var CalHub = {
+    keys: Object.keys(CONV),
+    /* Part 2: CalHub.register("length", function (body, ctx) { body.innerHTML = "..."; }) — called each time the tile is opened.
+       The function may return a cleanup function, which runs when the user goes back to the grid. */
+    register: function (key, mount) { if (CONV[key] && typeof mount === "function") engines[key] = { mount: mount, cleanup: null }; },
+    isRegistered: function (key) { return !!engines[key]; },
+    get current() { return openKey; },
+    openConverter: function (key) {
+      if (!CONV[key]) return;
+      var view = $("view-calc");
+      if (view && view.classList.contains("hidden") && typeof window.switchTab === "function") window.switchTab("calc");
+      showPane("conv");
+      CalHub.closeConverter(true);
+      openKey = key;
+      var body = $("cal-conv-body"), ttl = $("cal-conv-title"), ico = $("cal-conv-ico");
+      if (ttl) ttl.textContent = CONV[key][1];
+      if (ico) ico.innerHTML = '<i data-lucide="' + CONV[key][0] + '" class="w-4 h-4"></i>';
+      if (body) { body.textContent = ""; body.setAttribute("data-conv", key); }
+      $("cal-conv-grid").classList.add("hidden"); $("cal-conv-detail").classList.remove("hidden");
+      var eng = engines[key];
+      if (eng && body) {
+        try { var c = eng.mount(body, { key: key, title: CONV[key][1], icon: CONV[key][0] }); if (typeof c === "function") eng.cleanup = c; }
+        catch (err) { body.innerHTML = '<p class="text-xs text-rose-400">Could not load this converter.</p>'; }
+      } else if (body) {
+        body.innerHTML = '<div class="text-center py-8 space-y-1"><p class="text-sm font-extrabold text-white">' + CONV[key][1] + ' converter</p><p class="text-[11px] text-slate-400">Coming soon.</p></div>';
+      }
+      try { document.dispatchEvent(new CustomEvent("calhub:open", { detail: { key: key, body: body } })); } catch (e) {}
+      if (window.lucide) { try { lucide.createIcons({ root: $("cal-conv-detail") }); } catch (e) {} }
+      window.scrollTo(0, 0);
+    },
+    closeConverter: function (silent) {
+      if (openKey && engines[openKey] && engines[openKey].cleanup) { try { engines[openKey].cleanup(); } catch (e) {} engines[openKey].cleanup = null; }
+      var was = openKey; openKey = null;
+      var b = $("cal-conv-body"); if (b) { b.textContent = ""; b.removeAttribute("data-conv"); }
+      if ($("cal-conv-detail")) $("cal-conv-detail").classList.add("hidden");
+      if ($("cal-conv-grid")) $("cal-conv-grid").classList.remove("hidden");
+      if (!silent) { try { document.dispatchEvent(new CustomEvent("calhub:close", { detail: { key: was } })); } catch (e) {} window.scrollTo(0, 0); }
+    },
+    showPane: showPane,
+    evaluate: function (s, isDeg) { return evaluate(String(s), isDeg !== false); },   /* exposed for reuse / tests */
+    format: fmt
+  };
+  window.CalHub = CalHub;
+
+  /* ------------------------------ wiring ------------------------------ */
+  function init() {
+    var view = $("view-calc"); if (!view) return;
+
+    $("cal-tablist").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-cal-pane]"); if (b) showPane(b.getAttribute("data-cal-pane"));
+    });
+    $("cal-tablist").addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") { showPane(pane === "basic" ? "conv" : "basic"); var t = $(pane === "basic" ? "cal-tab-basic" : "cal-tab-conv"); if (t) t.focus(); e.preventDefault(); }
+    });
+
+    /* keypad (delegated) + long-press ⌫ = AC */
+    var pad = $("cal-pane-basic"), lpT = null, lpFired = false;
+    pad.addEventListener("pointerdown", function (e) {
+      var b = e.target.closest('[data-k="bs"]'); if (!b) return;
+      lpFired = false; clearTimeout(lpT);
+      lpT = setTimeout(function () { lpFired = true; press("AC"); }, 550);
+    });
+    ["pointerup", "pointercancel"].forEach(function (ev) { pad.addEventListener(ev, function () { clearTimeout(lpT); }); });
+    pad.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-k]");
+      if (b && pad.contains(b)) { if (b.getAttribute("data-k") === "bs" && lpFired) { lpFired = false; return; } press(b.getAttribute("data-k")); return; }
+      var hx = e.target.closest("[data-hexpr]"), hr = e.target.closest("[data-hres]");
+      if (hx) { var it = hist[+hx.getAttribute("data-hexpr")]; if (it) { expr = it.e; justEval = false; render(); setHist(false); } return; }
+      if (hr) { var it2 = hist[+hr.getAttribute("data-hres")]; if (it2) { expr = it2.r; justEval = true; lastAns = it2.r; render(); setHist(false); } }
+    });
+    $("cal-sci-btn").addEventListener("click", function () { setSci(!sciOpen); });
+    $("cal-angle-btn").addEventListener("click", function () { setAngle(!deg); });
+    $("cal-copy-btn").addEventListener("click", doCopy);
+    $("cal-hist-btn").addEventListener("click", function () { setHist(!histOpen); });
+    $("cal-hist-clear").addEventListener("click", function () { hist = []; saveHist(); renderHist(); });
+
+    /* hardware keyboard (desktop) — only while the calculator is on screen */
+    var KEYMAP = { "*": "×", x: "×", X: "×", "/": "÷", "-": "−", ",": ".", Enter: "=", "=": "=", Backspace: "bs", Escape: "AC", Delete: "AC" };
+    document.addEventListener("keydown", function (e) {
+      if (view.classList.contains("hidden") || pane !== "basic" || document.body.classList.contains("more-is-open")) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target, tag = t && t.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (t && t.isContentEditable)) return;
+      if (tag === "BUTTON" && (e.key === "Enter" || e.key === " ")) return;
+      var k = e.key, m = KEYMAP[k] || k;
+      if (/^[0-9]$|^[+−×÷.()%!^=]$/.test(m) || m === "bs" || m === "AC") { e.preventDefault(); press(m); }
+    });
+
+    setSci(sciOpen); setAngle(deg); renderHist(); render();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+
+<!-- ===== CAL PART 2 JS: START (must stay AFTER #calc-script) ===== -->
+<script id="calconv-script">
+/* ===== CALCULATOR & CONVERTER (#view-calc) — Part 2: 15 converter engines =====
+   Plugs into Part 1 through CalHub.register(key, mount). 100% client-side, no libraries.
+   Only storage touched: localStorage "iti_calconv_fx_v1" (cached exchange rates). Nothing goes to Firebase. */
+(function () {
+  "use strict";
+  if (!window.CalHub || typeof window.CalHub.register !== "function") return;
+
+  var RUPEE = "\u20B9", MINUS = "\u2212";
+
+  /* ------------------------------ number helpers ------------------------------ */
+  function calConvNum(n) {
+    if (typeof n !== "number" || !isFinite(n)) return "";
+    if (n === 0) return "0";
+    var x = parseFloat(n.toPrecision(12)), a = Math.abs(x), s;
+    if (a >= 1e15 || a < 1e-7) return x.toExponential(8).replace(/\.?0+e/, "e").replace("e+", "e");
+    s = String(x);
+    if (/e/i.test(s)) s = x.toFixed(12).replace(/\.?0+$/, "");
+    return s;
+  }
+  function calConvInr(n) {
+    if (typeof n !== "number" || !isFinite(n)) return "\u2014";
+    return (n < 0 ? MINUS : "") + RUPEE + Math.abs(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function ok(v) { return typeof v === "number" && v === v; }
+  function pl(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+
+  /* ------------------------------ pure math core (also exposed for tests) ------------------------------ */
+  var DAY = 864e5;
+  function dParse(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ""); if (!m) return null;
+    var y = +m[1], mo = +m[2], d = +m[3], t = Date.UTC(y, mo - 1, d), D = new Date(t);
+    if (y < 1000 || D.getUTCFullYear() !== y || D.getUTCMonth() !== mo - 1 || D.getUTCDate() !== d) return null;
+    return { y: y, m: mo - 1, d: d, t: t };
+  }
+  function dim(y, m) { return new Date(Date.UTC(y, m + 1, 0)).getUTCDate(); }
+  function addMonths(p, n) {
+    var t = p.m + n, ny = p.y + Math.floor(t / 12), nm = ((t % 12) + 12) % 12;
+    return Date.UTC(ny, nm, Math.min(p.d, dim(ny, nm)));
+  }
+  function todayUtc() { var n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function isoOf(t) { return new Date(t).toISOString().slice(0, 10); }
+  function longDate(t) { return new Date(t).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }); }
+  function dayName(t) { return new Date(t).toLocaleDateString("en-GB", { weekday: "long", timeZone: "UTC" }); }
+
+  var RX = { dec: [10, /^-?\d+$/], bin: [2, /^-?[01]+$/], oct: [8, /^-?[0-7]+$/], hex: [16, /^-?[0-9a-f]+$/i] };
+  var RX_MSG = { dec: "DEC accepts only digits 0\u20139", bin: "BIN accepts only 0 and 1", oct: "OCT accepts only digits 0\u20137", hex: "HEX accepts only 0\u20139 and A\u2013F" };
+
+  var core = {
+    num: calConvNum,
+    emi: function (P, annual, n) {
+      var r = annual / 1200, e = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+      return { emi: e, total: e * n, interest: e * n - P };
+    },
+    interest: function (P, rate, t, kind, f) {
+      var A = kind === "simple" ? P * (1 + rate * t / 100) : P * Math.pow(1 + rate / (100 * f), f * t);
+      return { interest: A - P, amount: A };
+    },
+    sip: function (P, rate, years) {
+      var n = Math.round(years * 12), i = rate / 1200, fv = i === 0 ? P * n : P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+      return { invested: P * n, value: fv, returns: fv - P * n, months: n };
+    },
+    gst: function (a, r, mode) {
+      var net, g, total;
+      if (mode === "remove") { total = a; net = a / (1 + r / 100); g = a - net; } else { net = a; g = a * r / 100; total = a + g; }
+      return { net: net, gst: g, cgst: g / 2, sgst: g / 2, total: total };
+    },
+    discount: function (P, d1, d2) {
+      var f = P * (1 - d1 / 100) * (1 - (d2 || 0) / 100);
+      return { final: f, save: P - f, pct: P ? (P - f) / P * 100 : 0 };
+    },
+    bmi: function (kg, cm) { var m = cm / 100; return kg / (m * m); },
+    bmiCat: function (b) { return b < 18.5 ? "Underweight" : b < 25 ? "Normal" : b < 30 ? "Overweight" : "Obese"; },
+    bmiRange: function (cm) { var m2 = Math.pow(cm / 100, 2); return [18.5 * m2, 24.9 * m2]; },
+    temp: function (v, from, to) {   /* 0 = C, 1 = F, 2 = K */
+      var c = from === 0 ? v : from === 1 ? (v - 32) * 5 / 9 : v - 273.15;
+      return to === 0 ? c : to === 1 ? c * 9 / 5 + 32 : c + 273.15;
+    },
+    dateParse: dParse, addMonths: addMonths,
+    dateDiff: function (a, b) {      /* a.t <= b.t */
+      var M = (b.y - a.y) * 12 + (b.m - a.m), c = addMonths(a, M);
+      if (c > b.t) { M--; c = addMonths(a, M); }
+      return { y: Math.floor(M / 12), m: M % 12, d: Math.round((b.t - c) / DAY), days: Math.round((b.t - a.t) / DAY) };
+    },
+    dateAdd: function (a, sign, n, unit) {
+      if (unit === "days") return a.t + sign * n * DAY;
+      if (unit === "weeks") return a.t + sign * n * 7 * DAY;
+      if (unit === "months") return addMonths(a, sign * n);
+      return addMonths(a, sign * n * 12);
+    },
+    radixParse: function (s, k) {
+      if (!RX[k][1].test(s)) return null;
+      var neg = s.charAt(0) === "-", d = neg ? s.slice(1) : s, r = RX[k][0];
+      var v = BigInt((r === 10 ? "" : r === 2 ? "0b" : r === 8 ? "0o" : "0x") + d);
+      return neg ? -v : v;
+    },
+    radixFmt: function (v, k) { var s = v.toString(RX[k][0]); return k === "hex" ? s.toUpperCase() : s; }
+  };
+  window.calConvCore = core;
+
+  /* ------------------------------ DOM helpers ------------------------------ */
+  function F(root, n) { return root.querySelector('[data-f="' + n + '"]'); }
+  function setR(root, k, v) { var e = root.querySelector('[data-r="' + k + '"]'); if (e) e.textContent = v; }
+  function clearR(root) { root.querySelectorAll("b[data-r]").forEach(function (b) { b.textContent = "\u2014"; }); }
+  function setN(root, t, err) { var e = root.querySelector("[data-n]"); if (e) { e.textContent = t || ""; e.classList.toggle("calconv-err", !!err); } }
+  function show(el, on) { if (el) el.hidden = !on; }
+
+  var NUMRE = /^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i;
+  /* → null (empty) | NaN (invalid; field gets .cal-bad) | number */
+  function calConvRead(root, name, o) {
+    o = o || {};
+    var el = F(root, name), s = (el.value || "").replace(/[,\s]/g, ""), v = null, bad = false;
+    if (s !== "") {
+      if (!NUMRE.test(s)) bad = true;
+      else {
+        v = Number(s);
+        if (!isFinite(v) || (o.min != null && v < o.min) || (o.max != null && v > o.max) || (o.gt != null && v <= o.gt) || (o.int && Math.floor(v) !== v)) bad = true;
+      }
+    }
+    el.classList.toggle("cal-bad", bad); el.setAttribute("aria-invalid", bad ? "true" : "false");
+    return bad ? NaN : v;
+  }
+
+  function fld(name, label, ph, mode, val) {
+    return '<label class="calconv-f"><span class="calconv-lbl">' + label + '</span><input data-f="' + name + '" class="cal-input" type="text" inputmode="' + (mode || "decimal") +
+      '" autocomplete="off" spellcheck="false" placeholder="' + (ph || "") + '" value="' + (val || "") + '"></label>';
+  }
+  function seg(k, items) {
+    return '<div class="cal-inner calconv-seg" style="--n:' + items.length + '" role="group">' + items.map(function (it) {
+      return '<button type="button" class="cal-seg btn-tap" data-a="set" data-k="' + k + '" data-v="' + it[0] + '">' + it[1] + "</button>";
+    }).join("") + "</div>";
+  }
+  function pills(k, items) {
+    return '<div class="calconv-pills">' + items.map(function (it) {
+      return '<button type="button" class="cal-pill btn-tap" data-a="set" data-k="' + k + '" data-v="' + it[0] + '">' + it[1] + "</button>";
+    }).join("") + "</div>";
+  }
+  function res(rows) {
+    return '<div class="cal-inner calconv-res" aria-live="polite">' + rows.map(function (r) {
+      return '<div class="calconv-kv' + (r[2] ? " calconv-big" : "") + '"><span' + (r[3] ? ' data-l="' + r[3] + '"' : "") + ">" + r[1] + '</span><b data-r="' + r[0] + '">\u2014</b></div>';
+    }).join("") + "</div>";
+  }
+  var COPY_BTN = '<button type="button" class="cal-pill btn-tap" data-a="copy" aria-label="Copy result"><i data-lucide="copy" class="w-3.5 h-3.5"></i><span class="calconv-copylbl">Copy</span></button>';
+  function foot() { return '<div class="calconv-foot"><span class="calconv-note" data-n></span>' + COPY_BTN + "</div>"; }
+
+  /* ------------------------------ copy ------------------------------ */
+  function calConvCopy(btn, text) {
+    var l = btn.querySelector(".calconv-copylbl");
+    function flash(m) {
+      if (!l) return;
+      var o = l.getAttribute("data-o") || l.textContent; l.setAttribute("data-o", o); l.textContent = m;
+      clearTimeout(btn._t); btn._t = setTimeout(function () { l.textContent = o; }, 1300);
+    }
+    if (!text) return flash("Nothing");
+    var p;
+    if (navigator.clipboard && navigator.clipboard.writeText) p = navigator.clipboard.writeText(text);
+    else p = new Promise(function (res, rej) {
+      try {
+        var ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", "");
+        ta.style.cssText = "position:fixed;opacity:0;top:0;left:0"; document.body.appendChild(ta); ta.select();
+        var done = document.execCommand("copy"); document.body.removeChild(ta); done ? res() : rej();
+      } catch (e) { rej(e); }
+    });
+    p.then(function () { flash("Copied"); }, function () { flash("Failed"); });
+  }
+  function calConvSummary(root) {
+    var out = [];
+    root.querySelectorAll(".calconv-kv").forEach(function (r) {
+      if (r.closest("[hidden]")) return;
+      var b = r.querySelector("b"), s = r.querySelector("span");
+      if (b && s && b.textContent && b.textContent !== "\u2014") out.push(s.textContent + ": " + b.textContent);
+    });
+    return out.join("\n");
+  }
+
+  /* ------------------------------ shared mount: root + delegated listeners ------------------------------ */
+  function calConvPaint(root) {
+    root.querySelectorAll('[data-a="set"]').forEach(function (b) {
+      var on = root.st[b.getAttribute("data-k")] === b.getAttribute("data-v");
+      b.classList.toggle("cal-on", on); b.setAttribute("aria-pressed", String(on));
+    });
+  }
+  function calConvBuild(body, html, st, calc, click) {
+    var root = document.createElement("div"); root.className = "calconv"; root.st = st || {}; root.innerHTML = html; body.appendChild(root);
+    function run(e) { calc(root, e); }
+    root.addEventListener("input", run); root.addEventListener("change", run);
+    root.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-a]"); if (!b || !root.contains(b)) return;
+      var a = b.getAttribute("data-a");
+      if (a === "copy") { calConvCopy(b, root.copyFn ? root.copyFn(b) : calConvSummary(root)); return; }
+      if (a === "set") { root.st[b.getAttribute("data-k")] = b.getAttribute("data-v"); calConvPaint(root); if (click) click(a, b, e, root); run(); return; }
+      if (click) click(a, b, e, root);
+    });
+    calConvPaint(root); run();
+    return root;
+  }
+
+  /* ================================================================
+     Generic unit converter (length, mass, area, time, data, volume, speed, temperature)
+     ================================================================ */
+  function calConvUnitTool(units, from, to, o) {
+    o = o || {};
+    return function (body) {
+      var opts = units.map(function (u, i) { return '<option value="' + i + '">' + u[0] + "</option>"; }).join("");
+      var html = (o.head || "") +
+        '<div class="calconv-row"><label class="calconv-f"><span class="calconv-lbl">From</span><input data-f="in" class="cal-input" type="text" inputmode="' + (o.mode || "decimal") + '" autocomplete="off" spellcheck="false" placeholder="Enter value" value="1"></label>' +
+        '<select data-f="from" class="cal-input calconv-sel" aria-label="From unit">' + opts + "</select></div>" +
+        '<div class="calconv-mid"><button type="button" class="cal-key calconv-swap btn-tap" data-a="swap" aria-label="Swap units">\u21C4</button></div>' +
+        '<div class="calconv-row"><label class="calconv-f"><span class="calconv-lbl">Result</span><input data-f="out" class="cal-input cal-auto" type="text" readonly aria-live="polite" placeholder="Result"></label>' +
+        '<select data-f="to" class="cal-input calconv-sel" aria-label="To unit">' + opts + "</select></div>" + foot();
+      var raw = null, text = "";
+      function fac(i, st) { var f = units[i][1]; return typeof f === "function" ? f(st) : f; }
+      function conv(v, i, j, st) { return o.conv ? o.conv(v, i, j) : v * fac(i, st) / fac(j, st); }
+      function calc(root) {
+        var st = root.st, i = +F(root, "from").value, j = +F(root, "to").value, v = calConvRead(root, "in"), out = F(root, "out");
+        raw = null; text = ""; out.value = "";
+        if (v === null) return setN(root, "Enter a value to convert");
+        if (!ok(v)) return setN(root, "Enter a valid number", true);
+        var msg = o.check && o.check(v, i);
+        if (msg) { F(root, "in").classList.add("cal-bad"); return setN(root, msg, true); }
+        var r = conv(v, i, j, st);
+        if (!isFinite(r)) return setN(root, "Result out of range", true);
+        raw = r; out.value = calConvNum(r);
+        text = calConvNum(v) + " " + units[i][0] + " = " + out.value + " " + units[j][0];
+        setN(root, text);
+      }
+      var root = calConvBuild(body, html, o.st ? o.st() : {}, calc, function (a, b, e, rt) {
+        if (a !== "swap") return;
+        var f = F(rt, "from"), t = F(rt, "to"), tmp = f.value; f.value = t.value; t.value = tmp;
+        if (raw !== null) F(rt, "in").value = String(parseFloat(raw.toPrecision(15)));  /* keep full precision so swapping back returns the original */
+        calc(rt);
+      });
+      F(root, "from").value = String(from); F(root, "to").value = String(to); calc(root);
+      root.copyFn = function () { return text; };
+    };
+  }
+
+  var D1 = function (n) { return function (st) { return Math.pow(+st.base, n) * 8; }; };
+  var UNITS = {
+    length: [["mm", 0.001], ["cm", 0.01], ["m", 1], ["km", 1000], ["inch", 0.0254], ["ft", 0.3048], ["yd", 0.9144], ["mile", 1609.344]],
+    mass: [["mg", 1e-6], ["g", 0.001], ["kg", 1], ["tonne", 1000], ["oz", 0.028349523125], ["lb", 0.45359237]],
+    area: [["sq.mm", 1e-6], ["sq.cm", 1e-4], ["sq.m", 1], ["sq.km", 1e6], ["sq.inch", 0.00064516], ["sq.ft", 0.09290304], ["acre", 4046.8564224], ["hectare", 10000]],
+    time: [["ms", 0.001], ["sec", 1], ["min", 60], ["hr", 3600], ["day", 86400], ["week", 604800], ["month (30d)", 2592000], ["year (365d)", 31536000]],
+    volume: [["mL", 0.001], ["L", 1], ["m\u00B3", 1000], ["cm\u00B3", 0.001], ["ft\u00B3", 28.316846592], ["US gal", 3.785411784], ["UK gal", 4.54609]],
+    speed: [["m/s", 1], ["km/h", 1 / 3.6], ["mph", 0.44704], ["knot", 1852 / 3600], ["ft/s", 0.3048]],
+    data: [["Bit", 1], ["Byte", 8], ["KB", D1(1)], ["MB", D1(2)], ["GB", D1(3)], ["TB", D1(4)]],
+    temperature: [["\u00B0C", 0], ["\u00B0F", 1], ["K", 2]]
+  };
+  var H = window.CalHub;
+  H.register("length", calConvUnitTool(UNITS.length, 3, 7));
+  H.register("mass", calConvUnitTool(UNITS.mass, 2, 5));
+  H.register("area", calConvUnitTool(UNITS.area, 2, 5));
+  H.register("time", calConvUnitTool(UNITS.time, 3, 2));
+  H.register("volume", calConvUnitTool(UNITS.volume, 1, 5));
+  H.register("speed", calConvUnitTool(UNITS.speed, 1, 2));
+  H.register("data", calConvUnitTool(UNITS.data, 4, 3, {
+    st: function () { return { base: "1024" }; },
+    head: seg("base", [["1024", "Binary (1024)"], ["1000", "Decimal (1000)"]])
+  }));
+  H.register("temperature", calConvUnitTool(UNITS.temperature, 0, 1, {
+    mode: "text",
+    conv: function (v, i, j) { return core.temp(v, i, j); },
+    check: function (v, i) { return core.temp(v, i, 0) < -273.15 - 1e-9 ? "Below absolute zero (\u2212273.15 \u00B0C)" : ""; }
+  }));
+
+  /* ================================================================
+     1. Currency — live rates (12 h cache) + offline fallback + custom rate
+     ================================================================ */
+  var FX_KEY = "iti_calconv_fx_v1", FX_URL = "https://open.er-api.com/v6/latest/INR", FX_TTL = 12 * 3600 * 1000, fxTry = 0;
+  var CUR = [["INR", "Indian Rupee"], ["USD", "US Dollar"], ["EUR", "Euro"], ["GBP", "British Pound"], ["AED", "UAE Dirham"], ["SAR", "Saudi Riyal"],
+    ["JPY", "Japanese Yen"], ["CAD", "Canadian Dollar"], ["AUD", "Australian Dollar"], ["BDT", "Bangladeshi Taka"], ["NPR", "Nepalese Rupee"], ["SGD", "Singapore Dollar"]];
+  /* approximate INR value of 1 unit — used only when no live/cached rates exist */
+  var FX_FALLBACK = { INR: 1, USD: 88, EUR: 102, GBP: 118, AED: 24, SAR: 23.5, JPY: 0.58, CAD: 64, AUD: 58, BDT: 0.72, NPR: 0.625, SGD: 68 };
+  var fx = fxLoad();
+
+  function fxLoad() {
+    var rates = {}, t = 0;
+    CUR.forEach(function (c) { rates[c[0]] = 1 / FX_FALLBACK[c[0]]; });
+    try {
+      var j = JSON.parse(localStorage.getItem(FX_KEY) || "null");
+      if (j && j.rates && j.t) { CUR.forEach(function (c) { if (j.rates[c[0]] > 0) rates[c[0]] = j.rates[c[0]]; }); t = +j.t || 0; }
+    } catch (e) {}
+    return { t: t, rates: rates };
+  }
+  function fxRate(from, to) { return fx.rates[to] / fx.rates[from]; }
+  function ago(ms) {
+    var m = Math.floor(ms / 6e4);
+    if (m < 1) return "just now"; if (m < 60) return m + " min ago";
+    var h = Math.floor(m / 60); if (h < 48) return h + " hr ago";
+    return Math.floor(h / 24) + " days ago";
+  }
+  /* done("fresh" | "skip" | "live" | "fail") */
+  function fxFetch(force, done) {
+    var now = Date.now();
+    if (!force && fx.t && now - fx.t < FX_TTL) return done("fresh");
+    if (!force && now - fxTry < 5 * 6e4) return done("skip");
+    if (navigator.onLine === false) return done("fail");
+    fxTry = now;
+    var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
+    fetch(FX_URL, { cache: "no-store", signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); })
+      .then(function (j) {
+        if (!j || j.result !== "success" || !j.rates || !(j.rates.USD > 0)) throw new Error("bad");
+        var r = {}; CUR.forEach(function (c) { if (j.rates[c[0]] > 0) r[c[0]] = j.rates[c[0]]; }); r.INR = 1;
+        try { localStorage.setItem(FX_KEY, JSON.stringify({ t: Date.now(), rates: r })); } catch (e) {}
+        fx = fxLoad(); fx.t = Date.now(); done("live");
+      })
+      .catch(function () { done("fail"); })
+      .then(function () { clearTimeout(tm); });
+  }
+
+  H.register("currency", function (body) {
+    fx = fxLoad();
+    var opts = CUR.map(function (c) { return '<option value="' + c[0] + '">' + c[0] + " \u2014 " + c[1] + "</option>"; }).join("");
+    var html =
+      '<div class="calconv-row"><label class="calconv-f"><span class="calconv-lbl">Amount</span><input data-f="amt" class="cal-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter amount" value="1"></label>' +
+      '<select data-f="from" class="cal-input calconv-sel" aria-label="From currency">' + opts + "</select></div>" +
+      '<div class="calconv-mid"><button type="button" class="cal-key calconv-swap btn-tap" data-a="swap" aria-label="Swap currencies">\u21C4</button></div>' +
+      '<div class="calconv-row"><label class="calconv-f"><span class="calconv-lbl">Converted</span><input data-f="out" class="cal-input cal-auto" type="text" readonly aria-live="polite" placeholder="Result"></label>' +
+      '<select data-f="to" class="cal-input calconv-sel" aria-label="To currency">' + opts + "</select></div>" +
+      '<div class="cal-inner rounded-xl p-2.5" style="display:flex;flex-direction:column;gap:8px">' +
+      '<label class="calconv-f"><span class="calconv-lbl" data-l="crl">Custom rate (optional)</span><input data-f="cr" class="cal-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Live rate"></label>' +
+      '<div class="calconv-foot"><span class="calconv-stat" data-s></span><button type="button" class="cal-pill btn-tap" data-a="resetrate">Reset</button><button type="button" class="cal-pill btn-tap" data-a="refresh" aria-label="Refresh live rates"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span>Refresh</span></button></div></div>' +
+      foot();
+    var alive = true, text = "", state = "init";
+    function status(root) {
+      var s = root.querySelector("[data-s]"); if (!s) return;
+      s.textContent = state === "loading" ? "Updating live rates\u2026" :
+        !fx.t ? "Offline estimate \u2022 enter a custom rate for exact values" :
+        (state === "live" ? "Live rates \u2022 updated " : "Saved rates \u2022 updated ") + ago(Date.now() - fx.t) + (state === "fail" ? " (offline)" : "");
+    }
+    function calc(root, e) {
+      var tgt = e && e.target && e.target.getAttribute && e.target.getAttribute("data-f");
+      if (tgt === "from" || tgt === "to") F(root, "cr").value = "";
+      var from = F(root, "from").value, to = F(root, "to").value, a = calConvRead(root, "amt", { min: 0 }), cr = calConvRead(root, "cr", { gt: 0 }), out = F(root, "out");
+      var live = fxRate(from, to), rate = ok(cr) ? cr : live;
+      F(root, "cr").placeholder = "Live: " + calConvNum(+live.toPrecision(6));
+      root.querySelector('[data-l="crl"]').textContent = "Custom rate: 1 " + from + " = ? " + to;
+      out.value = ""; text = "";
+      if (a === null) return setN(root, "Enter an amount");
+      if (!ok(a)) return setN(root, "Enter a valid amount", true);
+      var r = a * rate;
+      if (!isFinite(r)) return setN(root, "Result out of range", true);
+      out.value = r.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: Math.abs(r) < 1 ? 6 : 2 });
+      text = calConvNum(a) + " " + from + " = " + calConvNum(+r.toFixed(6)) + " " + to;
+      setN(root, "1 " + from + " = " + calConvNum(+rate.toPrecision(6)) + " " + to + (ok(cr) ? " (custom)" : ""));
+    }
+    function go(root, force) {
+      state = "loading"; status(root);
+      fxFetch(force, function (s) {
+        state = s === "skip" || s === "fresh" ? "cached" : s;
+        if (!alive) return;
+        status(root); calc(root);
+      });
+    }
+    var root = calConvBuild(body, html, {}, calc, function (a, b, e, rt) {
+      if (a === "swap") {
+        var f = F(rt, "from"), t = F(rt, "to"), tmp = f.value, cr = calConvRead(rt, "cr", { gt: 0 }), o = F(rt, "out").value;
+        f.value = t.value; t.value = tmp;
+        F(rt, "cr").value = ok(cr) ? calConvNum(+(1 / cr).toPrecision(8)) : "";
+        if (text) { var m = /= ([^ ]+) /.exec(text); if (m) F(rt, "amt").value = m[1]; }
+        calc(rt);
+      } else if (a === "resetrate") { F(rt, "cr").value = ""; calc(rt); }
+      else if (a === "refresh") go(rt, true);
+    });
+    F(root, "from").value = "USD"; F(root, "to").value = "INR"; calc(root);
+    root.copyFn = function () { return text; };
+    go(root, false);
+    return function () { alive = false; };
+  });
+
+  /* ================================================================
+     6. Finance — EMI / Interest / SIP
+     ================================================================ */
+  H.register("finance", function (body) {
+    var html = seg("tab", [["emi", "EMI"], ["int", "Interest"], ["sip", "SIP"]]) +
+      '<div data-p="emi" class="calconv">' +
+        fld("e_p", "Loan amount (" + RUPEE + ")", "e.g. 500000") +
+        '<div class="calconv-g2">' + fld("e_r", "Interest % p.a.", "e.g. 8.5") + fld("e_t", "Tenure", "e.g. 5") + "</div>" +
+        seg("tu", [["y", "Years"], ["m", "Months"]]) +
+        res([["emi", "Monthly EMI", 1], ["int", "Total Interest"], ["tot", "Total Payable"]]) + "</div>" +
+      '<div data-p="int" class="calconv" hidden>' +
+        fld("i_p", "Principal (" + RUPEE + ")", "e.g. 100000") +
+        '<div class="calconv-g2">' + fld("i_r", "Rate % p.a.", "e.g. 7") + fld("i_t", "Time (years)", "e.g. 3") + "</div>" +
+        seg("ik", [["simple", "Simple"], ["compound", "Compound"]]) +
+        '<label class="calconv-f" data-p2="freq"><span class="calconv-lbl">Compounding</span><select data-f="freq" class="cal-input calconv-sel"><option value="1">Yearly</option><option value="2">Half-yearly</option><option value="4">Quarterly</option><option value="12">Monthly</option><option value="365">Daily</option></select></label>' +
+        res([["ie", "Interest Earned", 1], ["ia", "Final Amount"]]) + "</div>" +
+      '<div data-p="sip" class="calconv" hidden>' +
+        fld("s_p", "Monthly amount (" + RUPEE + ")", "e.g. 5000") +
+        '<div class="calconv-g2">' + fld("s_r", "Expected return % p.a.", "e.g. 12") + fld("s_t", "Years", "e.g. 10") + "</div>" +
+        res([["sv", "Total Value", 1], ["si", "Invested"], ["sr", "Est. Returns"]]) + "</div>" +
+      foot();
+    var rd = calConvRead;
+    function calc(root) {
+      var st = root.st;
+      ["emi", "int", "sip"].forEach(function (p) { show(root.querySelector('[data-p="' + p + '"]'), st.tab === p); });
+      show(root.querySelector('[data-p2="freq"]'), st.ik === "compound");
+      clearR(root); setN(root, "");
+      var note = "";
+      if (st.tab === "emi") {
+        var P = rd(root, "e_p", { gt: 0 }), r = rd(root, "e_r", { min: 0, max: 100 }), t = rd(root, "e_t", { gt: 0 });
+        if (ok(P) && ok(r) && ok(t)) {
+          var n = Math.round(st.tu === "y" ? t * 12 : t);
+          if (n < 1 || n > 1200) { F(root, "e_t").classList.add("cal-bad"); return setN(root, "Tenure must be 1 month to 100 years", true); }
+          var x = core.emi(P, r, n);
+          setR(root, "emi", calConvInr(x.emi)); setR(root, "int", calConvInr(x.interest)); setR(root, "tot", calConvInr(x.total));
+          note = pl(n, "monthly instalment");
+        }
+      } else if (st.tab === "int") {
+        var P2 = rd(root, "i_p", { gt: 0 }), r2 = rd(root, "i_r", { min: 0, max: 100 }), t2 = rd(root, "i_t", { gt: 0, max: 100 });
+        if (ok(P2) && ok(r2) && ok(t2)) {
+          var y = core.interest(P2, r2, t2, st.ik, +F(root, "freq").value);
+          setR(root, "ie", calConvInr(y.interest)); setR(root, "ia", calConvInr(y.amount));
+          note = st.ik === "simple" ? "Simple interest" : "Compounded " + F(root, "freq").options[F(root, "freq").selectedIndex].text.toLowerCase();
+        }
+      } else {
+        var P3 = rd(root, "s_p", { gt: 0 }), r3 = rd(root, "s_r", { min: 0, max: 100 }), t3 = rd(root, "s_t", { gt: 0, max: 100 });
+        if (ok(P3) && ok(r3) && ok(t3)) {
+          if (Math.round(t3 * 12) < 1) { F(root, "s_t").classList.add("cal-bad"); return setN(root, "Minimum 1 month", true); }
+          var z = core.sip(P3, r3, t3);
+          setR(root, "sv", calConvInr(z.value)); setR(root, "si", calConvInr(z.invested)); setR(root, "sr", calConvInr(z.returns));
+          note = pl(z.months, "monthly instalment") + ", paid at start of month";
+        }
+      }
+      setN(root, note);
+    }
+    var root = calConvBuild(body, html, { tab: "emi", tu: "y", ik: "compound" }, calc);
+    root.copyFn = function () {
+      var s = calConvSummary(root); return s ? { emi: "EMI", int: "Interest", sip: "SIP" }[root.st.tab] + "\n" + s : "";
+    };
+  });
+
+  /* ================================================================
+     8. Date — Difference / Age and Add / Subtract
+     ================================================================ */
+  H.register("date", function (body) {
+    var today = isoOf(todayUtc());
+    function dateFld(name, label, val, withToday) {
+      return '<div class="calconv-f"><span class="calconv-lbl">' + label + '</span><div class="calconv-row" style="grid-template-columns:minmax(0,1fr) auto"><input data-f="' + name + '" class="cal-input" type="date" value="' + (val || "") + '" aria-label="' + label + '">' +
+        '<button type="button" class="cal-pill btn-tap" data-a="today" data-t="' + name + '">Today</button></div></div>';
+    }
+    var html = seg("tab", [["diff", "Difference / Age"], ["add", "Add / Subtract"]]) +
+      '<div data-p="diff" class="calconv">' + dateFld("from", "From date", "") + dateFld("to", "To date", today) +
+        '<div class="cal-inner calconv-res calconv-big" aria-live="polite"><div class="calconv-kv calconv-big" style="flex-direction:column;align-items:flex-start;gap:2px"><span>Exact difference</span><b data-r="ymd" style="text-align:left">\u2014</b></div></div>' +
+        res([["days", "Total days"], ["weeks", "Total weeks"]]) + "</div>" +
+      '<div data-p="add" class="calconv" hidden>' + dateFld("start", "Start date", today) + seg("op", [["add", "+ Add"], ["sub", MINUS + " Subtract"]]) +
+        '<div class="calconv-row">' + fld("n", "How many", "e.g. 90", "numeric") +
+        '<select data-f="unit" class="cal-input calconv-sel" aria-label="Unit"><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></div>' +
+        res([["target", "Resulting date", 1], ["wd", "Weekday"], ["rel", "From today"]]) + "</div>" + foot();
+    function calc(root) {
+      var st = root.st; show(root.querySelector('[data-p="diff"]'), st.tab === "diff"); show(root.querySelector('[data-p="add"]'), st.tab === "add");
+      clearR(root); setN(root, "");
+      if (st.tab === "diff") {
+        var a = dParse(F(root, "from").value), b = dParse(F(root, "to").value);
+        F(root, "from").classList.toggle("cal-bad", !a && !!F(root, "from").value); F(root, "to").classList.toggle("cal-bad", !b && !!F(root, "to").value);
+        if (!a || !b) return setN(root, "Pick both dates");
+        var swapped = a.t > b.t; if (swapped) { var tmp = a; a = b; b = tmp; }
+        var d = core.dateDiff(a, b);
+        setR(root, "ymd", pl(d.y, "year") + ", " + pl(d.m, "month") + ", " + pl(d.d, "day"));
+        setR(root, "days", d.days.toLocaleString("en-IN"));
+        setR(root, "weeks", calConvNum(+(d.days / 7).toFixed(2)) + " (" + pl(Math.floor(d.days / 7), "week") + " " + pl(d.days % 7, "day") + ")");
+        setN(root, swapped ? "Dates were reversed \u2014 showing the gap between them" : "");
+      } else {
+        var s = dParse(F(root, "start").value), n = calConvRead(root, "n", { min: 0, max: 1000000, int: true });
+        F(root, "start").classList.toggle("cal-bad", !s && !!F(root, "start").value);
+        if (!s || n === null) return setN(root, "Pick a start date and enter a number");
+        if (!ok(n)) return setN(root, "Enter a whole number (0 or more)", true);
+        var t = core.dateAdd(s, st.op === "sub" ? -1 : 1, n, F(root, "unit").value), yr = new Date(t).getUTCFullYear();
+        if (!isFinite(t) || yr < 1000 || yr > 9999) return setN(root, "Result is out of range", true);
+        var diff = Math.round((t - todayUtc()) / DAY);
+        setR(root, "target", longDate(t)); setR(root, "wd", dayName(t));
+        setR(root, "rel", diff === 0 ? "Today" : diff > 0 ? "in " + pl(diff, "day") : pl(-diff, "day") + " ago");
+      }
+    }
+    var root = calConvBuild(body, html, { tab: "diff", op: "add" }, calc, function (a, b, e, rt) {
+      if (a === "today") { F(rt, b.getAttribute("data-t")).value = isoOf(todayUtc()); calc(rt); }
+    });
+    root.copyFn = function () { return calConvSummary(root); };
+  });
+
+  /* ================================================================
+     9. Discount
+     ================================================================ */
+  H.register("discount", function (body) {
+    var html = fld("p", "Original price (" + RUPEE + ")", "e.g. 2499") +
+      '<div class="calconv-g2">' + fld("d1", "Discount %", "e.g. 20") + fld("d2", "Extra discount % (optional)", "e.g. 10") + "</div>" +
+      res([["final", "Final Price", 1], ["save", "Total You Save"], ["pct", "Effective discount"]]) + foot();
+    function calc(root) {
+      var p = calConvRead(root, "p", { min: 0 }), d1 = calConvRead(root, "d1", { min: 0, max: 100 }), d2 = calConvRead(root, "d2", { min: 0, max: 100 });
+      clearR(root); setN(root, "Extra discount is applied after the first one");
+      if (!ok(p) || !ok(d1) || !ok(d2) && d2 !== null) return;
+      var x = core.discount(p, d1, d2 || 0);
+      setR(root, "final", calConvInr(x.final)); setR(root, "save", calConvInr(x.save)); setR(root, "pct", calConvNum(+x.pct.toFixed(2)) + "%");
+    }
+    var root = calConvBuild(body, html, {}, calc);
+    root.copyFn = function () { return calConvSummary(root); };
+  });
+
+  /* ================================================================
+     11. Numeral system — DEC / BIN / OCT / HEX (BigInt, live 4-way)
+     ================================================================ */
+  H.register("numeral", function (body) {
+    if (typeof BigInt === "undefined") { body.innerHTML = '<p class="text-xs text-rose-400">This browser does not support big numbers (BigInt).</p>'; return; }
+    function row(k, label, mode) {
+      return '<div class="calconv-f"><span class="calconv-lbl">' + label + '</span><div class="calconv-row" style="grid-template-columns:minmax(0,1fr) auto"><input data-f="' + k + '" class="cal-input" type="text" inputmode="' + mode + '" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="0" aria-label="' + label + '">' +
+        '<button type="button" class="cal-pill btn-tap" data-a="copy" data-t="' + k + '" aria-label="Copy ' + label + '"><i data-lucide="copy" class="w-3.5 h-3.5"></i><span class="calconv-copylbl">Copy</span></button></div></div>';
+    }
+    var html = row("dec", "Decimal (DEC)", "numeric") + row("bin", "Binary (BIN)", "numeric") + row("oct", "Octal (OCT)", "numeric") + row("hex", "Hexadecimal (HEX)", "text") +
+      '<div class="calconv-foot"><span class="calconv-note" data-n>Type in any box \u2014 the others update instantly</span><button type="button" class="cal-pill btn-tap" data-a="clear">Clear</button></div>';
+    var KEYS = ["dec", "bin", "oct", "hex"];
+    function calc(root, e) {
+      var src = e && e.target && e.target.getAttribute && e.target.getAttribute("data-f");
+      if (!RX[src]) return;
+      KEYS.forEach(function (k) { F(root, k).classList.remove("cal-bad"); });
+      function clearOthers() { KEYS.forEach(function (k) { if (k !== src) F(root, k).value = ""; }); }
+      var s = e.target.value.replace(/\s+/g, ""); if (src === "hex") s = s.replace(/^(-?)0x/i, "$1");
+      if (s === "" || s === "-") { clearOthers(); return setN(root, "Type in any box \u2014 the others update instantly"); }
+      var v = s.length <= 64 ? core.radixParse(s, src) : null;
+      if (v === null) { e.target.classList.add("cal-bad"); clearOthers(); return setN(root, s.length > 64 ? "Maximum 64 digits" : RX_MSG[src], true); }
+      KEYS.forEach(function (k) { if (k !== src) F(root, k).value = core.radixFmt(v, k); });
+      setN(root, "");
+    }
+    var root = calConvBuild(body, html, {}, calc, function (a, b, e, rt) {
+      if (a === "clear") { KEYS.forEach(function (k) { F(rt, k).value = ""; F(rt, k).classList.remove("cal-bad"); }); setN(rt, "Type in any box \u2014 the others update instantly"); F(rt, "dec").focus(); }
+    });
+    root.copyFn = function (b) { var k = b.getAttribute("data-t"); return k ? F(root, k).value : ""; };
+  });
+
+  /* ================================================================
+     14. BMI
+     ================================================================ */
+  H.register("bmi", function (body) {
+    var html = seg("hu", [["cm", "Height: cm"], ["ft", "Height: ft + in"]]) +
+      '<div data-p="cm">' + fld("cm", "Height (cm)", "e.g. 170") + "</div>" +
+      '<div data-p="ft" class="calconv-g2" hidden>' + fld("ft", "Feet", "e.g. 5", "numeric") + fld("in", "Inches", "e.g. 7") + "</div>" +
+      seg("wu", [["kg", "Weight: kg"], ["lb", "Weight: lb"]]) + fld("w", "Weight", "e.g. 65") +
+      '<div class="cal-inner calconv-res" style="padding:12px" aria-live="polite">' +
+        '<div class="calconv-foot"><div><div class="calconv-lbl">Your BMI</div><b data-r="bmi" class="calconv-bmival">\u2014</b></div><span class="calconv-cat" data-c="" data-r="cat" hidden></span></div>' +
+        '<div class="calconv-bmibar" aria-hidden="true"><i style="flex:8.5;background:#38bdf8"></i><i style="flex:6.5;background:#34d399"></i><i style="flex:5;background:#fbbf24"></i><i style="flex:10;background:#fb7185"></i>' +
+        '<span class="calconv-mark" data-mark hidden></span><span class="calconv-tick" style="left:28.33%">18.5</span><span class="calconv-tick" style="left:50%">25</span><span class="calconv-tick" style="left:66.67%">30</span></div>' +
+        '<div class="calconv-kv"><span>Healthy weight range</span><b data-r="range">\u2014</b></div></div>' +
+      '<div class="calconv-foot"><span class="calconv-note" data-n>General guide for adults (BMI 18.5\u201324.9). Not medical advice.</span>' + COPY_BTN + "</div>";
+    var text = "";
+    function calc(root) {
+      var st = root.st; show(root.querySelector('[data-p="cm"]'), st.hu === "cm"); show(root.querySelector('[data-p="ft"]'), st.hu === "ft");
+      var cm = null, bad = false;
+      if (st.hu === "cm") { cm = calConvRead(root, "cm", { min: 50, max: 272 }); }
+      else {
+        var ft = calConvRead(root, "ft", { min: 0, max: 8 }), inch = calConvRead(root, "in", { min: 0, max: 99 });
+        if (ft === null || !ok(ft) || !ok(inch) && inch !== null) cm = ft === null ? null : NaN;
+        else { cm = (ft * 12 + (inch || 0)) * 2.54; if (cm < 50 || cm > 272) { cm = NaN; F(root, "ft").classList.add("cal-bad"); } }
+      }
+      var w = calConvRead(root, "w", { gt: 0 }), kg = ok(w) ? (st.wu === "kg" ? w : w * 0.45359237) : w;
+      if (ok(kg) && (kg < 2 || kg > 500)) { kg = NaN; F(root, "w").classList.add("cal-bad"); }
+      var cat = root.querySelector('[data-r="cat"]'), mark = root.querySelector("[data-mark]");
+      setR(root, "bmi", "\u2014"); setR(root, "range", "\u2014"); show(cat, false); show(mark, false); text = "";
+      if (cm === null || kg === null) return setN(root, "Enter height and weight");
+      if (!ok(cm) || !ok(kg)) return setN(root, "Please check the height and weight values", true);
+      var b = core.bmi(kg, cm), c = core.bmiCat(b), r = core.bmiRange(cm);
+      setR(root, "bmi", b.toFixed(1)); cat.textContent = c; cat.setAttribute("data-c", { Underweight: "under", Normal: "normal", Overweight: "over", Obese: "obese" }[c]); show(cat, true);
+      mark.style.left = Math.max(0, Math.min(100, (b - 10) / 30 * 100)) + "%"; show(mark, true);
+      var lb = function (x) { return (x / 0.45359237).toFixed(1); };
+      setR(root, "range", r[0].toFixed(1) + " \u2013 " + r[1].toFixed(1) + " kg (" + lb(r[0]) + " \u2013 " + lb(r[1]) + " lb)");
+      setN(root, "General guide for adults (BMI 18.5\u201324.9). Not medical advice.");
+      text = "BMI: " + b.toFixed(1) + " (" + c + ")\nHealthy weight range: " + r[0].toFixed(1) + " \u2013 " + r[1].toFixed(1) + " kg";
+    }
+    var root = calConvBuild(body, html, { hu: "cm", wu: "kg" }, calc);
+    root.copyFn = function () { return text; };
+  });
+
+  /* ================================================================
+     15. GST (India)
+     ================================================================ */
+  H.register("gst", function (body) {
+    var html = seg("gm", [["add", "+ Add GST"], ["remove", MINUS + " Remove GST"]]) +
+      fld("a", "Amount", "e.g. 1000").replace('<span class="calconv-lbl">', '<span class="calconv-lbl" data-l="amt">') +
+      '<div class="calconv-f"><span class="calconv-lbl">GST slab</span>' + pills("rate", [["3", "3%"], ["5", "5%"], ["12", "12%"], ["18", "18%"], ["28", "28%"]]) + "</div>" +
+      fld("cr", "Custom GST % (optional)", "e.g. 0.25") +
+      res([["total", "Total Price", 1], ["net", "Net Price"], ["gst", "GST Amount"], ["cgst", "CGST (50%)", 0, "cg"], ["sgst", "SGST (50%)", 0, "sg"]]) + foot();
+    function calc(root) {
+      var st = root.st, cr = calConvRead(root, "cr", { min: 0, max: 100 }), rate;
+      if (cr !== null) { rate = cr; if (st.rate !== "c") { st.rate = "c"; calConvPaint(root); } } else { if (st.rate === "c") { st.rate = "18"; calConvPaint(root); } rate = +st.rate; }
+      root.querySelector('[data-l="amt"]').textContent = st.gm === "add" ? "Amount (excl. GST)" : "Amount (incl. GST)";
+      var half = ok(rate) ? calConvNum(+(rate / 2).toFixed(4)) + "%" : "50%";
+      root.querySelector('[data-l="cg"]').textContent = "CGST (" + half + ")"; root.querySelector('[data-l="sg"]').textContent = "SGST (" + half + ")";
+      var a = calConvRead(root, "a", { min: 0 });
+      clearR(root);
+      if (a === null) return setN(root, "Enter an amount");
+      if (!ok(a) || !ok(rate)) return setN(root, "Enter valid numbers", true);
+      var x = core.gst(a, rate, st.gm);
+      setR(root, "total", calConvInr(x.total)); setR(root, "net", calConvInr(x.net)); setR(root, "gst", calConvInr(x.gst)); setR(root, "cgst", calConvInr(x.cgst)); setR(root, "sgst", calConvInr(x.sgst));
+      setN(root, "GST @ " + calConvNum(rate) + "% \u2022 " + (st.gm === "add" ? "added to" : "removed from") + " amount");
+    }
+    var root = calConvBuild(body, html, { gm: "add", rate: "18" }, calc, function (a, b, e, rt) {
+      if (a === "set" && b.getAttribute("data-k") === "rate") F(rt, "cr").value = "";
+    });
+    root.copyFn = function () { var s = calConvSummary(root); return s ? "GST (" + (root.st.gm === "add" ? "added" : "removed") + ")\n" + s : ""; };
+  });
+})();
+</script>
+<!-- ===== CAL PART 2 JS: END ===== -->
 
 </body>
 </html>

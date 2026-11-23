@@ -10,30 +10,41 @@
 
   var LS = { prefs: "iti_qa_prefs_v1", name: "iti_qa_name_v1", streak: "iti_qa_streak_v1", custom: "iti_qa_custom_v1" };
   var BANK_URL = "./quiz_bank.json";
+  var BANK_EXTRA_URL = "./quiz_bank_extra.json";   /* extra topics; ids 50001+ are reserved for this file */
+  var EXTRA_ID_MIN = 50000;
   var SEC_PER_Q = 12;
   var COUNTS = [10, 15, 20, 25, 50];
   var TOPICS = [
     ["iti", "all", "All ITI"],
     ["iti", "y1", "ITI 1st Yr"],
     ["iti", "y2", "ITI 2nd Yr"],
+    ["iti", "wcs", "Workshop Calc"],
+    ["iti", "draw", "Eng. Drawing"],
+    ["iti", "safe", "Safety & Tools"],
     ["sci", "all", "Science"],
     ["sci", "phy", "Physics"],
     ["sci", "chem", "Chemistry"],
     ["sci", "bio", "Biology"],
     ["gs", "all", "GS / GK"],
+    ["gs", "his", "History"],
+    ["gs", "geo", "Geography"],
+    ["gs", "pol", "Polity & GK"],
+    ["gs", "eco", "Economy"],
+    ["gs", "comp", "Computer"],
     ["apt", "math", "Maths"],
     ["apt", "eng", "English"],
+    ["apt", "reason", "Reasoning"],
     ["mix", "mix", "Exam Mix"]
   ];
   var SUBS = {
-    iti: [["all", "All ITI (1st+2nd)"], ["y1", "1st Year Only"], ["y2", "2nd Year Only"]],
+    iti: [["all", "All ITI (all subjects)"], ["y1", "1st Year Only"], ["y2", "2nd Year Only"], ["wcs", "Workshop Calc & Science"], ["draw", "Engineering Drawing"], ["safe", "Safety & Tools"]],
     sci: [["all", "All Science"], ["phy", "Physics"], ["chem", "Chemistry"], ["bio", "Biology"]],
-    gs: [["all", "All GS (Sci + GK)"], ["his", "History"], ["geo", "Geography"], ["pol", "Polity & Static"]],
-    apt: [["math", "Math Only"], ["eng", "English Only"]],
+    gs: [["all", "All GS (Sci + GK)"], ["his", "History"], ["geo", "Geography"], ["pol", "Polity & Static"], ["eco", "Indian Economy"], ["comp", "Computer Basics"]],
+    apt: [["math", "Math Only"], ["eng", "English Only"], ["reason", "Reasoning Only"]],
     mix: [["mix", "GS + ITI Combined"]]
   };
   var MAIN_NAMES = { iti: "ITI Trade", sci: "Science", gs: "GS / GK", apt: "Aptitude", mix: "Exam Mix" };
-  var TAGS = { y1: "ITI 1st Year", y2: "ITI 2nd Year", phy: "Physics", chem: "Chemistry", bio: "Biology", his: "History", geo: "Geography", pol: "Polity & GK", math: "Maths", eng: "English" };
+  var TAGS = { y1: "ITI 1st Year", y2: "ITI 2nd Year", phy: "Physics", chem: "Chemistry", bio: "Biology", his: "History", geo: "Geography", pol: "Polity & GK", math: "Maths", eng: "English", wcs: "Workshop Calc & Science", draw: "Engineering Drawing", safe: "Safety & Tools", eco: "Indian Economy", comp: "Computer Basics", reason: "Reasoning" };
 
   var root = null, view = null, msgEl = null, msgT = 0;
   var bank = [], bankState = "loading";
@@ -867,11 +878,12 @@ textarea.qa-in{resize:vertical;line-height:1.4}
   /* ---------- custom questions: Firestore quiz_meta/custom_questions (1 read) + merge ---------- */
   var CAT = [
     ["iti", "y1", "ITI Trade · 1st Year"], ["iti", "y2", "ITI Trade · 2nd Year"],
+    ["iti", "wcs", "ITI · Workshop Calc & Science"], ["iti", "draw", "ITI · Engineering Drawing"], ["iti", "safe", "ITI · Safety & Tools"],
     ["sci", "phy", "Science · Physics"], ["sci", "chem", "Science · Chemistry"], ["sci", "bio", "Science · Biology"],
-    ["gs", "his", "GS · History"], ["gs", "geo", "GS · Geography"], ["gs", "pol", "GS · Polity & Static"],
-    ["apt", "math", "Aptitude · Maths"], ["apt", "eng", "Aptitude · English"]
+    ["gs", "his", "GS · History"], ["gs", "geo", "GS · Geography"], ["gs", "pol", "GS · Polity & Static"], ["gs", "eco", "GS · Indian Economy"], ["gs", "comp", "GS · Computer Basics"],
+    ["apt", "math", "Aptitude · Maths"], ["apt", "eng", "Aptitude · English"], ["apt", "reason", "Aptitude · Reasoning"]
   ];
-  var GROUPS = { iti: ["y1", "y2"], sci: ["phy", "chem", "bio"], gs: ["his", "geo", "pol"], apt: ["math", "eng"] };
+  var GROUPS = { iti: ["y1", "y2", "wcs", "draw", "safe"], sci: ["phy", "chem", "bio"], gs: ["his", "geo", "pol", "eco", "comp"], apt: ["math", "eng", "reason"] };
   var CQ_MAX_BYTES = 900000;   /* Firestore doc limit is 1 MiB */
 
   function checkQ(q) {
@@ -913,7 +925,7 @@ textarea.qa-in{resize:vertical;line-height:1.4}
   }
   function nextId(items) {     /* never reuses an id: counts base, custom and deleted ids */
     var m = 1000;
-    baseBank.forEach(function (q) { if (q.id > m) m = q.id; });
+    baseBank.forEach(function (q) { if (q.id > m && q.id < EXTRA_ID_MIN) m = q.id; });
     items.forEach(function (it) { if (it && typeof it.id === "number" && it.id > m) m = it.id; });
     return m + 1;
   }
@@ -1276,9 +1288,13 @@ textarea.qa-in{resize:vertical;line-height:1.4}
   /* ---------- bank + mount ---------- */
   function loadBank() {
     bankState = "loading"; if (screen === "setup") render();
-    fetch(BANK_URL, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) {
+    var extraP = fetch(BANK_EXTRA_URL, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : []; }).then(function (d) { return Array.isArray(d) ? d : []; }).catch(function () { return []; });
+    Promise.all([fetch(BANK_URL, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }), extraP])
+      .then(function (res) {
+        var d = res[0], ex = res[1], seen = {};
         if (!Array.isArray(d)) throw new Error("bad bank");
+        d.forEach(function (q) { if (q && typeof q.id === "number") seen[q.id] = 1; });
+        d = d.concat(ex.filter(function (q) { return q && typeof q.id === "number" && !seen[q.id]; }));
         baseBank = d.filter(function (q) { return q && q.q && Array.isArray(q.opts) && q.opts.length === 4 && q.ans >= 0 && q.ans < 4; });
         baseById = {}; baseBank.forEach(function (q) { baseById[q.id] = q; });
         readCachedCustom(); rebuildBank();           /* offline-safe: last cached custom questions */

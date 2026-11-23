@@ -1,0 +1,1203 @@
+/*! ITI CONNECT — Quiz Arena (Part 3: Setup + Solo + 2–4 player Live Multiplayer)
+ *  Mounts into <div id="quiz-arena-root"></div>. Needs ./quiz_bank.json.
+ *  Live rooms: Firestore doc battles/{roomCode}, Firebase v10.12.2 (same app as index.html),
+ *  anonymous Firebase Auth for the player id. Invite link: ?battle=XXXX
+ *  API: window.QuizArenaMulti.{createRoom(cfg), joinRoom(code, cfg)}
+ *  Admin: custom questions live in Firestore quiz_meta/custom_questions (1 read, cached in localStorage)
+ */
+(function () {
+  "use strict";
+
+  var LS = { prefs: "iti_qa_prefs_v1", name: "iti_qa_name_v1", streak: "iti_qa_streak_v1", custom: "iti_qa_custom_v1" };
+  var BANK_URL = "./quiz_bank.json";
+  var SEC_PER_Q = 12;
+  var COUNTS = [10, 15, 20, 25, 50];
+  var MAINS = [["iti", "ITI Trade"], ["sci", "Science"], ["gs", "GS / GK"], ["apt", "Aptitude"], ["mix", "Exam Mix"]];
+  var SUBS = {
+    iti: [["all", "All ITI (1st+2nd)"], ["y1", "1st Year Only"], ["y2", "2nd Year Only"]],
+    sci: [["all", "All Science"], ["phy", "Physics"], ["chem", "Chemistry"], ["bio", "Biology"]],
+    gs: [["all", "All GS (Sci + GK)"], ["his", "History"], ["geo", "Geography"], ["pol", "Polity & Static"]],
+    apt: [["math", "Math Only"], ["eng", "English Only"]],
+    mix: [["mix", "GS + ITI Combined"]]
+  };
+  var TAGS = { y1: "ITI 1st Year", y2: "ITI 2nd Year", phy: "Physics", chem: "Chemistry", bio: "Biology", his: "History", geo: "Geography", pol: "Polity & GK", math: "Maths", eng: "English" };
+
+  var root = null, view = null, msgEl = null, msgT = 0;
+  var bank = [], bankState = "loading";
+  var screen = "setup", G = null, last = null;
+  var S = { players: 1, count: 10, main: "iti", sub: "all", name: "" };
+  var R = null, busy = false, pendingCode = "", FBR = null, FBP = null, FBC = null;   /* live-room state */
+  var baseBank = [], baseById = {}, custom = { updatedAt: 0, items: [] }, AD = null;   /* admin / custom questions */
+
+  /* ---------- helpers ---------- */
+  function ls(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function fmt(ms) { var s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ":" + pad(s % 60); }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function $(id) { return root.querySelector("#" + id); }
+  function icons() { try { if (window.lucide && window.lucide.createIcons) window.lucide.createIcons(); } catch (e) { } }
+  function ico(n, c) { return '<i data-lucide="' + n + '" class="qa-i ' + (c || "") + '"></i>'; }
+  function toast(t) {
+    if (!msgEl) return; msgEl.textContent = t; msgEl.classList.add("on");
+    clearTimeout(msgT); msgT = setTimeout(function () { msgEl.classList.remove("on"); }, 2600);
+  }
+
+  /* ---------- prefs ---------- */
+  function loadPrefs() {
+    S.name = (ls(LS.name) || "").slice(0, 16);
+    try {
+      var p = JSON.parse(ls(LS.prefs) || "{}");
+      if ([1, 2, 3, 4].indexOf(p.players) > -1) S.players = p.players;
+      if (COUNTS.indexOf(p.count) > -1) S.count = p.count;
+      if (SUBS[p.main]) {
+        S.main = p.main;
+        S.sub = SUBS[p.main].some(function (s) { return s[0] === p.sub; }) ? p.sub : SUBS[p.main][0][0];
+      }
+    } catch (e) { }
+  }
+  function savePrefs() { lsSet(LS.prefs, JSON.stringify({ players: S.players, count: S.count, main: S.main, sub: S.sub })); }
+
+  /* ---------- question pools ---------- */
+  function poolFor(main, sub) {
+    return bank.filter(function (q) {
+      if (main === "iti") return q.group === "iti" && (sub === "all" || q.sub === sub);
+      if (main === "sci") return q.group === "sci" && (sub === "all" || q.sub === sub);
+      if (main === "gs") return sub === "all" ? (q.group === "gs" || q.group === "sci") : (q.group === "gs" && q.sub === sub);
+      if (main === "apt") return q.group === "apt" && q.sub === sub;
+      return false;
+    });
+  }
+  function mixPools() {
+    return {
+      a: bank.filter(function (q) { return q.group === "iti"; }),
+      b: bank.filter(function (q) { return q.group === "sci" || q.group === "gs"; })
+    };
+  }
+  function feas(n, A, B) { var h = Math.floor(n / 2); return h <= A && n - h <= B; }
+  function feasible(n, cfg) {
+    cfg = cfg || S;
+    if (cfg.main === "mix") { var m = mixPools(); return feas(n, m.a.length, m.b.length); }
+    return n <= poolFor(cfg.main, cfg.sub).length;
+  }
+  function maxAvail() {
+    if (S.main === "mix") {
+      var m = mixPools();
+      for (var n = m.a.length + m.b.length; n > 0; n--) if (feas(n, m.a.length, m.b.length)) return n;
+      return 0;
+    }
+    return poolFor(S.main, S.sub).length;
+  }
+  function pick(cfg) {
+    cfg = cfg || S; var n = cfg.count;
+    if (cfg.main === "mix") {
+      var m = mixPools(), h = Math.floor(n / 2);
+      return shuffle(shuffle(m.a).slice(0, h).concat(shuffle(m.b).slice(0, n - h)));
+    }
+    return shuffle(poolFor(cfg.main, cfg.sub)).slice(0, n);
+  }
+  function prep(q) {
+    return { id: q.id, q: q.q, tag: TAGS[q.sub] || "", o: shuffle(q.opts.map(function (t, i) { return { t: t, ok: i === q.ans }; })) };
+  }
+  function ensureCount() {
+    if (bankState !== "ok" || feasible(S.count)) return;
+    var i, c;
+    for (i = COUNTS.length - 1; i >= 0; i--) { c = COUNTS[i]; if (c <= S.count && feasible(c)) { S.count = c; return; } }
+    for (i = 0; i < COUNTS.length; i++) if (feasible(COUNTS[i])) { S.count = COUNTS[i]; return; }
+  }
+  function catLabel() {
+    var m = MAINS.filter(function (x) { return x[0] === S.main; })[0][1];
+    var s = SUBS[S.main].filter(function (x) { return x[0] === S.sub; })[0];
+    return S.main === "mix" ? m + " · GS + ITI" : m + " · " + (s ? s[1] : "");
+  }
+
+  /* ---------- daily streak ---------- */
+  function ymd(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function readStreak() {
+    try { var s = JSON.parse(ls(LS.streak)); if (s && s.d) return s; } catch (e) { }
+    return { d: "", n: 0, best: 0 };
+  }
+  function liveStreak() {
+    var s = readStreak(), t = new Date(), y = new Date(); y.setDate(y.getDate() - 1);
+    return (s.d === ymd(t) || s.d === ymd(y)) ? s.n : 0;
+  }
+  function bumpStreak() {
+    var s = readStreak(), t = ymd(new Date()), y = new Date(); y.setDate(y.getDate() - 1);
+    if (s.d === t) return s;
+    s.n = s.d === ymd(y) ? s.n + 1 : 1; s.d = t; s.best = Math.max(s.best || 0, s.n);
+    lsSet(LS.streak, JSON.stringify(s)); return s;
+  }
+
+  /* ---------- styles ---------- */
+  function injectCss() {
+    if (document.getElementById("qa-style")) return;
+    var st = document.createElement("style"); st.id = "qa-style";
+    st.textContent = `
+#quiz-arena-root{--tx:#f1f5f9;--t2:#94a3b8;--cd:rgba(255,255,255,.06);--bd:rgba(148,163,184,.28);--ac:#fbbf24;--fl:#f59e0b;--okb:rgba(34,197,94,.26);--okc:#22c55e;--bdb:rgba(239,68,68,.26);--bdc:#ef4444;--sh:0 4px 12px -5px rgba(0,0,0,.45),0 1px 0 0 rgba(255,255,255,.07) inset;color:var(--tx)}
+html.bright-mode #quiz-arena-root{--tx:#0f172a;--t2:#475569;--cd:rgba(255,255,255,.66);--bd:rgba(148,163,184,.4);--ac:#b45309;--okb:rgba(34,197,94,.2);--bdb:rgba(239,68,68,.18);--sh:0 4px 12px -5px rgba(15,23,42,.16),0 1px 0 0 rgba(255,255,255,.8) inset}
+#quiz-arena-root *{box-sizing:border-box}
+#quiz-arena-root button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#quiz-arena-root button:disabled{cursor:not-allowed}
+.qa-wrap{max-width:28rem;margin:0 auto;padding:1rem}
+.qa-t2{color:var(--t2)}.qa-ac{color:var(--ac)}
+.qa-i{width:18px;height:18px;flex:none}
+.qa-glass{background:var(--cd);border:1px solid var(--bd);box-shadow:var(--sh);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);border-radius:1rem}
+.qa-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);margin:1rem 0 .4rem}
+.qa-in{width:100%;padding:.7rem .9rem;border-radius:.9rem;font-size:15px;font-weight:600;color:var(--tx);background:var(--cd);border:1px solid var(--bd);outline:none}
+.qa-in:focus{border-color:var(--fl)}
+.qa-pill{min-height:40px;padding:.45rem .85rem;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;background:var(--cd);border:1px solid var(--bd);transition:transform .1s}
+.qa-pill.on{background:rgba(251,191,36,.18);border-color:var(--fl);color:var(--ac)}
+.qa-pill:disabled{opacity:.35;text-decoration:line-through}
+.qa-row{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.25rem;scrollbar-width:none}
+.qa-row::-webkit-scrollbar{display:none}
+.qa-wrapRow{display:flex;flex-wrap:wrap;gap:.5rem}
+.qa-cta{width:100%;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 1rem;border-radius:1rem;font-weight:800;font-size:15px;color:#1c1100!important;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 8px 20px -8px rgba(245,158,11,.7);border:0}
+.qa-cta:disabled{opacity:.45;box-shadow:none}
+.qa-sec{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.8rem 1rem;border-radius:1rem;font-weight:700;font-size:14px;background:var(--cd);border:1px solid var(--bd);box-shadow:var(--sh)}
+.qa-chip{display:flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:999px;font-weight:800;font-size:14px;background:var(--cd);border:1px solid var(--bd);font-variant-numeric:tabular-nums}
+.qa-chip.amb{color:var(--ac);border-color:var(--fl)}.qa-chip.low{color:var(--bdc);border-color:var(--bdc)}
+.qa-ic{width:2.4rem;height:2.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--cd);border:1px solid var(--bd)}
+.qa-track{height:8px;border-radius:99px;background:var(--cd);border:1px solid var(--bd);overflow:hidden;margin-top:.4rem}
+.qa-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#fbbf24,#f59e0b);transition:width .3s ease}
+.qa-nosel{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.qa-card{position:relative;margin-top:.9rem;padding:1.1rem;min-height:7.5rem}
+.qa-qtag{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ac)}
+.qa-q{margin:.45rem 0 0;font-size:17px;font-weight:700;line-height:1.4}
+.qa-opt{display:flex;align-items:center;gap:.7rem;width:100%;padding:.8rem .9rem;border-radius:1rem;text-align:left;font-size:15px;font-weight:600;background:var(--cd);border:1.5px solid var(--bd);box-shadow:var(--sh)}
+.qa-let{flex:none;width:1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:rgba(148,163,184,.2)}
+.qa-opt.qa-ok{background:var(--okb);border-color:var(--okc)}
+.qa-opt.qa-bad{background:var(--bdb);border-color:var(--bdc)}
+.qa-pop{position:absolute;right:1rem;top:.8rem;font-weight:800;font-size:15px;opacity:0;color:var(--okc)}
+.qa-pop.bad{color:var(--bdc)}
+.qa-pop.go{animation:qapop .7s ease-out}
+@keyframes qapop{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
+.qa-bump{animation:qabump .25s ease}
+@keyframes qabump{50%{transform:scale(1.15)}}
+.qa-big{font-size:3.4rem;line-height:1;font-weight:900;color:var(--ac)}
+.qa-stat{padding:.75rem .5rem;text-align:center}
+.qa-stat b{display:block;font-size:18px;font-weight:800}.qa-stat span{font-size:11px;color:var(--t2);font-weight:700}
+.qa-msg{position:fixed;left:50%;bottom:calc(var(--nav-offset,0px) + 6.5rem);transform:translate(-50%,10px);max-width:90%;padding:.6rem 1rem;border-radius:999px;font-size:13px;font-weight:700;color:#1c1100;background:#fbbf24;opacity:0;pointer-events:none;transition:.25s;z-index:70;text-align:center}
+.qa-msg.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.qa-pop.go,.qa-bump{animation:none}.qa-fill{transition:none}}
+.qa-rank{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .35rem;margin-top:.7rem;padding:.45rem .7rem;font-size:12px;font-weight:700;border-radius:.9rem}
+.qa-rk{display:inline-flex;align-items:center;gap:.2rem;white-space:nowrap}.qa-rk.me{color:var(--ac)}
+.qa-rn{display:inline-block;max-width:6.5rem;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+.qa-code{font-size:4rem;line-height:1.1;font-weight:900;letter-spacing:.22em;padding-left:.22em;color:var(--ac);font-variant-numeric:tabular-nums;margin-top:.3rem;-webkit-user-select:all;user-select:all}
+.qa-slot{display:flex;align-items:center;gap:.7rem;padding:.65rem .8rem;border-radius:1rem}
+.qa-empty{border:1.5px dashed var(--bd)}
+.qa-pre{margin:.5rem 0;padding:.6rem;border-radius:.7rem;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:var(--cd);border:1px solid var(--bd);color:var(--t2);font-family:ui-monospace,Menlo,monospace}
+textarea.qa-in{resize:vertical;line-height:1.4}
+.qa-id{font-size:11px;font-weight:800;padding:.1rem .45rem;border-radius:99px;background:rgba(148,163,184,.2)}
+.qa-ar{padding:.7rem .8rem}
+.qa-arq{margin-top:.4rem;font-size:14px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.qa-pod{display:flex;align-items:flex-end;justify-content:center;gap:.5rem;margin-top:1rem}
+.qa-pcol{flex:1;min-width:0;text-align:center}
+.qa-pn{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qa-ps{font-size:20px;font-weight:900;color:var(--ac);margin-bottom:.25rem}
+.qa-pbar{display:flex;align-items:flex-start;justify-content:center;padding-top:.5rem;border-radius:.9rem .9rem 0 0;font-size:34px;font-weight:900;color:#1c1100}
+.qa-pbar.r0{background:linear-gradient(#fde68a,#f59e0b)}.qa-pbar.r1{background:linear-gradient(#e2e8f0,#94a3b8)}.qa-pbar.r2{background:linear-gradient(#fdba74,#c2410c)}
+`;
+    document.head.appendChild(st);
+  }
+
+  /* ---------- setup screen ---------- */
+  function pill(a, k, label, on, dis) {
+    return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="' + a + '" data-k="' + k + '" aria-pressed="' + (on ? "true" : "false") + '"' + (dis ? " disabled" : "") + ">" + label + "</button>";
+  }
+  function renderSetup() {
+    var ready = bankState === "ok", avail = ready ? maxAvail() : 0, st = liveStreak(), h = "";
+    var canStart = ready && feasible(S.count);
+    h += '<div class="qa-wrap">';
+    h += '<div class="flex items-center justify-between"><div class="flex items-center gap-2">' + ico("trophy", "qa-ac") + '<span class="text-lg font-extrabold">Quiz Arena</span></div>';
+    h += '<div class="qa-chip' + (st ? " amb" : "") + '">' + ico("flame") + "<span>" + st + "-day streak</span></div></div>";
+    h += '<div class="admin-only' + (adminOn() ? "" : " hidden") + ' mt-2"><button type="button" class="qa-sec btn-tap w-full" data-a="adopen">' + ico("settings-2") + "Manage Questions</button></div>";
+
+    if (pendingCode) {
+      h += '<div class="qa-glass mt-3 p-3"><div class="font-extrabold">Invited to room ' + pendingCode + '</div><div class="text-xs qa-t2">Enter your name, then tap Join.</div>' +
+        '<div class="flex gap-2 mt-2"><button type="button" class="qa-cta btn-tap" data-a="joinlink">' + ico("log-in") + "Join Room " + pendingCode + '</button>' +
+        '<button type="button" class="qa-sec btn-tap" data-a="dismissinv" aria-label="Dismiss invite">' + ico("x") + "</button></div></div>";
+    }
+    h += '<div class="qa-lbl">Display name</div><input id="qa-name" class="qa-in" type="text" maxlength="16" autocomplete="nickname" placeholder="Enter your name" value="' + esc(S.name) + '">';
+
+    h += '<div class="qa-lbl">Players</div><div class="qa-row">' +
+      [[1, "1 · Solo (Offline)"], [2, "2"], [3, "3"], [4, "4"]].map(function (p) { return pill("players", p[0], p[1], S.players === p[0], false); }).join("") + "</div>";
+
+    h += '<div class="qa-lbl">Questions</div><div class="qa-row">' +
+      COUNTS.map(function (c) { return pill("count", c, c, S.count === c, !ready || !feasible(c)); }).join("") + "</div>";
+    h += '<div class="text-xs qa-t2 mt-1" id="qa-avail">' + (bankState === "loading" ? "Loading questions…" : ready ? avail + " question" + (avail === 1 ? "" : "s") + " available in this category" : "") + "</div>";
+
+    h += '<div class="qa-lbl">Category</div><div class="qa-row">' +
+      MAINS.map(function (m) { return pill("main", m[0], m[1], S.main === m[0], false); }).join("") + "</div>";
+    h += '<div class="qa-wrapRow mt-2">' +
+      SUBS[S.main].map(function (s) { return pill("sub", s[0], s[1], S.sub === s[0], false); }).join("") + "</div>";
+
+    if (bankState === "error") {
+      h += '<div class="qa-glass mt-4 p-3 text-sm">Couldn’t load the question bank. Check your connection once, then retry.<button type="button" class="qa-sec btn-tap mt-2 w-full" data-a="retry">' + ico("rotate-ccw") + "Retry</button></div>";
+    }
+    h += '<div class="mt-5">';
+    if (S.players === 1) {
+      h += '<button type="button" class="qa-cta btn-tap" data-a="start"' + (canStart ? "" : " disabled") + ">" + ico("play") + "Start Solo Quiz</button>";
+      if (ready && !canStart) h += '<div class="text-xs qa-t2 mt-2 text-center">Not enough questions in this category yet.</div>';
+    } else {
+      h += '<button type="button" class="qa-cta btn-tap" data-a="create"' + (canStart ? "" : " disabled") + ">" + ico("plus") + "Create Live Room</button>";
+      h += '<div class="flex gap-2 mt-3"><input id="qa-code" class="qa-in" style="width:7rem;text-align:center;letter-spacing:.3em" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" value="' + (pendingCode || "") + '" aria-label="4-digit room code">' +
+        '<button type="button" class="qa-sec btn-tap flex-1" data-a="join">' + ico("log-in") + "Join with 4-Digit Code</button></div>";
+    }
+    h += "</div></div>";
+    view.innerHTML = h; icons();
+  }
+
+  /* ---------- gameplay ---------- */
+  function startSolo() {
+    if (bankState !== "ok" || !feasible(S.count)) return;
+    var qs = pick(S).map(prep), total = qs.length * SEC_PER_Q * 1000, now = Date.now();
+    G = { qs: qs, i: 0, score: 0, correct: 0, wrong: 0, total: total, startT: now, endAt: now + total, qStart: now, locked: false, tick: 0, adv: 0, quitAt: 0, done: false, timeUp: false };
+    screen = "game"; renderGame(); G.tick = setInterval(tick, 250);
+  }
+  function stopGame() { if (G) { clearInterval(G.tick); clearTimeout(G.adv); G.done = true; } }
+  function renderGame() {
+    var h = '<div class="qa-wrap">' +
+      '<div class="flex items-center justify-between gap-2">' +
+      '<button type="button" class="qa-ic btn-tap" data-a="quit" aria-label="Quit quiz">' + ico("x") + "</button>" +
+      '<div class="qa-chip" id="qa-timechip">' + ico("clock") + '<span id="qa-time">' + fmt(G.total) + "</span></div>" +
+      '<div class="qa-chip amb" id="qa-scorechip">' + ico("trophy") + '<span id="qa-score">0</span></div></div>' +
+      (G.mp ? '<div class="qa-glass qa-rank" id="qa-rank">' + strip(R.room) + "</div>" : "") +
+      '<div class="flex items-center justify-between text-xs mt-4 qa-t2"><span id="qa-qn" class="font-bold"></span><span>+10 · speed bonus up to +5</span></div>' +
+      '<div class="qa-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="qa-prog"><div class="qa-fill" id="qa-bar"></div></div>' +
+      '<div class="qa-glass qa-card qa-nosel" id="qa-card"></div>' +
+      '<div class="qa-pop" id="qa-pop"></div>' +
+      '<div class="grid gap-2.5 mt-3 qa-nosel" id="qa-opts"></div></div>';
+    view.innerHTML = h; icons(); showQ(); tick();
+  }
+  function showQ() {
+    var q = G.qs[G.i], n = G.qs.length; G.locked = false; G.qStart = Date.now();
+    $("qa-qn").textContent = "Question " + (G.i + 1) + " of " + n;
+    setBar(G.i / n);
+    $("qa-card").innerHTML = '<div class="qa-qtag">' + esc(q.tag) + '</div><p class="qa-q">' + esc(q.q) + "</p>";
+    $("qa-opts").innerHTML = q.o.map(function (o, k) {
+      return '<button type="button" class="qa-opt btn-tap" data-a="opt" data-k="' + k + '"><span class="qa-let">' + "ABCD".charAt(k) + '</span><span>' + esc(o.t) + "</span></button>";
+    }).join("");
+  }
+  function setBar(f) {
+    var b = $("qa-bar"); if (b) b.style.width = Math.round(f * 100) + "%";
+    var p = $("qa-prog"); if (p) p.setAttribute("aria-valuenow", Math.round(f * 100));
+  }
+  function tick() {
+    if (!G || G.done) return;
+    if (!root || !document.body.contains(root)) { stopGame(); return; }
+    var rem = Math.max(0, G.endAt - Date.now());
+    var t = $("qa-time"); if (t) t.textContent = fmt(rem);
+    var c = $("qa-timechip"); if (c) c.classList.toggle("low", rem <= G.total * 0.2);
+    if (rem <= 0) { G.timeUp = true; finish(); }
+  }
+  function answer(k) {
+    if (!G || G.locked || G.done) return;
+    G.locked = true;
+    var q = G.qs[G.i], ok = q.o[k].ok, el = (Date.now() - G.qStart) / 1000, bonus = 0;
+    if (ok) {
+      bonus = Math.max(0, Math.min(5, Math.ceil(5 * (1 - el / SEC_PER_Q))));
+      G.correct++; G.score += 10 + bonus;
+    } else { G.wrong++; try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) { } }
+    var btns = root.querySelectorAll(".qa-opt");
+    Array.prototype.forEach.call(btns, function (b, i) {
+      b.disabled = true;
+      if (q.o[i].ok) b.classList.add("qa-ok");
+      else if (i === k) b.classList.add("qa-bad");
+    });
+    var sc = $("qa-score"); sc.textContent = G.score;
+    var chip = $("qa-scorechip"); chip.classList.remove("qa-bump"); void chip.offsetWidth; if (ok) chip.classList.add("qa-bump");
+    var pop = $("qa-pop"); pop.textContent = ok ? "+" + (10 + bonus) : "Wrong"; pop.className = "qa-pop " + (ok ? "" : "bad"); void pop.offsetWidth; pop.className += " go";
+    setBar((G.i + 1) / G.qs.length);
+    if (G.mp) mpPush(G.i + 1 >= G.qs.length);
+    G.adv = setTimeout(next, 700);
+  }
+  function next() {
+    if (!G || G.done) return;
+    G.i++;
+    if (G.i >= G.qs.length) finish(); else showQ();
+  }
+  function finish() {
+    if (!G || G.done) return;
+    stopGame();
+    if (G.mp) { mpFinish(); return; }
+    var n = G.qs.length, el = Math.min(Date.now() - G.startT, G.total), sk = Math.max(0, n - G.correct - G.wrong);
+    var s = bumpStreak();
+    last = { score: G.score, max: n * (10 + 5), correct: G.correct, wrong: G.wrong, skipped: sk, n: n, acc: Math.round(G.correct / n * 100), ms: el, label: catLabel(), name: S.name || "Player", streak: s.n, best: s.best, timeUp: G.timeUp, date: new Date() };
+    screen = "result"; render();
+  }
+
+  /* ---------- result screen ---------- */
+  function canShareFiles() {
+    try { return typeof File === "function" && navigator.canShare && navigator.canShare({ files: [new File([""], "a.png", { type: "image/png" })] }); } catch (e) { return false; }
+  }
+  function renderResult() {
+    var r = last, msg = r.acc >= 80 ? "Excellent work!" : r.acc >= 60 ? "Good job!" : r.acc >= 40 ? "Keep practising!" : "Don’t give up — try again!";
+    var h = '<div class="qa-wrap">';
+    h += '<div class="qa-glass p-5 text-center">' + (r.timeUp ? '<div class="text-xs font-bold" style="color:var(--bdc)">Time’s up!</div>' : "") +
+      '<div class="text-sm font-bold qa-t2">' + esc(r.name) + " · " + esc(r.label) + "</div>" +
+      '<div class="qa-big mt-3">' + r.score + '<span class="text-base qa-t2 font-bold"> / ' + r.max + "</span></div>" +
+      '<div class="mt-2 font-extrabold">' + msg + "</div></div>";
+    h += '<div class="grid grid-cols-3 gap-2 mt-3">' +
+      '<div class="qa-glass qa-stat"><b>' + r.acc + "%</b><span>Accuracy</span></div>" +
+      '<div class="qa-glass qa-stat"><b>' + fmt(r.ms) + "</b><span>Time taken</span></div>" +
+      '<div class="qa-glass qa-stat"><b>' + r.correct + "/" + r.n + "</b><span>Correct</span></div></div>";
+    h += '<div class="qa-glass mt-3 p-3 flex items-center gap-3">' + ico("flame", "qa-ac") +
+      '<div class="flex-1"><div class="font-extrabold">' + r.streak + "-day streak</div><div class=\"text-xs qa-t2\">Best: " + r.best + " day" + (r.best === 1 ? "" : "s") + " · play daily to keep it alive</div></div></div>";
+    h += '<div class="mt-4 grid gap-2.5">' +
+      '<button type="button" class="qa-cta btn-tap" data-a="again">' + ico("rotate-ccw") + "Play Again</button>" +
+      '<button type="button" class="qa-sec btn-tap" data-a="dl">' + ico("download") + "Download Result Card (PNG)</button>" +
+      (canShareFiles() ? '<button type="button" class="qa-sec btn-tap" data-a="share">' + ico("share-2") + "Share on WhatsApp</button>" : "") +
+      '<button type="button" class="qa-sec btn-tap" data-a="setup">' + ico("sliders-horizontal") + "Change Settings</button></div></div>";
+    view.innerHTML = h; icons();
+  }
+
+  /* ---------- PNG result card ---------- */
+  function rr(x, px, y, w, h, r) {
+    x.beginPath(); x.moveTo(px + r, y); x.arcTo(px + w, y, px + w, y + h, r); x.arcTo(px + w, y + h, px, y + h, r);
+    x.arcTo(px, y + h, px, y, r); x.arcTo(px, y, px + w, y, r); x.closePath();
+  }
+  function fit(x, text, maxW) { while (text.length > 3 && x.measureText(text).width > maxW) text = text.slice(0, -2) + "…"; return text; }
+  function drawCard(r) {
+    var W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"), F = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
+    var g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#0b1220"); g.addColorStop(1, "#1e293b"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    var rg = x.createRadialGradient(W / 2, 520, 20, W / 2, 520, 620); rg.addColorStop(0, "rgba(251,191,36,.26)"); rg.addColorStop(1, "rgba(251,191,36,0)"); x.fillStyle = rg; x.fillRect(0, 0, W, H);
+    x.textAlign = "center"; x.textBaseline = "alphabetic";
+    if ("letterSpacing" in x) x.letterSpacing = "8px";
+    x.fillStyle = "#fbbf24"; x.font = "800 40px " + F; x.fillText("QUIZ RESULT", W / 2, 120);
+    if ("letterSpacing" in x) x.letterSpacing = "0px";
+    x.fillStyle = "#f1f5f9"; x.font = "700 58px " + F; x.fillText(fit(x, r.name, 900), W / 2, 210);
+    x.fillStyle = "#94a3b8"; x.font = "500 34px " + F; x.fillText(fit(x, r.label, 900), W / 2, 268);
+    var cx = W / 2, cy = 520, R = 190;
+    x.lineWidth = 30; x.lineCap = "round"; x.strokeStyle = "rgba(148,163,184,.25)"; x.beginPath(); x.arc(cx, cy, R, 0, Math.PI * 2); x.stroke();
+    if (r.acc > 0) { x.strokeStyle = "#fbbf24"; x.beginPath(); x.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * r.acc / 100); x.stroke(); }
+    x.fillStyle = "#f1f5f9"; x.font = "800 120px " + F; x.fillText(r.acc + "%", cx, cy + 36);
+    x.fillStyle = "#94a3b8"; x.font = "700 30px " + F; x.fillText("ACCURACY", cx, cy + 90);
+    x.fillStyle = "#fbbf24"; x.font = "900 150px " + F; x.fillText(String(r.score), cx, 880);
+    x.fillStyle = "#94a3b8"; x.font = "600 34px " + F; x.fillText("of " + r.max + " points", cx, 934);
+    var stats = [["CORRECT", r.correct + "/" + r.n], ["TIME", fmt(r.ms)], ["STREAK", r.streak + (r.streak === 1 ? " day" : " days")]];
+    stats.forEach(function (s, i) {
+      var bx = 70 + i * 322, by = 1000, bw = 296, bh = 140;
+      rr(x, bx, by, bw, bh, 28); x.fillStyle = "rgba(255,255,255,.07)"; x.fill(); x.lineWidth = 2; x.strokeStyle = "rgba(148,163,184,.3)"; x.stroke();
+      x.fillStyle = "#f1f5f9"; x.font = "800 52px " + F; x.fillText(s[1], bx + bw / 2, by + 70);
+      x.fillStyle = "#94a3b8"; x.font = "700 26px " + F; x.fillText(s[0], bx + bw / 2, by + 112);
+    });
+    x.fillStyle = "rgba(148,163,184,.3)"; x.fillRect(140, 1205, W - 280, 2);
+    if ("letterSpacing" in x) x.letterSpacing = "10px";
+    x.fillStyle = "#fbbf24"; x.font = "900 58px " + F; x.fillText("ITI CONNECT", W / 2, 1278);
+    if ("letterSpacing" in x) x.letterSpacing = "0px";
+    x.fillStyle = "#94a3b8"; x.font = "500 28px " + F; x.fillText(r.date.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), W / 2, 1322);
+    return c;
+  }
+  function cardBlob(cb) { try { drawCard(last).toBlob(cb, "image/png"); } catch (e) { toast("Couldn’t create the image"); } }
+  function download() {
+    cardBlob(function (b) {
+      if (!b) { toast("Couldn’t create the image"); return; }
+      var u = URL.createObjectURL(b), a = document.createElement("a");
+      a.href = u; a.download = "ITI-CONNECT-Quiz-" + ymd(last.date) + ".png"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 4000); toast("Result card saved");
+    });
+  }
+  function share() {
+    cardBlob(function (b) {
+      if (!b) return;
+      var f = new File([b], "ITI-CONNECT-Quiz-Result.png", { type: "image/png" });
+      navigator.share({ files: [f], title: "ITI CONNECT Quiz Result", text: "I scored " + last.score + "/" + last.max + " on ITI CONNECT Quiz Arena!" }).catch(function () { });
+    });
+  }
+
+  /* ---------- multiplayer (Part 3: Firebase Firestore, battles/{roomCode}) ---------- */
+  var FB_V = "https://www.gstatic.com/firebasejs/10.12.2/";
+  var EXPIRE_MS = 24 * 3600 * 1000;
+  var INVITE_BASE = "https://devit988.github.io/Iti-attendance-/?battle=";
+  var MEDAL = ["🥇", "🥈", "🥉", "4️⃣"];
+  var M = window.QuizArenaMulti = window.QuizArenaMulti || {};
+
+  function online() { return navigator.onLine !== false; }
+  function fbCore() {            /* app + firestore only (no sign-in): used for public reads */
+    if (FBC) return FBC;
+    FBC = Promise.all([import(FB_V + "firebase-app.js"), import(FB_V + "firebase-firestore.js")]).then(function (m) {
+      var A = m[0], F = m[1], app;
+      if (A.getApps().length) app = A.getApps()[0];
+      else {
+        var c = typeof window.getActiveFirebaseConfig === "function" ? window.getActiveFirebaseConfig() : null;
+        if (!c || !c.projectId) throw { code: "no-config" };
+        app = A.initializeApp(c);
+      }
+      return { F: F, app: app, db: F.getFirestore(app) };
+    }).catch(function (e) { FBC = null; throw e; });
+    return FBC;
+  }
+  function loadFb() {            /* core + anonymous player id (live rooms only) */
+    if (FBP) return FBP;
+    FBP = fbCore().then(function (core) {
+      return import(FB_V + "firebase-auth.js").then(function (U) {
+        var auth = U.getAuth(core.app);
+        return (auth.authStateReady ? auth.authStateReady() : Promise.resolve()).then(function () {
+          return auth.currentUser || U.signInAnonymously(auth).then(function (cr) { return cr.user; });
+        }).then(function (user) { FBR = { F: core.F, db: core.db, uid: user.uid }; return FBR; });
+      });
+    }).catch(function (e) { FBP = null; throw e; });
+    return FBP;
+  }
+  function fail(e) {
+    var c = (e && e.code) || "", m;
+    if (c === "nf") m = "Room not found. Check the code.";
+    else if (c === "started") m = "That match has already started.";
+    else if (c === "full") m = "That room is full.";
+    else if (c === "no-code") m = "Couldn’t get a free room code. Try again.";
+    else if (c === "permission-denied") m = "Not allowed — the room may be full, started or expired.";
+    else if (c.indexOf("auth/") === 0) m = "Enable Anonymous sign-in in Firebase Authentication.";
+    else m = "Couldn’t reach the live server. Check your internet.";
+    toast(m);
+  }
+  function rankList(room) {
+    return Object.keys(room.players).map(function (id) {
+      var p = room.players[id]; return { id: id, name: p.name, score: p.score, qIndex: p.qIndex, done: p.done };
+    }).sort(function (a, b) { return b.score - a.score || b.qIndex - a.qIndex || (a.name > b.name ? 1 : -1); });
+  }
+  function strip(room) {
+    return rankList(room).map(function (p, i) {
+      return '<span class="qa-rk' + (p.id === R.uid ? " me" : "") + '">' + MEDAL[i] + " <span class=\"qa-rn\">" + esc(p.name) + "</span> " + p.score + "</span>";
+    }).join('<span class="qa-t2"> • </span>');
+  }
+  function updateRank() { var el = $("qa-rank"); if (el && R && R.room) el.innerHTML = strip(R.room); }
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+    return new Promise(function (ok, no) {
+      try {
+        var a = document.createElement("textarea"); a.value = t; a.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(a); a.select();
+        var r = document.execCommand("copy"); a.remove(); r ? ok() : no();
+      } catch (e) { no(e); }
+    });
+  }
+  function clearInvite() {
+    pendingCode = "";
+    try { var u = new URL(location.href); if (u.searchParams.has("battle")) { u.searchParams.delete("battle"); history.replaceState(null, "", u.pathname + u.search + u.hash); } } catch (e) { }
+  }
+
+  /* --- create / join --- */
+  M.createRoom = function (c) {
+    if (busy || R) return;
+    if (!online()) { toast("Live rooms need an internet connection"); return; }
+    var ids = c.questionIds || [], max = c.players, name = (c.name || "Player").slice(0, 16);
+    if ([2, 3, 4].indexOf(max) < 0 || COUNTS.indexOf(c.count) < 0 || ids.length !== c.count) { toast("Pick 2–4 players and a valid question count"); return; }
+    busy = true; toast("Creating room…");
+    loadFb().then(function (f) {
+      var tries = 0, F = f.F;
+      function attempt() {
+        var code = String(1000 + Math.floor(Math.random() * 9000)), ref = F.doc(f.db, "battles", code);
+        return F.getDoc(ref).then(function (s) { return s.exists(); }, function () { return true; }).then(function (taken) {
+          if (taken) { if (++tries >= 8) throw { code: "no-code" }; return attempt(); }
+          var pl = {}; pl[f.uid] = { name: name, score: 0, qIndex: 0, done: false };
+          return F.setDoc(ref, {
+            status: "waiting", hostId: f.uid, maxPlayers: max, questionCount: c.count, categoryLabel: String(c.label || "").slice(0, 60),
+            qIds: ids, startedAt: null, expireAt: F.Timestamp.fromMillis(Date.now() + EXPIRE_MS), players: pl
+          }).then(function () { return { code: code, ref: ref }; }, function (e) {
+            if (e && e.code === "permission-denied" && ++tries < 8) return attempt(); throw e;
+          });
+        });
+      }
+      return attempt();
+    }).then(function (r) { openRoom(r.code, r.ref, true, { main: c.main, sub: c.sub, count: c.count }); })
+      .catch(fail).then(function () { busy = false; });
+  };
+  M.joinRoom = function (code, o) {
+    if (busy || R) return;
+    if (!online()) { toast("Live rooms need an internet connection"); return; }
+    if (bankState !== "ok") { toast("Questions are still loading — try again"); return; }
+    var name = ((o && o.name) || S.name || "Player").slice(0, 16);
+    busy = true; toast("Joining room " + code + "…");
+    loadFb().then(function (f) {
+      var F = f.F, ref = F.doc(f.db, "battles", code);
+      return F.getDoc(ref).then(function (s) {
+        if (!s.exists()) throw { code: "nf" };
+        var d = s.data(), me = d.players && d.players[f.uid];
+        if (d.status !== "waiting") throw { code: "started" };
+        if (me) return ref;
+        if (Object.keys(d.players).length >= d.maxPlayers) throw { code: "full" };
+        var up = {}; up["players." + f.uid] = { name: name, score: 0, qIndex: 0, done: false };
+        return F.updateDoc(ref, up).then(function () { return ref; });
+      });
+    }).then(function (ref) { clearInvite(); openRoom(code, ref, false, null); })
+      .catch(fail).then(function () { busy = false; });
+  };
+  function openRoom(code, ref, isHost, c) {
+    R = { code: code, ref: ref, uid: FBR.uid, isHost: isHost, cfg: c, room: null, unsub: null, started: false, starting: false, ending: false, closed: false, final: null, base: 0, startT: 0, endT: 0, cd: 0, watch: 0 };
+    R.unsub = FBR.F.onSnapshot(ref, onRoom, function (e) { fail(e); });
+  }
+  function resetMatch() {
+    if (G && G.mp) { stopGame(); G = null; }
+    if (!R) return;
+    clearInterval(R.cd); clearInterval(R.watch); clearTimeout(R.endT); clearTimeout(R.startT);
+    R.started = R.starting = R.ending = false; R.final = null; R.endT = 0;
+  }
+  function teardown() {
+    if (!R) return;
+    resetMatch(); if (R.unsub) R.unsub(); R = null;
+  }
+
+  /* --- live room listener --- */
+  function onRoom(snap) {
+    if (!R) return;
+    if (!snap.exists()) {
+      if (screen === "mresult") { R.closed = true; render(); toast("The host closed the room"); return; }
+      teardown(); screen = "setup"; render(); toast("Room closed"); return;
+    }
+    var d = snap.data(); R.room = d;
+    if (d.status === "waiting") onWaiting(d);
+    else if (d.status === "playing") onPlaying(d);
+    else if (d.status === "finished") onFinished(d);
+  }
+  function onWaiting(d) {
+    if (R.started || screen !== "lobby") resetMatch();
+    screen = "lobby"; renderLobby();
+    var n = Object.keys(d.players).length;
+    if (n >= d.maxPlayers && !R.starting) { R.starting = true; R.startT = setTimeout(startMatch, R.isHost ? 800 : 4000); }
+  }
+  function startMatch() {
+    if (!R || !R.room || R.room.status !== "waiting") { if (R) R.starting = false; return; }
+    var n = Object.keys(R.room.players).length;
+    if (n < 2 || (!R.isHost && n < R.room.maxPlayers)) { R.starting = false; return; }
+    R.starting = true;
+    FBR.F.updateDoc(R.ref, { status: "playing", startedAt: Date.now() + 3000 }).catch(function (e) {
+      if (R) R.starting = false;
+      if (R && R.isHost && !(e && e.code === "permission-denied")) fail(e);
+    });
+  }
+  function onPlaying(d) {
+    if (!R.started) {
+      R.started = true; R.starting = false; clearTimeout(R.startT);
+      var recv = Date.now(), base = Number(d.startedAt) || 0;
+      if (Math.abs(base - (recv + 3000)) > 8000) base = recv + 3000;   /* guards against wrong phone clocks */
+      R.base = base; R.watch = setInterval(watchTick, 1000);
+      runCountdown(base); return;
+    }
+    updateRank(); if (screen === "mwait") renderWait();
+    checkEnd();
+  }
+  function runCountdown(base) {
+    screen = "countdown"; render();
+    R.cd = setInterval(function () {
+      if (!R) return;
+      var ms = base - Date.now(), el = $("qa-cd");
+      if (ms <= 0) { clearInterval(R.cd); startMulti(base); return; }
+      var n = Math.ceil(ms / 1000);
+      if (el && el.textContent !== String(n)) { el.textContent = n; el.classList.remove("qa-bump"); void el.offsetWidth; el.classList.add("qa-bump"); }
+    }, 100);
+  }
+  function startMulti(base) {
+    var byId = {}; baseBank.forEach(function (q) { byId[q.id] = q; }); custom.items.forEach(function (it) { if (it && !checkQ(it)) byId[it.id] = it; }); bank.forEach(function (q) { byId[q.id] = q; });
+    var qs = (R.room.qIds || []).map(function (id) { return byId[id]; }).filter(Boolean).map(prep);
+    if (qs.length !== R.room.qIds.length) { toast("Question bank is out of date — refresh the app"); leaveRoom(); return; }
+    var total = qs.length * SEC_PER_Q * 1000;
+    G = { qs: qs, i: 0, score: 0, correct: 0, wrong: 0, total: total, startT: base, endAt: base + total, qStart: Date.now(), locked: false, tick: 0, adv: 0, quitAt: 0, done: false, timeUp: false, mp: true };
+    screen = "game"; renderGame(); G.tick = setInterval(tick, 250);
+  }
+
+  /* --- score sync: ONLY this player's nested fields are written --- */
+  function mpPush(done) {
+    if (!R || !G) return;
+    var p = "players." + R.uid + ".", up = {};
+    up[p + "score"] = G.score; up[p + "qIndex"] = G.correct + G.wrong; up[p + "done"] = !!done;
+    FBR.F.updateDoc(R.ref, up).catch(function () { });
+  }
+  function mpFinish() { mpPush(true); screen = "mwait"; render(); checkEnd(); }
+  function leaveMatch() {
+    mpPush(true); var r = R; teardown(); screen = "setup"; render();
+    if (r) toast("You left the match");
+  }
+  function checkEnd() {
+    if (!R || !R.room || R.room.status !== "playing" || !G || !G.done) return;
+    var all = Object.keys(R.room.players).every(function (id) { return R.room.players[id].done; });
+    if (all) scheduleEnd();
+  }
+  function scheduleEnd() {
+    if (R.endT) return;
+    R.endT = setTimeout(endRoom, R.isHost ? 300 : 1500 + Math.random() * 1500);
+  }
+  function endRoom() {
+    if (!R) return; R.endT = 0;
+    if (R.ending || !R.room || R.room.status !== "playing") return;
+    R.ending = true;
+    FBR.F.updateDoc(R.ref, { status: "finished" }).catch(function () { if (R) R.ending = false; });
+  }
+  function watchTick() {
+    if (!R) return;
+    if (!root || !document.body.contains(root)) { clearInterval(R.watch); var r = R; if (G && !G.done) { G.timeUp = true; mpPush(true); } teardown(); return; }
+    var left = R.base + R.room.questionCount * SEC_PER_Q * 1000 - Date.now(), t = $("qa-wait-time");
+    if (t) t.textContent = fmt(left);
+    if (left < -2500 && R.room.status === "playing") { if (G && !G.done) { G.timeUp = true; finish(); } scheduleEnd(); }
+  }
+  function onFinished(d) {
+    if (!R.started && screen !== "mresult") { resetMatch(); }      /* joined late / missed the start */
+    if (G && G.mp) { if (!G.done) stopGame(); }
+    clearInterval(R.watch); clearTimeout(R.endT);
+    R.final = rankList(d);
+    if (screen !== "mresult") { bumpStreak(); screen = "mresult"; }
+    render();
+  }
+
+  /* --- leave / rematch --- */
+  function leaveRoom() {
+    if (!R) return;
+    var r = R, d = r.room, F = FBR && FBR.F;
+    teardown(); screen = "setup"; render();
+    if (!d || !F) return;
+    if (r.isHost && d.status !== "playing") F.deleteDoc(r.ref).catch(function () { });
+    else if (!r.isHost && d.status !== "playing") { var up = {}; up["players." + r.uid] = F.deleteField(); F.updateDoc(r.ref, up).catch(function () { }); }
+  }
+  function rematch() {
+    if (!R || !R.isHost || busy || !R.room) return;
+    var d = R.room, c = R.cfg || { main: S.main, sub: S.sub, count: d.questionCount };
+    if (!feasible(d.questionCount, c)) { toast("Not enough questions for a rematch"); return; }
+    var ids = pick({ main: c.main, sub: c.sub, count: d.questionCount }).map(function (q) { return q.id; }), pl = {};
+    Object.keys(d.players).forEach(function (id) { pl[id] = { name: d.players[id].name, score: 0, qIndex: 0, done: false }; });
+    busy = true;
+    FBR.F.updateDoc(R.ref, { status: "waiting", qIds: ids, startedAt: null, players: pl }).catch(fail).then(function () { busy = false; });
+  }
+
+  /* --- lobby / countdown / waiting / podium screens --- */
+  function renderLobby() {
+    var d = R.room, ids = Object.keys(d.players).sort(function (a, b) { return a === d.hostId ? -1 : b === d.hostId ? 1 : a > b ? 1 : -1; }), n = ids.length, i, h;
+    var wa = "https://wa.me/?text=" + encodeURIComponent("Join my ITI CONNECT Quiz Arena battle! 🏆\nRoom code: " + R.code + "\n" + INVITE_BASE + R.code);
+    h = '<div class="qa-wrap"><div class="flex items-center justify-between"><div class="flex items-center gap-2">' + ico("users", "qa-ac") + '<span class="text-lg font-extrabold">Live Room</span></div>' +
+      '<button type="button" class="qa-ic btn-tap" data-a="leave" aria-label="Leave room">' + ico("x") + "</button></div>";
+    h += '<div class="qa-glass p-5 text-center mt-3"><div class="text-xs font-bold qa-t2">ROOM CODE</div><div class="qa-code">' + R.code + '</div>' +
+      '<div class="text-xs qa-t2 mt-1">' + esc(d.categoryLabel) + " · " + d.questionCount + " questions</div></div>";
+    h += '<div class="grid grid-cols-2 gap-2.5 mt-3"><button type="button" class="qa-sec btn-tap" data-a="copy">' + ico("copy") + "Copy Code</button>" +
+      '<a class="qa-sec btn-tap" style="text-decoration:none;color:inherit" target="_blank" rel="noopener" href="' + wa + '">' + ico("send") + "Invite on WhatsApp</a></div>";
+    h += '<div class="qa-lbl">Players · ' + n + " / " + d.maxPlayers + '</div><div class="grid gap-2">';
+    for (i = 0; i < d.maxPlayers; i++) {
+      if (ids[i]) {
+        h += '<div class="qa-glass qa-slot"><span class="qa-let">' + (i + 1) + '</span><span class="flex-1 truncate font-bold">' + esc(d.players[ids[i]].name) + (ids[i] === R.uid ? " (You)" : "") + "</span>" +
+          (ids[i] === d.hostId ? '<span class="text-xs qa-ac font-extrabold">HOST</span>' : "") + "</div>";
+      } else h += '<div class="qa-slot qa-empty"><span class="qa-let">' + (i + 1) + '</span><span class="qa-t2 text-sm">Waiting for player…</span></div>';
+    }
+    h += "</div>";
+    if (R.isHost) {
+      h += '<div class="mt-4"><button type="button" class="qa-cta btn-tap" data-a="startnow"' + (n < 2 || R.starting ? " disabled" : "") + ">" + ico("play") + "Start Now</button>" +
+        '<div class="text-xs qa-t2 mt-2 text-center">' + (n < 2 ? "Need at least 2 players to start" : "Starts automatically when all " + d.maxPlayers + " players join") + "</div></div>";
+    } else h += '<div class="text-sm qa-t2 mt-4 text-center">Waiting for the host to start…</div>';
+    h += "</div>";
+    view.innerHTML = h; icons();
+  }
+  function renderCountdown() {
+    view.innerHTML = '<div class="qa-wrap text-center" style="padding-top:18vh"><div class="text-sm font-bold qa-t2">Get ready!</div><div class="qa-big qa-bump" id="qa-cd" style="font-size:7rem;margin-top:1rem">3</div>' +
+      '<div class="text-xs qa-t2 mt-4">' + esc(R.room.categoryLabel) + " · " + R.room.questionCount + " questions</div></div>";
+  }
+  function renderWait() {
+    var d = R.room, rk = rankList(d), me = d.players[R.uid] || { score: 0 }, h;
+    h = '<div class="qa-wrap"><div class="qa-glass p-5 text-center"><div class="text-xs font-bold qa-t2">You finished!</div><div class="qa-big mt-2">' + me.score + '</div>' +
+      '<div class="text-xs qa-t2 mt-3">Waiting for others · max <span id="qa-wait-time">' + fmt(Math.max(0, R.base + d.questionCount * SEC_PER_Q * 1000 - Date.now())) + "</span></div></div>" +
+      '<div class="grid gap-2 mt-3">' + rk.map(function (p, i) {
+        return '<div class="qa-glass qa-slot"><span class="qa-let">' + (i + 1) + '</span><span class="flex-1 truncate font-bold">' + esc(p.name) + (p.id === R.uid ? " (You)" : "") + '</span><span class="text-xs qa-t2">' +
+          (p.done ? "Done ✓" : "Q " + Math.min(p.qIndex + 1, d.questionCount) + "/" + d.questionCount) + '</span><b>' + p.score + "</b></div>";
+      }).join("") + "</div></div>";
+    view.innerHTML = h;
+  }
+  function renderPodium() {
+    var rk = R.final, d = R.room, myPos = 0, h, order, hts = [120, 92, 70], ordn = [];
+    rk.forEach(function (p, i) { if (p.id === R.uid) myPos = i + 1; });
+    h = '<div class="qa-wrap"><div class="qa-glass p-4 text-center"><div class="text-xs font-bold qa-t2">' + esc(d.categoryLabel) + '</div><div class="text-lg font-extrabold mt-1">Battle Results</div>' +
+      '<div class="text-sm qa-ac font-bold mt-1">' + (myPos === 1 ? "You won! 🏆" : "You finished " + MEDAL[myPos - 1] + " (#" + myPos + ")") + "</div></div>";
+    order = rk.length > 2 ? [1, 0, 2] : [1, 0];
+    order.forEach(function (i) { if (rk[i]) ordn.push(i); });
+    h += '<div class="qa-pod">' + ordn.map(function (i) {
+      var p = rk[i];
+      return '<div class="qa-pcol"><div class="qa-pn">' + esc(p.name) + '</div><div class="qa-ps">' + p.score + '</div><div class="qa-pbar r' + i + '" style="height:' + hts[i] + 'px">' + (i + 1) + "</div></div>";
+    }).join("") + "</div>";
+    if (rk[3]) h += '<div class="qa-glass qa-slot mt-3"><span class="qa-let">4</span><span class="flex-1 truncate font-bold">' + esc(rk[3].name) + '</span><b>' + rk[3].score + "</b></div>";
+    h += '<div class="mt-4 grid gap-2.5">';
+    if (R.isHost && !R.closed) h += '<button type="button" class="qa-cta btn-tap" data-a="rematch"' + (busy ? " disabled" : "") + ">" + ico("rotate-ccw") + "Rematch (new questions)</button>";
+    else if (!R.closed) h += '<div class="text-xs qa-t2 text-center">Waiting for the host to start a rematch…</div>';
+    h += '<button type="button" class="qa-sec btn-tap" data-a="mdl">' + ico("download") + "Download Podium Card (PNG)</button>" +
+      (canShareFiles() ? '<button type="button" class="qa-sec btn-tap" data-a="mshare">' + ico("share-2") + "Share on WhatsApp</button>" : "") +
+      '<button type="button" class="qa-sec btn-tap" data-a="leave">' + ico("log-out") + "Leave Room</button></div></div>";
+    view.innerHTML = h; icons();
+  }
+
+  /* --- PNG podium card --- */
+  function drawPodium(rk, d) {
+    var W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"), F = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
+    var g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#0b1220"); g.addColorStop(1, "#1e293b"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    var rg = x.createRadialGradient(W / 2, 640, 20, W / 2, 640, 640); rg.addColorStop(0, "rgba(251,191,36,.22)"); rg.addColorStop(1, "rgba(251,191,36,0)"); x.fillStyle = rg; x.fillRect(0, 0, W, H);
+    x.textAlign = "center"; x.textBaseline = "alphabetic";
+    if ("letterSpacing" in x) x.letterSpacing = "8px";
+    x.fillStyle = "#fbbf24"; x.font = "800 40px " + F; x.fillText("QUIZ BATTLE", W / 2, 120);
+    if ("letterSpacing" in x) x.letterSpacing = "0px";
+    x.fillStyle = "#f1f5f9"; x.font = "700 52px " + F; x.fillText(fit(x, rk[0].name + " wins!", 900), W / 2, 215);
+    x.fillStyle = "#94a3b8"; x.font = "500 34px " + F; x.fillText(fit(x, d.categoryLabel + " · " + d.questionCount + " Qs", 900), W / 2, 272);
+    var cols = [{ i: 1, cx: 230, h: 250 }, { i: 0, cx: 540, h: 340 }, { i: 2, cx: 850, h: 190 }], base = 1000, bw = 290;
+    var fills = [["#fde68a", "#f59e0b"], ["#e2e8f0", "#94a3b8"], ["#fdba74", "#c2410c"]];
+    cols.forEach(function (col) {
+      var p = rk[col.i]; if (!p) return;
+      var top = base - col.h, gr = x.createLinearGradient(0, top, 0, base); gr.addColorStop(0, fills[col.i][0]); gr.addColorStop(1, fills[col.i][1]);
+      rr(x, col.cx - bw / 2, top, bw, col.h, 24); x.fillStyle = gr; x.fill();
+      x.fillStyle = "#1c1100"; x.font = "900 120px " + F; x.fillText(String(col.i + 1), col.cx, top + 140);
+      x.fillStyle = "#f1f5f9"; x.font = "700 40px " + F; x.fillText(fit(x, p.name, bw), col.cx, top - 84);
+      x.fillStyle = "#fbbf24"; x.font = "900 60px " + F; x.fillText(String(p.score), col.cx, top - 20);
+    });
+    if (rk[3]) {
+      rr(x, 70, 1048, 940, 112, 28); x.fillStyle = "rgba(255,255,255,.07)"; x.fill(); x.lineWidth = 2; x.strokeStyle = "rgba(148,163,184,.3)"; x.stroke();
+      x.textAlign = "left"; x.fillStyle = "#94a3b8"; x.font = "900 56px " + F; x.fillText("4", 110, 1124);
+      x.fillStyle = "#f1f5f9"; x.font = "700 44px " + F; x.fillText(fit(x, rk[3].name, 600), 190, 1121);
+      x.textAlign = "right"; x.fillStyle = "#fbbf24"; x.font = "900 52px " + F; x.fillText(String(rk[3].score), 970, 1122); x.textAlign = "center";
+    }
+    x.fillStyle = "rgba(148,163,184,.3)"; x.fillRect(140, 1205, W - 280, 2);
+    if ("letterSpacing" in x) x.letterSpacing = "10px";
+    x.fillStyle = "#fbbf24"; x.font = "900 58px " + F; x.fillText("ITI CONNECT", W / 2, 1278);
+    if ("letterSpacing" in x) x.letterSpacing = "0px";
+    x.fillStyle = "#94a3b8"; x.font = "500 28px " + F; x.fillText(new Date().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), W / 2, 1322);
+    return c;
+  }
+  function podiumBlob(cb) { try { drawPodium(R.final, R.room).toBlob(cb, "image/png"); } catch (e) { toast("Couldn’t create the image"); } }
+  function podiumDownload() {
+    podiumBlob(function (b) {
+      if (!b) { toast("Couldn’t create the image"); return; }
+      var u = URL.createObjectURL(b), a = document.createElement("a");
+      a.href = u; a.download = "ITI-CONNECT-Podium-" + ymd(new Date()) + ".png"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 4000); toast("Podium card saved");
+    });
+  }
+  function podiumShare() {
+    podiumBlob(function (b) {
+      if (!b) return;
+      var f = new File([b], "ITI-CONNECT-Podium.png", { type: "image/png" });
+      navigator.share({ files: [f], title: "ITI CONNECT Quiz Battle", text: R.final[0].name + " won the Quiz Arena battle!" }).catch(function () { });
+    });
+  }
+
+  function cfg() {
+    return { name: S.name || "Player", players: S.players, count: S.count, main: S.main, sub: S.sub, label: catLabel(), secPerQ: SEC_PER_Q, questionIds: pick(S).map(function (q) { return q.id; }) };
+  }
+
+  /* ---------- custom questions: Firestore quiz_meta/custom_questions (1 read) + merge ---------- */
+  var CAT = [
+    ["iti", "y1", "ITI Trade · 1st Year"], ["iti", "y2", "ITI Trade · 2nd Year"],
+    ["sci", "phy", "Science · Physics"], ["sci", "chem", "Science · Chemistry"], ["sci", "bio", "Science · Biology"],
+    ["gs", "his", "GS · History"], ["gs", "geo", "GS · Geography"], ["gs", "pol", "GS · Polity & Static"],
+    ["apt", "math", "Aptitude · Maths"], ["apt", "eng", "Aptitude · English"]
+  ];
+  var GROUPS = { iti: ["y1", "y2"], sci: ["phy", "chem", "bio"], gs: ["his", "geo", "pol"], apt: ["math", "eng"] };
+  var CQ_MAX_BYTES = 900000;   /* Firestore doc limit is 1 MiB */
+
+  function checkQ(q) {
+    var i, low = [];
+    if (!q || typeof q !== "object") return "not a question object";
+    if (!GROUPS[q.group]) return "group must be iti, sci, gs or apt";
+    if (GROUPS[q.group].indexOf(q.sub) < 0) return "sub “" + q.sub + "” is not valid for group " + q.group;
+    if (typeof q.q !== "string" || !q.q.trim()) return "question text is empty";
+    if (q.q.length > 400) return "question is over 400 characters";
+    if (!Array.isArray(q.opts) || q.opts.length !== 4) return "needs exactly 4 options";
+    for (i = 0; i < 4; i++) {
+      if (typeof q.opts[i] !== "string" || !q.opts[i].trim()) return "option " + "ABCD".charAt(i) + " is empty";
+      if (q.opts[i].length > 150) return "option " + "ABCD".charAt(i) + " is over 150 characters";
+      low.push(q.opts[i].trim().toLowerCase());
+    }
+    for (i = 0; i < 4; i++) if (low.indexOf(low[i]) !== i) return "two options are identical";
+    if (q.ans !== 0 && q.ans !== 1 && q.ans !== 2 && q.ans !== 3) return "correct answer must be A–D";
+    return "";
+  }
+  function normQ(s) { return String(s).toLowerCase().replace(/\s+/g, " ").trim(); }
+  function dupOf(text, exceptId) {
+    var n = normQ(text), i;
+    for (i = 0; i < bank.length; i++) if (bank[i].id !== exceptId && normQ(bank[i].q) === n) return bank[i].id;
+    return 0;
+  }
+  /* base JSON + custom overrides: same id replaces, deleted hides, new id appended */
+  function rebuildBank() {
+    var map = {}, order = [], has = Object.prototype.hasOwnProperty;
+    baseBank.forEach(function (q) { map[q.id] = q; order.push(q.id); });
+    custom.items.forEach(function (it) {
+      if (!it || typeof it.id !== "number") return;
+      var seen = has.call(map, it.id);
+      if (it.deleted) { map[it.id] = null; if (!seen) order.push(it.id); return; }
+      if (checkQ(it)) return;
+      map[it.id] = { id: it.id, group: it.group, sub: it.sub, q: it.q, opts: it.opts.slice(), ans: it.ans };
+      if (!seen) order.push(it.id);
+    });
+    bank = order.map(function (id) { return map[id]; }).filter(Boolean);
+  }
+  function nextId(items) {     /* never reuses an id: counts base, custom and deleted ids */
+    var m = 1000;
+    baseBank.forEach(function (q) { if (q.id > m) m = q.id; });
+    items.forEach(function (it) { if (it && typeof it.id === "number" && it.id > m) m = it.id; });
+    return m + 1;
+  }
+  function readCachedCustom() {
+    try {
+      var d = JSON.parse(ls(LS.custom));
+      if (d && Array.isArray(d.items)) custom = { updatedAt: Number(d.updatedAt) || 0, items: d.items.filter(function (it) { return it && typeof it.id === "number"; }) };
+    } catch (e) { }
+  }
+  function applyCustom(d) {
+    var items = d && Array.isArray(d.items) ? d.items.filter(function (it) { return it && typeof it.id === "number"; }) : [];
+    custom = { updatedAt: Number(d && d.updatedAt) || 0, items: items };
+    lsSet(LS.custom, JSON.stringify(custom));
+    if (baseBank.length) { rebuildBank(); bankState = bank.length ? "ok" : "error"; ensureCount(); }
+    var ae = document.activeElement, typing = ae && root && root.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+    if (screen === "admin") renderAdmin(); else if (screen === "setup" && !typing) renderSetup();
+  }
+  function syncCustom() {          /* one Firestore read; localStorage copy stays as the offline fallback */
+    if (!online()) return;
+    var t = new Promise(function (_, no) { setTimeout(function () { no(new Error("timeout")); }, 8000); });
+    var rd = fbCore().then(function (c) { return c.F.getDoc(c.F.doc(c.db, "quiz_meta", "custom_questions")); })
+      .then(function (s) { return s.exists() ? s.data() : { updatedAt: 0, items: [] }; });
+    Promise.race([rd, t]).then(applyCustom).catch(function () { });
+  }
+  function writeCustom(mutate) {   /* admin write: read-modify-write in a transaction on the single doc */
+    if (!online()) return Promise.reject({ code: "offline" });
+    return fbCore().then(function (c) {
+      return import(FB_V + "firebase-auth.js").then(function (U) {
+        var auth = U.getAuth(c.app);
+        return (auth.authStateReady ? auth.authStateReady() : Promise.resolve()).then(function () {
+          var u = auth.currentUser;
+          if (!u || !u.email || u.isAnonymous) throw { code: "need-admin" };
+          var ref = c.F.doc(c.db, "quiz_meta", "custom_questions");
+          return c.F.runTransaction(c.db, function (tx) {
+            return tx.get(ref).then(function (s) {
+              var cur = s.exists() && Array.isArray(s.data().items) ? s.data().items : [];
+              var doc = { updatedAt: Date.now(), items: mutate(cur) };
+              if (JSON.stringify(doc).length > CQ_MAX_BYTES) throw { code: "too-big" };
+              tx.set(ref, doc); return doc;
+            });
+          });
+        });
+      });
+    });
+  }
+  function adFail(e) {
+    var c = (e && e.code) || "";
+    if (c === "offline") toast("Connect to the internet to save");
+    else if (c === "need-admin" || c === "permission-denied") toast("Sign in with the admin Google account (Admin settings) — PIN unlock can’t write to Firestore");
+    else if (c === "too-big") toast("Custom question list is full (1 MB limit)");
+    else toast("Couldn’t save. Check your connection and try again.");
+  }
+
+  /* ---------- admin panel ---------- */
+  function adminOn() {
+    var els = document.querySelectorAll(".admin-only"), i;
+    for (i = 0; i < els.length; i++) if (!root.contains(els[i])) return !els[i].classList.contains("hidden");
+    return false;
+  }
+  function emptyForm(cat) { return { id: 0, cat: cat || "iti|y1", q: "", o: ["", "", "", ""], ans: 0 }; }
+  function openAdmin() {
+    if (!adminOn()) { toast("Admin only"); return; }
+    if (bankState !== "ok") { toast("Questions are still loading"); return; }
+    AD = AD || { mode: "single", form: emptyForm(), bulk: { cat: "iti|y1", text: "", parsed: null }, search: "", scope: "custom", del: 0, delT: 0, busy: false };
+    screen = "admin"; render();
+  }
+  function adGuard() {
+    if (AD && adminOn()) return true;
+    toast("Admin session locked"); screen = "setup"; render(); return false;
+  }
+  function catSel(attr, val) {
+    return '<select class="qa-in" data-f="' + attr + '">' + CAT.map(function (c) {
+      var v = c[0] + "|" + c[1]; return '<option value="' + v + '"' + (v === val ? " selected" : "") + ">" + esc(c[2]) + "</option>";
+    }).join("") + "</select>";
+  }
+  function renderAdmin() {
+    var nCus = custom.items.filter(function (it) { return !it.deleted; }).length, nDel = custom.items.length - nCus, f = AD.form, h;
+    h = '<div class="qa-wrap"><div class="flex items-center justify-between"><button type="button" class="qa-ic btn-tap" data-a="adback" aria-label="Back">' + ico("arrow-left") + '</button>' +
+      '<div class="text-lg font-extrabold">Manage Questions</div><div style="width:2.4rem"></div></div>' +
+      '<div class="text-xs qa-t2 text-center mt-1">' + baseBank.length + " base · " + nCus + " custom · " + nDel + " hidden · " + bank.length + " in play</div>" +
+      '<div class="qa-row mt-3">' + [["single", "Add / Edit"], ["bulk", "Bulk Add"], ["list", "Custom List"]].map(function (m) { return pill("admode", m[0], m[1], AD.mode === m[0], false); }).join("") + "</div>";
+    if (AD.mode === "single") {
+      h += '<div class="qa-glass p-3 mt-3">' +
+        (f.id ? '<div class="flex items-center justify-between mb-2"><span class="qa-qtag">Editing #' + f.id + '</span><button type="button" class="qa-pill btn-tap" data-a="adcancel">Cancel edit</button></div>' : "") +
+        '<div class="qa-lbl" style="margin-top:0">Category</div>' + catSel("cat", f.cat) +
+        '<div class="qa-lbl">Question</div><textarea class="qa-in" rows="3" maxlength="400" data-f="q" placeholder="Type the question">' + esc(f.q) + "</textarea>" +
+        '<div class="qa-lbl">Options</div>' + [0, 1, 2, 3].map(function (i) {
+          return '<div class="flex items-center gap-2 mt-2"><span class="qa-let">' + "ABCD".charAt(i) + '</span><input class="qa-in" type="text" maxlength="150" data-f="o' + i + '" placeholder="Option ' + "ABCD".charAt(i) + '" value="' + esc(f.o[i]) + '"></div>';
+        }).join("") +
+        '<div class="qa-lbl">Correct answer</div><div class="qa-row">' + [0, 1, 2, 3].map(function (i) { return pill("adans", i, "ABCD".charAt(i), f.ans === i, false); }).join("") + "</div></div>" +
+        '<button type="button" class="qa-cta btn-tap mt-3" data-a="adsave"' + (AD.busy ? " disabled" : "") + ">" + ico("save") + (f.id ? "Update Question" : "Save Question") + "</button>";
+    } else if (AD.mode === "bulk") {
+      h += '<div class="qa-glass p-3 mt-3"><div class="qa-lbl" style="margin-top:0">Bulk default category</div>' + catSel("bcat", AD.bulk.cat) +
+        '<div class="text-xs qa-t2 mt-2">Used when an item has no group / sub. Paste either format:</div>' +
+        '<pre class="qa-pre">Quick lines (one per line):\nQuestion | Option A | Option B | Option C | Option D | C\n(correct = A–D or 1–4)\n\nJSON array:\n[{"q":"…","opts":["a","b","c","d"],"ans":2}]\n(group, sub optional · ans = 0–3)</pre>' +
+        '<textarea class="qa-in" rows="8" data-f="btext" spellcheck="false" placeholder="Paste questions here" style="font-family:ui-monospace,Menlo,monospace;font-size:13px">' + esc(AD.bulk.text) + "</textarea>" +
+        '<div class="grid grid-cols-2 gap-2 mt-3"><button type="button" class="qa-sec btn-tap" data-a="adparse">' + ico("list-checks") + 'Preview &amp; Validate</button>' +
+        '<button type="button" class="qa-sec btn-tap" data-a="adclear">' + ico("eraser") + "Clear</button></div></div>" +
+        '<div id="ad-bres">' + bulkResHtml() + "</div>";
+    } else {
+      h += '<div class="qa-row mt-3">' + [["custom", "Custom"], ["deleted", "Hidden"], ["all", "All questions"]].map(function (m) { return pill("adscope", m[0], m[1], AD.scope === m[0], false); }).join("") + "</div>" +
+        '<input class="qa-in mt-2" type="search" data-f="search" placeholder="Search text or ID" value="' + esc(AD.search) + '">' +
+        '<div id="ad-list" class="grid gap-2 mt-3">' + adRowsHtml() + "</div>";
+    }
+    h += "</div>";
+    view.innerHTML = h; icons();
+  }
+  function adField(f, v) {
+    var b = AD && AD.bulk;
+    if (!AD) return;
+    if (f === "cat") AD.form.cat = v;
+    else if (f === "q") AD.form.q = v;
+    else if (/^o[0-3]$/.test(f)) AD.form.o[+f.charAt(1)] = v;
+    else if (f === "bcat") { b.cat = v; b.parsed = null; var r1 = $("ad-bres"); if (r1) r1.innerHTML = ""; }
+    else if (f === "btext") { b.text = v; if (b.parsed) { b.parsed = null; var r2 = $("ad-bres"); if (r2) r2.innerHTML = ""; } }
+    else if (f === "search") { AD.search = v; renderAdList(); }
+  }
+
+  /* single add / edit */
+  function adSave() {
+    if (!adGuard() || AD.busy) return;
+    var f = AD.form, cp = f.cat.split("|"), item = { group: cp[0], sub: cp[1], q: f.q.trim(), opts: f.o.map(function (s) { return s.trim(); }), ans: f.ans }, err = checkQ(item), d;
+    if (err) { toast(err.charAt(0).toUpperCase() + err.slice(1)); return; }
+    d = dupOf(item.q, f.id); if (d) { toast("Same question already exists (#" + d + ")"); return; }
+    AD.busy = true; var savedId = f.id, newId = 0; toast("Saving…");
+    writeCustom(function (cur) {
+      var items = cur.slice(), id = savedId || nextId(items), idx = -1, i;
+      for (i = 0; i < items.length; i++) if (items[i].id === id) idx = i;
+      newId = id; item.id = id;
+      if (idx >= 0) items[idx] = item; else items.push(item);
+      return items;
+    }).then(function (doc) {
+      applyCustom(doc); AD.form = emptyForm(f.cat); toast(savedId ? "Question #" + newId + " updated" : "Question saved as #" + newId);
+    }).catch(adFail).then(function () { AD.busy = false; if (screen === "admin") renderAdmin(); });
+  }
+  function adEdit(id) {
+    var q = bank.filter(function (x) { return x.id === id; })[0];
+    if (!q) { toast("Question not found"); return; }
+    AD.form = { id: id, cat: q.group + "|" + q.sub, q: q.q, o: q.opts.slice(), ans: q.ans };
+    AD.mode = "single"; renderAdmin(); window.scrollTo(0, 0);
+  }
+
+  /* bulk add */
+  function ansLetter(s) {
+    s = String(s).trim();
+    if (/^[A-Da-d]$/.test(s)) return "abcd".indexOf(s.toLowerCase());
+    if (/^[1-4]$/.test(s)) return +s - 1;
+    return -1;
+  }
+  function parseBulk(text, defCat) {
+    var dc = defCat.split("|"), ok = [], bad = [], cands = [], t = String(text).trim(), seen = {}, i;
+    if (!t) return { ok: [], bad: [{ n: "Input", why: "nothing pasted yet" }] };
+    if (t.charAt(0) === "[") {
+      var arr;
+      try { arr = JSON.parse(t); } catch (e) { return { ok: [], bad: [{ n: "JSON", why: "invalid JSON — " + e.message }] }; }
+      if (!Array.isArray(arr)) return { ok: [], bad: [{ n: "JSON", why: "must be an array [ … ]" }] };
+      arr.forEach(function (it, k) {
+        if (!it || typeof it !== "object") { bad.push({ n: "Item " + (k + 1), why: "not an object" }); return; }
+        var a = it.ans;
+        if (typeof a === "string") a = /^[A-Da-d]$/.test(a.trim()) ? "abcd".indexOf(a.trim().toLowerCase()) : -1;
+        cands.push({ n: "Item " + (k + 1), c: { group: it.group || dc[0], sub: it.sub || dc[1], q: it.q, opts: it.opts, ans: a } });
+      });
+    } else {
+      t.split(/\r?\n/).forEach(function (line, k) {
+        if (!line.trim()) return;
+        var p = line.split("|").map(function (s) { return s.trim(); }), a;
+        if (p.length !== 6) { bad.push({ n: "Line " + (k + 1), why: "expected 6 parts separated by |, found " + p.length }); return; }
+        a = ansLetter(p[5]);
+        if (a < 0) { bad.push({ n: "Line " + (k + 1), why: "correct answer must be A–D or 1–4" }); return; }
+        cands.push({ n: "Line " + (k + 1), c: { group: dc[0], sub: dc[1], q: p[0], opts: p.slice(1, 5), ans: a } });
+      });
+    }
+    for (i = 0; i < cands.length; i++) {
+      var c = cands[i].c, err = checkQ(c), d;
+      if (err) { bad.push({ n: cands[i].n, why: err }); continue; }
+      c.q = c.q.trim(); c.opts = c.opts.map(function (s) { return s.trim(); });
+      d = dupOf(c.q, 0);
+      if (d) { bad.push({ n: cands[i].n, why: "already exists as #" + d }); continue; }
+      if (seen[normQ(c.q)]) { bad.push({ n: cands[i].n, why: "duplicate inside this paste" }); continue; }
+      seen[normQ(c.q)] = 1; ok.push({ group: c.group, sub: c.sub, q: c.q, opts: c.opts, ans: c.ans });
+    }
+    return { ok: ok, bad: bad };
+  }
+  function bulkResHtml() {
+    var r = AD && AD.bulk.parsed, h;
+    if (!r) return "";
+    h = '<div class="qa-glass p-3 mt-3"><div class="font-extrabold"><span style="color:var(--okc)">✓ ' + r.ok.length + ' valid</span> · <span style="color:' + (r.bad.length ? "var(--bdc)" : "var(--t2)") + '">✗ ' + r.bad.length + " problem" + (r.bad.length === 1 ? "" : "s") + "</span></div>";
+    r.bad.slice(0, 15).forEach(function (b) { h += '<div class="text-xs mt-1"><b>' + esc(b.n) + ":</b> " + esc(b.why) + "</div>"; });
+    if (r.bad.length > 15) h += '<div class="text-xs qa-t2 mt-1">…and ' + (r.bad.length - 15) + " more</div>";
+    r.ok.slice(0, 3).forEach(function (c) { h += '<div class="text-xs qa-t2 mt-2">' + esc(TAGS[c.sub] || c.sub) + " — " + esc(c.q) + " → <b>" + esc(c.opts[c.ans]) + "</b></div>"; });
+    if (r.ok.length) h += '<button type="button" class="qa-cta btn-tap mt-3" data-a="adbulksave"' + (AD.busy ? " disabled" : "") + ">" + ico("cloud-upload") + "Save " + r.ok.length + " question" + (r.ok.length === 1 ? "" : "s") + "</button>" +
+      (r.bad.length ? '<div class="text-xs qa-t2 mt-2 text-center">Problem items are skipped.</div>' : "");
+    return h + "</div>";
+  }
+  function adParse() {
+    if (!adGuard()) return;
+    AD.bulk.parsed = parseBulk(AD.bulk.text, AD.bulk.cat);
+    var el = $("ad-bres"); if (el) { el.innerHTML = bulkResHtml(); icons(); }
+  }
+  function adBulkSave() {
+    if (!adGuard() || AD.busy || !AD.bulk.parsed || !AD.bulk.parsed.ok.length) return;
+    var list = AD.bulk.parsed.ok.slice(), first = 0, last2 = 0;
+    AD.busy = true; toast("Saving " + list.length + " questions…");
+    writeCustom(function (cur) {
+      var items = cur.slice(), id = nextId(items);
+      first = id;
+      list.forEach(function (c) { items.push({ id: id++, group: c.group, sub: c.sub, q: c.q, opts: c.opts, ans: c.ans }); });
+      last2 = id - 1; return items;
+    }).then(function (doc) {
+      applyCustom(doc); AD.bulk.text = ""; AD.bulk.parsed = null;
+      toast("Added " + list.length + " question" + (list.length === 1 ? "" : "s") + " (IDs " + first + (last2 > first ? "–" + last2 : "") + ")");
+    }).catch(adFail).then(function () { AD.busy = false; if (screen === "admin") renderAdmin(); });
+  }
+
+  /* custom list */
+  function adRows() {
+    var s = AD.search.trim().toLowerCase(), rows = [], cm = {};
+    custom.items.forEach(function (it) { cm[it.id] = it; });
+    if (AD.scope === "all") {
+      rows = bank.map(function (q) { return { q: q, flag: cm[q.id] ? (baseById[q.id] ? "edited" : "new") : "base" }; });
+    } else {
+      custom.items.forEach(function (it) {
+        if (AD.scope === "deleted" ? it.deleted : !it.deleted && !checkQ(it)) rows.push({ q: it, flag: it.deleted ? "hidden" : (baseById[it.id] ? "edited" : "new") });
+      });
+      rows.sort(function (a, b) { return b.q.id - a.q.id; });
+    }
+    if (s) rows = rows.filter(function (r) { return String(r.q.id) === s || String(r.q.q).toLowerCase().indexOf(s) > -1; });
+    return rows;
+  }
+  function adRowsHtml() {
+    var rows = adRows(), h = "";
+    if (!rows.length) return '<div class="qa-glass p-4 text-sm qa-t2 text-center">' + (AD.scope === "custom" ? "No custom or edited questions yet." : AD.scope === "deleted" ? "No hidden questions." : "No matches.") + "</div>";
+    rows.slice(0, 40).forEach(function (r) {
+      var q = r.q, id = q.id, h2 = "";
+      if (r.flag === "hidden") {
+        if (baseById[id] || !checkQ(q)) h2 = '<button type="button" class="qa-pill btn-tap" data-a="adrestore" data-k="' + id + '">Restore</button>';
+      } else {
+        h2 = '<button type="button" class="qa-pill btn-tap" data-a="adedit" data-k="' + id + '">' + ico("pencil") + " Edit</button>" +
+          '<button type="button" class="qa-pill btn-tap' + (AD.del === id ? " on" : "") + '" data-a="addel" data-k="' + id + '">' + ico("trash-2") + (AD.del === id ? " Tap again" : " Delete") + "</button>" +
+          (r.flag === "edited" ? '<button type="button" class="qa-pill btn-tap" data-a="adrestore" data-k="' + id + '">Revert</button>' : "");
+      }
+      h += '<div class="qa-glass qa-ar"><div class="flex items-center gap-2 flex-wrap"><span class="qa-id">#' + id + '</span><span class="qa-qtag">' + esc(TAGS[q.sub] || q.sub || "") + '</span><span class="text-xs qa-t2">' + r.flag + "</span></div>" +
+        '<div class="qa-arq">' + esc(q.q || "") + '</div><div class="qa-row mt-2">' + h2 + "</div></div>";
+    });
+    if (rows.length > 40) h += '<div class="text-xs qa-t2 text-center">Showing 40 of ' + rows.length + " — search to narrow down</div>";
+    return h;
+  }
+  function renderAdList() { var el = $("ad-list"); if (el) { el.innerHTML = adRowsHtml(); icons(); } }
+  function adAfter(msg) { return function (doc) { applyCustom(doc); toast(msg); if (screen === "admin" && AD.mode === "list") renderAdmin(); }; }
+  function adDelete(id) {
+    if (!adGuard()) return;
+    if (AD.del !== id) {
+      AD.del = id; renderAdList(); toast("Tap Delete again to confirm");
+      clearTimeout(AD.delT); AD.delT = setTimeout(function () { if (AD) { AD.del = 0; if (screen === "admin" && AD.mode === "list") renderAdList(); } }, 3000);
+      return;
+    }
+    AD.del = 0;
+    var cur = bank.filter(function (x) { return x.id === id; })[0]; if (!cur) return;
+    writeCustom(function (items) {
+      var out = items.filter(function (x) { return x.id !== id; });
+      out.push({ id: id, group: cur.group, sub: cur.sub, q: cur.q, opts: cur.opts.slice(), ans: cur.ans, deleted: true });
+      return out;
+    }).then(adAfter("Question #" + id + " deleted")).catch(adFail);
+  }
+  function adRestore(id) {
+    if (!adGuard()) return;
+    writeCustom(function (items) {
+      var out = [];
+      items.forEach(function (x) {
+        if (x.id !== id) { out.push(x); return; }
+        if (baseById[id]) return;                       /* back to the original question */
+        var y = {}, k; for (k in x) if (k !== "deleted") y[k] = x[k]; out.push(y);
+      });
+      return out;
+    }).then(adAfter("Question #" + id + " restored")).catch(adFail);
+  }
+
+  /* ---------- render + events ---------- */
+  function render() {
+    if (!view) return;
+    if (screen === "game" && G && !G.done) renderGame();
+    else if (screen === "admin" && AD && adminOn()) renderAdmin();
+    else if (screen === "lobby" && R && R.room) renderLobby();
+    else if (screen === "countdown" && R && R.room) renderCountdown();
+    else if (screen === "mwait" && R && R.room) renderWait();
+    else if (screen === "mresult" && R && R.final) renderPodium();
+    else if (screen === "result" && last) renderResult();
+    else { screen = "setup"; renderSetup(); }
+  }
+  function onClick(e) {
+    var b = e.target.closest && e.target.closest("[data-a]"); if (!b || !root.contains(b)) return;
+    var a = b.getAttribute("data-a"), k = b.getAttribute("data-k");
+    if (a === "players") { S.players = +k; savePrefs(); renderSetup(); }
+    else if (a === "count") { S.count = +k; savePrefs(); renderSetup(); }
+    else if (a === "main") { S.main = k; S.sub = SUBS[k][0][0]; ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "sub") { S.sub = k; ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "retry") { loadBank(); }
+    else if (a === "start") startSolo();
+    else if (a === "create") { if (feasible(S.count)) M.createRoom(cfg()); }
+    else if (a === "joinlink") M.joinRoom(pendingCode, { name: S.name || "Player" });
+    else if (a === "dismissinv") { clearInvite(); renderSetup(); }
+    else if (a === "copy") { copyText(R.code).then(function () { toast("Room code copied"); }, function () { toast("Couldn’t copy — long-press the code"); }); }
+    else if (a === "startnow") { startMatch(); renderLobby(); }
+    else if (a === "rematch") rematch();
+    else if (a === "mdl") podiumDownload();
+    else if (a === "mshare") podiumShare();
+    else if (a === "leave") leaveRoom();
+    else if (a === "join") {
+      var code = (($("qa-code") || {}).value || "").replace(/\D/g, "");
+      if (code.length !== 4) { toast("Enter the 4-digit room code"); return; }
+      M.joinRoom(code, { name: S.name || "Player", players: S.players });
+    }
+    else if (a === "adopen") openAdmin();
+    else if (a.indexOf("ad") === 0 && a !== "again" && !adGuard()) return;
+    else if (a === "adback") { screen = "setup"; render(); }
+    else if (a === "admode") { AD.mode = k; renderAdmin(); }
+    else if (a === "adans") {
+      AD.form.ans = +k;
+      Array.prototype.forEach.call(root.querySelectorAll('[data-a="adans"]'), function (x) { var on = +x.getAttribute("data-k") === AD.form.ans; x.classList.toggle("on", on); x.setAttribute("aria-pressed", on ? "true" : "false"); });
+    }
+    else if (a === "adsave") adSave();
+    else if (a === "adcancel") { AD.form = emptyForm(AD.form.cat); renderAdmin(); }
+    else if (a === "adparse") adParse();
+    else if (a === "adclear") { AD.bulk.text = ""; AD.bulk.parsed = null; renderAdmin(); }
+    else if (a === "adbulksave") adBulkSave();
+    else if (a === "adscope") { AD.scope = k; renderAdmin(); }
+    else if (a === "adedit") adEdit(+k);
+    else if (a === "addel") adDelete(+k);
+    else if (a === "adrestore") adRestore(+k);
+    else if (a === "opt") answer(+k);
+    else if (a === "quit") {
+      var now = Date.now();
+      if (G && now - G.quitAt < 2500) { if (G.mp) leaveMatch(); else { stopGame(); screen = "setup"; render(); } }
+      else { if (G) G.quitAt = now; toast(G && G.mp ? "Tap ✕ again to leave the match" : "Tap ✕ again to quit"); }
+    }
+    else if (a === "again") startSolo();
+    else if (a === "setup") { screen = "setup"; render(); }
+    else if (a === "dl") download();
+    else if (a === "share") share();
+  }
+  function onInput(e) {
+    var t = e.target, f = t.getAttribute && t.getAttribute("data-f");
+    if (f) { adField(f, t.value); return; }
+    if (t.id === "qa-name") { S.name = t.value.slice(0, 16); lsSet(LS.name, S.name); }
+    else if (t.id === "qa-code") { t.value = t.value.replace(/\D/g, "").slice(0, 4); }
+  }
+
+  /* ---------- bank + mount ---------- */
+  function loadBank() {
+    bankState = "loading"; if (screen === "setup") render();
+    fetch(BANK_URL, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        if (!Array.isArray(d)) throw new Error("bad bank");
+        baseBank = d.filter(function (q) { return q && q.q && Array.isArray(q.opts) && q.opts.length === 4 && q.ans >= 0 && q.ans < 4; });
+        baseById = {}; baseBank.forEach(function (q) { baseById[q.id] = q; });
+        readCachedCustom(); rebuildBank();           /* offline-safe: last cached custom questions */
+        bankState = bank.length ? "ok" : "error"; ensureCount();
+      }).catch(function () { bankState = "error"; })
+      .then(function () { if (screen === "setup") render(); if (bankState === "ok") syncCustom(); });
+  }
+  function mount() {
+    root = document.getElementById("quiz-arena-root");
+    if (!root || root.getAttribute("data-qa") === "1") return;
+    root.setAttribute("data-qa", "1");
+    injectCss(); loadPrefs(); readInvite();
+    root.innerHTML = '<div id="qa-view"></div><div id="qa-msg" class="qa-msg" role="status" aria-live="polite"></div>';
+    view = root.querySelector("#qa-view"); msgEl = root.querySelector("#qa-msg");
+    root.addEventListener("click", onClick); root.addEventListener("input", onInput); root.addEventListener("change", onInput);
+    render(); loadBank();
+    if (pendingCode) { try { window.dispatchEvent(new CustomEvent("qa:invite", { detail: { code: pendingCode } })); } catch (e) { } }
+  }
+  function readInvite() {
+    try { var c = new URLSearchParams(location.search).get("battle"); if (c && /^\d{4}$/.test(c)) { pendingCode = c; if (S.players < 2) S.players = 2; } } catch (e) { }
+  }
+  window.QuizArena = { mount: mount, pick: pick, feasible: feasible, getBank: function () { return bank.slice(); }, getConfig: function () { return JSON.parse(JSON.stringify(S)); }, invite: function () { return pendingCode; } };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();
+})();

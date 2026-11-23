@@ -345,6 +345,56 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
 .qa-cnt{gap:.25rem}
 .qa-cnt .qa-pill{min-height:28px;padding:.15rem 0;font-size:12px}
 .qa-setup .qa-cta{padding:.62rem 1rem;font-size:13.5px}
+
+/* ===== v4: website palette (slate glass + amber accent, same as index.html) ===== */
+#quiz-arena-root{--tx:#e2e8f0;--t2:#94a3b8;--cd:rgba(12,19,34,.52);--cd2:rgba(255,255,255,.06);--bd:rgba(148,163,184,.22);--ac:#fbbf24;--fl:#f59e0b;--ac2:#fbbf24;--on:rgba(251,191,36,.16);--onb:rgba(251,191,36,.6);--glow:0 0 0 1px rgba(251,191,36,.18),0 4px 14px -6px rgba(245,158,11,.4);--sh:0 10px 28px -10px rgba(0,0,0,.5),0 1px 0 0 rgba(255,255,255,.06) inset;--rg:#fbbf24;--rgs:transparent}
+html.bright-mode #quiz-arena-root{--tx:#1e293b;--t2:#475569;--cd:rgba(255,255,255,.58);--cd2:rgba(255,255,255,.62);--bd:rgba(148,163,184,.4);--ac:#b45309;--fl:#d97706;--ac2:#d97706;--on:rgba(217,119,6,.14);--onb:rgba(217,119,6,.55);--glow:0 0 0 1px rgba(217,119,6,.14),0 4px 12px -6px rgba(217,119,6,.3);--sh:0 10px 28px -10px rgba(15,23,42,.18),0 1px 0 0 rgba(255,255,255,.75) inset;--rg:#b45309}
+.qa-glass{background:radial-gradient(120% 80% at 100% 0%,rgba(251,191,36,.07),transparent 60%),linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,0) 42%),var(--cd)}
+html.bright-mode .qa-glass{background:radial-gradient(120% 80% at 100% 0%,rgba(217,119,6,.07),transparent 60%),linear-gradient(145deg,rgba(255,255,255,.7),rgba(255,255,255,.1) 42%),var(--cd)}
+.qa-inner[role=tablist]{background:rgba(255,255,255,.04)}
+.qa-seg.on,.qa-pill.on,html.bright-mode .qa-seg.on,html.bright-mode .qa-pill.on{background:var(--on);border-color:var(--onb);color:var(--tx);box-shadow:none}
+html.bright-mode .qa-seg.on,html.bright-mode .qa-pill.on{color:#92400e}
+.qa-cta{color:#1f1300!important;text-shadow:none;background:linear-gradient(135deg,#fbbf24,#f59e0b 55%,#d97706);box-shadow:0 10px 22px -10px rgba(245,158,11,.75),0 1px 0 rgba(255,255,255,.4) inset;border:1px solid rgba(255,255,255,.25)}
+.qa-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24);box-shadow:0 0 10px rgba(245,158,11,.55)}
+.qa-big,.qa-code{background-image:linear-gradient(135deg,#fde68a,#fbbf24 50%,#f59e0b)}
+html.bright-mode .qa-big,html.bright-mode .qa-code{background-image:linear-gradient(135deg,#b45309,#d97706 50%,#f59e0b)}
+.qa-let,.qa-id{background:rgba(251,191,36,.16);color:var(--ac)}
+.qa-in:focus{border-color:var(--onb);box-shadow:0 0 0 3px rgba(251,191,36,.18)}
+.qa-msg{background:rgba(15,23,42,.9);color:#fbbf24;border:1px solid rgba(251,191,36,.4)}
+/* topic pills: slate glass, amber when selected */
+.qa-cmp .qa-pill,html.bright-mode .qa-cmp .qa-pill{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),rgba(255,255,255,.03);border-color:rgba(148,163,184,.26);color:var(--tx)}
+html.bright-mode .qa-cmp .qa-pill{background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.4));border-color:rgba(148,163,184,.4);color:#1e293b}
+.qa-cmp .qa-pill.on,html.bright-mode .qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(251,191,36,.26),rgba(245,158,11,.10));border-color:rgba(251,191,36,.65);color:#fef3c7;box-shadow:none}
+html.bright-mode .qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(217,119,6,.20),rgba(217,119,6,.06));border-color:rgba(217,119,6,.6);color:#92400e}
+.qa-cmp .qa-pill .qa-n{color:#fbbf24;background:rgba(245,158,11,.16);border:1px solid rgba(245,158,11,.4)}
+html.bright-mode .qa-cmp .qa-pill .qa-n{color:#92400e;background:rgba(217,119,6,.12);border-color:rgba(217,119,6,.55)}
+.qa-cmp .qa-pill.on .qa-n{color:#1f1300;background:#fbbf24;border-color:#fbbf24}
+html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#d97706;border-color:#d97706}
+.qa-xpbox{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02)),var(--cd2);border-color:rgba(148,163,184,.26)}
+
+/* ===== v5: website chip shape (rounded-xl, amber bold text) + smooth switching ===== */
+.qa-pill,.qa-cmp .qa-pill,.qa-cnt .qa-pill{border-radius:.75rem}
+.qa-cmp .qa-pill,.qa-cnt .qa-pill{color:var(--ac);font-weight:700}
+html.bright-mode .qa-cmp .qa-pill,html.bright-mode .qa-cnt .qa-pill{color:#b45309}
+.qa-cmp .qa-pill.on,.qa-cnt .qa-pill.on{color:#fde68a}
+html.bright-mode .qa-cmp .qa-pill.on,html.bright-mode .qa-cnt .qa-pill.on{color:#92400e}
+.qa-cmp .qa-pill:disabled{color:var(--t2)}
+.qa-inner[role=tablist]{border-radius:.95rem}
+.qa-inner[role=tablist] .qa-seg{border-radius:.75rem}
+.qa-seg.on{color:var(--ac)}
+/* sliding indicator (tabs + question count) */
+.qa-slide{position:relative}
+.qa-slide>.qa-seg,.qa-slide>.qa-pill{position:relative;z-index:1}
+.qa-slide>.qa-seg.on,.qa-slide>.qa-pill.on,html.bright-mode .qa-slide>.qa-seg.on,html.bright-mode .qa-slide>.qa-pill.on{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+.qa-ind{position:absolute;left:0;top:0;width:0;height:0;z-index:0;pointer-events:none;border-radius:.75rem;background:linear-gradient(135deg,rgba(251,191,36,.28),rgba(245,158,11,.12));border:1px solid var(--onb);opacity:0;transition:transform .34s cubic-bezier(.4,0,.2,1),width .34s cubic-bezier(.4,0,.2,1),height .34s cubic-bezier(.4,0,.2,1),opacity .2s}
+html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),rgba(217,119,6,.08))}
+/* tap pop on the newly picked pill */
+.qa-pill.qa-just{animation:qaJust .42s cubic-bezier(.34,1.4,.64,1)}
+@keyframes qaJust{0%{transform:scale(.92);box-shadow:0 0 0 0 rgba(251,191,36,.55)}60%{transform:scale(1.04)}100%{transform:none;box-shadow:0 0 0 9px rgba(251,191,36,0)}}
+/* content that appears when switching to Live Battle */
+.qa-enter{animation:qaEnter .36s cubic-bezier(.22,1,.36,1) both}
+@keyframes qaEnter{from{opacity:0;transform:translateY(-8px) scale(.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.qa-ind{transition:none}.qa-pill.qa-just,.qa-enter{animation:none}}
 `;
     document.head.appendChild(st);
   }
@@ -355,6 +405,17 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
   }
   /* ---------- ITI ELEC expandable panel (smooth open / close) ---------- */
   var elecOpen = false, lastEp = null, xpState = { elec: false, mods: false };
+  var IND = {}, lastDraw = null;
+  function slideInd(box, key) {
+    var ind = box && box.querySelector(".qa-ind"); if (!ind) return;
+    var on = box.querySelector(".qa-seg.on,.qa-pill.on");
+    if (!on) { ind.style.opacity = 0; delete IND[key]; return; }
+    var r = { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight }, p = IND[key];
+    function put(q) { ind.style.width = q.w + "px"; ind.style.height = q.h + "px"; ind.style.transform = "translate(" + q.x + "px," + q.y + "px)"; }
+    ind.style.opacity = 1; ind.style.transition = "none";
+    put(p || r); void ind.offsetWidth; ind.style.transition = ""; put(r);
+    IND[key] = r;
+  }
   function elecPanel(ep, ready, wantM) {
     var h = '<div class="qa-xp' + (xpState.elec ? " open" : "") + '" data-xp="elec"><div class="qa-xpi"><div class="qa-inner qa-xpbox">';
     h += '<div class="qa-lbl" style="margin-bottom:.3rem">Year</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">' +
@@ -388,7 +449,10 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
   }
 
   function renderSetup() {
-    if (view && !view.querySelector(".qa-setup")) { elecOpen = false; xpState = { elec: false, mods: false }; }
+    if (view && !view.querySelector(".qa-setup")) { elecOpen = false; xpState = { elec: false, mods: false }; IND = {}; lastDraw = null; }
+    var topicKey = S.main + "|" + (elecParts(S.main, S.sub) ? "elec" : S.sub);
+    var modeChg = !!lastDraw && lastDraw.mode !== S.mode, topicChg = !!lastDraw && lastDraw.topic !== topicKey, plChg = !!lastDraw && lastDraw.players !== S.players;
+    var enter = modeChg ? " qa-enter" : "";
     var ready = bankState === "ok", st = liveStreak(), multi = S.mode === "multi", h = "";
     var canStart = ready && feasible(S.count);
 
@@ -403,7 +467,7 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
     h += "</div></div>";
 
     /* Solo | Live Battle tabs */
-    h += '<div class="qa-inner p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Quiz mode">';
+    h += '<div class="qa-inner qa-slide p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Quiz mode" data-slide="tabs"><span class="qa-ind" aria-hidden="true"></span>';
     h += '<button type="button" role="tab" aria-selected="' + !multi + '" class="qa-seg btn-tap' + (!multi ? " on" : "") + '" data-a="mode" data-k="solo">' + ico("user") + "<span>Solo</span></button>";
     h += '<button type="button" role="tab" aria-selected="' + multi + '" class="qa-seg btn-tap' + (multi ? " on" : "") + '" data-a="mode" data-k="multi">' + ico("users") + "<span>Live Battle</span><span class=\"qa-mini\">2–4P</span></button>";
     h += "</div>";
@@ -411,16 +475,16 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
     if (multi) {
       /* invite banner */
       if (pendingCode) {
-        h += '<div class="qa-inner p-2 flex items-center gap-2" style="border-color:rgba(167,139,250,.6)">';
+        h += '<div class="qa-inner p-2 flex items-center gap-2' + enter + '" style="border-color:var(--onb)">';
         h += '<button type="button" class="qa-cta btn-tap flex-1" style="padding:.55rem .8rem;font-size:12.5px" data-a="joinlink">' + ico("log-in") + "Join room " + pendingCode + "</button>";
         h += '<button type="button" class="qa-ic btn-tap shrink-0" data-a="dismissinv" aria-label="Dismiss invite">' + ico("x") + "</button></div>";
       }
       /* room code join bar + room size */
-      h += '<div class="qa-inner p-2 space-y-2">';
+      h += '<div class="qa-inner p-2 space-y-2' + enter + '">';
       h += '<div class="flex gap-1.5"><input id="qa-code" class="qa-in" style="width:5.8rem;text-align:center;letter-spacing:.26em;font-weight:800;padding-left:.9rem" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" value="' + esc(codeDraft || pendingCode || "") + '" aria-label="4-digit room code">';
       h += '<button type="button" class="qa-sec btn-tap flex-1 font-extrabold" style="padding:.5rem .7rem" data-a="join">' + ico("log-in") + "Join room</button></div>";
       h += '<div class="flex items-center gap-2"><span class="qa-lbl shrink-0">Room size</span><div class="grid grid-cols-3 gap-1.5 flex-1">' +
-        [2, 3, 4].map(function (n) { return '<button type="button" class="qa-pill btn-tap text-center' + (S.players === n ? " on" : "") + '" style="padding:.34rem 0" data-a="players" data-k="' + n + '" aria-pressed="' + (S.players === n) + '">' + n + "P</button>"; }).join("") +
+        [2, 3, 4].map(function (n) { return '<button type="button" class="qa-pill btn-tap text-center' + (S.players === n ? " on" + (plChg ? " qa-just" : "") : "") + '" style="padding:.34rem 0" data-a="players" data-k="' + n + '" aria-pressed="' + (S.players === n) + '">' + n + "P</button>"; }).join("") +
         "</div></div></div>";
     }
 
@@ -435,14 +499,14 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
       var n = ready ? availFor(t[0], t[1]) : 0, isE = t[1] === "elec" && t[0] === "iti", on = S.main === t[0] && (isE ? !!ep : S.sub === t[1]);
       var lbl = t[2];
       if (isE && ep && ep.yr) lbl += ' <span class="qa-sub">· ' + esc(ELEC[ep.yr].name.replace(" Year", " Yr")) + " · " + esc(ep.mod ? modName(ep.yr, ep.mod) : "Trade Test") + "</span>";
-      var btn = '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="topic" data-k="' + t[0] + "|" + t[1] + '" aria-pressed="' + on + '"' + (isE ? ' aria-expanded="' + wantE + '"' : "") + (ready && !n ? " disabled" : "") + ">" + lbl +
+      var btn = '<button type="button" class="qa-pill btn-tap' + (on ? " on" + (topicChg ? " qa-just" : "") : "") + '" data-a="topic" data-k="' + t[0] + "|" + t[1] + '" aria-pressed="' + on + '"' + (isE ? ' aria-expanded="' + wantE + '"' : "") + (ready && !n ? " disabled" : "") + ">" + lbl +
         '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
       if (isE && epr && (wantE || xpState.elec)) btn += elecPanel(epr, ready, wantM);
       return btn;
     }).join("") + "</div></div>";
 
     /* 5-column question count */
-    h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Questions</div><div class="qa-cnt">' +
+    h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Questions</div><div class="qa-cnt qa-slide" data-slide="cnt"><span class="qa-ind" aria-hidden="true"></span>' +
       COUNTS.map(function (c) { return pill("count", c, c, S.count === c, !ready || !feasible(c)); }).join("") + "</div></div>";
 
     if (bankState === "error") {
@@ -450,12 +514,14 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-
     }
 
     /* single primary CTA */
-    h += '<button type="button" class="qa-cta btn-tap" data-a="' + (multi ? "create" : "start") + '"' + (canStart ? "" : " disabled") + ">" +
+    h += '<button type="button" class="qa-cta btn-tap' + enter + '" data-a="' + (multi ? "create" : "start") + '"' + (canStart ? "" : " disabled") + ">" +
       ico(multi ? "plus" : "play") + (multi ? "Create Room" : "Start Quiz") + "</button>";
     if (ready && !canStart && !(S.main === "iti" && S.sub === "elec")) h += '<div class="text-xs qa-t2 text-center" style="margin-top:-.3rem">Not enough questions in this topic yet.</div>';
     h += "</div>";
     view.innerHTML = h; icons();
     syncXp({ elec: wantE, mods: wantM });
+    slideInd(view.querySelector('[data-slide="tabs"]'), "tabs"); slideInd(view.querySelector('[data-slide="cnt"]'), "cnt");
+    lastDraw = { mode: S.mode, topic: topicKey, players: S.players };
   }
 
   /* ---------- gameplay ---------- */

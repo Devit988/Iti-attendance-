@@ -324,6 +324,27 @@ html.bright-mode .qa-cmp .qa-pill{background:linear-gradient(180deg,rgba(186,230
 html.bright-mode .qa-cmp .qa-pill .qa-n{color:#0e7490;background:transparent}
 html.bright-mode .qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(125,211,252,.10));color:#0c4a6e}
 html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#0e7490;background:rgba(8,145,178,.10);border-color:#0891b2}
+
+/* ===== v3: compact (fits one screen), no glow on counters, translucent sky-blue ===== */
+.qa-setup.qa-glass{padding:.6rem!important;border-radius:1.2rem}
+.qa-setup.space-y-3>:not([hidden])~:not([hidden]){margin-top:.45rem!important}
+.qa-setup .qa-lbl{font-size:9px}
+.qa-inner[role=tablist]{padding:.2rem}
+.qa-inner[role=tablist] .qa-seg{min-height:36px;font-size:12.5px}
+.qa-setup .qa-in{padding:.3rem .7rem!important;font-size:13px}
+.qa-wrapRow.qa-cmp{gap:.25rem}
+.qa-cmp .qa-pill{min-height:27px;padding:.08rem .22rem .08rem .5rem;font-size:10.5px;gap:.28rem;background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.07));border:1px solid rgba(56,189,248,.28);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.qa-cmp .qa-pill:not(:has(.qa-n)){padding-right:.5rem}
+.qa-cmp .qa-pill .qa-n,.qa-cmp .qa-pill.on .qa-n{min-width:1.45rem;height:1.1rem;padding:0 .3rem;font-size:8.5px;color:#7dd3fc;background:rgba(56,189,248,.20);border:1px solid rgba(56,189,248,.45);box-shadow:none!important;text-shadow:none!important}
+.qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(56,189,248,.38),rgba(14,165,233,.20));border-color:rgba(56,189,248,.75);box-shadow:none}
+.qa-cmp .qa-pill.on .qa-n{color:#fff;background:rgba(14,165,233,.45);border-color:rgba(125,211,252,.8)}
+html.bright-mode .qa-cmp .qa-pill{background:linear-gradient(180deg,rgba(56,189,248,.18),rgba(125,211,252,.08));border-color:rgba(14,165,233,.30)}
+html.bright-mode .qa-cmp .qa-pill .qa-n{color:#0369a1;background:rgba(56,189,248,.20);border-color:rgba(2,132,199,.40)}
+html.bright-mode .qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(56,189,248,.40),rgba(125,211,252,.22));border-color:rgba(2,132,199,.7)}
+html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7;border-color:#0284c7}
+.qa-cnt{gap:.25rem}
+.qa-cnt .qa-pill{min-height:28px;padding:.15rem 0;font-size:12px}
+.qa-setup .qa-cta{padding:.62rem 1rem;font-size:13.5px}
 `;
     document.head.appendChild(st);
   }

@@ -3271,6 +3271,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
             <button type="button" onclick="switchTab('docs')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>Doc Tools</span></button>
             <!-- CALCULATOR quick-jump (insert inside #dv-quick, right after the Doc Tools button) -->
             <button type="button" onclick="switchTab('calc')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="calculator" class="w-3.5 h-3.5"></i><span>Calculator</span></button>
+            <button type="button" onclick="switchTab('quiz')" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="swords" class="w-3.5 h-3.5"></i><span>Quiz Arena</span></button>
             <button type="button" id="dv-quick-music" onclick="itiMusicHub()" aria-label="Open music player" class="shrink-0 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition btn-tap"><i data-lucide="music" class="w-3.5 h-3.5"></i><span>Music</span></button>
           </div>
 
@@ -4881,6 +4882,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
           </div>
         </div>
       </footer>
+      <section id="view-quiz" class="tab-view hidden animate-panel space-y-4"><div id="quiz-arena-root"></div></section>
     </main>
   </div>
 
@@ -5453,6 +5455,17 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
       <div class="min-w-0">
         <div class="text-xs font-bold text-white truncate">Calculator</div>
         <div class="text-[10px] text-slate-400 truncate">Standard, Scientific &amp; 15 Converters</div>
+      </div>
+    </button>
+
+    <button type="button" id="more-item-quiz" onclick="selectMoreTab('quiz')"
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+        <i data-lucide="swords" class="w-4 h-4"></i>
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-bold text-white truncate">Quiz Arena</div>
+        <div class="text-[10px] text-slate-400 truncate">Solo &amp; Live 2–4 Player Battles</div>
       </div>
     </button>
 
@@ -8729,7 +8742,7 @@ service cloud.firestore {
         btn.className = btn.id === `tab-btn-${activeKey}` ? ACTIVE_TAB_CLS : INACTIVE_TAB_CLS;
       });
       positionTabIndicator(false);
-      ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"].forEach((k) => {
+      ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"].forEach((k) => {
         const item = document.getElementById(`more-item-${k}`);
         if (!item) return;
         const isCurrent = lastTabName === k;
@@ -8778,7 +8791,7 @@ service cloud.firestore {
         btn.blur();
       }
       if (!skipHighlightReset) {
-        const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"].includes(lastTabName);
+        const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"].includes(lastTabName);
         updateNavHighlights(inMore ? "more" : lastTabName);
       }
     }
@@ -8798,7 +8811,7 @@ service cloud.firestore {
     }
 
     let lastTabName = "home";
-    const TAB_ORDER = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"];
+    const TAB_ORDER = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"];
 
     function switchTab(tabName) {
       closeMoreSheet(true);
@@ -8831,7 +8844,7 @@ service cloud.firestore {
         renderEligibilityChart();
       }
 
-      const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"].includes(tabName);
+      const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"].includes(tabName);
       updateNavHighlights(inMore ? "more" : tabName);
       window.scrollTo(0, 0);
       expandSearchBar(false);
@@ -15998,7 +16011,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 (function () {
   "use strict";
   var WKEY = "iti_chhotojagulia_watched_v1";
-  var TABS = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "settings"];
+  var TABS = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"];
   function $(id) { return document.getElementById(id); }
   function esc(x) { return escapeHTML(x); }
 
@@ -18779,6 +18792,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   @media (prefers-reduced-motion: reduce) {
     #iti-music-bar, #iti-music-bar *, #music-yt-host, #music-video-wrap, .mu-fold, .mu-lp { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
   }
+</style>
 <style>
 /* ===== mini-player swipe ===== */
 .mh-col { flex: none; width: 2.7rem; height: 2.7rem; margin-right: .5rem; border-radius: .6rem; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; background: linear-gradient(135deg, #d97706, #7c2d12); }
@@ -29430,6 +29444,17 @@ document.addEventListener("keydown", function (e) {
 })();
 </script>
 <!-- ===== CAL PART 2 JS: END ===== -->
+
+<script src="./quiz_arena.js"></script>
+<script>
+/* ?battle=XXXX invite link -> open Quiz Arena with the Join Room screen pre-filled */
+(function () {
+  var c = ""; try { c = new URLSearchParams(location.search).get("battle") || ""; } catch (e) {}
+  if (!/^\d{4}$/.test(c)) return;
+  function go() { setTimeout(function () { try { switchTab("quiz"); } catch (e) {} }, 400); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+})();
+</script>
 
 </body>
 </html>

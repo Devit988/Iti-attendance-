@@ -1,16 +1,16 @@
 /* ITI CONNECT service worker v2
-   - Offline app shell (index.html, og-image.png)
+   - Offline app shell (index.html, og-image.png, Quiz Arena: quiz_arena.js + quiz_bank.json)
    - CDN files (Tailwind, Lucide, Firebase SDK, fonts) cached so the app renders offline
    - Update prompt: new versions wait until the user taps "Refresh"
    - Offline files: the page can ask this worker to save PDFs/notes for offline use
    Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v16";
+var VERSION = "v18";
 var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline
 var MAX_FILES = 40;
 
-var SHELL = ["./", "./index.html", "./og-image.png"];
+var SHELL = ["./", "./index.html", "./og-image.png", "./quiz_bank.json", "./quiz_arena.js"];
 
 var CDN_PRECACHE = [
   "https://cdn.tailwindcss.com/3.4.17",
@@ -59,6 +59,9 @@ self.addEventListener("fetch", function (e) {
   var req = e.request;
   if (req.method !== "GET" || req.headers.has("range")) return;
   var url = new URL(req.url);
+
+  /* Firestore / Firebase Auth live traffic (Quiz Arena rooms): never touched by this worker. */
+  if (/(^|\.)(firestore|identitytoolkit|securetoken|firebaseinstallations)\.googleapis\.com$|(^|\.)firebaseio\.com$/.test(url.hostname)) return;
 
   /* Third-party libraries/fonts: serve from cache, refresh in background. */
   if (url.origin !== self.location.origin) {

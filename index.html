@@ -139,6 +139,8 @@
     .animate-tab-left { animation-name: tabSmoothFromLeft; }
 
     /* ===== Disclaimer notice (footer) ===== */
+    /* Disclaimer shows on Home only */
+    body.non-home-tab #site-disclaimer { display: none !important; }
     #site-disclaimer .disclaimer-box {
       border-left: 3px solid #fbbf24;
       padding-left: 0.65rem;
@@ -346,6 +348,7 @@
 
     /* Compact More Tabs Popup */
     #more-backdrop {
+      background-color: rgba(2, 6, 23, 0.22);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.18s ease-out !important;
@@ -356,9 +359,17 @@
     }
     #more-sheet {
       bottom: calc(var(--nav-h, 4.6rem) + var(--nav-offset, 0px) + 0.5rem);
-      max-height: calc(100dvh - var(--nav-h, 4.6rem) - var(--nav-offset, 0px) - 1.5rem);
-      max-height: calc(100svh - var(--nav-h, 4.6rem) - var(--nav-offset, 0px) - 1.5rem);
+      right: 0.75rem;
+      left: auto;
+      width: min(calc(100vw - 1.5rem), 23rem);
+      max-height: 60vh;
+      max-height: min(60dvh, 24rem);
       overflow-y: auto;
+      overflow-x: hidden;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.4rem;
+      align-content: start;
       transform: translate3d(0, 8px, 0) scale(0.97);
       transform-origin: bottom right;
       opacity: 0;
@@ -368,11 +379,11 @@
                   opacity 0.22s ease-out,
                   visibility 0s linear 0.3s !important;
       will-change: transform, opacity;
-      background-color: rgba(15, 23, 42, 0.72) !important;
-      backdrop-filter: blur(14px) saturate(1.3);
-      -webkit-backdrop-filter: blur(14px) saturate(1.3);
-      border: 1px solid rgba(148, 163, 184, 0.25) !important;
-      box-shadow: 0 18px 40px -8px rgba(0, 0, 0, 0.45) !important;
+      background-color: rgba(12, 19, 34, 0.52) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+      backdrop-filter: blur(16px) saturate(1.5) !important;
+      border: 1px solid rgba(148, 163, 184, 0.24) !important;
+      box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.07) inset !important;
     }
     #more-sheet.more-open {
       transform: translate3d(0, 0, 0) scale(1);
@@ -459,12 +470,53 @@
     #tab-btn-more[aria-expanded="true"] svg { transform: rotate(45deg); }
 
     #more-sheet button {
-      background-color: rgba(255, 255, 255, 0.05) !important;
+      background-color: rgba(255, 255, 255, 0.06) !important;
       border-color: rgba(148, 163, 184, 0.2) !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0.6rem 0.35rem;
+      border-radius: 0.9rem;
+      font-size: 11px;
+      line-height: 1.2;
+      gap: 0.3rem;
+      min-width: 0;
+      margin: 0 !important;
+      overflow: hidden;
+    }
+    #more-sheet button .min-w-0 {
+      width: 100%;
+      min-width: 0;
+    }
+    /* label: max 2 lines with ellipsis, fixed height so every tile is uniform */
+    #more-sheet button .truncate {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      white-space: normal;
+      text-overflow: ellipsis;
+      font-size: 11px !important;
+      line-height: 1.2 !important;
+      min-height: 2.4em;
+    }
+    /* subtitles hidden */
+    #more-sheet button p,
+    #more-sheet button small,
+    #more-sheet button .text-\[10px\] {
+      display: none !important;
+    }
+    /* inner wrappers stay clear so global bright-mode rules cannot make the interior solid
+       (icon chips keep their own tint via .shrink-0) */
+    #more-sheet div:not(.shrink-0) {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
     }
     #more-sheet button:hover { background-color: rgba(255, 255, 255, 0.1) !important; }
     html.bright-mode #more-sheet button {
-      background-color: rgba(15, 23, 42, 0.04) !important;
+      background-color: rgba(255, 255, 255, 0.50) !important;
       border-color: rgba(148, 163, 184, 0.35) !important;
     }
     html.bright-mode #more-sheet button:hover { background-color: rgba(15, 23, 42, 0.08) !important; }
@@ -514,11 +566,11 @@
     }
 
     html.bright-mode #more-sheet {
-      background-color: rgba(255, 255, 255, 0.78) !important;
-      backdrop-filter: blur(14px) saturate(1.3);
-      -webkit-backdrop-filter: blur(14px) saturate(1.3);
-      border-color: rgba(203, 213, 225, 0.7) !important;
-      box-shadow: 0 18px 40px -8px rgba(15, 23, 42, 0.16) !important;
+      background-color: rgba(255, 255, 255, 0.58) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+      backdrop-filter: blur(16px) saturate(1.5) !important;
+      border-color: rgba(148, 163, 184, 0.36) !important;
+      box-shadow: 0 14px 34px -8px rgba(15, 23, 42, 0.18), 0 1px 0 0 rgba(255, 255, 255, 0.78) inset !important;
     }
 
     @keyframes modalScaleIn {
@@ -4960,16 +5012,16 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
         <span class="truncate">Home</span>
       </button>
 
-      <button type="button" id="tab-btn-daily" onclick="switchTab('daily')"
+      <button type="button" id="tab-btn-videos" onclick="switchTab('videos')"
         class="tab-btn flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="calendar-check-2" class="w-5 h-5 shrink-0"></i>
-        <span class="truncate">Daily</span>
+        <i data-lucide="play-circle" class="w-5 h-5 shrink-0"></i>
+        <span class="truncate">Videos</span>
       </button>
 
-      <button type="button" id="tab-btn-monthly" onclick="switchTab('monthly')"
+      <button type="button" id="tab-btn-trace" onclick="openTraceCameraTab()"
         class="tab-btn flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap">
-        <i data-lucide="bar-chart-3" class="w-5 h-5 shrink-0"></i>
-        <span class="truncate">80% Chart</span>
+        <i data-lucide="camera" class="w-5 h-5 shrink-0"></i>
+        <span class="truncate">Trace Cam</span>
       </button>
 
       <button type="button" id="tab-btn-more" onclick="toggleMoreSheet(event)" aria-expanded="false" aria-haspopup="true" aria-controls="more-sheet" aria-label="More tabs"
@@ -5376,10 +5428,32 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
     <input type="file" id="tr-file2" accept="image/*" class="hidden">
   </div>
 
-  <div id="more-backdrop" onclick="closeMoreSheet()" class="fixed inset-0 z-[45] bg-black/45"></div>
-  <div id="more-sheet" class="fixed right-3 z-[46] w-60 max-w-[calc(100vw-1.5rem)] rounded-2xl border p-2 space-y-1.5">
+  <div id="more-backdrop" onclick="closeMoreSheet()" class="fixed inset-0 z-[45]"></div>
+  <div id="more-sheet" class="fixed right-3 z-[46] rounded-2xl border p-2">
+    <button type="button" id="more-item-daily" onclick="selectMoreTab('daily')"
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
+      <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+        <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-bold text-white truncate">Daily</div>
+        <div class="text-[10px] text-slate-400 truncate">Daily Attendance &amp; Updates</div>
+      </div>
+    </button>
+
+    <button type="button" id="more-item-monthly" onclick="selectMoreTab('monthly')"
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
+      <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+      </div>
+      <div class="min-w-0">
+        <div class="text-xs font-bold text-white truncate">80% Chart</div>
+        <div class="text-[10px] text-slate-400 truncate">Monthly Eligibility Tracker</div>
+      </div>
+    </button>
+
     <button type="button" id="more-item-results" onclick="selectMoreTab('results')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
         <i data-lucide="award" class="w-4 h-4"></i>
       </div>
@@ -5390,7 +5464,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
     </button>
 
     <button type="button" id="more-item-notes" onclick="selectMoreTab('notes')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
         <i data-lucide="book-open" class="w-4 h-4"></i>
       </div>
@@ -5400,19 +5474,8 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
       </div>
     </button>
 
-    <button type="button" id="more-item-videos" onclick="selectMoreTab('videos')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
-      <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-        <i data-lucide="video" class="w-4 h-4"></i>
-      </div>
-      <div class="min-w-0">
-        <div class="text-xs font-bold text-white truncate">Videos</div>
-        <div class="text-[10px] text-slate-400 truncate">Workshop Practicals &amp; Demos</div>
-      </div>
-    </button>
-
     <button type="button" id="more-item-gallery" onclick="selectMoreTab('gallery')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
         <i data-lucide="camera" class="w-4 h-4"></i>
       </div>
@@ -5424,7 +5487,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
 
     <!-- TRADE TOOLS entry (insert inside #more-sheet, just above the Settings button) -->
     <button type="button" id="more-item-tools" onclick="switchTab('tools')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
         <i data-lucide="wrench" class="w-4 h-4"></i>
       </div>
@@ -5436,7 +5499,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
 
     <!-- DOC TOOLS entry (insert inside #more-sheet, right below #more-item-tools) -->
     <button type="button" id="more-item-docs" onclick="selectMoreTab('docs')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
         <i data-lucide="file-text" class="w-4 h-4"></i>
       </div>
@@ -5448,7 +5511,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
 
     <!-- CALCULATOR entry (insert inside #more-sheet, right below #more-item-docs) -->
     <button type="button" id="more-item-calc" onclick="selectMoreTab('calc')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
         <i data-lucide="calculator" class="w-4 h-4"></i>
       </div>
@@ -5459,7 +5522,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
     </button>
 
     <button type="button" id="more-item-quiz" onclick="selectMoreTab('quiz')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
         <i data-lucide="swords" class="w-4 h-4"></i>
       </div>
@@ -5471,7 +5534,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
 
     <!-- MUSIC entry (insert inside #more-sheet, right below #more-item-calc and just above #more-item-settings) -->
     <button type="button" id="more-item-music" onclick="closeMoreSheet(); itiMusicHub();"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
         <i data-lucide="music" class="w-4 h-4"></i>
       </div>
@@ -5482,7 +5545,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
     </button>
 
     <button type="button" id="more-item-settings" onclick="selectMoreTab('settings')"
-      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 border border-slate-800 text-left transition btn-tap">
+      class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-slate-800 text-left transition btn-tap">
       <div class="w-7 h-7 rounded-lg bg-slate-500/15 border border-slate-500/30 flex items-center justify-center text-slate-300 shrink-0">
         <i data-lucide="settings" class="w-4 h-4"></i>
       </div>
@@ -8708,6 +8771,14 @@ service cloud.firestore {
     const INACTIVE_TAB_CLS = "tab-btn flex flex-col items-center justify-center gap-1 py-2 px-2 rounded-2xl text-[11px] sm:text-xs font-semibold text-slate-300 hover:bg-slate-800/70 transition btn-tap";
 
     let navActiveKey = "home";
+    let traceNav = false; // true only when #view-tools was opened through openTraceCameraTab()
+    const MORE_TABS = ["daily", "monthly", "results", "notes", "gallery", "tools", "docs", "calc", "quiz", "settings"];
+    function navKeyFor(tab) {
+      if (tab === "home") return "home";
+      if (tab === "videos") return "videos";
+      if (tab === "tools" && traceNav) return "trace";
+      return MORE_TABS.indexOf(tab) >= 0 ? "more" : tab;
+    }
 
     function syncNavHeight() {
       const nav = document.getElementById("bottom-tab-bar");
@@ -8742,7 +8813,7 @@ service cloud.firestore {
         btn.className = btn.id === `tab-btn-${activeKey}` ? ACTIVE_TAB_CLS : INACTIVE_TAB_CLS;
       });
       positionTabIndicator(false);
-      ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"].forEach((k) => {
+      ["daily", "monthly", "results", "notes", "gallery", "tools", "docs", "calc", "quiz", "settings"].forEach((k) => {
         const item = document.getElementById(`more-item-${k}`);
         if (!item) return;
         const isCurrent = lastTabName === k;
@@ -8791,8 +8862,7 @@ service cloud.firestore {
         btn.blur();
       }
       if (!skipHighlightReset) {
-        const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"].includes(lastTabName);
-        updateNavHighlights(inMore ? "more" : lastTabName);
+        updateNavHighlights(navKeyFor(lastTabName));
       }
     }
 
@@ -8811,7 +8881,7 @@ service cloud.firestore {
     }
 
     let lastTabName = "home";
-    const TAB_ORDER = ["home", "daily", "monthly", "results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"];
+    const TAB_ORDER = ["home", "videos", "tools", "daily", "monthly", "results", "notes", "gallery", "docs", "calc", "quiz", "settings"];
 
     function switchTab(tabName) {
       closeMoreSheet(true);
@@ -8821,6 +8891,8 @@ service cloud.firestore {
       const toIdx = TAB_ORDER.indexOf(tabName);
       const dirClass = toIdx > fromIdx ? "animate-tab-right" : toIdx < fromIdx ? "animate-tab-left" : "animate-tab-fade";
       lastTabName = tabName;
+      traceNav = tabName === "tools" && !!window.__traceNavPending;
+      window.__traceNavPending = false;
       if (tabName === "gallery" && typeof galleryEager === "function") galleryEager();
 
       document.body.classList.toggle("non-home-tab", tabName !== "home");
@@ -8844,8 +8916,7 @@ service cloud.firestore {
         renderEligibilityChart();
       }
 
-      const inMore = ["results", "notes", "videos", "gallery", "tools", "docs", "calc", "quiz", "settings"].includes(tabName);
-      updateNavHighlights(inMore ? "more" : tabName);
+      updateNavHighlights(navKeyFor(tabName));
       window.scrollTo(0, 0);
       expandSearchBar(false);
       if (window.__syncHeaderAndSearch) window.__syncHeaderAndSearch(true);
@@ -8861,6 +8932,18 @@ service cloud.firestore {
       }
       try { if (tabName === "videos" || tabName === "home") autoStartForVisibleTab(); } catch (e) {}
     }
+
+    window.openTraceCameraTab = function () {
+      window.__traceNavPending = true;
+      window.switchTab("tools");
+      window.__traceNavPending = false;
+      const paneBtn = document.getElementById("tl-tab-trace");
+      if (paneBtn) paneBtn.click();
+      const camBtn = document.querySelector('[data-tr-l="mode"][data-m="camera"]');
+      if (camBtn) camBtn.click();
+      traceNav = true;
+      updateNavHighlights("trace"); // #tab-btn-trace gets .tab-active and #tab-indicator slides under it
+    };
 
     document.addEventListener("pointerdown", (e) => {
       if (!moreOpen) return;
@@ -14040,9 +14123,13 @@ service cloud.firestore {
       0 1px 0 0 rgba(255, 255, 255, 0.85) inset !important;
   }
   /* tab bar, search and menu: richer blur only (their own shadows/colours stay) */
-  #more-sheet, #search-input-box, #search-bar-wrap #search-input-box {
+  #search-input-box, #search-bar-wrap #search-input-box {
     -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
     backdrop-filter: blur(14px) saturate(1.6) !important;
+  }
+  #more-sheet {
+    -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+    backdrop-filter: blur(16px) saturate(1.5) !important;
   }
   /* fullscreen gallery preview: let the ambient colours glow through the frosted overlay */
   #gallery-lightbox { background-color: rgba(2, 6, 23, 0.66); }
@@ -29453,6 +29540,90 @@ document.addEventListener("keydown", function (e) {
   if (!/^\d{4}$/.test(c)) return;
   function go() { setTimeout(function () { try { switchTab("quiz"); } catch (e) {} }, 400); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+})();
+</script>
+
+<!-- ===== Rubber-band stretch when dragging past the top or bottom of the page ===== -->
+<style>
+  /* our own stretch replaces the browser's native overscroll glow / bounce / pull-to-refresh */
+  html, body { overscroll-behavior-y: none; }
+  #main-content.rb-spring { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+</style>
+<script>
+(function () {
+  "use strict";
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var main = document.getElementById("main-content");
+  if (!main) return;
+
+  var MAX = 120;      // the stretch can never exceed this many px
+  var RESIST = 0.55;  // higher = softer pull
+  var startX = 0, startY = 0, tracking = false, active = false, dir = 0, origin = 0, cleanT = 0;
+
+  function atTop() { return (window.pageYOffset || document.documentElement.scrollTop || 0) <= 0; }
+  function atBottom() {
+    var de = document.documentElement;
+    var y = window.pageYOffset || de.scrollTop || 0;
+    return y + window.innerHeight >= Math.max(de.scrollHeight, document.body.scrollHeight) - 1;
+  }
+  // true when the touch started inside something that must keep its own gesture
+  function blocked(el) {
+    for (; el && el !== document.documentElement; el = el.parentElement) {
+      if (el.id === "bottom-tab-bar" || el.id === "more-sheet") return true;
+      var cs = getComputedStyle(el);
+      if (cs.position === "fixed") return true;                                   // modals, lightbox, mini player
+      if ((cs.overflowY === "auto" || cs.overflowY === "scroll") && el.scrollHeight > el.clientHeight + 1) return true; // inner scroller
+      if (el.tagName === "INPUT" && el.type === "range") return true;
+      if (el.tagName === "CANVAS" || el.tagName === "VIDEO" || el.tagName === "IFRAME") return true;
+    }
+    return false;
+  }
+  function curve(d) { return (1 - 1 / (d * RESIST / MAX + 1)) * MAX; }   // iOS-style diminishing pull
+
+  function release() {
+    if (!active) return;
+    active = false;
+    main.classList.add("rb-spring");
+    main.style.transform = "translate3d(0,0,0)";
+    clearTimeout(cleanT);
+    cleanT = setTimeout(function () {       // transform back to none so position:fixed children behave normally
+      main.classList.remove("rb-spring");
+      main.style.transform = "";
+    }, 520);
+  }
+
+  document.addEventListener("touchstart", function (e) {
+    tracking = false; active = false;
+    if (e.touches.length !== 1) return;
+    if (document.documentElement.classList.contains("tm-scroll-locked")) return;
+    if (blocked(e.target)) return;
+    clearTimeout(cleanT);
+    main.classList.remove("rb-spring");
+    main.style.transform = "";
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  document.addEventListener("touchmove", function (e) {
+    if (!tracking || e.touches.length !== 1) return;
+    var t = e.touches[0], dy = t.clientY - startY, dx = t.clientX - startX;
+    if (!active) {
+      if (Math.abs(dx) > Math.abs(dy)) { tracking = false; return; }   // sideways swipe: leave it alone
+      if (dy > 6 && atTop()) dir = 1;
+      else if (dy < -6 && atBottom()) dir = -1;
+      else return;
+      active = true;
+      origin = t.clientY;                                              // stretch starts from zero at this point
+    }
+    var d = (t.clientY - origin) * dir;                                // finger travel into the edge
+    if (d <= 0) { main.style.transform = "translate3d(0,0,0)"; return; }
+    if (e.cancelable) e.preventDefault();
+    main.style.transform = "translate3d(0," + (dir * curve(d)).toFixed(1) + "px,0)";
+  }, { passive: false });
+
+  document.addEventListener("touchend", function () { tracking = false; release(); }, { passive: true });
+  document.addEventListener("touchcancel", function () { tracking = false; release(); }, { passive: true });
 })();
 </script>
 

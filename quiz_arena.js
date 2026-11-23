@@ -21,9 +21,6 @@
     ["sci", "chem", "Chemistry"],
     ["sci", "bio", "Biology"],
     ["gs", "all", "GS / GK"],
-    ["gs", "his", "History"],
-    ["gs", "geo", "Geography"],
-    ["gs", "pol", "Polity & GK"],
     ["apt", "math", "Maths"],
     ["apt", "eng", "English"],
     ["mix", "mix", "Exam Mix"]
@@ -42,7 +39,7 @@
   var bank = [], bankState = "loading";
   var screen = "setup", G = null, last = null, reviewOpen = false;
   var S = { mode: "solo", players: 2, count: 10, main: "iti", sub: "all", name: "" };
-  var R = null, busy = false, pendingCode = "", FBR = null, FBP = null, FBC = null;
+  var R = null, busy = false, pendingCode = "", codeDraft = "", FBR = null, FBP = null, FBC = null;
   var baseBank = [], baseById = {}, custom = { updatedAt: 0, items: [] }, AD = null;
 
   /* ---------- helpers ---------- */
@@ -70,10 +67,7 @@
       else if ([2, 3, 4].indexOf(p.players) > -1) S.mode = "multi";
       if ([2, 3, 4].indexOf(p.players) > -1) S.players = p.players;
       if (COUNTS.indexOf(p.count) > -1) S.count = p.count;
-      if (SUBS[p.main]) {
-        S.main = p.main;
-        S.sub = SUBS[p.main].some(function (s) { return s[0] === p.sub; }) ? p.sub : SUBS[p.main][0][0];
-      }
+      if (TOPICS.some(function (t) { return t[0] === p.main && t[1] === p.sub; })) { S.main = p.main; S.sub = p.sub; }
     } catch (e) { }
   }
   function savePrefs() {
@@ -226,151 +220,91 @@ textarea.qa-in{resize:vertical;line-height:1.4}
 .qa-pbar{display:flex;align-items:flex-start;justify-content:center;padding-top:.45rem;border-radius:.85rem .85rem 0 0;font-size:32px;font-weight:900;color:#1c1100}
 .qa-pbar.r0{background:linear-gradient(#fde68a,#f59e0b)}.qa-pbar.r1{background:linear-gradient(#e2e8f0,#94a3b8)}.qa-pbar.r2{background:linear-gradient(#fdba74,#c2410c)}
 .qa-rev-item{padding:.7rem;border-radius:.85rem;background:var(--cd2);border:1px solid var(--bd)}
+.qa-setup{max-width:30rem;margin:0 auto}
+.qa-pill .qa-n{margin-left:.3rem;font-size:10px;font-weight:800;opacity:.6;font-variant-numeric:tabular-nums}
+.qa-pill.on .qa-n{opacity:.85}
+.qa-cnt{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem}
+.qa-cnt .qa-pill{padding:.34rem 0;text-align:center}
+.qa-opt .qa-let{transition:background-color .15s,color .15s}
+.qa-opt.qa-ok .qa-let,.qa-opt.qa-bad .qa-let{font-size:14px;font-weight:900}
+.qa-rv{display:grid;gap:.5rem;margin-top:.6rem}
+.qa-rv-q{font-size:13.5px;font-weight:650;line-height:1.4;margin:.3rem 0 .45rem}
+.qa-rv-a{display:flex;align-items:flex-start;gap:.45rem;padding:.4rem .55rem;border-radius:.6rem;font-size:12.5px;font-weight:600;line-height:1.35;border:1px solid var(--bd)}
+.qa-rv-a+.qa-rv-a{margin-top:.3rem}
+.qa-rv-a b{flex:none;font-weight:900}
+.qa-rv-a.ok{background:var(--okb);border-color:var(--okc)}.qa-rv-a.ok b{color:var(--okc)}
+.qa-rv-a.bad{background:var(--bdb);border-color:var(--bdc)}.qa-rv-a.bad b{color:var(--bdc)}
+.qa-rv-a.skip{color:var(--t2)}
+.qa-chev{transition:transform .2s}.qa-open .qa-chev{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.qa-chev{transition:none}}
 `;
     document.head.appendChild(st);
   }
 
-  /* ---------- setup screen (Option A: Ultra-Minimal single card) ---------- */
+  /* ---------- setup screen (Ultra-Minimal single glass card) ---------- */
   function pill(a, k, label, on, dis) {
     return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="' + a + '" data-k="' + k + '" aria-pressed="' + (on ? "true" : "false") + '"' + (dis ? " disabled" : "") + ">" + label + "</button>";
   }
   function renderSetup() {
-    var ready = bankState === "ok", avail = ready ? maxAvail() : 0, st = liveStreak(), h = "";
+    var ready = bankState === "ok", st = liveStreak(), multi = S.mode === "multi", h = "";
     var canStart = ready && feasible(S.count);
 
-    h += '<div class="qa-wrap">';
-    h += '<div class="qa-glass p-3.5 sm:p-4 space-y-3">';
+    h += '<div class="qa-glass qa-setup p-3.5 space-y-3">';
 
-    /* Header: Title + Streak + Admin */
+    /* header: title + streak + admin Manage */
     h += '<div class="flex items-center justify-between gap-2">';
     h += '<div class="flex items-center gap-2 min-w-0">' + ico("trophy", "qa-ac") + '<span class="text-base font-extrabold tracking-tight truncate">Quiz Arena</span></div>';
     h += '<div class="flex items-center gap-1.5 shrink-0">';
-    h += '<div class="qa-chip' + (st ? " amb" : "") + '">' + ico("flame") + "<span>" + st + "d</span></div>";
-    h += '<button type="button" class="admin-only' + (adminOn() ? "" : " hidden") + ' qa-pill btn-tap flex items-center gap-1" data-a="adopen" title="Manage Questions">' + ico("settings-2") + '<span>Manage</span></button>';
+    h += '<div class="qa-chip' + (st ? " amb" : "") + '" title="Daily streak">' + ico("flame") + "<span>" + st + "d</span></div>";
+    h += '<button type="button" class="admin-only' + (adminOn() ? "" : " hidden") + ' qa-pill btn-tap flex items-center gap-1" data-a="adopen" title="Manage questions">' + ico("settings-2") + "<span>Manage</span></button>";
     h += "</div></div>";
 
-    /* Solo vs Live Battle Switch */
-    h += '<div class="qa-inner p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Quiz Mode">';
-    h += '<button type="button" role="tab" aria-selected="' + (S.mode === "solo") + '" class="qa-seg btn-tap' + (S.mode === "solo" ? " on" : "") + '" data-a="mode" data-k="solo">' + ico("user") + '<span>Solo</span></button>';
-    h += '<button type="button" role="tab" aria-selected="' + (S.mode === "multi") + '" class="qa-seg btn-tap' + (S.mode === "multi" ? " on" : "") + '" data-a="mode" data-k="multi">' + ico("users") + '<span>Live Battle (2–4P)</span></button>';
+    /* Solo | Live Battle tabs */
+    h += '<div class="qa-inner p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Quiz mode">';
+    h += '<button type="button" role="tab" aria-selected="' + !multi + '" class="qa-seg btn-tap' + (!multi ? " on" : "") + '" data-a="mode" data-k="solo">' + ico("user") + "<span>Solo</span></button>";
+    h += '<button type="button" role="tab" aria-selected="' + multi + '" class="qa-seg btn-tap' + (multi ? " on" : "") + '" data-a="mode" data-k="multi">' + ico("users") + "<span>Live Battle (2–4P)</span></button>";
     h += "</div>";
 
-    /* Invite Banner (if opened via ?battle=XXXX) */
-    if (pendingCode) {
-      h += '<div class="qa-inner p-2.5 flex items-center gap-2 border-amber-500/50">';
-      h += '<button type="button" class="qa-cta btn-tap flex-1 py-2 text-xs" data-a="joinlink">' + ico("log-in") + "Join Room #" + pendingCode + '</button>';
-      h += '<button type="button" class="qa-ic btn-tap shrink-0" data-a="dismissinv" aria-label="Dismiss invite">' + ico("x") + "</button></div>";
+    if (multi) {
+      /* invite banner */
+      if (pendingCode) {
+        h += '<div class="qa-inner p-2 flex items-center gap-2" style="border-color:rgba(245,158,11,.55)">';
+        h += '<button type="button" class="qa-cta btn-tap flex-1" style="padding:.55rem .8rem;font-size:12.5px" data-a="joinlink">' + ico("log-in") + "Join room " + pendingCode + "</button>";
+        h += '<button type="button" class="qa-ic btn-tap shrink-0" data-a="dismissinv" aria-label="Dismiss invite">' + ico("x") + "</button></div>";
+      }
+      /* room code join bar + room size */
+      h += '<div class="qa-inner p-2 space-y-2">';
+      h += '<div class="flex gap-1.5"><input id="qa-code" class="qa-in" style="width:5.8rem;text-align:center;letter-spacing:.26em;font-weight:800;padding-left:.9rem" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" value="' + esc(codeDraft || pendingCode || "") + '" aria-label="4-digit room code">';
+      h += '<button type="button" class="qa-sec btn-tap flex-1 font-extrabold" style="padding:.5rem .7rem" data-a="join">' + ico("log-in") + "Join room</button></div>";
+      h += '<div class="flex items-center gap-2"><span class="qa-lbl shrink-0">Room size</span><div class="grid grid-cols-3 gap-1.5 flex-1">' +
+        [2, 3, 4].map(function (n) { return '<button type="button" class="qa-pill btn-tap text-center' + (S.players === n ? " on" : "") + '" style="padding:.34rem 0" data-a="players" data-k="' + n + '" aria-pressed="' + (S.players === n) + '">' + n + "P</button>"; }).join("") +
+        "</div></div></div>";
     }
 
-    /* Live Battle Quick-Join + Room Size */
-    if (S.mode === "multi") {
-      h += '<div class="qa-inner p-2.5 space-y-2">';
-      h += '<div class="flex gap-1.5"><input id="qa-code" class="qa-in" style="width:6.8rem;text-align:center;letter-spacing:.26em;font-weight:800" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" value="' + (pendingCode || "") + '" aria-label="4-digit room code">';
-      h += '<button type="button" class="qa-sec btn-tap flex-1 font-extrabold" data-a="join">' + ico("log-in") + "Join Code</button></div>";
-      h += '<div class="flex items-center justify-between gap-2"><span class="qa-lbl">Players</span><div class="grid grid-cols-3 gap-1.5 flex-1 max-w-[11rem]">' +
-        [2, 3, 4].map(function (n) {
-          var on = S.players === n;
-          return '<button type="button" class="qa-pill btn-tap text-center px-1' + (on ? " on" : "") + '" data-a="players" data-k="' + n + '" aria-pressed="' + on + '">' + n + 'P</button>';
-        }).join("") + "</div></div></div>";
-    }
-
-    /* Compact Inline Name */
+    /* inline name */
     h += '<div class="flex items-center gap-2"><label for="qa-name" class="qa-lbl shrink-0">Name</label>';
-    h += '<input id="qa-name" class="qa-in py-1.5" type="text" maxlength="16" autocomplete="nickname" placeholder="Player" value="' + esc(S.name) + '"></div>';
+    h += '<input id="qa-name" class="qa-in" style="padding:.4rem .7rem" type="text" maxlength="16" autocomplete="nickname" placeholder="Player" value="' + esc(S.name) + '"></div>';
 
-    /* Direct Topic Pills (1-tap selection) */
-    h += '<div class="space-y-1.5"><div class="flex items-center justify-between"><span class="qa-lbl">Topic</span><span class="text-[11px] font-bold qa-ac">' + (bankState === "loading" ? "Loading…" : ready ? avail + " Qs" : "") + "</span></div>";
-    h += '<div class="qa-wrapRow">' + TOPICS.map(function (t) {
-      var key = t[0] + "|" + t[1];
-      var on = S.main === t[0] && S.sub === t[1];
-      var dis = ready && availFor(t[0], t[1]) === 0;
-      return pill("topic", key, t[2]dden;margin-top:.4rem}
-.qa-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#fbbf24,#f59e0b);transition:width .3s ease}
-.qa-nosel{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.qa-card{position:relative;margin-top:.9rem;padding:1.1rem;min-height:7.5rem}
-.qa-qtag{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ac)}
-.qa-q{margin:.45rem 0 0;font-size:17px;font-weight:700;line-height:1.4}
-.qa-opt{display:flex;align-items:center;gap:.7rem;width:100%;padding:.8rem .9rem;border-radius:1rem;text-align:left;font-size:15px;font-weight:600;background:var(--cd);border:1.5px solid var(--bd);box-shadow:var(--sh)}
-.qa-let{flex:none;width:1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:rgba(148,163,184,.2)}
-.qa-opt.qa-ok{background:var(--okb);border-color:var(--okc)}
-.qa-opt.qa-bad{background:var(--bdb);border-color:var(--bdc)}
-.qa-pop{position:absolute;right:1rem;top:.8rem;font-weight:800;font-size:15px;opacity:0;color:var(--okc)}
-.qa-pop.bad{color:var(--bdc)}
-.qa-pop.go{animation:qapop .7s ease-out}
-@keyframes qapop{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
-.qa-bump{animation:qabump .25s ease}
-@keyframes qabump{50%{transform:scale(1.15)}}
-.qa-big{font-size:3.4rem;line-height:1;font-weight:900;color:var(--ac)}
-.qa-stat{padding:.75rem .5rem;text-align:center}
-.qa-stat b{display:block;font-size:18px;font-weight:800}.qa-stat span{font-size:11px;color:var(--t2);font-weight:700}
-.qa-msg{position:fixed;left:50%;bottom:calc(var(--nav-offset,0px) + 6.5rem);transform:translate(-50%,10px);max-width:90%;padding:.6rem 1rem;border-radius:999px;font-size:13px;font-weight:700;color:#1c1100;background:#fbbf24;opacity:0;pointer-events:none;transition:.25s;z-index:70;text-align:center}
-.qa-msg.on{opacity:1;transform:translate(-50%,0)}
-@media (prefers-reduced-motion:reduce){.qa-pop.go,.qa-bump{animation:none}.qa-fill{transition:none}}
-.qa-rank{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .35rem;margin-top:.7rem;padding:.45rem .7rem;font-size:12px;font-weight:700;border-radius:.9rem}
-.qa-rk{display:inline-flex;align-items:center;gap:.2rem;white-space:nowrap}.qa-rk.me{color:var(--ac)}
-.qa-rn{display:inline-block;max-width:6.5rem;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
-.qa-code{font-size:4rem;line-height:1.1;font-weight:900;letter-spacing:.22em;padding-left:.22em;color:var(--ac);font-variant-numeric:tabular-nums;margin-top:.3rem;-webkit-user-select:all;user-select:all}
-.qa-slot{display:flex;align-items:center;gap:.7rem;padding:.65rem .8rem;border-radius:1rem}
-.qa-empty{border:1.5px dashed var(--bd)}
-.qa-pre{margin:.5rem 0;padding:.6rem;border-radius:.7rem;font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;background:var(--cd);border:1px solid var(--bd);color:var(--t2);font-family:ui-monospace,Menlo,monospace}
-textarea.qa-in{resize:vertical;line-height:1.4}
-.qa-id{font-size:11px;font-weight:800;padding:.1rem .45rem;border-radius:99px;background:rgba(148,163,184,.2)}
-.qa-ar{padding:.7rem .8rem}
-.qa-arq{margin-top:.4rem;font-size:14px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.qa-pod{display:flex;align-items:flex-end;justify-content:center;gap:.5rem;margin-top:1rem}
-.qa-pcol{flex:1;min-width:0;text-align:center}
-.qa-pn{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.qa-ps{font-size:20px;font-weight:900;color:var(--ac);margin-bottom:.25rem}
-.qa-pbar{display:flex;align-items:flex-start;justify-content:center;padding-top:.5rem;border-radius:.9rem .9rem 0 0;font-size:34px;font-weight:900;color:#1c1100}
-.qa-pbar.r0{background:linear-gradient(#fde68a,#f59e0b)}.qa-pbar.r1{background:linear-gradient(#e2e8f0,#94a3b8)}.qa-pbar.r2{background:linear-gradient(#fdba74,#c2410c)}
-`;
-    document.head.appendChild(st);
-  }
+    /* direct topic pills with question counts */
+    h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Topic</div><div class="qa-wrapRow">' + TOPICS.map(function (t) {
+      var n = ready ? availFor(t[0], t[1]) : 0, on = S.main === t[0] && S.sub === t[1];
+      return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="topic" data-k="' + t[0] + "|" + t[1] + '" aria-pressed="' + on + '"' + (ready && !n ? " disabled" : "") + ">" + t[2] +
+        '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
+    }).join("") + "</div></div>";
 
-  /* ---------- setup screen ---------- */
-  function pill(a, k, label, on, dis) {
-    return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="' + a + '" data-k="' + k + '" aria-pressed="' + (on ? "true" : "false") + '"' + (dis ? " disabled" : "") + ">" + label + "</button>";
-  }
-  function renderSetup() {
-    var ready = bankState === "ok", avail = ready ? maxAvail() : 0, st = liveStreak(), h = "";
-    var canStart = ready && feasible(S.count);
-    h += '<div class="qa-wrap">';
-    h += '<div class="flex items-center justify-between"><div class="flex items-center gap-2">' + ico("trophy", "qa-ac") + '<span class="text-lg font-extrabold">Quiz Arena</span></div>';
-    h += '<div class="qa-chip' + (st ? " amb" : "") + '">' + ico("flame") + "<span>" + st + "-day streak</span></div></div>";
-    h += '<div class="admin-only' + (adminOn() ? "" : " hidden") + ' mt-2"><button type="button" class="qa-sec btn-tap w-full" data-a="adopen">' + ico("settings-2") + "Manage Questions</button></div>";
-
-    if (pendingCode) {
-      h += '<div class="qa-glass mt-3 p-3"><div class="font-extrabold">Invited to room ' + pendingCode + '</div><div class="text-xs qa-t2">Enter your name, then tap Join.</div>' +
-        '<div class="flex gap-2 mt-2"><button type="button" class="qa-cta btn-tap" data-a="joinlink">' + ico("log-in") + "Join Room " + pendingCode + '</button>' +
-        '<button type="button" class="qa-sec btn-tap" data-a="dismissinv" aria-label="Dismiss invite">' + ico("x") + "</button></div></div>";
-    }
-    h += '<div class="qa-lbl">Display name</div><input id="qa-name" class="qa-in" type="text" maxlength="16" autocomplete="nickname" placeholder="Enter your name" value="' + esc(S.name) + '">';
-
-    h += '<div class="qa-lbl">Players</div><div class="qa-row">' +
-      [[1, "1 · Solo (Offline)"], [2, "2"], [3, "3"], [4, "4"]].map(function (p) { return pill("players", p[0], p[1], S.players === p[0], false); }).join("") + "</div>";
-
-    h += '<div class="qa-lbl">Questions</div><div class="qa-row">' +
-      COUNTS.map(function (c) { return pill("count", c, c, S.count === c, !ready || !feasible(c)); }).join("") + "</div>";
-    h += '<div class="text-xs qa-t2 mt-1" id="qa-avail">' + (bankState === "loading" ? "Loading questions…" : ready ? avail + " question" + (avail === 1 ? "" : "s") + " available in this category" : "") + "</div>";
-
-    h += '<div class="qa-lbl">Category</div><div class="qa-row">' +
-      MAINS.map(function (m) { return pill("main", m[0], m[1], S.main === m[0], false); }).join("") + "</div>";
-    h += '<div class="qa-wrapRow mt-2">' +
-      SUBS[S.main].map(function (s) { return pill("sub", s[0], s[1], S.sub === s[0], false); }).join("") + "</div>";
+    /* 5-column question count */
+    h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Questions</div><div class="qa-cnt">' +
+      COUNTS.map(function (c) { return pill("count", c, c, S.count === c, !ready || !feasible(c)); }).join("") + "</div></div>";
 
     if (bankState === "error") {
-      h += '<div class="qa-glass mt-4 p-3 text-sm">Couldn’t load the question bank. Check your connection once, then retry.<button type="button" class="qa-sec btn-tap mt-2 w-full" data-a="retry">' + ico("rotate-ccw") + "Retry</button></div>";
+      h += '<div class="qa-inner p-2.5 text-xs">Couldn’t load the question bank. Check your connection, then retry.<button type="button" class="qa-sec btn-tap mt-2 w-full" data-a="retry">' + ico("rotate-ccw") + "Retry</button></div>";
     }
-    h += '<div class="mt-5">';
-    if (S.players === 1) {
-      h += '<button type="button" class="qa-cta btn-tap" data-a="start"' + (canStart ? "" : " disabled") + ">" + ico("play") + "Start Solo Quiz</button>";
-      if (ready && !canStart) h += '<div class="text-xs qa-t2 mt-2 text-center">Not enough questions in this category yet.</div>';
-    } else {
-      h += '<button type="button" class="qa-cta btn-tap" data-a="create"' + (canStart ? "" : " disabled") + ">" + ico("plus") + "Create Live Room</button>";
-      h += '<div class="flex gap-2 mt-3"><input id="qa-code" class="qa-in" style="width:7rem;text-align:center;letter-spacing:.3em" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" value="' + (pendingCode || "") + '" aria-label="4-digit room code">' +
-        '<button type="button" class="qa-sec btn-tap flex-1" data-a="join">' + ico("log-in") + "Join with 4-Digit Code</button></div>";
-    }
-    h += "</div></div>";
+
+    /* single primary CTA */
+    h += '<button type="button" class="qa-cta btn-tap" data-a="' + (multi ? "create" : "start") + '"' + (canStart ? "" : " disabled") + ">" +
+      ico(multi ? "plus" : "play") + (multi ? "Create Room" : "Start Quiz") + "</button>";
+    if (ready && !canStart) h += '<div class="text-xs qa-t2 text-center" style="margin-top:-.3rem">Not enough questions in this topic yet.</div>';
+    h += "</div>";
     view.innerHTML = h; icons();
   }
 
@@ -378,7 +312,7 @@ textarea.qa-in{resize:vertical;line-height:1.4}
   function startSolo() {
     if (bankState !== "ok" || !feasible(S.count)) return;
     var qs = pick(S).map(prep), total = qs.length * SEC_PER_Q * 1000, now = Date.now();
-    G = { qs: qs, i: 0, score: 0, correct: 0, wrong: 0, total: total, startT: now, endAt: now + total, qStart: now, locked: false, tick: 0, adv: 0, quitAt: 0, done: false, timeUp: false };
+    G = { qs: qs, i: 0, score: 0, correct: 0, wrong: 0, total: total, startT: now, endAt: now + total, qStart: now, locked: false, tick: 0, adv: 0, quitAt: 0, done: false, timeUp: false, log: [] };
     screen = "game"; renderGame(); G.tick = setInterval(tick, 250);
   }
   function stopGame() { if (G) { clearInterval(G.tick); clearTimeout(G.adv); G.done = true; } }
@@ -389,7 +323,7 @@ textarea.qa-in{resize:vertical;line-height:1.4}
       '<div class="qa-chip" id="qa-timechip">' + ico("clock") + '<span id="qa-time">' + fmt(G.total) + "</span></div>" +
       '<div class="qa-chip amb" id="qa-scorechip">' + ico("trophy") + '<span id="qa-score">0</span></div></div>' +
       (G.mp ? '<div class="qa-glass qa-rank" id="qa-rank">' + strip(R.room) + "</div>" : "") +
-      '<div class="flex items-center justify-between text-xs mt-4 qa-t2"><span id="qa-qn" class="font-bold"></span><span>+10 · speed bonus up to +5</span></div>' +
+      '<div class="flex items-center justify-between text-xs mt-4 qa-t2"><span id="qa-qn" class="font-bold"></span><span>+10 to +15 · faster = more</span></div>' +
       '<div class="qa-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="qa-prog"><div class="qa-fill" id="qa-bar"></div></div>' +
       '<div class="qa-glass qa-card qa-nosel" id="qa-card"></div>' +
       '<div class="qa-pop" id="qa-pop"></div>' +
@@ -428,9 +362,11 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     var btns = root.querySelectorAll(".qa-opt");
     Array.prototype.forEach.call(btns, function (b, i) {
       b.disabled = true;
-      if (q.o[i].ok) b.classList.add("qa-ok");
-      else if (i === k) b.classList.add("qa-bad");
+      var lt = b.querySelector(".qa-let");
+      if (q.o[i].ok) { b.classList.add("qa-ok"); if (lt) lt.textContent = "✓"; }
+      else if (i === k) { b.classList.add("qa-bad"); if (lt) lt.textContent = "✕"; }
     });
+    G.log[G.i] = { k: k, ok: ok };
     var sc = $("qa-score"); sc.textContent = G.score;
     var chip = $("qa-scorechip"); chip.classList.remove("qa-bump"); void chip.offsetWidth; if (ok) chip.classList.add("qa-bump");
     var pop = $("qa-pop"); pop.textContent = ok ? "+" + (10 + bonus) : "Wrong"; pop.className = "qa-pop " + (ok ? "" : "bad"); void pop.offsetWidth; pop.className += " go";
@@ -449,13 +385,38 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     if (G.mp) { mpFinish(); return; }
     var n = G.qs.length, el = Math.min(Date.now() - G.startT, G.total), sk = Math.max(0, n - G.correct - G.wrong);
     var s = bumpStreak();
-    last = { score: G.score, max: n * (10 + 5), correct: G.correct, wrong: G.wrong, skipped: sk, n: n, acc: Math.round(G.correct / n * 100), ms: el, label: catLabel(), name: S.name || "Player", streak: s.n, best: s.best, timeUp: G.timeUp, date: new Date() };
+    var review = G.qs.map(function (q, i) {
+      var lg = G.log[i], ci = 0; q.o.forEach(function (o, j) { if (o.ok) ci = j; });
+      return { q: q.q, tag: q.tag, opts: q.o.map(function (o) { return o.t; }), correct: ci, pick: lg ? lg.k : -1 };
+    });
+    reviewOpen = false;
+    last = { review: review,  score: G.score, max: n * (10 + 5), correct: G.correct, wrong: G.wrong, skipped: sk, n: n, acc: Math.round(G.correct / n * 100), ms: el, label: catLabel(), name: S.name || "Player", streak: s.n, best: s.best, timeUp: G.timeUp, date: new Date() };
     screen = "result"; render();
   }
 
   /* ---------- result screen ---------- */
   function canShareFiles() {
     try { return typeof File === "function" && navigator.canShare && navigator.canShare({ files: [new File([""], "a.png", { type: "image/png" })] }); } catch (e) { return false; }
+  }
+  function reviewHtml(r) {
+    return (r.review || []).map(function (it, i) {
+      var h = '<div class="qa-rev-item"><div class="flex items-center gap-2"><span class="qa-id">Q' + (i + 1) + "</span>" + (it.tag ? '<span class="qa-qtag">' + esc(it.tag) + "</span>" : "") + "</div>" +
+        '<div class="qa-rv-q">' + esc(it.q) + "</div>";
+      if (it.pick === it.correct) h += '<div class="qa-rv-a ok"><b>✓</b><span>' + esc(it.opts[it.correct]) + "</span></div>";
+      else {
+        if (it.pick > -1) h += '<div class="qa-rv-a bad"><b>✕</b><span>' + esc(it.opts[it.pick]) + "</span></div>";
+        else h += '<div class="qa-rv-a skip"><b>–</b><span>Not answered</span></div>';
+        h += '<div class="qa-rv-a ok"><b>✓</b><span>' + esc(it.opts[it.correct]) + "</span></div>";
+      }
+      return h + "</div>";
+    }).join("");
+  }
+  function toggleReview() {
+    reviewOpen = !reviewOpen;
+    var box = $("qa-revbox"), p = $("qa-rev"), b = $("qa-revbtn");
+    if (!box || !p) return;
+    box.classList.toggle("qa-open", reviewOpen); p.hidden = !reviewOpen; if (b) b.setAttribute("aria-expanded", reviewOpen ? "true" : "false");
+    if (reviewOpen) { try { p.scrollIntoView({ block: "nearest", behavior: "smooth" }); } catch (e) { } }
   }
   function renderResult() {
     var r = last, msg = r.acc >= 80 ? "Excellent work!" : r.acc >= 60 ? "Good job!" : r.acc >= 40 ? "Keep practising!" : "Don’t give up — try again!";
@@ -470,6 +431,9 @@ textarea.qa-in{resize:vertical;line-height:1.4}
       '<div class="qa-glass qa-stat"><b>' + r.correct + "/" + r.n + "</b><span>Correct</span></div></div>";
     h += '<div class="qa-glass mt-3 p-3 flex items-center gap-3">' + ico("flame", "qa-ac") +
       '<div class="flex-1"><div class="font-extrabold">' + r.streak + "-day streak</div><div class=\"text-xs qa-t2\">Best: " + r.best + " day" + (r.best === 1 ? "" : "s") + " · play daily to keep it alive</div></div></div>";
+    h += '<div class="qa-glass mt-3 p-2.5' + (reviewOpen ? " qa-open" : "") + '" id="qa-revbox">' +
+      '<button type="button" class="qa-sec btn-tap w-full" data-a="review" id="qa-revbtn" aria-expanded="' + reviewOpen + '" aria-controls="qa-rev">' + ico("list-checks") + "<span>Review Answers</span>" + ico("chevron-down", "qa-chev") + "</button>" +
+      '<div class="qa-rv" id="qa-rev"' + (reviewOpen ? "" : " hidden") + ">" + reviewHtml(r) + "</div></div>";
     h += '<div class="mt-4 grid gap-2.5">' +
       '<button type="button" class="qa-cta btn-tap" data-a="again">' + ico("rotate-ccw") + "Play Again</button>" +
       '<button type="button" class="qa-sec btn-tap" data-a="dl">' + ico("download") + "Download Result Card (PNG)</button>" +
@@ -718,7 +682,7 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     var qs = (R.room.qIds || []).map(function (id) { return byId[id]; }).filter(Boolean).map(prep);
     if (qs.length !== R.room.qIds.length) { toast("Question bank is out of date — refresh the app"); leaveRoom(); return; }
     var total = qs.length * SEC_PER_Q * 1000;
-    G = { qs: qs, i: 0, score: 0, correct: 0, wrong: 0, total: total, startT: base, endAt: base + total, qStart: Date.now(), locked: false, tick: 0, adv: 0, quitAt: 0, done: false, timeUp: false, mp: true };
+    G = { qs: qs, i: 0, score: 0, correct: 0, wrong: 0, total: total, startT: base, endAt: base + total, qStart: Date.now(), locked: false, tick: 0, adv: 0, quitAt: 0, done: false, timeUp: false, mp: true, log: [] };
     screen = "game"; renderGame(); G.tick = setInterval(tick, 250);
   }
 
@@ -1242,10 +1206,11 @@ textarea.qa-in{resize:vertical;line-height:1.4}
   function onClick(e) {
     var b = e.target.closest && e.target.closest("[data-a]"); if (!b || !root.contains(b)) return;
     var a = b.getAttribute("data-a"), k = b.getAttribute("data-k");
-    if (a === "players") { S.players = +k; savePrefs(); renderSetup(); }
+    if (a === "mode") { S.mode = k === "multi" ? "multi" : "solo"; if (S.mode === "multi" && [2, 3, 4].indexOf(S.players) < 0) S.players = 2; savePrefs(); renderSetup(); }
+    else if (a === "topic") { var tp = k.split("|"); S.main = tp[0]; S.sub = tp[1]; ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "review") toggleReview();
+    else if (a === "players") { S.players = +k; savePrefs(); renderSetup(); }
     else if (a === "count") { S.count = +k; savePrefs(); renderSetup(); }
-    else if (a === "main") { S.main = k; S.sub = SUBS[k][0][0]; ensureCount(); savePrefs(); renderSetup(); }
-    else if (a === "sub") { S.sub = k; ensureCount(); savePrefs(); renderSetup(); }
     else if (a === "retry") { loadBank(); }
     else if (a === "start") startSolo();
     else if (a === "create") { if (feasible(S.count)) M.createRoom(cfg()); }
@@ -1294,7 +1259,18 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     var t = e.target, f = t.getAttribute && t.getAttribute("data-f");
     if (f) { adField(f, t.value); return; }
     if (t.id === "qa-name") { S.name = t.value.slice(0, 16); lsSet(LS.name, S.name); }
-    else if (t.id === "qa-code") { t.value = t.value.replace(/\D/g, "").slice(0, 4); }
+    else if (t.id === "qa-code") { t.value = t.value.replace(/\D/g, "").slice(0, 4); codeDraft = t.value; }
+  }
+
+  function onKey(e) {
+    if (screen !== "game" || !G || G.locked || G.done || !root || !document.body.contains(root)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target, tn = t && t.tagName;
+    if (tn === "INPUT" || tn === "TEXTAREA" || tn === "SELECT" || (t && t.isContentEditable)) return;
+    var k = "1234".indexOf(e.key);
+    if (k < 0) k = "abcd".indexOf(String(e.key).toLowerCase());
+    if (e.key.length !== 1 || k < 0 || !G.qs[G.i] || k >= G.qs[G.i].o.length) return;
+    e.preventDefault(); answer(k);
   }
 
   /* ---------- bank + mount ---------- */
@@ -1317,12 +1293,12 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     injectCss(); loadPrefs(); readInvite();
     root.innerHTML = '<div id="qa-view"></div><div id="qa-msg" class="qa-msg" role="status" aria-live="polite"></div>';
     view = root.querySelector("#qa-view"); msgEl = root.querySelector("#qa-msg");
-    root.addEventListener("click", onClick); root.addEventListener("input", onInput); root.addEventListener("change", onInput);
+    document.addEventListener("keydown", onKey); root.addEventListener("click", onClick); root.addEventListener("input", onInput); root.addEventListener("change", onInput);
     render(); loadBank();
     if (pendingCode) { try { window.dispatchEvent(new CustomEvent("qa:invite", { detail: { code: pendingCode } })); } catch (e) { } }
   }
   function readInvite() {
-    try { var c = new URLSearchParams(location.search).get("battle"); if (c && /^\d{4}$/.test(c)) { pendingCode = c; if (S.players < 2) S.players = 2; } } catch (e) { }
+    try { var c = new URLSearchParams(location.search).get("battle"); if (c && /^\d{4}$/.test(c)) { pendingCode = c; S.mode = "multi"; if (S.players < 2) S.players = 2; } } catch (e) { }
   }
   window.QuizArena = { mount: mount, pick: pick, feasible: feasible, getBank: function () { return bank.slice(); }, getConfig: function () { return JSON.parse(JSON.stringify(S)); }, invite: function () { return pendingCode; } };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();

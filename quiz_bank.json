@@ -1,0 +1,1302 @@
+[
+ {
+  "id": 1,
+  "group": "iti",
+  "sub": "y1",
+  "q": "What is the SI unit of electrical resistance?",
+  "opts": [
+   "Siemens",
+   "Henry",
+   "Farad",
+   "Ohm"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 2,
+  "group": "iti",
+  "sub": "y1",
+  "q": "A 12 V supply is applied across a 4 Ω resistor. What is the current?",
+  "opts": [
+   "48 A",
+   "0.33 A",
+   "3 A",
+   "8 A"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 3,
+  "group": "iti",
+  "sub": "y1",
+  "q": "A resistor has colour bands Brown, Black, Red, Gold. Its value is:",
+  "opts": [
+   "10 Ω ±5%",
+   "1 kΩ ±5%",
+   "100 Ω ±5%",
+   "10 kΩ ±5%"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 4,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Three 6 Ω resistors are connected in parallel. The total resistance is:",
+  "opts": [
+   "18 Ω",
+   "2 Ω",
+   "6 Ω",
+   "3 Ω"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 5,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Which instrument is used to measure insulation resistance?",
+  "opts": [
+   "Megger",
+   "Ammeter",
+   "Wattmeter",
+   "Tong tester"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 6,
+  "group": "iti",
+  "sub": "y1",
+  "q": "A fuse is connected:",
+  "opts": [
+   "In parallel with the load",
+   "In series with the neutral wire",
+   "Across the supply terminals",
+   "In series with the live wire"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 7,
+  "group": "iti",
+  "sub": "y1",
+  "q": "The commercial unit of electrical energy is:",
+  "opts": [
+   "Kilowatt",
+   "Kilovolt-ampere",
+   "Kilowatt-hour",
+   "Joule per second"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 8,
+  "group": "iti",
+  "sub": "y1",
+  "q": "What is the nominal voltage of one lead-acid cell?",
+  "opts": [
+   "1.2 V",
+   "1.5 V",
+   "2 V",
+   "3.7 V"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 9,
+  "group": "iti",
+  "sub": "y1",
+  "q": "The electrolyte used in a lead-acid battery is:",
+  "opts": [
+   "Potassium hydroxide",
+   "Dilute sulphuric acid",
+   "Hydrochloric acid",
+   "Sodium hydroxide"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 10,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Which material is the best conductor of electricity?",
+  "opts": [
+   "Silver",
+   "Copper",
+   "Aluminium",
+   "Iron"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 11,
+  "group": "iti",
+  "sub": "y2",
+  "q": "The synchronous speed of a 4-pole motor on 50 Hz supply is:",
+  "opts": [
+   "3000 rpm",
+   "1000 rpm",
+   "750 rpm",
+   "1500 rpm"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 12,
+  "group": "iti",
+  "sub": "y2",
+  "q": "A transformer works on the principle of:",
+  "opts": [
+   "Self induction",
+   "Electrostatic induction",
+   "Electrolysis",
+   "Mutual induction"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 13,
+  "group": "iti",
+  "sub": "y2",
+  "q": "The core of a transformer is laminated to reduce:",
+  "opts": [
+   "Copper loss",
+   "Hysteresis loss",
+   "Eddy current loss",
+   "Friction loss"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 14,
+  "group": "iti",
+  "sub": "y2",
+  "q": "In a star-delta starter, the motor windings are connected during normal running in:",
+  "opts": [
+   "Star",
+   "Delta",
+   "Series",
+   "Open circuit"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 15,
+  "group": "iti",
+  "sub": "y2",
+  "q": "The slip of an induction motor running at synchronous speed is:",
+  "opts": [
+   "Zero",
+   "One",
+   "Infinity",
+   "50%"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 16,
+  "group": "iti",
+  "sub": "y2",
+  "q": "A DC series motor should never be started without load because:",
+  "opts": [
+   "Its speed becomes dangerously high",
+   "Its torque becomes zero",
+   "The fuse always blows",
+   "The field winding opens"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 17,
+  "group": "iti",
+  "sub": "y2",
+  "q": "The power factor of a purely inductive circuit is:",
+  "opts": [
+   "Unity",
+   "0.5",
+   "0.707",
+   "Zero"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 18,
+  "group": "iti",
+  "sub": "y2",
+  "q": "A full-wave bridge rectifier uses how many diodes?",
+  "opts": [
+   "1",
+   "2",
+   "4",
+   "6"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 19,
+  "group": "iti",
+  "sub": "y2",
+  "q": "In a balanced star connection, the line voltage is:",
+  "opts": [
+   "Equal to the phase voltage",
+   "√3 times the phase voltage",
+   "1/√3 times the phase voltage",
+   "3 times the phase voltage"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 20,
+  "group": "iti",
+  "sub": "y2",
+  "q": "Alternators are rated in kVA and not kW because their output depends on:",
+  "opts": [
+   "Speed only",
+   "Voltage and current, not power factor",
+   "Frequency only",
+   "Field current only"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 21,
+  "group": "sci",
+  "sub": "phy",
+  "q": "What is the SI unit of force?",
+  "opts": [
+   "Newton",
+   "Joule",
+   "Watt",
+   "Pascal"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 22,
+  "group": "sci",
+  "sub": "phy",
+  "q": "The speed of light in vacuum is approximately:",
+  "opts": [
+   "3 × 10⁶ m/s",
+   "3 × 10⁵ m/s",
+   "3 × 10¹⁰ m/s",
+   "3 × 10⁸ m/s"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 23,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Which mirror is used in vehicle headlights?",
+  "opts": [
+   "Convex mirror",
+   "Plane mirror",
+   "Concave mirror",
+   "Cylindrical mirror"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 24,
+  "group": "sci",
+  "sub": "phy",
+  "q": "The power of a lens of focal length 50 cm is:",
+  "opts": [
+   "+0.5 D",
+   "+5 D",
+   "+2 D",
+   "−2 D"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 25,
+  "group": "sci",
+  "sub": "phy",
+  "q": "The acceleration due to gravity on Earth is about:",
+  "opts": [
+   "8.9 m/s²",
+   "9.8 m/s²",
+   "6.7 m/s²",
+   "98 m/s²"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 26,
+  "group": "sci",
+  "sub": "phy",
+  "q": "“Every action has an equal and opposite reaction” is Newton’s:",
+  "opts": [
+   "Third law",
+   "First law",
+   "Second law",
+   "Law of gravitation"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 27,
+  "group": "sci",
+  "sub": "phy",
+  "q": "The SI unit of power is:",
+  "opts": [
+   "Joule",
+   "Newton",
+   "Volt",
+   "Watt"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 28,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Sound cannot travel through:",
+  "opts": [
+   "Water",
+   "Steel",
+   "Air",
+   "Vacuum"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 29,
+  "group": "sci",
+  "sub": "phy",
+  "q": "The kinetic energy of a 2 kg body moving at 3 m/s is:",
+  "opts": [
+   "6 J",
+   "12 J",
+   "9 J",
+   "18 J"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 30,
+  "group": "sci",
+  "sub": "phy",
+  "q": "The bending of light when it passes from one medium to another is called:",
+  "opts": [
+   "Reflection",
+   "Refraction",
+   "Dispersion",
+   "Diffraction"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 31,
+  "group": "sci",
+  "sub": "chem",
+  "q": "The chemical formula of common salt is:",
+  "opts": [
+   "NaCl",
+   "KCl",
+   "NaOH",
+   "CaCl₂"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 32,
+  "group": "sci",
+  "sub": "chem",
+  "q": "The pH of pure water at 25 °C is:",
+  "opts": [
+   "7",
+   "0",
+   "10",
+   "14"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 33,
+  "group": "sci",
+  "sub": "chem",
+  "q": "The atomic number of carbon is:",
+  "opts": [
+   "12",
+   "8",
+   "14",
+   "6"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 34,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which gas is dissolved in soda water?",
+  "opts": [
+   "Oxygen",
+   "Nitrogen",
+   "Carbon dioxide",
+   "Hydrogen"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 35,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Rusting of iron is an example of:",
+  "opts": [
+   "Reduction",
+   "Oxidation",
+   "Neutralisation",
+   "Sublimation"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 36,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which is the lightest element?",
+  "opts": [
+   "Helium",
+   "Hydrogen",
+   "Lithium",
+   "Oxygen"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 37,
+  "group": "sci",
+  "sub": "chem",
+  "q": "The chemical formula of baking soda is:",
+  "opts": [
+   "NaHCO₃",
+   "Na₂CO₃",
+   "NaOH",
+   "CaCO₃"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 38,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which acid is present in lemon?",
+  "opts": [
+   "Acetic acid",
+   "Lactic acid",
+   "Tartaric acid",
+   "Citric acid"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 39,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which metal is liquid at room temperature?",
+  "opts": [
+   "Sodium",
+   "Lead",
+   "Mercury",
+   "Zinc"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 40,
+  "group": "sci",
+  "sub": "chem",
+  "q": "The valency of oxygen is:",
+  "opts": [
+   "1",
+   "3",
+   "2",
+   "4"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 41,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which cell organelle is called the powerhouse of the cell?",
+  "opts": [
+   "Ribosome",
+   "Mitochondria",
+   "Nucleus",
+   "Golgi body"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 42,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Deficiency of which vitamin causes night blindness?",
+  "opts": [
+   "Vitamin A",
+   "Vitamin B",
+   "Vitamin C",
+   "Vitamin D"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 43,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Haemoglobin is found in:",
+  "opts": [
+   "White blood cells",
+   "Platelets",
+   "Plasma",
+   "Red blood cells"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 44,
+  "group": "sci",
+  "sub": "bio",
+  "q": "The process by which green plants make their food is:",
+  "opts": [
+   "Respiration",
+   "Transpiration",
+   "Digestion",
+   "Photosynthesis"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 45,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Scurvy is caused by the deficiency of:",
+  "opts": [
+   "Vitamin A",
+   "Vitamin D",
+   "Vitamin C",
+   "Vitamin K"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 46,
+  "group": "sci",
+  "sub": "bio",
+  "q": "The largest organ of the human body is:",
+  "opts": [
+   "Liver",
+   "Skin",
+   "Lungs",
+   "Heart"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 47,
+  "group": "sci",
+  "sub": "bio",
+  "q": "The human heart has how many chambers?",
+  "opts": [
+   "4",
+   "2",
+   "3",
+   "5"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 48,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which blood group is known as the universal donor?",
+  "opts": [
+   "O negative",
+   "AB positive",
+   "A positive",
+   "B negative"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 49,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which gas is released during photosynthesis?",
+  "opts": [
+   "Carbon dioxide",
+   "Nitrogen",
+   "Hydrogen",
+   "Oxygen"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 50,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Insulin is secreted by which organ?",
+  "opts": [
+   "Liver",
+   "Kidney",
+   "Pancreas",
+   "Stomach"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 51,
+  "group": "gs",
+  "sub": "his",
+  "q": "The First Battle of Panipat (1526) was fought between Babur and:",
+  "opts": [
+   "Rana Sanga",
+   "Ibrahim Lodi",
+   "Hemu",
+   "Akbar"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 52,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who founded the Maurya Empire?",
+  "opts": [
+   "Ashoka",
+   "Chandragupta Maurya",
+   "Bindusara",
+   "Harshavardhana"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 53,
+  "group": "gs",
+  "sub": "his",
+  "q": "In which year was the Quit India Movement launched?",
+  "opts": [
+   "1942",
+   "1930",
+   "1919",
+   "1947"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 54,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Jallianwala Bagh massacre took place in:",
+  "opts": [
+   "1905",
+   "1922",
+   "1930",
+   "1919"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 55,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who was the first Governor-General of independent India?",
+  "opts": [
+   "C. Rajagopalachari",
+   "Lord Curzon",
+   "Lord Mountbatten",
+   "Lord Dalhousie"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 56,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who wrote the Arthashastra?",
+  "opts": [
+   "Kalidasa",
+   "Banabhatta",
+   "Kautilya",
+   "Vishakhadatta"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 57,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Dandi March of 1930 was led by:",
+  "opts": [
+   "Jawaharlal Nehru",
+   "Mahatma Gandhi",
+   "Subhas Chandra Bose",
+   "Sardar Patel"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 58,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who built the Taj Mahal?",
+  "opts": [
+   "Shah Jahan",
+   "Akbar",
+   "Jahangir",
+   "Aurangzeb"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 59,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Battle of Plassey was fought in:",
+  "opts": [
+   "1764",
+   "1857",
+   "1526",
+   "1757"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 60,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Revolt of 1857 began at:",
+  "opts": [
+   "Delhi",
+   "Kanpur",
+   "Jhansi",
+   "Meerut"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 61,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which river is known as the “Dakshin Ganga”?",
+  "opts": [
+   "Krishna",
+   "Kaveri",
+   "Godavari",
+   "Mahanadi"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 62,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of Southern Railway is at:",
+  "opts": [
+   "Bengaluru",
+   "Chennai",
+   "Hyderabad",
+   "Kochi"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 63,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of Central Railway is at:",
+  "opts": [
+   "Mumbai",
+   "Nagpur",
+   "Bhopal",
+   "Pune"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 64,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of Eastern Railway is at:",
+  "opts": [
+   "Kolkata",
+   "Patna",
+   "Bhubaneswar",
+   "Ranchi"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 65,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of South Western Railway is at:",
+  "opts": [
+   "Bengaluru",
+   "Mysuru",
+   "Belagavi",
+   "Hubballi"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 66,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of South Central Railway is at:",
+  "opts": [
+   "Visakhapatnam",
+   "Vijayawada",
+   "Secunderabad",
+   "Chennai"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 67,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The Tropic of Cancer passes through how many Indian states?",
+  "opts": [
+   "5",
+   "8",
+   "7",
+   "10"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 68,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which is the largest Indian state by area?",
+  "opts": [
+   "Madhya Pradesh",
+   "Rajasthan",
+   "Maharashtra",
+   "Uttar Pradesh"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 69,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Chilika Lake is located in:",
+  "opts": [
+   "Odisha",
+   "Andhra Pradesh",
+   "West Bengal",
+   "Tamil Nadu"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 70,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which soil is best suited for cotton cultivation?",
+  "opts": [
+   "Red soil",
+   "Alluvial soil",
+   "Laterite soil",
+   "Black soil"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 71,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The Constitution of India came into force on:",
+  "opts": [
+   "15 August 1947",
+   "26 November 1949",
+   "26 January 1950",
+   "2 October 1950"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 72,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Who was the Chairman of the Drafting Committee of the Constitution?",
+  "opts": [
+   "Dr Rajendra Prasad",
+   "Jawaharlal Nehru",
+   "Dr B. R. Ambedkar",
+   "Sardar Patel"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 73,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Fundamental Rights are given in which Part of the Constitution?",
+  "opts": [
+   "Part II",
+   "Part III",
+   "Part IV",
+   "Part V"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 74,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The minimum age to contest for the Lok Sabha is:",
+  "opts": [
+   "25 years",
+   "18 years",
+   "21 years",
+   "30 years"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 75,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The President of India is elected for a term of:",
+  "opts": [
+   "4 years",
+   "6 years",
+   "7 years",
+   "5 years"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 76,
+  "group": "gs",
+  "sub": "pol",
+  "q": "How many Fundamental Duties are there at present?",
+  "opts": [
+   "8",
+   "10",
+   "12",
+   "11"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 77,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The national animal of India is:",
+  "opts": [
+   "Lion",
+   "Elephant",
+   "Tiger",
+   "Leopard"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 78,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Who is the ex-officio Chairman of the Rajya Sabha?",
+  "opts": [
+   "Prime Minister",
+   "Vice President",
+   "Speaker",
+   "President"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 79,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The headquarters of the Reserve Bank of India is in:",
+  "opts": [
+   "Mumbai",
+   "New Delhi",
+   "Kolkata",
+   "Chennai"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 80,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The Governor of a state is appointed by:",
+  "opts": [
+   "The President",
+   "The Chief Minister",
+   "The Prime Minister",
+   "The Chief Justice"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 81,
+  "group": "apt",
+  "sub": "math",
+  "q": "What is 15% of 200?",
+  "opts": [
+   "15",
+   "20",
+   "45",
+   "30"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 82,
+  "group": "apt",
+  "sub": "math",
+  "q": "The simple interest on ₹1000 at 5% per annum for 2 years is:",
+  "opts": [
+   "₹50",
+   "₹150",
+   "₹100",
+   "₹105"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 83,
+  "group": "apt",
+  "sub": "math",
+  "q": "A train at 60 km/h takes how long to cover 150 km?",
+  "opts": [
+   "2 hours",
+   "2.5 hours",
+   "3 hours",
+   "1.5 hours"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 84,
+  "group": "apt",
+  "sub": "math",
+  "q": "The LCM of 12 and 18 is:",
+  "opts": [
+   "6",
+   "36",
+   "72",
+   "216"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 85,
+  "group": "apt",
+  "sub": "math",
+  "q": "The average of 10, 20, 30 and 40 is:",
+  "opts": [
+   "25",
+   "20",
+   "30",
+   "100"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 86,
+  "group": "apt",
+  "sub": "math",
+  "q": "If 2x + 3 = 11, then x is:",
+  "opts": [
+   "3",
+   "5",
+   "7",
+   "4"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 87,
+  "group": "apt",
+  "sub": "math",
+  "q": "The area of a circle of radius 7 cm is (π = 22/7):",
+  "opts": [
+   "44 cm²",
+   "49 cm²",
+   "154 cm²",
+   "308 cm²"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 88,
+  "group": "apt",
+  "sub": "math",
+  "q": "An article bought for ₹80 is sold for ₹100. The profit percent is:",
+  "opts": [
+   "20%",
+   "30%",
+   "25%",
+   "12.5%"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 89,
+  "group": "apt",
+  "sub": "math",
+  "q": "₹500 is divided in the ratio 2 : 3. The smaller share is:",
+  "opts": [
+   "₹150",
+   "₹200",
+   "₹250",
+   "₹300"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 90,
+  "group": "apt",
+  "sub": "math",
+  "q": "The square root of 1764 is:",
+  "opts": [
+   "42",
+   "32",
+   "44",
+   "46"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 91,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the synonym of “Rapid”:",
+  "opts": [
+   "Slow",
+   "Weak",
+   "Gentle",
+   "Quick"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 92,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the antonym of “Ancient”:",
+  "opts": [
+   "Old",
+   "Historic",
+   "Antique",
+   "Modern"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 93,
+  "group": "apt",
+  "sub": "eng",
+  "q": "She ___ to school every day.",
+  "opts": [
+   "go",
+   "going",
+   "goes",
+   "gone"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 94,
+  "group": "apt",
+  "sub": "eng",
+  "q": "The plural of “child” is:",
+  "opts": [
+   "childs",
+   "children",
+   "childes",
+   "childrens"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 95,
+  "group": "apt",
+  "sub": "eng",
+  "q": "He is senior ___ me.",
+  "opts": [
+   "to",
+   "than",
+   "from",
+   "over"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 96,
+  "group": "apt",
+  "sub": "eng",
+  "q": "One word for “a person who writes books”:",
+  "opts": [
+   "Author",
+   "Editor",
+   "Reader",
+   "Publisher"
+  ],
+  "ans": 0
+ },
+ {
+  "id": 97,
+  "group": "apt",
+  "sub": "eng",
+  "q": "The past tense of “bring” is:",
+  "opts": [
+   "bringed",
+   "brang",
+   "brung",
+   "brought"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 98,
+  "group": "apt",
+  "sub": "eng",
+  "q": "He is ___ honest man.",
+  "opts": [
+   "a",
+   "the",
+   "an",
+   "no article"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 99,
+  "group": "apt",
+  "sub": "eng",
+  "q": "The idiom “a piece of cake” means:",
+  "opts": [
+   "Very sweet",
+   "Very easy",
+   "Very costly",
+   "Very rare"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 100,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the correct spelling:",
+  "opts": [
+   "Acommodation",
+   "Accommodation",
+   "Accomodation",
+   "Acomodation"
+  ],
+  "ans": 1
+ }
+]

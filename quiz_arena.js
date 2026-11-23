@@ -305,6 +305,25 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7}
 .qa-sub{display:inline-block;max-width:9.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;opacity:.8;font-weight:600}
 @media (prefers-reduced-motion:reduce){.qa-xp,.qa-xpbox{transition:none}}
 @media (prefers-reduced-motion:reduce){.qa-chev{transition:none}}
+/* ===== v2: pill tabs, gap-filling translucent topic pills, glowing ring counters ===== */
+.qa-inner[role=tablist]{border-radius:999px;padding:.28rem;gap:.28rem;background:rgba(255,255,255,.04);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6)}
+.qa-inner[role=tablist] .qa-seg{min-height:46px;border-radius:999px;padding:.4rem .6rem;font-size:13px;white-space:nowrap;flex-wrap:nowrap;gap:.4rem}
+.qa-inner[role=tablist] .qa-seg .qa-i{width:17px;height:17px}
+.qa-seg .qa-mini{font-size:9.5px;font-weight:800;padding:.08rem .38rem;border-radius:999px;border:1px solid currentColor;opacity:.75;letter-spacing:.02em}
+.qa-seg.on{background:linear-gradient(135deg,rgba(139,92,246,.30),rgba(99,102,241,.16));box-shadow:0 0 0 1px rgba(167,139,250,.35),0 0 16px -2px rgba(139,92,246,.55)}
+#quiz-arena-root{--rg:#22d3ee;--rgs:rgba(34,211,238,.75)}
+.qa-wrapRow.qa-cmp{gap:.32rem}
+.qa-cmp .qa-pill{flex:1 1 auto;justify-content:center;min-height:32px;padding:.2rem .35rem .2rem .7rem;gap:.4rem;font-size:11.5px;background:linear-gradient(180deg,rgba(125,211,252,.08),rgba(125,211,252,.015)),rgba(255,255,255,.025);border:1px solid rgba(125,211,252,.14);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);box-shadow:none}
+.qa-cmp .qa-pill:not(:has(.qa-n)){padding-right:.7rem}
+.qa-cmp .qa-pill .qa-n{min-width:1.7rem;height:1.45rem;display:inline-flex;align-items:center;justify-content:center;padding:0 .35rem;border-radius:999px;font-size:9.5px;font-weight:900;color:var(--rg);background:transparent;border:1.5px solid var(--rg);box-shadow:0 0 6px var(--rgs),0 0 12px -2px var(--rgs),inset 0 0 6px -1px var(--rgs);text-shadow:0 0 6px var(--rgs);opacity:1}
+.qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(56,189,248,.20),rgba(14,165,233,.07));border-color:rgba(56,189,248,.6);box-shadow:0 0 14px -4px rgba(56,189,248,.65)}
+.qa-cmp .qa-pill.on .qa-n{color:#fff;background:rgba(34,211,238,.18);border-color:#67e8f9;box-shadow:0 0 8px #22d3ee,0 0 18px rgba(34,211,238,.7),inset 0 0 8px rgba(34,211,238,.6);text-shadow:0 0 8px #22d3ee}
+.qa-cmp .qa-pill:disabled .qa-n{box-shadow:none;text-shadow:none}
+html.bright-mode #quiz-arena-root{--rg:#0891b2;--rgs:rgba(8,145,178,.55)}
+html.bright-mode .qa-cmp .qa-pill{background:linear-gradient(180deg,rgba(186,230,253,.30),rgba(224,242,254,.12)),rgba(255,255,255,.25);border-color:rgba(14,165,233,.18)}
+html.bright-mode .qa-cmp .qa-pill .qa-n{color:#0e7490;background:transparent}
+html.bright-mode .qa-cmp .qa-pill.on{background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(125,211,252,.10));color:#0c4a6e}
+html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#0e7490;background:rgba(8,145,178,.10);border-color:#0891b2}
 `;
     document.head.appendChild(st);
   }
@@ -365,7 +384,7 @@ html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7}
     /* Solo | Live Battle tabs */
     h += '<div class="qa-inner p-1 grid grid-cols-2 gap-1" role="tablist" aria-label="Quiz mode">';
     h += '<button type="button" role="tab" aria-selected="' + !multi + '" class="qa-seg btn-tap' + (!multi ? " on" : "") + '" data-a="mode" data-k="solo">' + ico("user") + "<span>Solo</span></button>";
-    h += '<button type="button" role="tab" aria-selected="' + multi + '" class="qa-seg btn-tap' + (multi ? " on" : "") + '" data-a="mode" data-k="multi">' + ico("users") + "<span>Live Battle (2–4P)</span></button>";
+    h += '<button type="button" role="tab" aria-selected="' + multi + '" class="qa-seg btn-tap' + (multi ? " on" : "") + '" data-a="mode" data-k="multi">' + ico("users") + "<span>Live Battle</span><span class=\"qa-mini\">2–4P</span></button>";
     h += "</div>";
 
     if (multi) {

@@ -16,8 +16,7 @@
   var COUNTS = [10, 15, 20, 25, 50];
   var TOPICS = [
     ["iti", "all", "All ITI"],
-    ["iti", "y1", "ITI 1st Yr"],
-    ["iti", "y2", "ITI 2nd Yr"],
+    ["iti", "elec", "ITI ELEC"],
     ["iti", "wcs", "Workshop Calc"],
     ["iti", "draw", "Eng. Drawing"],
     ["iti", "safe", "Safety & Tools"],
@@ -43,6 +42,27 @@
     apt: [["math", "Math Only"], ["eng", "English Only"], ["reason", "Reasoning Only"]],
     mix: [["mix", "GS + ITI Combined"]]
   };
+  /* ITI ELEC = 1st + 2nd year merged. sub values: "elec" (pick a year) | "y1" / "y2" (Trade Test: every module) | "y1:ohm" (one module) */
+  var ELEC = {
+    y1: { name: "1st Year", mods: [["ohm", "Basic Electricity & Circuits"], ["ac", "AC, Magnetism & Machines"], ["cell", "Cells & Batteries"], ["wire", "Wiring, Cables & Controls"], ["inst", "Instruments & Hand Tools"], ["safe", "Safety, Earthing & Protection"]] },
+    y2: { name: "2nd Year", mods: [["tr", "Transformers"], ["mot", "Motors & Starters"], ["alt", "Alternators & Synchronous"], ["pf", "3-Phase & Power Factor"], ["prot", "Protection & Switchgear"], ["em", "Electronics, Meters & Installation"]] }
+  };
+  function elecParts(main, sub) {
+    if (main !== "iti" || typeof sub !== "string") return null;
+    if (sub === "elec") return { yr: "", mod: "" };
+    var m = /^(y1|y2)(?::([a-z]+))?$/.exec(sub);
+    if (!m) return null;
+    if (m[2] && !modName(m[1], m[2])) return null;
+    return { yr: m[1], mod: m[2] || "" };
+  }
+  function modName(yr, mod) {
+    var e = ELEC[yr], i; if (!e) return "";
+    for (i = 0; i < e.mods.length; i++) if (e.mods[i][0] === mod) return e.mods[i][1];
+    return "";
+  }
+  function validTopic(main, sub) {
+    return TOPICS.some(function (t) { return t[0] === main && t[1] === sub; }) || !!elecParts(main, sub);
+  }
   var MAIN_NAMES = { iti: "ITI Trade", sci: "Science", gs: "GS / GK", apt: "Aptitude", mix: "Exam Mix" };
   var TAGS = { y1: "ITI 1st Year", y2: "ITI 2nd Year", phy: "Physics", chem: "Chemistry", bio: "Biology", his: "History", geo: "Geography", pol: "Polity & GK", math: "Maths", eng: "English", wcs: "Workshop Calc & Science", draw: "Engineering Drawing", safe: "Safety & Tools", eco: "Indian Economy", comp: "Computer Basics", reason: "Reasoning" };
 
@@ -78,7 +98,7 @@
       else if ([2, 3, 4].indexOf(p.players) > -1) S.mode = "multi";
       if ([2, 3, 4].indexOf(p.players) > -1) S.players = p.players;
       if (COUNTS.indexOf(p.count) > -1) S.count = p.count;
-      if (TOPICS.some(function (t) { return t[0] === p.main && t[1] === p.sub; })) { S.main = p.main; S.sub = p.sub; }
+      if (validTopic(p.main, p.sub)) { S.main = p.main; S.sub = p.sub; }
     } catch (e) { }
   }
   function savePrefs() {
@@ -88,7 +108,11 @@
   /* ---------- question pools ---------- */
   function poolFor(main, sub) {
     return bank.filter(function (q) {
-      if (main === "iti") return q.group === "iti" && (sub === "all" || q.sub === sub);
+      if (main === "iti") {
+        var ep = elecParts(main, sub);
+        if (ep) return q.group === "iti" && (ep.yr ? q.sub === ep.yr && (!ep.mod || q.mod === ep.mod) : (q.sub === "y1" || q.sub === "y2"));
+        return q.group === "iti" && (sub === "all" || q.sub === sub);
+      }
       if (main === "sci") return q.group === "sci" && (sub === "all" || q.sub === sub);
       if (main === "gs") return sub === "all" ? (q.group === "gs" || q.group === "sci") : (q.group === "gs" && q.sub === sub);
       if (main === "apt") return q.group === "apt" && q.sub === sub;
@@ -104,6 +128,7 @@
   function feas(n, A, B) { var h = Math.floor(n / 2); return h <= A && n - h <= B; }
   function feasible(n, cfg) {
     cfg = cfg || S;
+    if (cfg.main === "iti" && cfg.sub === "elec") return false;   /* choose 1st or 2nd year first */
     if (cfg.main === "mix") { var m = mixPools(); return feas(n, m.a.length, m.b.length); }
     return n <= poolFor(cfg.main, cfg.sub).length;
   }
@@ -125,7 +150,7 @@
     return shuffle(poolFor(cfg.main, cfg.sub)).slice(0, n);
   }
   function prep(q) {
-    return { id: q.id, q: q.q, tag: TAGS[q.sub] || "", o: shuffle(q.opts.map(function (t, i) { return { t: t, ok: i === q.ans }; })) };
+    return { id: q.id, q: q.q, tag: (TAGS[q.sub] || "") + (q.mod && modName(q.sub, q.mod) ? " · " + modName(q.sub, q.mod) : ""), o: shuffle(q.opts.map(function (t, i) { return { t: t, ok: i === q.ans }; })) };
   }
   function ensureCount() {
     if (bankState !== "ok" || feasible(S.count)) return;
@@ -135,6 +160,8 @@
   }
   function catLabel() {
     var m = MAIN_NAMES[S.main] || S.main;
+    var ep = elecParts(S.main, S.sub);
+    if (ep) return "ITI ELEC" + (ep.yr ? " · " + ELEC[ep.yr].name.replace(" Year", " Yr") + " · " + (ep.mod ? modName(ep.yr, ep.mod) : "Trade Test") : "");
     var s = SUBS[S.main].filter(function (x) { return x[0] === S.sub; })[0];
     return S.main === "mix" ? m + " · GS + ITI" : m + " · " + (s ? s[1] : "");
   }
@@ -182,6 +209,10 @@ html.bright-mode #quiz-arena-root{--tx:#0f172a;--t2:#475569;--cd:rgba(255,255,25
 .qa-row{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.15rem;scrollbar-width:none}
 .qa-row::-webkit-scrollbar{display:none}
 .qa-wrapRow{display:flex;flex-wrap:wrap;gap:.38rem}
+.qa-wrapRow.qa-cmp{gap:.25rem}
+.qa-cmp .qa-pill{min-height:26px;padding:.14rem .52rem;font-size:10.5px;line-height:1.2}
+.qa-cmp .qa-pill .qa-n{margin-left:.22rem;font-size:9px}
+.qa-cmp .qa-pill .qa-i{width:12px;height:12px;margin-right:.2rem;vertical-align:-2px}
 .qa-cta{width:100%;display:flex;align-items:center;justify-content:center;gap:.45rem;padding:.82rem 1rem;border-radius:.95rem;font-weight:800;font-size:14px;color:#1c1100!important;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 8px 20px -8px rgba(245,158,11,.65);border:0}
 .qa-cta:disabled{opacity:.45;box-shadow:none}
 .qa-sec{display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.66rem .85rem;border-radius:.85rem;font-weight:700;font-size:12.5px;background:var(--cd2);border:1px solid var(--bd)}
@@ -297,11 +328,33 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     h += '<input id="qa-name" class="qa-in" style="padding:.4rem .7rem" type="text" maxlength="16" autocomplete="nickname" placeholder="Player" value="' + esc(S.name) + '"></div>';
 
     /* direct topic pills with question counts */
-    h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Topic</div><div class="qa-wrapRow">' + TOPICS.map(function (t) {
-      var n = ready ? availFor(t[0], t[1]) : 0, on = S.main === t[0] && S.sub === t[1];
+    h += '<div><div class="qa-lbl" style="margin-bottom:.25rem">Topic</div><div class="qa-wrapRow qa-cmp">' + TOPICS.map(function (t) {
+      var n = ready ? availFor(t[0], t[1]) : 0, on = S.main === t[0] && (t[1] === "elec" ? !!elecParts(S.main, S.sub) : S.sub === t[1]);
       return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="topic" data-k="' + t[0] + "|" + t[1] + '" aria-pressed="' + on + '"' + (ready && !n ? " disabled" : "") + ">" + t[2] +
         '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
     }).join("") + "</div></div>";
+
+    /* ITI ELEC: year -> Trade Test or module */
+    var ep = elecParts(S.main, S.sub);
+    if (ep) {
+      h += '<div class="qa-inner p-2.5 space-y-2.5"><div class="qa-lbl">ITI ELEC · Year</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.375rem">' +
+        ["y1", "y2"].map(function (y) {
+          var n = ready ? availFor("iti", y) : 0;
+          return '<button type="button" class="qa-pill btn-tap text-center' + (ep.yr === y ? " on" : "") + '" style="padding:.32rem 0;font-size:12px" data-a="yr" data-k="' + y + '" aria-pressed="' + (ep.yr === y) + '">' + ELEC[y].name + '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
+        }).join("") + "</div>";
+      if (ep.yr) {
+        h += '<div class="qa-lbl">Test type</div><div class="qa-wrapRow qa-cmp">';
+        h += '<button type="button" class="qa-pill btn-tap' + (!ep.mod ? " on" : "") + '" data-a="mod" data-k="" aria-pressed="' + !ep.mod + '">' + ico("shuffle") + " Trade Test · all modules" + '<span class="qa-n">' + (ready ? availFor("iti", ep.yr) : "…") + "</span></button>";
+        ELEC[ep.yr].mods.forEach(function (m) {
+          var n = ready ? availFor("iti", ep.yr + ":" + m[0]) : 0, on = ep.mod === m[0];
+          h += '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="mod" data-k="' + m[0] + '" aria-pressed="' + on + '"' + (ready && !n ? " disabled" : "") + ">" + esc(m[1]) + '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
+        });
+        h += '</div><div class="text-xs qa-t2">' + (ep.mod ? "Questions only from this module." : "Trade Test: questions are drawn from every module of " + ELEC[ep.yr].name + ".") + "</div>";
+      } else {
+        h += '<div class="text-xs qa-t2">Choose 1st or 2nd year to continue.</div>';
+      }
+      h += "</div>";
+    }
 
     /* 5-column question count */
     h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Questions</div><div class="qa-cnt">' +
@@ -314,7 +367,7 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     /* single primary CTA */
     h += '<button type="button" class="qa-cta btn-tap" data-a="' + (multi ? "create" : "start") + '"' + (canStart ? "" : " disabled") + ">" +
       ico(multi ? "plus" : "play") + (multi ? "Create Room" : "Start Quiz") + "</button>";
-    if (ready && !canStart) h += '<div class="text-xs qa-t2 text-center" style="margin-top:-.3rem">Not enough questions in this topic yet.</div>';
+    if (ready && !canStart && !(S.main === "iti" && S.sub === "elec")) h += '<div class="text-xs qa-t2 text-center" style="margin-top:-.3rem">Not enough questions in this topic yet.</div>';
     h += "</div>";
     view.innerHTML = h; icons();
   }
@@ -918,7 +971,9 @@ textarea.qa-in{resize:vertical;line-height:1.4}
       var seen = has.call(map, it.id);
       if (it.deleted) { map[it.id] = null; if (!seen) order.push(it.id); return; }
       if (checkQ(it)) return;
+      var prev = seen ? map[it.id] : null;
       map[it.id] = { id: it.id, group: it.group, sub: it.sub, q: it.q, opts: it.opts.slice(), ans: it.ans };
+      if (prev && prev.mod && prev.sub === it.sub) map[it.id].mod = prev.mod;   /* edited question keeps its module */
       if (!seen) order.push(it.id);
     });
     bank = order.map(function (id) { return map[id]; }).filter(Boolean);
@@ -1219,7 +1274,9 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     var b = e.target.closest && e.target.closest("[data-a]"); if (!b || !root.contains(b)) return;
     var a = b.getAttribute("data-a"), k = b.getAttribute("data-k");
     if (a === "mode") { S.mode = k === "multi" ? "multi" : "solo"; if (S.mode === "multi" && [2, 3, 4].indexOf(S.players) < 0) S.players = 2; savePrefs(); renderSetup(); }
-    else if (a === "topic") { var tp = k.split("|"); S.main = tp[0]; S.sub = tp[1]; ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "topic") { var tp = k.split("|"); if (!(tp[0] === "iti" && tp[1] === "elec" && elecParts(S.main, S.sub))) { S.main = tp[0]; S.sub = tp[1]; } ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "yr") { S.main = "iti"; S.sub = k === "y2" ? "y2" : "y1"; ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "mod") { var ep0 = elecParts(S.main, S.sub); if (ep0 && ep0.yr) { S.sub = ep0.yr + (k ? ":" + k : ""); ensureCount(); savePrefs(); renderSetup(); } }
     else if (a === "review") toggleReview();
     else if (a === "players") { S.players = +k; savePrefs(); renderSetup(); }
     else if (a === "count") { S.count = +k; savePrefs(); renderSetup(); }

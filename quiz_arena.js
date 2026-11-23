@@ -286,6 +286,24 @@ textarea.qa-in{resize:vertical;line-height:1.4}
 .qa-rv-a.bad{background:var(--bdb);border-color:var(--bdc)}.qa-rv-a.bad b{color:var(--bdc)}
 .qa-rv-a.skip{color:var(--t2)}
 .qa-chev{transition:transform .2s}.qa-open .qa-chev{transform:rotate(180deg)}
+#quiz-arena-root{--sky:#38bdf8;--skyb:rgba(56,189,248,.55);--skyg:0 0 0 1px rgba(56,189,248,.2),0 4px 14px -4px rgba(14,165,233,.55)}
+.qa-wrapRow.qa-cmp{gap:.28rem}
+.qa-cmp .qa-pill{min-height:24px;padding:.1rem .2rem .1rem .55rem;font-size:10.5px;font-weight:700;line-height:1.1;display:inline-flex;align-items:center;gap:.28rem;border-radius:999px;background:linear-gradient(180deg,rgba(125,211,252,.16),rgba(125,211,252,.04)),rgba(255,255,255,.05);border:1px solid rgba(125,211,252,.22);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6)}
+.qa-cmp .qa-pill:not(:has(.qa-n)){padding-right:.55rem}
+.qa-cmp .qa-pill .qa-n{margin:0;min-width:1.45rem;padding:.12rem .34rem;border-radius:999px;font-size:8.5px;font-weight:800;text-align:center;opacity:1;color:var(--t2);background:rgba(125,211,252,.16)}
+.qa-cmp .qa-pill.on{color:#f0f9ff;background:linear-gradient(135deg,rgba(56,189,248,.50),rgba(14,165,233,.26));border-color:var(--skyb);box-shadow:var(--skyg)}
+.qa-cmp .qa-pill.on .qa-n{color:#fff;background:rgba(14,165,233,.55)}
+html.bright-mode .qa-cmp .qa-pill{background:linear-gradient(180deg,rgba(186,230,253,.55),rgba(224,242,254,.30)),rgba(255,255,255,.55);border-color:rgba(14,165,233,.25)}
+html.bright-mode .qa-cmp .qa-pill .qa-n{color:#0369a1;background:rgba(14,165,233,.14)}
+html.bright-mode .qa-cmp .qa-pill.on{color:#0c4a6e;background:linear-gradient(135deg,rgba(56,189,248,.42),rgba(125,211,252,.28));border-color:rgba(2,132,199,.55)}
+html.bright-mode .qa-cmp .qa-pill.on .qa-n{color:#fff;background:#0284c7}
+.qa-xp{flex:0 0 100%;width:100%;display:grid;grid-template-rows:0fr;opacity:0;margin:-.14rem 0;transition:grid-template-rows .36s cubic-bezier(.4,0,.2,1),opacity .28s ease,margin .36s cubic-bezier(.4,0,.2,1)}
+.qa-xp.open{grid-template-rows:1fr;opacity:1;margin:.1rem 0}
+.qa-xpi{overflow:hidden;min-height:0}
+.qa-xpbox{padding:.65rem;transform:translateY(-6px);transition:transform .36s cubic-bezier(.4,0,.2,1);background:linear-gradient(180deg,rgba(125,211,252,.14),rgba(125,211,252,.03)),var(--cd2);border-color:rgba(125,211,252,.28)}
+.qa-xp.open>.qa-xpi>.qa-xpbox{transform:none}
+.qa-sub{display:inline-block;max-width:9.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;opacity:.8;font-weight:600}
+@media (prefers-reduced-motion:reduce){.qa-xp,.qa-xpbox{transition:none}}
 @media (prefers-reduced-motion:reduce){.qa-chev{transition:none}}
 `;
     document.head.appendChild(st);
@@ -295,7 +313,42 @@ textarea.qa-in{resize:vertical;line-height:1.4}
   function pill(a, k, label, on, dis) {
     return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="' + a + '" data-k="' + k + '" aria-pressed="' + (on ? "true" : "false") + '"' + (dis ? " disabled" : "") + ">" + label + "</button>";
   }
+  /* ---------- ITI ELEC expandable panel (smooth open / close) ---------- */
+  var elecOpen = false, lastEp = null, xpState = { elec: false, mods: false };
+  function elecPanel(ep, ready, wantM) {
+    var h = '<div class="qa-xp' + (xpState.elec ? " open" : "") + '" data-xp="elec"><div class="qa-xpi"><div class="qa-inner qa-xpbox">';
+    h += '<div class="qa-lbl" style="margin-bottom:.3rem">Year</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">' +
+      ["y1", "y2"].map(function (y) {
+        var n = ready ? availFor("iti", y) : 0;
+        return '<button type="button" class="qa-pill btn-tap text-center' + (ep.yr === y ? " on" : "") + '" style="padding:.32rem 0;justify-content:center" data-a="yr" data-k="' + y + '" aria-pressed="' + (ep.yr === y) + '">' + ELEC[y].name + '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
+      }).join("") + "</div>";
+    if (ep.yr && (wantM || xpState.mods)) {
+      h += '<div class="qa-xp' + (xpState.mods ? " open" : "") + '" data-xp="mods"><div class="qa-xpi"><div style="padding-top:.6rem">';
+      h += '<div class="qa-lbl" style="margin-bottom:.3rem">Test type</div><div class="qa-wrapRow qa-cmp">';
+      h += '<button type="button" class="qa-pill btn-tap' + (!ep.mod ? " on" : "") + '" data-a="mod" data-k="" aria-pressed="' + !ep.mod + '">' + ico("shuffle") + " Trade Test · all modules" + '<span class="qa-n">' + (ready ? availFor("iti", ep.yr) : "…") + "</span></button>";
+      ELEC[ep.yr].mods.forEach(function (m) {
+        var n = ready ? availFor("iti", ep.yr + ":" + m[0]) : 0, on = ep.mod === m[0];
+        h += '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="mod" data-k="' + m[0] + '" aria-pressed="' + on + '"' + (ready && !n ? " disabled" : "") + ">" + esc(m[1]) + '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
+      });
+      h += '</div><div class="text-xs qa-t2" style="margin-top:.4rem">' + (ep.mod ? "Questions only from this module." : "Trade Test: questions are drawn from every module of " + ELEC[ep.yr].name + ".") + "</div></div></div></div>";
+    }
+    return h + "</div></div></div>";
+  }
+  function syncXp(want) {
+    ["elec", "mods"].forEach(function (id) {
+      var el = view.querySelector('[data-xp="' + id + '"]');
+      if (!el) { xpState[id] = false; return; }
+      if (want[id] !== xpState[id]) {
+        void el.offsetHeight;
+        el.classList.toggle("open", want[id]);
+        xpState[id] = want[id];
+        if (!want[id]) setTimeout(function () { var e2 = view && view.querySelector('[data-xp="' + id + '"]'); if (e2 && !e2.classList.contains("open")) { if (e2.parentNode) e2.parentNode.removeChild(e2); } }, 420);
+      }
+    });
+  }
+
   function renderSetup() {
+    if (view && !view.querySelector(".qa-setup")) { elecOpen = false; xpState = { elec: false, mods: false }; }
     var ready = bankState === "ok", st = liveStreak(), multi = S.mode === "multi", h = "";
     var canStart = ready && feasible(S.count);
 
@@ -335,34 +388,18 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     h += '<div class="flex items-center gap-2"><label for="qa-name" class="qa-lbl shrink-0">Name</label>';
     h += '<input id="qa-name" class="qa-in" style="padding:.4rem .7rem" type="text" maxlength="16" autocomplete="nickname" placeholder="Player" value="' + esc(S.name) + '"></div>';
 
-    /* direct topic pills with question counts */
+    /* direct topic pills with question counts; ITI ELEC expands its own year / test-type panel right under its pill */
+    var ep = elecParts(S.main, S.sub); if (ep) lastEp = ep;
+    var epr = ep || lastEp, wantE = !!(elecOpen && ep), wantM = !!(wantE && ep.yr);
     h += '<div><div class="qa-lbl" style="margin-bottom:.25rem">Topic</div><div class="qa-wrapRow qa-cmp">' + TOPICS.map(function (t) {
-      var n = ready ? availFor(t[0], t[1]) : 0, on = S.main === t[0] && (t[1] === "elec" ? !!elecParts(S.main, S.sub) : S.sub === t[1]);
-      return '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="topic" data-k="' + t[0] + "|" + t[1] + '" aria-pressed="' + on + '"' + (ready && !n ? " disabled" : "") + ">" + t[2] +
+      var n = ready ? availFor(t[0], t[1]) : 0, isE = t[1] === "elec" && t[0] === "iti", on = S.main === t[0] && (isE ? !!ep : S.sub === t[1]);
+      var lbl = t[2];
+      if (isE && ep && ep.yr) lbl += ' <span class="qa-sub">· ' + esc(ELEC[ep.yr].name.replace(" Year", " Yr")) + " · " + esc(ep.mod ? modName(ep.yr, ep.mod) : "Trade Test") + "</span>";
+      var btn = '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="topic" data-k="' + t[0] + "|" + t[1] + '" aria-pressed="' + on + '"' + (isE ? ' aria-expanded="' + wantE + '"' : "") + (ready && !n ? " disabled" : "") + ">" + lbl +
         '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
+      if (isE && epr && (wantE || xpState.elec)) btn += elecPanel(epr, ready, wantM);
+      return btn;
     }).join("") + "</div></div>";
-
-    /* ITI ELEC: year -> Trade Test or module */
-    var ep = elecParts(S.main, S.sub);
-    if (ep) {
-      h += '<div class="qa-inner p-2.5 space-y-2.5"><div class="qa-lbl">ITI ELEC · Year</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:.375rem">' +
-        ["y1", "y2"].map(function (y) {
-          var n = ready ? availFor("iti", y) : 0;
-          return '<button type="button" class="qa-pill btn-tap text-center' + (ep.yr === y ? " on" : "") + '" style="padding:.32rem 0;font-size:12px" data-a="yr" data-k="' + y + '" aria-pressed="' + (ep.yr === y) + '">' + ELEC[y].name + '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
-        }).join("") + "</div>";
-      if (ep.yr) {
-        h += '<div class="qa-lbl">Test type</div><div class="qa-wrapRow qa-cmp">';
-        h += '<button type="button" class="qa-pill btn-tap' + (!ep.mod ? " on" : "") + '" data-a="mod" data-k="" aria-pressed="' + !ep.mod + '">' + ico("shuffle") + " Trade Test · all modules" + '<span class="qa-n">' + (ready ? availFor("iti", ep.yr) : "…") + "</span></button>";
-        ELEC[ep.yr].mods.forEach(function (m) {
-          var n = ready ? availFor("iti", ep.yr + ":" + m[0]) : 0, on = ep.mod === m[0];
-          h += '<button type="button" class="qa-pill btn-tap' + (on ? " on" : "") + '" data-a="mod" data-k="' + m[0] + '" aria-pressed="' + on + '"' + (ready && !n ? " disabled" : "") + ">" + esc(m[1]) + '<span class="qa-n">' + (ready ? n : "…") + "</span></button>";
-        });
-        h += '</div><div class="text-xs qa-t2">' + (ep.mod ? "Questions only from this module." : "Trade Test: questions are drawn from every module of " + ELEC[ep.yr].name + ".") + "</div>";
-      } else {
-        h += '<div class="text-xs qa-t2">Choose 1st or 2nd year to continue.</div>';
-      }
-      h += "</div>";
-    }
 
     /* 5-column question count */
     h += '<div><div class="qa-lbl" style="margin-bottom:.35rem">Questions</div><div class="qa-cnt">' +
@@ -378,6 +415,7 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     if (ready && !canStart && !(S.main === "iti" && S.sub === "elec")) h += '<div class="text-xs qa-t2 text-center" style="margin-top:-.3rem">Not enough questions in this topic yet.</div>';
     h += "</div>";
     view.innerHTML = h; icons();
+    syncXp({ elec: wantE, mods: wantM });
   }
 
   /* ---------- gameplay ---------- */
@@ -1282,9 +1320,12 @@ textarea.qa-in{resize:vertical;line-height:1.4}
     var b = e.target.closest && e.target.closest("[data-a]"); if (!b || !root.contains(b)) return;
     var a = b.getAttribute("data-a"), k = b.getAttribute("data-k");
     if (a === "mode") { S.mode = k === "multi" ? "multi" : "solo"; if (S.mode === "multi" && [2, 3, 4].indexOf(S.players) < 0) S.players = 2; savePrefs(); renderSetup(); }
-    else if (a === "topic") { var tp = k.split("|"); if (!(tp[0] === "iti" && tp[1] === "elec" && elecParts(S.main, S.sub))) { S.main = tp[0]; S.sub = tp[1]; } ensureCount(); savePrefs(); renderSetup(); }
-    else if (a === "yr") { S.main = "iti"; S.sub = k === "y2" ? "y2" : "y1"; ensureCount(); savePrefs(); renderSetup(); }
-    else if (a === "mod") { var ep0 = elecParts(S.main, S.sub); if (ep0 && ep0.yr) { S.sub = ep0.yr + (k ? ":" + k : ""); ensureCount(); savePrefs(); renderSetup(); } }
+    else if (a === "topic") { var tp = k.split("|"), isE = tp[0] === "iti" && tp[1] === "elec";
+      if (isE) { if (elecParts(S.main, S.sub)) elecOpen = !elecOpen; else { S.main = "iti"; S.sub = "elec"; elecOpen = true; } }
+      else { S.main = tp[0]; S.sub = tp[1]; elecOpen = false; }
+      ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "yr") { S.main = "iti"; S.sub = k === "y2" ? "y2" : "y1"; elecOpen = true; ensureCount(); savePrefs(); renderSetup(); }
+    else if (a === "mod") { var ep0 = elecParts(S.main, S.sub); if (ep0 && ep0.yr) { S.sub = ep0.yr + (k ? ":" + k : ""); elecOpen = false; ensureCount(); savePrefs(); renderSetup(); } }
     else if (a === "review") toggleReview();
     else if (a === "players") { S.players = +k; savePrefs(); renderSetup(); }
     else if (a === "count") { S.count = +k; savePrefs(); renderSetup(); }

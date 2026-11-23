@@ -1298,5 +1298,1305 @@
    "Acomodation"
   ],
   "ans": 1
+ },
+ {
+  "id": 101,
+  "group": "iti",
+  "sub": "y1",
+  "q": "What is the SI unit of electrical capacitance?",
+  "opts": [
+   "Henry",
+   "Ohm",
+   "Farad",
+   "Tesla"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 102,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Which law states that the algebraic sum of currents meeting at a junction is zero?",
+  "opts": [
+   "Ohm’s Law",
+   "Kirchhoff’s Current Law",
+   "Faraday’s Law",
+   "Lenz’s Law"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 103,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Two 10 Ω resistors are connected in series across a 20 V supply. What is the total resistance?",
+  "opts": [
+   "5 Ω",
+   "10 Ω",
+   "20 Ω",
+   "200 Ω"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 104,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Which type of fire extinguisher is used for live electrical fires?",
+  "opts": [
+   "Water-filled extinguisher",
+   "Foam extinguisher",
+   "Carbon dioxide (CO₂) extinguisher",
+   "Soda-acid extinguisher"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 105,
+  "group": "iti",
+  "sub": "y1",
+  "q": "What is the colour of the earth wire in standard Indian domestic wiring?",
+  "opts": [
+   "Red",
+   "Black",
+   "Blue",
+   "Green"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 106,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Which tool is used to measure the diameter of a thin copper wire accurately?",
+  "opts": [
+   "Steel rule",
+   "Micrometer screw gauge",
+   "Try square",
+   "Centre punch"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 107,
+  "group": "iti",
+  "sub": "y1",
+  "q": "What is the frequency of standard AC domestic supply in India?",
+  "opts": [
+   "60 Hz",
+   "25 Hz",
+   "50 Hz",
+   "100 Hz"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 108,
+  "group": "iti",
+  "sub": "y1",
+  "q": "Which flux is commonly used for soldering copper conductors in electrical work?",
+  "opts": [
+   "Hydrochloric acid",
+   "Zinc chloride",
+   "Rosin",
+   "Ammonium chloride"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 109,
+  "group": "iti",
+  "sub": "y1",
+  "q": "An ammeter is always connected in a circuit in:",
+  "opts": [
+   "Parallel with the load",
+   "Series with the load",
+   "Across the supply mains",
+   "Parallel with the switch"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 110,
+  "group": "iti",
+  "sub": "y1",
+  "q": "What is the specific gravity of a fully charged lead-acid battery electrolyte?",
+  "opts": [
+   "1.00 to 1.05",
+   "1.10 to 1.12",
+   "1.26 to 1.28",
+   "1.50 to 1.60"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 111,
+  "group": "iti",
+  "sub": "y2",
+  "q": "Which device protects a transformer from internal faults using gas accumulation?",
+  "opts": [
+   "Thermal overload relay",
+   "Buchholz relay",
+   "Earth fault relay",
+   "Mho relay"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 112,
+  "group": "iti",
+  "sub": "y2",
+  "q": "What is the function of a commutator in a DC generator?",
+  "opts": [
+   "Converts DC to AC",
+   "Reduces eddy current loss",
+   "Converts AC induced in armature to DC",
+   "Controls field excitation"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 113,
+  "group": "iti",
+  "sub": "y2",
+  "q": "Which single-phase motor is commonly used in ceiling fans?",
+  "opts": [
+   "Shaded pole motor",
+   "Universal motor",
+   "Permanent capacitor motor",
+   "Repulsion motor"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 114,
+  "group": "iti",
+  "sub": "y2",
+  "q": "What is the unit of reactive power in an AC circuit?",
+  "opts": [
+   "Watt",
+   "Volt-ampere",
+   "VAR",
+   "Joule"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 115,
+  "group": "iti",
+  "sub": "y2",
+  "q": "Which test is performed on a transformer to determine core (iron) losses?",
+  "opts": [
+   "Short-circuit test",
+   "Open-circuit test",
+   "Polarity test",
+   "Sumpner’s test"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 116,
+  "group": "iti",
+  "sub": "y2",
+  "q": "In an SCR (Silicon Controlled Rectifier), what are the three terminals called?",
+  "opts": [
+   "Emitter, Base, Collector",
+   "Source, Drain, Gate",
+   "Anode, Cathode, Gate",
+   "Anode, Cathode, Base"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 117,
+  "group": "iti",
+  "sub": "y2",
+  "q": "Which starter is generally used for 3-phase squirrel cage induction motors above 5 HP?",
+  "opts": [
+   "DOL starter",
+   "Three-point starter",
+   "Star-delta starter",
+   "Two-point starter"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 118,
+  "group": "iti",
+  "sub": "y2",
+  "q": "What is the phase displacement between windings in a 3-phase alternator?",
+  "opts": [
+   "90°",
+   "180°",
+   "60°",
+   "120°"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 119,
+  "group": "iti",
+  "sub": "y2",
+  "q": "Which material is used as a breather desiccant in a power transformer?",
+  "opts": [
+   "Activated carbon",
+   "Silica gel",
+   "Calcium carbonate",
+   "Sodium chloride"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 120,
+  "group": "iti",
+  "sub": "y2",
+  "q": "What does an MCB protect an electrical circuit against?",
+  "opts": [
+   "Earth leakage only",
+   "Over-voltage only",
+   "Overload and short circuit",
+   "Lightning surge only"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 121,
+  "group": "sci",
+  "sub": "phy",
+  "q": "What is the SI unit of pressure?",
+  "opts": [
+   "Newton",
+   "Pascal",
+   "Bar",
+   "Joule"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 122,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Which lens is used to correct myopia (short-sightedness)?",
+  "opts": [
+   "Convex lens",
+   "Concave lens",
+   "Cylindrical lens",
+   "Bifocal lens"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 123,
+  "group": "sci",
+  "sub": "phy",
+  "q": "What is the SI unit of frequency?",
+  "opts": [
+   "Decibel",
+   "Hertz",
+   "Dioptre",
+   "Watt"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 124,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Which phenomenon causes the blue colour of the clear sky?",
+  "opts": [
+   "Total internal reflection",
+   "Scattering of light",
+   "Interference",
+   "Diffraction"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 125,
+  "group": "sci",
+  "sub": "phy",
+  "q": "At what temperature are the Celsius and Fahrenheit scales equal?",
+  "opts": [
+   "0°",
+   "−40°",
+   "32°",
+   "−273°"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 126,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Which instrument is used to measure atmospheric pressure?",
+  "opts": [
+   "Hydrometer",
+   "Barometer",
+   "Hygrometer",
+   "Manometer"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 127,
+  "group": "sci",
+  "sub": "phy",
+  "q": "What is the momentum of a 5 kg object moving at 4 m/s?",
+  "opts": [
+   "9 kg·m/s",
+   "20 kg·m/s",
+   "40 kg·m/s",
+   "1.25 kg·m/s"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 128,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Which mirror is used as a rear-view mirror in vehicles?",
+  "opts": [
+   "Concave mirror",
+   "Plane mirror",
+   "Convex mirror",
+   "Parabolic mirror"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 129,
+  "group": "sci",
+  "sub": "phy",
+  "q": "What is the SI unit of work?",
+  "opts": [
+   "Watt",
+   "Newton",
+   "Joule",
+   "Erg"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 130,
+  "group": "sci",
+  "sub": "phy",
+  "q": "Optical fibres work on the principle of:",
+  "opts": [
+   "Refraction",
+   "Polarisation",
+   "Total internal reflection",
+   "Dispersion"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 131,
+  "group": "sci",
+  "sub": "chem",
+  "q": "What is the chemical symbol of Gold?",
+  "opts": [
+   "Ag",
+   "Au",
+   "Fe",
+   "Gd"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 132,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which gas is known as laughing gas?",
+  "opts": [
+   "Nitric oxide",
+   "Nitrous oxide",
+   "Nitrogen dioxide",
+   "Carbon monoxide"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 133,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Brass is an alloy of copper and:",
+  "opts": [
+   "Tin",
+   "Zinc",
+   "Nickel",
+   "Aluminium"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 134,
+  "group": "sci",
+  "sub": "chem",
+  "q": "What is the chemical formula of quicklime?",
+  "opts": [
+   "CaCO₃",
+   "Ca(OH)₂",
+   "CaO",
+   "CaCl₂"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 135,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which non-metal is a good conductor of electricity?",
+  "opts": [
+   "Sulphur",
+   "Phosphorus",
+   "Graphite",
+   "Iodine"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 136,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Galvanisation is the process of coating iron with:",
+  "opts": [
+   "Copper",
+   "Tin",
+   "Zinc",
+   "Aluminium"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 137,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which gas is filled in electric bulbs to prevent oxidation of the tungsten filament?",
+  "opts": [
+   "Oxygen",
+   "Argon",
+   "Hydrogen",
+   "Chlorine"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 138,
+  "group": "sci",
+  "sub": "chem",
+  "q": "What is the main constituent of biogas?",
+  "opts": [
+   "Butane",
+   "Propane",
+   "Methane",
+   "Ethane"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 139,
+  "group": "sci",
+  "sub": "chem",
+  "q": "Which acid is found in vinegar?",
+  "opts": [
+   "Formic acid",
+   "Acetic acid",
+   "Oxalic acid",
+   "Sulphuric acid"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 140,
+  "group": "sci",
+  "sub": "chem",
+  "q": "What is the atomic number of Oxygen?",
+  "opts": [
+   "6",
+   "7",
+   "8",
+   "16"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 141,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which vitamin is synthesised in human skin in the presence of sunlight?",
+  "opts": [
+   "Vitamin A",
+   "Vitamin B12",
+   "Vitamin C",
+   "Vitamin D"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 142,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which tissue transports water and minerals from roots to leaves in plants?",
+  "opts": [
+   "Phloem",
+   "Xylem",
+   "Cambium",
+   "Cortex"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 143,
+  "group": "sci",
+  "sub": "bio",
+  "q": "What is the normal resting heart rate of a healthy adult human?",
+  "opts": [
+   "50 beats per minute",
+   "72 beats per minute",
+   "100 beats per minute",
+   "120 beats per minute"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 144,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which blood cells help in clotting of blood?",
+  "opts": [
+   "Red blood cells",
+   "White blood cells",
+   "Platelets",
+   "Lymphocytes"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 145,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which part of the human brain controls balance and posture?",
+  "opts": [
+   "Cerebrum",
+   "Cerebellum",
+   "Medulla",
+   "Hypothalamus"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 146,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Rickets is caused by the deficiency of:",
+  "opts": [
+   "Vitamin A",
+   "Vitamin B1",
+   "Vitamin C",
+   "Vitamin D"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 147,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which gas do plants absorb from the atmosphere during photosynthesis?",
+  "opts": [
+   "Oxygen",
+   "Nitrogen",
+   "Carbon dioxide",
+   "Hydrogen"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 148,
+  "group": "sci",
+  "sub": "bio",
+  "q": "What is the basic structural and functional unit of the kidney?",
+  "opts": [
+   "Neuron",
+   "Nephron",
+   "Alveolus",
+   "Villus"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 149,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which blood group is known as the universal recipient?",
+  "opts": [
+   "O negative",
+   "O positive",
+   "AB positive",
+   "A negative"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 150,
+  "group": "sci",
+  "sub": "bio",
+  "q": "Which gland is called the “master gland” of the human body?",
+  "opts": [
+   "Thyroid gland",
+   "Adrenal gland",
+   "Pituitary gland",
+   "Pancreas"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 151,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who gave the slogan “Swaraj is my birthright and I shall have it”?",
+  "opts": [
+   "Lala Lajpat Rai",
+   "Bal Gangadhar Tilak",
+   "Bipin Chandra Pal",
+   "Gopal Krishna Gokhale"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 152,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Indus Valley site Lothal is located in which modern Indian state?",
+  "opts": [
+   "Rajasthan",
+   "Punjab",
+   "Gujarat",
+   "Haryana"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 153,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who founded the Indian National Army (Azad Hind Fauj)?",
+  "opts": [
+   "Subhas Chandra Bose",
+   "Rash Behari Bose",
+   "Bhagat Singh",
+   "Chandrashekhar Azad"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 154,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Third Battle of Panipat was fought in which year?",
+  "opts": [
+   "1526",
+   "1556",
+   "1757",
+   "1761"
+  ],
+  "ans": 3
+ },
+ {
+  "id": 155,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who started the Bhoodan Movement in 1951?",
+  "opts": [
+   "Jayaprakash Narayan",
+   "Vinoba Bhave",
+   "Mahatma Gandhi",
+   "Baba Amte"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 156,
+  "group": "gs",
+  "sub": "his",
+  "q": "Which Mughal emperor built the Buland Darwaza at Fatehpur Sikri?",
+  "opts": [
+   "Babur",
+   "Humayun",
+   "Akbar",
+   "Shah Jahan"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 157,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who was the first woman President of the Indian National Congress?",
+  "opts": [
+   "Sarojini Naidu",
+   "Annie Besant",
+   "Indira Gandhi",
+   "Sucheta Kripalani"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 158,
+  "group": "gs",
+  "sub": "his",
+  "q": "The Simon Commission arrived in India in:",
+  "opts": [
+   "1920",
+   "1928",
+   "1931",
+   "1935"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 159,
+  "group": "gs",
+  "sub": "his",
+  "q": "Who established the Brahmo Samaj in 1828?",
+  "opts": [
+   "Swami Vivekananda",
+   "Dayananda Saraswati",
+   "Raja Ram Mohan Roy",
+   "Ishwar Chandra Vidyasagar"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 160,
+  "group": "gs",
+  "sub": "his",
+  "q": "Ashoka embraced Buddhism after which famous war?",
+  "opts": [
+   "Battle of Hydaspes",
+   "Kalinga War",
+   "Battle of Tarain",
+   "Battle of Khanwa"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 161,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of Northern Railway is at:",
+  "opts": [
+   "Lucknow",
+   "New Delhi",
+   "Jaipur",
+   "Prayagraj"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 162,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The headquarters of Western Railway is at:",
+  "opts": [
+   "Ahmedabad",
+   "Mumbai",
+   "Vadodara",
+   "Jaipur"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 163,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which is the longest river flowing entirely within India?",
+  "opts": [
+   "Ganga",
+   "Godavari",
+   "Yamuna",
+   "Narmada"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 164,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Kaziranga National Park is famous for:",
+  "opts": [
+   "Asiatic lion",
+   "One-horned rhinoceros",
+   "Snow leopard",
+   "Bengal tiger"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 165,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Hirakud Dam is built across which river?",
+  "opts": [
+   "Krishna",
+   "Godavari",
+   "Mahanadi",
+   "Sutlej"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 166,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which strait separates India and Sri Lanka?",
+  "opts": [
+   "Malacca Strait",
+   "Palk Strait",
+   "Bering Strait",
+   "Hormuz Strait"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 167,
+  "group": "gs",
+  "sub": "geo",
+  "q": "The highest mountain peak in India is:",
+  "opts": [
+   "Nanda Devi",
+   "Kangchenjunga",
+   "Kamet",
+   "Anamudi"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 168,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which state has the longest coastline in India?",
+  "opts": [
+   "Andhra Pradesh",
+   "Tamil Nadu",
+   "Gujarat",
+   "Maharashtra"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 169,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Sundarbans delta is formed by the Ganga and which other river?",
+  "opts": [
+   "Yamuna",
+   "Brahmaputra",
+   "Mahanadi",
+   "Kosi"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 170,
+  "group": "gs",
+  "sub": "geo",
+  "q": "Which planet is known as the “Red Planet”?",
+  "opts": [
+   "Venus",
+   "Mars",
+   "Jupiter",
+   "Saturn"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 171,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Which Article of the Indian Constitution abolishes untouchability?",
+  "opts": [
+   "Article 14",
+   "Article 17",
+   "Article 19",
+   "Article 21"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 172,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Who administers the oath of office to the President of India?",
+  "opts": [
+   "Prime Minister",
+   "Vice President",
+   "Chief Justice of India",
+   "Speaker of Lok Sabha"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 173,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The minimum age to become a member of the Rajya Sabha is:",
+  "opts": [
+   "21 years",
+   "25 years",
+   "30 years",
+   "35 years"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 174,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Which Schedule of the Constitution contains the 22 recognised languages?",
+  "opts": [
+   "Seventh Schedule",
+   "Eighth Schedule",
+   "Ninth Schedule",
+   "Tenth Schedule"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 175,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Money Bills can be introduced only in:",
+  "opts": [
+   "Rajya Sabha",
+   "Lok Sabha",
+   "Joint Sitting",
+   "Supreme Court"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 176,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Who is the Supreme Commander of the Indian Armed Forces?",
+  "opts": [
+   "The Prime Minister",
+   "The Defence Minister",
+   "The President",
+   "Chief of Defence Staff"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 177,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Which Constitutional Amendment lowered the voting age from 21 to 18 years?",
+  "opts": [
+   "42nd Amendment",
+   "44th Amendment",
+   "61st Amendment",
+   "73rd Amendment"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 178,
+  "group": "gs",
+  "sub": "pol",
+  "q": "How many members are nominated by the President to the Rajya Sabha?",
+  "opts": [
+   "2",
+   "10",
+   "12",
+   "14"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 179,
+  "group": "gs",
+  "sub": "pol",
+  "q": "The National Voters’ Day in India is celebrated every year on:",
+  "opts": [
+   "26 January",
+   "25 January",
+   "15 August",
+   "2 October"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 180,
+  "group": "gs",
+  "sub": "pol",
+  "q": "Which body conducts elections to Parliament and State Legislatures in India?",
+  "opts": [
+   "UPSC",
+   "NITI Aayog",
+   "Election Commission of India",
+   "Finance Commission"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 181,
+  "group": "apt",
+  "sub": "math",
+  "q": "What is the HCF of 24 and 36?",
+  "opts": [
+   "6",
+   "12",
+   "18",
+   "72"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 182,
+  "group": "apt",
+  "sub": "math",
+  "q": "A man buys a fan for ₹1200 and sells it for ₹1080. What is his loss percent?",
+  "opts": [
+   "8%",
+   "10%",
+   "12%",
+   "15%"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 183,
+  "group": "apt",
+  "sub": "math",
+  "q": "What is the perimeter of a rectangle of length 15 cm and breadth 8 cm?",
+  "opts": [
+   "23 cm",
+   "46 cm",
+   "120 cm",
+   "30 cm"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 184,
+  "group": "apt",
+  "sub": "math",
+  "q": "If 5 pens cost ₹75, what is the cost of 8 pens?",
+  "opts": [
+   "₹100",
+   "₹115",
+   "₹120",
+   "₹135"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 185,
+  "group": "apt",
+  "sub": "math",
+  "q": "What is 25% of 480?",
+  "opts": [
+   "96",
+   "110",
+   "120",
+   "140"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 186,
+  "group": "apt",
+  "sub": "math",
+  "q": "A alone can finish a work in 10 days and B alone in 15 days. Together they will finish it in:",
+  "opts": [
+   "5 days",
+   "6 days",
+   "8 days",
+   "12.5 days"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 187,
+  "group": "apt",
+  "sub": "math",
+  "q": "What is the cube of 7?",
+  "opts": [
+   "49",
+   "243",
+   "343",
+   "512"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 188,
+  "group": "apt",
+  "sub": "math",
+  "q": "Convert 72 km/h into m/s:",
+  "opts": [
+   "15 m/s",
+   "20 m/s",
+   "25 m/s",
+   "36 m/s"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 189,
+  "group": "apt",
+  "sub": "math",
+  "q": "Find the next number in the series: 3, 7, 13, 21, 31, ?",
+  "opts": [
+   "39",
+   "41",
+   "43",
+   "45"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 190,
+  "group": "apt",
+  "sub": "math",
+  "q": "The sum of angles in a triangle is:",
+  "opts": [
+   "90°",
+   "180°",
+   "270°",
+   "360°"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 191,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the synonym of “Enormous”:",
+  "opts": [
+   "Tiny",
+   "Huge",
+   "Weak",
+   "Narrow"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 192,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the antonym of “Victory”:",
+  "opts": [
+   "Success",
+   "Triumph",
+   "Defeat",
+   "Glory"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 193,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Neither Ramesh nor his friends ___ present today.",
+  "opts": [
+   "is",
+   "was",
+   "are",
+   "has"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 194,
+  "group": "apt",
+  "sub": "eng",
+  "q": "The train arrived ___ the station on time.",
+  "opts": [
+   "on",
+   "at",
+   "into",
+   "over"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 195,
+  "group": "apt",
+  "sub": "eng",
+  "q": "One word for “a place where books are kept”:",
+  "opts": [
+   "Laboratory",
+   "Library",
+   "Museum",
+   "Gallery"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 196,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the correctly spelt word:",
+  "opts": [
+   "Seperate",
+   "Separate",
+   "Separete",
+   "Saperate"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 197,
+  "group": "apt",
+  "sub": "eng",
+  "q": "The idiom “once in a blue moon” means:",
+  "opts": [
+   "Every night",
+   "Very rarely",
+   "Very quickly",
+   "Always"
+  ],
+  "ans": 1
+ },
+ {
+  "id": 198,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Identify the passive voice of “He writes a letter.”:",
+  "opts": [
+   "A letter was written by him.",
+   "A letter is written by him.",
+   "A letter has written by him.",
+   "A letter is being written by him."
+  ],
+  "ans": 1
+ },
+ {
+  "id": 199,
+  "group": "apt",
+  "sub": "eng",
+  "q": "She has been living here ___ 2020.",
+  "opts": [
+   "for",
+   "from",
+   "since",
+   "by"
+  ],
+  "ans": 2
+ },
+ {
+  "id": 200,
+  "group": "apt",
+  "sub": "eng",
+  "q": "Choose the synonym of “Courage”:",
+  "opts": [
+   "Fear",
+   "Bravery",
+   "Anger",
+   "Doubt"
+  ],
+  "ans": 1
  }
 ]

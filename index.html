@@ -3424,18 +3424,6 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
           </div>
 
           <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" id="btn-refresh-home-playlist" onclick="refreshConnectedPlaylist(true)" title="Refresh connected playlist"
-              class="hidden px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-semibold flex items-center gap-1 transition btn-tap">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-              <span class="hidden sm:inline">Refresh</span>
-            </button>
-
-            <button type="button" onclick="openPlaylistModal()"
-              class="admin-only hidden px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold flex items-center gap-1 transition btn-tap">
-              <i data-lucide="list-video" class="w-3.5 h-3.5"></i>
-              <span>Playlist</span>
-            </button>
-
             <button type="button" onclick="switchTab('videos')"
               class="shrink-0 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-amber-400 text-xs font-semibold flex items-center gap-1 transition btn-tap">
               <span>All Videos</span>
@@ -3443,9 +3431,6 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
             </button>
           </div>
         </div>
-
-        <!-- Connected Playlist Status & Loading/Error Banner (Home Tape) -->
-        <div id="home-playlist-status-bar" class="hidden mb-3"></div>
 
         <div data-autoplay-bar-mount="notices"></div>
         <div id="notices-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><div class="dv-skel" style="aspect-ratio:16/10"></div><div class="dv-skel hidden sm:block" style="aspect-ratio:16/10"></div></div>
@@ -4000,16 +3985,6 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
           </div>
 
           <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" id="btn-refresh-tab-playlist" onclick="refreshConnectedPlaylist(true)" title="Refresh connected playlist"
-              class="hidden px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 font-semibold text-xs flex items-center gap-1 transition btn-tap">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-              <span>Refresh</span>
-            </button>
-            <button type="button" onclick="openPlaylistModal()"
-              class="admin-only hidden px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-1 transition btn-tap">
-              <i data-lucide="list-video" class="w-3.5 h-3.5"></i>
-              <span>Playlist</span>
-            </button>
             <button type="button" onclick="switchTab('notes')"
               class="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 font-semibold text-xs flex items-center gap-1 transition btn-tap">
               <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
@@ -4022,8 +3997,6 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
             </button>
           </div>
         </div>
-
-        <div id="videos-playlist-status-bar" class="hidden"></div>
 
         <div data-autoplay-bar-mount="videos"></div>
         <div id="full-videos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"><div class="dv-skel" style="aspect-ratio:16/10"></div><div class="dv-skel hidden sm:block" style="aspect-ratio:16/10"></div></div>
@@ -5982,8 +5955,8 @@ service cloud.firestore {
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube or Direct Video URL</label>
-            <input type="text" id="video-url-input" required placeholder="YouTube link, ID, or .mp4 URL"
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube, Dailymotion, Facebook or Direct Video URL</label>
+            <input type="text" id="video-url-input" required placeholder="YouTube, Dailymotion, Facebook link, ID, or .mp4 URL"
               class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
           </div>
           <div>
@@ -6010,63 +5983,6 @@ service cloud.firestore {
           class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
           Add to Video Library
         </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===================================================================== -->
-  <!-- MODAL 3B: YOUTUBE PLAYLIST AUTO-SYNC CONNECTION (ADMIN)               -->
-  <!-- ===================================================================== -->
-  <div id="modal-playlist-sync" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-[#0f172a] border border-slate-700/90 rounded-2xl w-full max-w-md shadow-2xl animate-modal overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400">
-            <i data-lucide="list-video" class="w-4 h-4"></i>
-          </div>
-          <h3 class="text-sm font-bold text-white">YouTube Playlist Auto-Sync</h3>
-        </div>
-        <button aria-label="Close" type="button" onclick="closeModal('modal-playlist-sync')" class="p-1 rounded-lg text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-      <form onsubmit="handleConnectYouTubePlaylist(event)" class="p-4 space-y-3">
-        <div id="playlist-modal-connected-badge" class="hidden p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-[11px] text-emerald-300 space-y-0.5"></div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube Playlist URL or Playlist ID *</label>
-          <input type="text" id="playlist-url-input" required placeholder="https://www.youtube.com/playlist?list=PLxxxxxxxx..."
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
-          <p class="text-[10px] text-slate-400 mt-1">Supports standard playlist URLs, watch URLs with <code>?list=</code>, or direct <code>PL...</code> IDs.</p>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">YouTube Data API v3 Key (Browser-Restricted) *</label>
-          <input type="password" id="playlist-apikey-input" autocomplete="off" placeholder="AIzaSy... (Saved locally in Admin browser)"
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
-          <p class="text-[10px] text-slate-400 mt-1">Stored only in this browser's local storage (never committed to source code or public cloud sync).</p>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 mb-1">Target Display Section</label>
-          <select aria-label="Playlist section" id="playlist-section-input"
-            class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500">
-            <option value="both">Home &amp; Study Lab (Both Sections)</option>
-            <option value="home">Home Section Only</option>
-            <option value="lab">Study &amp; Lab Section Only</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-2 pt-1">
-          <button type="button" id="btn-disconnect-playlist" onclick="disconnectYouTubePlaylist()"
-            class="hidden px-3 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 font-bold text-xs transition btn-tap">
-            Disconnect
-          </button>
-          <button type="submit" id="btn-save-playlist-sync"
-            class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition btn-tap">
-            Connect &amp; Sync Playlist
-          </button>
-        </div>
       </form>
     </div>
   </div>
@@ -6648,7 +6564,7 @@ service cloud.firestore {
     const YT_PLAYLIST_CACHE_KEY = "iti_chhotojagulia_yt_pl_cache_v1";
     const YT_PLAYLIST_CACHE_TTL_MS = 10 * 60 * 1000;
     const DEFAULT_ADMIN_PIN = "2508";
-    const MAX_VIDEOS_CAPACITY = 200;
+    const MAX_VIDEOS_CAPACITY = 100000;   /* effectively no limit (was 200) */
     const VIDEOS_PAGE_BATCH_SIZE = 12;
     const HOME_VIDEOS_BATCH_SIZE = 5; // Home tab shows 5 videos by default
     const batchFor = (prefix) => (prefix === "notices" ? HOME_VIDEOS_BATCH_SIZE : VIDEOS_PAGE_BATCH_SIZE);
@@ -6912,10 +6828,40 @@ service cloud.firestore {
       return m ? m[1] : "";
     }
 
-    function parseVideoSource(raw) {
+    /* Dailymotion: dailymotion.com/video/ID, /embed/video/ID, dai.ly/ID, geo.dailymotion.com/player.html?video=ID */
+    function extractDailymotionId(raw) {
+      const s = String(raw || "").trim();
+      if (!/dailymotion\.com|dai\.ly/i.test(s)) return "";
+      const m = s.match(/dailymotion\.com\/(?:embed\/)?video\/([a-zA-Z0-9]+)/i) || s.match(/dai\.ly\/([a-zA-Z0-9]+)/i) || s.match(/[?&]video=([a-zA-Z0-9]+)/i);
+      return m ? m[1] : "";
+    }
+    /* Facebook: facebook.com/watch/?v=ID, /reel/ID, /<page>/videos/ID, video.php?v=ID (also m. / web. hosts).
+       fb.watch and facebook.com/share/... links can't be turned into an embed from the browser, so they are refused. */
+    function isFacebookHost(raw) { return /^https?:\/\/([a-z0-9-]+\.)?(facebook\.com|fb\.com|fb\.watch)(\/|$)/i.test(String(raw || "").trim()); }
+    function extractFacebookVideo(raw) {
+      const s = String(raw || "").trim();
+      if (!/^https?:\/\/([a-z0-9-]+\.)?(facebook\.com|fb\.com)\//i.test(s)) return "";
+      let m = s.match(/\/reel\/(\d{6,})/i);
+      if (m) return "https://www.facebook.com/reel/" + m[1];
+      m = s.match(/\/videos\/(?:[^\/?#]+\/)?(\d{6,})/i);
+      if (m) return "https://www.facebook.com/watch/?v=" + m[1];
+      m = s.match(/\/(?:watch|video\.php)\/?\?(?:[^#]*&)?v=(\d{6,})/i);
+      if (m) return "https://www.facebook.com/watch/?v=" + m[1];
+      return "";
+    }
+    function parseVideoSource(raw, lenient) {
       const s = String(raw || "").trim();
       if (!s) return null;
+      if (isFacebookHost(s)) {
+        const fbUrl = extractFacebookVideo(s);
+        /* new input must be a full video link; links already stored (fb.watch / share) are kept as they were */
+        return fbUrl ? { kind: "direct", ytId: "", directUrl: fbUrl } : (lenient ? { kind: "direct", ytId: "", directUrl: s } : null);
+      }
       const ytId = extractYouTubeId(s);
+      if (!ytId) {
+        const dmId = extractDailymotionId(s);
+        if (dmId) return { kind: "direct", ytId: "", directUrl: "https://www.dailymotion.com/video/" + dmId };
+      }
       if (ytId) {
         return { kind: "youtube", ytId, directUrl: "" };
       }
@@ -6925,16 +6871,16 @@ service cloud.firestore {
       return null;
     }
 
-    function normalizeVideosList(list) {
+    function normalizeVideosList(list, report) {
       const seenKeys = new Set();
       const seenIds = new Set();
-      return (Array.isArray(list) ? list : [])
+      const kept = (Array.isArray(list) ? list : [])
         .map((v, idx) => {
-          const parsed = parseVideoSource(v.directUrl || v.ytId || v.url || "");
-          if (!parsed) return null;
-          const isPlaylist = v.source === "playlist" || Boolean(v.playlistId);
+          const parsed = parseVideoSource(v.directUrl || v.ytId || v.url || "", true);
+          if (!parsed) { if (report) report.push({ v, why: "invalid" }); return null; }
+          const isPlaylist = false;   /* playlist sync was removed: videos it had added are now ordinary videos */
           const dedupeKey = `${isPlaylist ? "pl:" + (v.playlistId || "") : "manual"}:${v.section || "both"}:${parsed.kind === "youtube" ? parsed.ytId : parsed.directUrl}`;
-          if (seenKeys.has(dedupeKey)) return null;
+          if (seenKeys.has(dedupeKey)) { if (report) report.push({ v, why: "duplicate" }); return null; }
           seenKeys.add(dedupeKey);
 
           const baseKey = parsed.kind === "youtube" ? parsed.ytId : `direct-${idx}`;
@@ -6956,385 +6902,9 @@ service cloud.firestore {
             playlistPosition: isPlaylist && Number.isFinite(Number(v.playlistPosition)) ? Number(v.playlistPosition) : null
           };
         })
-        .filter(Boolean)
-        .slice(0, MAX_VIDEOS_CAPACITY);
-    }
-
-    function extractYouTubePlaylistId(raw) {
-      const s = String(raw || "").trim();
-      if (!s) return "";
-      if (/^(PL|UU|OL|RD|FL|LL)[a-zA-Z0-9_-]{10,}$/.test(s)) return s;
-      const m = s.match(/[?&]list=([a-zA-Z0-9_-]{10,})/);
-      return m ? m[1] : "";
-    }
-
-    let playlistSyncStatus = {
-      loading: false,
-      error: ""
-    };
-
-    function getStoredYouTubeApiKey() {
-      try {
-        return (localStorage.getItem(YT_API_KEY_STORAGE) || "").trim();
-      } catch (e) {
-        return "";
-      }
-    }
-
-    function setStoredYouTubeApiKey(key) {
-      try {
-        const clean = String(key || "").trim();
-        if (clean) localStorage.setItem(YT_API_KEY_STORAGE, clean);
-        else localStorage.removeItem(YT_API_KEY_STORAGE);
-      } catch (e) { itiLog("save YouTube API key", e); }
-    }
-
-    function readPlaylistCache(playlistId) {
-      try {
-        const raw = localStorage.getItem(YT_PLAYLIST_CACHE_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || parsed.playlistId !== playlistId || !Array.isArray(parsed.items)) return null;
-        return parsed;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function writePlaylistCache(playlistId, title, items) {
-      try {
-        localStorage.setItem(
-          YT_PLAYLIST_CACHE_KEY,
-          JSON.stringify({
-            playlistId,
-            title: title || "",
-            items,
-            cachedAt: Date.now()
-          })
-        );
-      } catch (e) { itiLog("save playlist cache", e); }
-    }
-
-    function renderPlaylistStatusBars() {
-      const pl = appState.youtubePlaylist || {};
-      const hasConnected = Boolean(pl.playlistId);
-
-      ["btn-refresh-home-playlist", "btn-refresh-tab-playlist"].forEach((btnId) => {
-        const btn = document.getElementById(btnId);
-        if (btn) btn.classList.toggle("hidden", !hasConnected);
-      });
-
-      ["home-playlist-status-bar", "videos-playlist-status-bar"].forEach((barId) => {
-        const bar = document.getElementById(barId);
-        if (!bar) return;
-
-        if (!hasConnected && !playlistSyncStatus.loading && !playlistSyncStatus.error) {
-          bar.classList.add("hidden");
-          bar.innerHTML = "";
-          return;
-        }
-
-        bar.classList.remove("hidden");
-        if (playlistSyncStatus.loading) {
-          bar.innerHTML = `
-            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/35 flex items-center gap-2.5 text-xs text-amber-300 font-semibold">
-              <span class="vid-loader-ring shrink-0" style="width:16px;height:16px;border-width:2px;"></span>
-              <span>Synchronizing YouTube playlist videos...</span>
-            </div>
-          `;
-          return;
-        }
-
-        if (playlistSyncStatus.error) {
-          bar.innerHTML = `
-            <div class="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 flex flex-wrap items-center justify-between gap-2 text-xs text-rose-300">
-              <div class="flex items-center gap-2 min-w-0">
-                <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400 shrink-0"></i>
-                <span class="truncate font-semibold">${escapeHTML(playlistSyncStatus.error)}</span>
-              </div>
-              <button type="button" onclick="refreshConnectedPlaylist(true)"
-                class="px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-[11px] font-bold text-rose-200 shrink-0 transition btn-tap">
-                Retry
-              </button>
-            </div>
-          `;
-          return;
-        }
-
-        const syncedTime = pl.lastSyncedAt
-          ? new Date(pl.lastSyncedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-          : "Cached";
-        bar.innerHTML = `
-          <div class="px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800/90 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/35 text-amber-300 font-extrabold text-[10px] shrink-0">Playlist</span>
-              <span class="font-bold text-white truncate">${escapeHTML(pl.title || pl.playlistId)}</span>
-              <span class="text-slate-400 shrink-0">&bull; ${pl.itemCount || 0} videos</span>
-            </div>
-            <span class="text-[10px] text-slate-400 shrink-0">Synced ${escapeHTML(syncedTime)}</span>
-          </div>
-        `;
-      });
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function applySyncedPlaylistItems(playlistId, playlistTitle, playlistUrl, section, syncedItems) {
-      const manualVideos = normalizeVideosList(appState.videos).filter((v) => v.source !== "playlist");
-      const availableSlots = Math.max(0, MAX_VIDEOS_CAPACITY - manualVideos.length);
-      const boundedPlaylistVideos = syncedItems.slice(0, availableSlots).map((item, idx) => ({
-        id: `pl-${playlistId}-${item.ytId}`,
-        title: item.title,
-        kind: "youtube",
-        ytId: item.ytId,
-        directUrl: "",
-        duration: "",
-        section: section || "both",
-        desc: item.desc || "",
-        source: "playlist",
-        playlistId,
-        playlistPosition: idx + 1
-      }));
-
-      appState.videos = normalizeVideosList([...boundedPlaylistVideos, ...manualVideos]);
-      appState.youtubePlaylist = {
-        playlistId,
-        playlistUrl: playlistUrl || `https://www.youtube.com/playlist?list=${playlistId}`,
-        title: playlistTitle || appState.youtubePlaylist?.title || "Connected YouTube Playlist",
-        section: section || "both",
-        lastSyncedAt: Date.now(),
-        itemCount: boundedPlaylistVideos.length
-      };
-
-      saveLocalState(true);
-      renderPlaylistStatusBars();
-      renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
-      renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);
-    }
-
-    async function syncYouTubePlaylist(forceRefresh = false, silent = false) {
-      const pl = appState.youtubePlaylist || {};
-      const playlistId = extractYouTubePlaylistId(pl.playlistId || pl.playlistUrl || "");
-      if (!playlistId) return;
-
-      const apiKey = getStoredYouTubeApiKey();
-      const cached = readPlaylistCache(playlistId);
-
-      if (!forceRefresh && cached && Date.now() - cached.cachedAt < YT_PLAYLIST_CACHE_TTL_MS) {
-        playlistSyncStatus = { loading: false, error: "" };
-        applySyncedPlaylistItems(playlistId, cached.title || pl.title, pl.playlistUrl, pl.section, cached.items);
-        return;
-      }
-
-      if (!apiKey) {
-        if (cached && cached.items.length) {
-          playlistSyncStatus = { loading: false, error: "" };
-          applySyncedPlaylistItems(playlistId, cached.title || pl.title, pl.playlistUrl, pl.section, cached.items);
-        } else {
-          playlistSyncStatus = {
-            loading: false,
-            error: isAdminUnlocked
-              ? "Add your YouTube Data API v3 key in Playlist settings to sync live updates."
-              : ""
-          };
-          renderPlaylistStatusBars();
-        }
-        return;
-      }
-
-      playlistSyncStatus = { loading: true, error: "" };
-      renderPlaylistStatusBars();
-
-      try {
-        let playlistTitle = pl.title || "";
-        try {
-          const metaUrl = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${encodeURIComponent(playlistId)}&key=${encodeURIComponent(apiKey)}`;
-          const metaResp = await fetch(metaUrl);
-          if (metaResp.ok) {
-            const metaJson = await metaResp.json();
-            if (metaJson.items && metaJson.items[0]?.snippet?.title) {
-              playlistTitle = metaJson.items[0].snippet.title;
-            }
-          }
-        } catch (e) { itiLog("fetch playlist title", e); }
-
-        const collected = [];
-        const seenVideoIds = new Set();
-        let pageToken = "";
-        let pageGuard = 0;
-
-        while (collected.length < MAX_VIDEOS_CAPACITY && pageGuard < 6) {
-          pageGuard++;
-          const params = new URLSearchParams({
-            part: "snippet,status",
-            playlistId,
-            maxResults: "50",
-            key: apiKey
-          });
-          if (pageToken) params.set("pageToken", pageToken);
-
-          const resp = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?${params.toString()}`);
-          const data = await resp.json();
-
-          if (!resp.ok) {
-            const apiMsg = data?.error?.message || `YouTube API error (${resp.status})`;
-            throw new Error(apiMsg);
-          }
-
-          const items = Array.isArray(data.items) ? data.items : [];
-          items.forEach((entry) => {
-            if (collected.length >= MAX_VIDEOS_CAPACITY) return;
-            const snip = entry?.snippet || {};
-            const privacy = entry?.status?.privacyStatus || "";
-            const vidId = snip?.resourceId?.videoId || "";
-            const title = String(snip.title || "").trim();
-
-            // Skip private, deleted, or unavailable playlist entries gracefully
-            if (!vidId || !/^[a-zA-Z0-9_-]{11}$/.test(vidId)) return;
-            if (privacy === "private" || title === "Private video" || title === "Deleted video") return;
-            if (seenVideoIds.has(vidId)) return;
-            seenVideoIds.add(vidId);
-
-            const channel = snip.videoOwnerChannelTitle || snip.channelTitle || "";
-            const rawDesc = String(snip.description || "").replace(/\s+/g, " ").trim();
-            const shortDesc = rawDesc
-              ? rawDesc.slice(0, 120) + (rawDesc.length > 120 ? "..." : "")
-              : channel
-              ? `Playlist Item #${collected.length + 1} • ${channel}`
-              : `Playlist Item #${collected.length + 1}`;
-
-            collected.push({
-              ytId: vidId,
-              title: title || `Playlist Video #${collected.length + 1}`,
-              desc: shortDesc
-            });
-          });
-
-          pageToken = data.nextPageToken || "";
-          if (!pageToken) break;
-        }
-
-        if (!collected.length) {
-          throw new Error("Playlist is empty, private, or contains no playable public videos.");
-        }
-
-        writePlaylistCache(playlistId, playlistTitle, collected);
-        playlistSyncStatus = { loading: false, error: "" };
-        applySyncedPlaylistItems(playlistId, playlistTitle, pl.playlistUrl, pl.section, collected);
-        if (!silent) {
-          showToast(`Synced ${collected.length} videos from YouTube playlist`, "success");
-        }
-      } catch (err) {
-        const msg = err && err.message ? err.message : "Unable to load YouTube playlist.";
-        playlistSyncStatus = { loading: false, error: msg };
-        renderPlaylistStatusBars();
-        if (!silent) showToast(msg, "error");
-      }
-    }
-
-    function refreshConnectedPlaylist(forceRefresh = true) {
-      if (!appState.youtubePlaylist?.playlistId) {
-        if (isAdminUnlocked) openPlaylistModal();
-        else showToast("No YouTube playlist connected yet", "info");
-        return;
-      }
-      if (!getStoredYouTubeApiKey()) {
-        if (isAdminUnlocked) {
-          showToast("Enter your YouTube Data API v3 key to refresh", "info");
-          openPlaylistModal();
-        } else {
-          renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
-          renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);
-          showToast("Refreshed synced playlist view", "info");
-        }
-        return;
-      }
-      syncYouTubePlaylist(forceRefresh, false);
-    }
-
-    function openPlaylistModal() {
-      if (!isAdminUnlocked) {
-        openAdminModal();
-        return;
-      }
-      const pl = appState.youtubePlaylist || {};
-      const urlInp = document.getElementById("playlist-url-input");
-      const keyInp = document.getElementById("playlist-apikey-input");
-      const secInp = document.getElementById("playlist-section-input");
-      const badge = document.getElementById("playlist-modal-connected-badge");
-      const discBtn = document.getElementById("btn-disconnect-playlist");
-
-      if (urlInp) urlInp.value = pl.playlistUrl || pl.playlistId || "";
-      if (keyInp) keyInp.value = getStoredYouTubeApiKey();
-      if (secInp) secInp.value = pl.section || "both";
-
-      if (pl.playlistId) {
-        if (badge) {
-          badge.classList.remove("hidden");
-          badge.innerHTML = `<div class="font-bold">Connected: ${escapeHTML(pl.title || pl.playlistId)}</div>
-            <div class="font-mono text-[10px] opacity-85">ID: ${escapeHTML(pl.playlistId)} &bull; ${pl.itemCount || 0} videos synced</div>`;
-        }
-        if (discBtn) discBtn.classList.remove("hidden");
-      } else {
-        if (badge) badge.classList.add("hidden");
-        if (discBtn) discBtn.classList.add("hidden");
-      }
-
-      openModal("modal-playlist-sync");
-    }
-
-    async function handleConnectYouTubePlaylist(e) {
-      e.preventDefault();
-      if (!isAdminUnlocked) return;
-
-      const rawUrl = document.getElementById("playlist-url-input").value.trim();
-      const apiKey = document.getElementById("playlist-apikey-input").value.trim();
-      const section = document.getElementById("playlist-section-input").value || "both";
-      const playlistId = extractYouTubePlaylistId(rawUrl);
-
-      if (!playlistId) {
-        showToast("Invalid YouTube playlist URL or Playlist ID", "error");
-        return;
-      }
-      if (!apiKey) {
-        showToast("Please enter a valid YouTube Data API v3 key", "error");
-        return;
-      }
-
-      setStoredYouTubeApiKey(apiKey);
-      appState.youtubePlaylist = {
-        ...(appState.youtubePlaylist || {}),
-        playlistId,
-        playlistUrl: rawUrl.includes("list=") ? rawUrl : `https://www.youtube.com/playlist?list=${playlistId}`,
-        section
-      };
-      saveLocalState(true);
-      closeModal("modal-playlist-sync");
-      await syncYouTubePlaylist(true, false);
-    }
-
-    function disconnectYouTubePlaylist() {
-      if (!isAdminUnlocked) return;
-      stopAllActiveVideos();
-      appState.videos = normalizeVideosList(appState.videos).filter((v) => v.source !== "playlist");
-      appState.youtubePlaylist = {
-        playlistId: "",
-        playlistUrl: "",
-        title: "",
-        section: "both",
-        lastSyncedAt: 0,
-        itemCount: 0
-      };
-      try {
-        localStorage.removeItem(YT_PLAYLIST_CACHE_KEY);
-      } catch (e) {}
-      playlistSyncStatus = { loading: false, error: "" };
-      saveLocalState(true);
-      renderPlaylistStatusBars();
-      renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY);
-      renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY);
-      closeModal("modal-playlist-sync");
-      showToast("YouTube playlist disconnected; manual videos preserved", "info");
+        .filter(Boolean);
+      if (report && kept.length > MAX_VIDEOS_CAPACITY) kept.slice(MAX_VIDEOS_CAPACITY).forEach((v) => report.push({ v, why: "limit" }));
+      return kept.slice(0, MAX_VIDEOS_CAPACITY);
     }
 
     function getHolidayEntry(iso) {
@@ -9816,8 +9386,11 @@ service cloud.firestore {
     function renderVideoCardItemHTML(v, targetPrefix) {
       const isDirect = v.kind === "direct";
       const cleanId = isDirect ? "" : extractYouTubeId(v.ytId);
+      const dmId = isDirect ? extractDailymotionId(v.directUrl) : "";
+      const fbUrl = isDirect ? extractFacebookVideo(v.directUrl) : "";
+      const ofName = dmId ? "Dailymotion" : (fbUrl ? "Facebook" : "");
       const customThumb = v.thumb && /^(https?:\/\/\S+|data:image\/)/i.test(String(v.thumb)) ? String(v.thumb) : "";
-      const thumbUrl = customThumb ? escapeHTML(customThumb) : (cleanId ? `https://i.ytimg.com/vi/${cleanId}/hqdefault.jpg` : "");
+      const thumbUrl = customThumb ? escapeHTML(customThumb) : (cleanId ? `https://i.ytimg.com/vi/${cleanId}/hqdefault.jpg` : (dmId ? `https://www.dailymotion.com/thumbnail/video/${dmId}` : ""));
       const safeTitle = escapeHTML(v.title);
       const safeId = escapeHTML(v.id);
       const isPlaylistVideo = v.source === "playlist";
@@ -9833,7 +9406,7 @@ service cloud.firestore {
                   <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-1.5">
                     <i data-lucide="${isDirect ? "film" : "zap"}" class="w-4 h-4"></i>
                   </div>
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${v._cat === "music" ? "Music Track" : isDirect ? "Direct Workshop Video" : isPlaylistVideo ? "Playlist Video" : "Electrician Lab Demo"}</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">${v._cat === "music" ? "Music Track" : dmId ? "Dailymotion Video" : fbUrl ? "Facebook Video" : isDirect ? "Direct Workshop Video" : isPlaylistVideo ? "Playlist Video" : "Electrician Lab Demo"}</span>
                   <span data-vid-unavail class="hidden mt-1 px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-[9px] font-bold text-rose-300">Video Unavailable</span>
                 </div>
 
@@ -9877,7 +9450,10 @@ service cloud.firestore {
                 ${cleanId ? `<button type="button" onclick="event.stopPropagation(); openOnYouTube('${targetPrefix}', '${safeId}')" title="Watch on YouTube" aria-label="Watch on YouTube"
                   class="shrink-0 w-6 h-6 rounded-lg bg-slate-900 hover:bg-rose-500/20 border border-slate-700/80 hover:border-rose-500/50 text-slate-300 hover:text-rose-300 flex items-center justify-center transition btn-tap">
                   <i data-lucide="external-link" class="w-3 h-3"></i>
-                </button>` : ""}
+                </button>` : (ofName ? `<button type="button" onclick="event.stopPropagation(); openVideoOriginal('${safeId}')" title="Open on ${ofName}" aria-label="Open on ${ofName}"
+                  class="shrink-0 w-6 h-6 rounded-lg bg-slate-900 hover:bg-sky-500/20 border border-slate-700/80 hover:border-sky-500/50 text-slate-300 hover:text-sky-300 flex items-center justify-center transition btn-tap">
+                  <i data-lucide="external-link" class="w-3 h-3"></i>
+                </button>` : "")}
               </div>
               ${v.artist || (v._cat === "music" && v._subName) ? `<p class="text-[10.5px] font-semibold text-amber-300/90 truncate">${escapeHTML([v.artist, v._cat === "music" ? v._subName : ""].filter(Boolean).join(" · "))}</p>` : ""}
               ${v.desc ? `<p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">${escapeHTML(v.desc)}</p>` : ""}
@@ -9936,6 +9512,14 @@ service cloud.firestore {
         </article>
       `;
     }
+
+    // Open a non-YouTube embedded video (Dailymotion) on its own site
+    window.openVideoOriginal = function (videoId) {
+      try {
+        const v = normalizeVideosList(appState.videos).find((x) => x.id === videoId);
+        if (v && /^https?:\/\//i.test(v.directUrl || "")) window.open(v.directUrl, "_blank", "noopener");
+      } catch (e) { itiLog("open original", e); }
+    };
 
     // Open a video on YouTube (new tab), continuing from the current playback time
     function openOnYouTube(targetPrefix, videoId) {
@@ -10115,7 +9699,36 @@ service cloud.firestore {
         refreshUnmuteButtons();
       }, 1500);
 
-      if (videoObj.kind === "direct") {
+      const dmPlayId = videoObj.kind === "direct" ? extractDailymotionId(videoObj.directUrl) : "";
+      const fbPlayUrl = videoObj.kind === "direct" && !dmPlayId ? extractFacebookVideo(videoObj.directUrl) : "";
+      if (dmPlayId) {
+        slot.querySelectorAll("iframe").forEach((f) => f.remove());
+        const dm = document.createElement("iframe");
+        dm.className = "w-full h-full";
+        dm.title = videoObj.title || "Dailymotion video";
+        dm.setAttribute("frameborder", "0");
+        dm.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        dm.setAttribute("allow", "autoplay; fullscreen; picture-in-picture; web-share; encrypted-media");
+        dm.allowFullscreen = true;
+        dm.onload = dismissLoader;
+        dm.src = "https://www.dailymotion.com/embed/video/" + encodeURIComponent(dmPlayId) + "?autoplay=1&queue-enable=false&sharing-enable=false" + (rt.muted ? "&mute=1" : "") + (startAt ? "&start=" + startAt : "");
+        slot.appendChild(dm);
+        setAutoplayStatus(targetPrefix, autoplayEnabled ? "Playing · autoplay-next unavailable for Dailymotion" : "Playing", "warn");
+      } else if (fbPlayUrl) {
+        slot.querySelectorAll("iframe").forEach((f) => f.remove());
+        const fb = document.createElement("iframe");
+        fb.className = "w-full h-full bg-black";
+        fb.title = videoObj.title || "Facebook video";
+        fb.setAttribute("frameborder", "0");
+        fb.setAttribute("scrolling", "no");
+        fb.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+        fb.setAttribute("allow", "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen");
+        fb.allowFullscreen = true;
+        fb.onload = dismissLoader;
+        fb.src = "https://www.facebook.com/plugins/video.php?href=" + encodeURIComponent(fbPlayUrl) + "&show_text=false&autoplay=true&allowfullscreen=true" + (rt.muted ? "&mute=1" : "") + (startAt ? "&t=" + startAt : "");
+        slot.appendChild(fb);
+        setAutoplayStatus(targetPrefix, autoplayEnabled ? "Playing · autoplay-next unavailable for Facebook (tap play if it doesn't start)" : "Playing", "warn");
+      } else if (videoObj.kind === "direct") {
         const vid = document.createElement("video");
         vid.className = "w-full h-full object-contain bg-black";
         vid.src = videoObj.directUrl;
@@ -12321,7 +11934,7 @@ service cloud.firestore {
 
       if (existing) {
         if (idInp) idInp.value = existing.id;
-        if (heading) heading.textContent = `Edit Trade Video (${appState.videos.length}/${MAX_VIDEOS_CAPACITY})`;
+        if (heading) heading.textContent = `Edit Trade Video (${appState.videos.length})`;
         if (submitBtn) submitBtn.textContent = "Update Video";
         if (titleInp) titleInp.value = existing.title || "";
         if (urlInp) {
@@ -12337,7 +11950,7 @@ service cloud.firestore {
         if (descInp) descInp.value = existing.desc || "";
       } else {
         if (idInp) idInp.value = "";
-        if (heading) heading.textContent = `Add Trade Video (${appState.videos.length}/${MAX_VIDEOS_CAPACITY})`;
+        if (heading) heading.textContent = `Add Trade Video (${appState.videos.length})`;
         if (submitBtn) submitBtn.textContent = "Add to Video Library";
         if (titleInp) titleInp.value = "";
         if (urlInp) urlInp.value = "";
@@ -12356,7 +11969,7 @@ service cloud.firestore {
       const rawUrl = document.getElementById("video-url-input").value.trim();
       const parsed = parseVideoSource(rawUrl);
       if (!parsed) {
-        showToast("Enter a valid YouTube link, Video ID, or direct video URL", "error");
+        showToast(isFacebookHost(rawUrl) ? "Use the full Facebook video link (facebook.com/watch/?v=\u2026 or /reel/\u2026). fb.watch and share links can't be used." : "Enter a valid YouTube, Dailymotion or Facebook link, Video ID, or direct video URL", "error");
         return;
       }
       const section = document.getElementById("video-section-input")?.value || "both";
@@ -12398,7 +12011,7 @@ service cloud.firestore {
       } else {
         appState.videos.unshift(entry);
         appState.videos = normalizeVideosList(appState.videos);
-        showToast(`Trade video added (${appState.videos.length}/${MAX_VIDEOS_CAPACITY})`, "success");
+        showToast(`Trade video added (${appState.videos.length})`, "success");
       }
 
       saveLocalState(true);
@@ -14014,7 +13627,7 @@ service cloud.firestore {
     }
 
     function renderAllViews() {
-      [renderNotices, renderStudyNotes, renderPlaylistStatusBars,
+      [renderNotices, renderStudyNotes,
        function(){ renderVideoCards("notices-videos-grid", "notices", MAX_VIDEOS_CAPACITY); },
        function(){ renderVideoCards("full-videos-grid", "videos", MAX_VIDEOS_CAPACITY); },
        renderDailySection, renderEligibilityChart, renderResultsSection, renderGallery,
@@ -14042,9 +13655,7 @@ service cloud.firestore {
       setupAutoHideHeader();
       renderAllViews();
       requestAnimationFrame(() => positionTabIndicator(true));
-      if (appState.youtubePlaylist && appState.youtubePlaylist.playlistId) {
-        syncYouTubePlaylist(false, true);
-      }
+      try { localStorage.removeItem(YT_API_KEY_STORAGE); localStorage.removeItem(YT_PLAYLIST_CACHE_KEY); } catch (e) {}   /* leftovers of the removed playlist sync */
       try { if (window.initFirebaseCloud) window.initFirebaseCloud(); } catch (e) { updateSyncIndicator(false, "Offline Mode"); }
     }
 
@@ -15024,7 +14635,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   function rs(id) { return subs().some(function (x) { return x.id === id; }) ? id : ""; }
   function okThumb(u) { u = String(u || "").trim(); return (/^https?:\/\/\S+$/i.test(u) || (/^data:image\//i.test(u) && u.length < 100000)) ? u : ""; }
   function thumbHTML(v, q) {
-    var id = v.kind === "youtube" ? extractYouTubeId(v.ytId) : "", u = okThumb(v.thumb) || (id ? "https://i.ytimg.com/vi/" + id + "/" + q + ".jpg" : "");
+    var id = v.kind === "youtube" ? extractYouTubeId(v.ytId) : "", dm = v.kind === "direct" ? extractDailymotionId(v.directUrl) : "", u = okThumb(v.thumb) || (id ? "https://i.ytimg.com/vi/" + id + "/" + q + ".jpg" : (dm ? "https://www.dailymotion.com/thumbnail/video/" + dm : ""));
     return u ? '<img loading="lazy" decoding="async" alt="" src="' + esc(u) + '" onerror="this.remove()">' : svg(I.f);
   }
   function fixSub(p) { if (st[p].sub !== "all" && !subs().some(function (s) { return s.id === st[p].sub && !s.hidden; })) st[p].sub = "all"; }
@@ -15648,6 +15259,19 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
         return { st: "unk" };
       }).catch(viaNoembed);
     }
+    /* st: ok | bad (not found) | noembed (embedding off) | unk (could not check) */
+    function dmMeta(id) {
+      return fetch("https://api.dailymotion.com/video/" + encodeURIComponent(id) + "?fields=title,owner.screenname,allow_embed,private,published")
+        .then(function (r) {
+          if (r.status === 404 || r.status === 400) return { st: "bad" };
+          if (!r.ok) return { st: "unk" };
+          return r.json().then(function (d) {
+            if (!d || !d.title) return { st: "unk" };
+            if (d.allow_embed === false || d.private === true) return { st: "noembed", d: d };
+            return { st: "ok", d: { title: d.title, author_name: d["owner.screenname"] || "" } };
+          });
+        }).catch(function () { return { st: "unk" }; });
+    }
     function testVideoUrl(url) {
       return new Promise(function (res) {
         var v = document.createElement("video"), done = false, t;
@@ -15668,8 +15292,29 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     function autoFill(silent) {
       var urlEl = $("video-url-input"), btn = $("vl-af-btn"); if (!urlEl) return;
       var p = parseVideoSource(tr(urlEl.value));
-      if (!p) { if (silent !== true) showToast("Paste a valid YouTube link or video URL first", "error"); return; }
+      if (!p) { if (silent !== true) showToast(isFacebookHost(urlEl.value) ? "Use the full Facebook video link (watch/?v=\u2026 or /reel/\u2026); fb.watch and share links can't be used" : "Paste a valid YouTube, Dailymotion, Facebook or video link first", "error"); return; }
       var titleEl = $("video-title-input"), descEl = $("video-desc-input");
+      if (p.kind === "direct" && extractFacebookVideo(p.directUrl)) {
+        if (silent !== true) showToast("Facebook doesn't share video titles \u2014 type the title manually", "info");
+        return;
+      }
+      var dmAf = p.kind === "direct" ? extractDailymotionId(p.directUrl) : "";
+      if (dmAf) {
+        if (btn) { btn.disabled = true; btn.textContent = "Reading…"; }
+        dmMeta(dmAf).then(function (r) {
+          if (btn) { btn.disabled = false; btn.textContent = "Auto-fill from link"; }
+          var cur = parseVideoSource(tr(urlEl.value) || ""); if (!cur || extractDailymotionId(cur.directUrl) !== dmAf) return;
+          if (r.st === "ok" && r.d) {
+            fillIfEmpty(titleEl, cleanT(r.d.title), 120);
+            var au2 = cleanA(r.d.author_name); if (au2 && !isMusicSel()) fillIfEmpty(descEl, "By " + au2, 200);
+            if (silent !== true) showToast("Details filled from Dailymotion", "success");
+          } else if (silent === true) return;
+          else if (r.st === "noembed") showToast("Video found, but embedding is disabled \u2014 it won't play here", "error");
+          else if (r.st === "bad") showToast("Dailymotion video not found", "error");
+          else showToast("Could not read details \u2014 type the title manually", "info");
+        });
+        return;
+      }
       if (p.kind !== "youtube") {
         var t = titleFromUrl(p.directUrl); fillIfEmpty(titleEl, t, 120);
         if (silent !== true) showToast(t ? "Title taken from the file name" : "Could not guess a title — type it manually", t ? "success" : "info");
@@ -15730,6 +15375,18 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       function work() {
         if (i >= rows.length) return Promise.resolve();
         var r = rows[i++];
+        if (r.src.kind === "direct" && extractFacebookVideo(r.src.directUrl)) { if (!r.title) r.title = "Facebook video"; return work(); }
+        var dmBulk = r.src.kind === "direct" ? extractDailymotionId(r.src.directUrl) : "";
+        if (dmBulk) {
+          if (r.title && r.extra) return work();
+          return dmMeta(dmBulk).then(function (m) {
+            if (m.st === "bad") r.skip = "video not found";
+            else if (m.st === "noembed") r.skip = "embedding disabled";
+            else if (m.st === "ok" && m.d) { if (!r.title) r.title = cleanT(m.d.title || ""); r.author = cleanA(m.d.author_name); }
+            done++; out.textContent = "Reading Dailymotion details\u2026 " + done;
+            return work();
+          });
+        }
         if (r.src.kind !== "youtube") { if (!r.title) r.title = titleFromUrl(r.src.directUrl); return work(); }
         if (r.title && r.extra) return work();
         return ytMeta(r.src.ytId).then(function (m) {
@@ -15789,7 +15446,9 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       var job = testing = { cancel: false, done: 0, total: list.length }, idx = 0, res = {};
       setTestUi();
       function one(v) {
-        var p = v.kind === "youtube" ? ytMeta(v.ytId).then(function (r) { return r.st; }) : testVideoUrl(v.directUrl);
+        var dmT = v.kind === "direct" ? extractDailymotionId(v.directUrl) : "";
+        if (v.kind === "direct" && extractFacebookVideo(v.directUrl)) return Promise.resolve("unk").then(function (s) { res[v.id] = s; });   /* Facebook can't be checked from the browser */
+        var p = v.kind === "youtube" ? ytMeta(v.ytId).then(function (r) { return r.st; }) : (dmT ? dmMeta(dmT).then(function (r) { return r.st; }) : testVideoUrl(v.directUrl));
         return p.then(function (s) { res[v.id] = s; });
       }
       function worker() {
@@ -15802,7 +15461,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
         var bad = [], slow = 0, unk = 0;
         list.forEach(function (v) {
           var s = res[v.id]; if (!s) return;
-          if (s === "bad") bad.push(v.title + " — " + (v.kind === "youtube" ? "not found / removed" : "file not loading"));
+          if (s === "bad") bad.push(v.title + " — " + (v.kind === "youtube" || extractDailymotionId(v.directUrl) ? "not found / removed" : "file not loading"));
           else if (s === "noembed") bad.push(v.title + " — embedding disabled");
           else if (s === "slow") slow++; else if (s === "unk") unk++;
         });
@@ -15815,6 +15474,27 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     }
 
     /* ---- inject UI into the Add Video modal (once) ---- */
+    /* explains, per video, why it is not in the All videos list of the Videos tab */
+    function whyMissing() {
+      var st = $("vl-test-status"); if (!st) return;
+      var raw = Array.isArray(appState.videos) ? appState.videos : [], rep = [], list = normalizeVideosList(raw, rep);
+      var why = { invalid: "link not recognised (removed from the list)", duplicate: "same video added twice in the same section", limit: "over the " + MAX_VIDEOS_CAPACITY + " video limit", home: "set to \u201cHome Section Only\u201d", music: "in the Music category (All excludes music)", hid: "hidden", shid: "its music sub-category is hidden" };
+      var cnt = {}, lines = [], shown = 0;
+      function add(k, t) { cnt[k] = (cnt[k] || 0) + 1; if (lines.length < 12) lines.push("\u2022 " + String(t || "Untitled").slice(0, 44) + " \u2014 " + why[k]); }
+      rep.forEach(function (r) { add(r.why, r.v && r.v.title); });
+      list.forEach(function (v) {
+        var sec = v.section || "both", d = window.vlDecorate ? window.vlDecorate(v) : v;
+        if (!(sec === "both" || sec === "lab")) add("home", v.title);
+        else if (d._hid) add("hid", v.title);
+        else if (d._shid) add("shid", v.title);
+        else if (d._cat === "music") add("music", v.title);
+        else shown++;
+      });
+      var parts = Object.keys(cnt).map(function (k) { return cnt[k] + " " + why[k].replace(/ \(.*\)$/, ""); });
+      st.classList.remove("hidden");
+      st.textContent = "Stored: " + raw.length + " \u00b7 in All videos: " + shown + (shown > 12 ? " (12 shown at a time \u2014 tap Show More)" : "") +
+        (parts.length ? "\nNot in All videos: " + parts.join("; ") + "\n" + lines.join("\n") + (Object.keys(cnt).reduce(function (a, k) { return a + cnt[k]; }, 0) > lines.length ? "\n\u2026and more" : "") : "\nNothing is being filtered out.");
+    }
     function ensureUi() {
       var urlEl = $("video-url-input"); if (!urlEl) return;
       var form = urlEl.closest("form"), inner = form && form.parentNode;
@@ -15822,10 +15502,11 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       if (!$("vl-tools-row")) {
         var row = document.createElement("div"); row.id = "vl-tools-row"; row.className = "space-y-2";
         row.innerHTML =
-          '<div class="grid grid-cols-3 gap-2">' +
+          '<div class="grid grid-cols-2 gap-2">' +
           '<button type="button" id="vl-af-btn" class="' + BTN + ' text-amber-300">Auto-fill from link</button>' +
           '<button type="button" id="vl-bulk-btn" class="' + BTN + ' text-amber-300">Bulk add</button>' +
-          '<button type="button" id="vl-test-btn" class="' + BTN + ' text-emerald-300">Test all links</button></div>' +
+          '<button type="button" id="vl-test-btn" class="' + BTN + ' text-emerald-300">Test all links</button>' +
+          '<button type="button" id="vl-why-btn" class="' + BTN + ' text-sky-300">Why missing?</button></div>' +
           '<div id="vl-test-status" class="hidden text-[11px] text-slate-300 px-1 whitespace-pre-line"></div>' +
           '<div id="vl-bulk-panel" class="hidden bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">' +
           '<p id="vl-bulk-hint" class="text-[10px] text-slate-400"></p>' +
@@ -15837,6 +15518,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
         $("vl-af-btn").onclick = function () { autoFill(false); };
         $("vl-bulk-btn").onclick = toggleBulk;
         $("vl-test-btn").onclick = testAll;
+        $("vl-why-btn").onclick = whyMissing;
         $("vl-bulk-go").onclick = bulkImport;
         /* fill details automatically after a link is pasted/changed, but only into empty fields */
         urlEl.addEventListener("change", function () { if (!tr(($("video-title-input") || {}).value)) autoFill(true); });
@@ -16474,7 +16156,8 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   function lvSlide(v, i) {
     var id = v.kind === "direct" ? "" : extractYouTubeId(v.ytId);
     var custom = v.thumb && /^(https?:\/\/\S+|data:image\/)/i.test(String(v.thumb)) ? String(v.thumb) : "";
-    var thumb = custom || (id ? "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg" : "");
+    var dmv = v.kind === "direct" ? extractDailymotionId(v.directUrl) : "";
+    var thumb = custom || (id ? "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg" : (dmv ? "https://www.dailymotion.com/thumbnail/video/" + dmv : ""));
     var cat = window.vlCatName ? window.vlCatName(v._cat) : "";
     var isW = window.dvIsWatched(v);
     return '<div class="dv-lv-slide" data-i="' + i + '"><button type="button" class="dv-lv-thumb" onclick="dvPlayLatest(' + i + ')" aria-label="Play ' + esc(v.title) + '">' +

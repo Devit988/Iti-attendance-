@@ -18896,6 +18896,16 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     .mh-sec { display: flex; align-items: center; justify-content: space-between; margin: .8rem .25rem .2rem; font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--mh-sub); }
     .mh-sec em { font-style: normal; color: var(--mh-ind-fg); }
     .mh-more { text-align: center; padding: .6rem; font-size: .72rem; font-weight: 700; color: var(--mh-sub); }
+    .mh-sentinel { display: flex; align-items: center; justify-content: center; padding: 1rem 0 1.2rem; }
+    .mh-more-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 2.6rem; margin-top: .4rem; border: 1px solid var(--tape-border); border-radius: 9999px; background: var(--mh-chip); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
+    .mh-more-btn:active { transform: scale(.97); }
+    .mh-more-btn:disabled { cursor: default; }
+    .mh-dots { position: relative; display: inline-block; width: 1.4rem; height: 1.4rem; animation: mh-spin .9s linear infinite; }
+    .mh-dots i { position: absolute; width: .36rem; height: .36rem; border-radius: 50%; background: var(--mh-ind-fg); left: 50%; top: 50%; margin: -.18rem 0 0 -.18rem; }
+    .mh-dots i:nth-child(1) { transform: translateY(-.52rem); }
+    .mh-dots i:nth-child(2) { transform: translateX(.52rem); opacity: .8; }
+    .mh-dots i:nth-child(3) { transform: translateY(.52rem); opacity: .6; }
+    .mh-dots i:nth-child(4) { transform: translateX(-.52rem); opacity: .4; }
     .mh-cover { flex: none; width: 2.9rem; height: 2.9rem; border-radius: .75rem; object-fit: cover; background: var(--mh-chip); border: 1px solid var(--tape-border); }
     .mh-cover[hidden] { display: none; }
     /* ---- hero Now playing: big cover + blurred cover backdrop ---- */
@@ -20410,7 +20420,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   var U = { fav: [], pls: [], shuffle: false, repeat: "all", vol: 1, muted: false, viz: "bars", rem: false, vizOn: true, vib: false, auto: true, hp: true, acc: "amber" };
   var Q = { t: "all", id: "" };            /* active queue: all | fav | pl */
   var bag = null, hist = [], noHist = false;
-  var veilT = null, hubIsOpen = false, hv = { tab: "all", pl: "", add: false, q: "", menu: "", sub: "" }, popId = "", enterT = null, hideT = null;
+  var veilT = null, hubIsOpen = false, hv = { tab: "all", pl: "", add: false, q: "", menu: "", sub: "" }, qShow = 40, qLoading = false, lim = 50, limKey = "", limObs = null, limT = null, popId = "", enterT = null, hideT = null;
   var sleepSel = "0", sleepEnd = 0, sleepEot = false, sleepTimer = null;
   var hub = $("mh-root");
 
@@ -20543,14 +20553,15 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
   function queueHTML() {
     var all = tracks(); if (!all.length) return '<div class="mh-empty">The playlist is empty.</div>';
-    var uq = UQ.filter(exists), auto = upcomingIds(), shown = auto.slice(0, 40), h = "";
+    var uq = UQ.filter(exists), auto = upcomingIds(), shown = auto.slice(0, qShow), h = "";
     h += '<div class="mh-act"><div class="mh-hint">Playing from <b>' + escapeHTML(ctxName()) + '</b>' + (U.shuffle ? " \u00b7 shuffle on" : "") + (U.repeat === "one" ? " \u00b7 repeat one" : "") + '</div>' +
       (uq.length ? '<button type="button" class="mh-pill" data-mh="q-clear">Clear queue</button>' : "") + '</div>';
     if (uq.length) { h += '<div class="mh-sec">Next in queue <em>' + uq.length + '</em></div>'; uq.forEach(function (id, i) { h += qRow(all[idxOf(id)], i + 1, "uq"); }); }
     if (shown.length) {
       h += '<div class="mh-sec">Next from ' + escapeHTML(ctxName()) + ' <em>' + auto.length + '</em></div>';
       shown.forEach(function (id, i) { h += qRow(all[idxOf(id)], i + 1, "auto"); });
-      if (auto.length > shown.length) h += '<div class="mh-more">+ ' + (auto.length - shown.length) + ' more</div>';
+      if (auto.length > shown.length) h += '<button type="button" class="mh-more mh-more-btn' + (qLoading ? ' loading' : '') + '" data-mh="q-more"' + (qLoading ? ' disabled' : '') + '>' +
+        (qLoading ? '<span class="mh-dots" aria-label="Loading"><i></i><i></i><i></i><i></i></span>' : '+ ' + (auto.length - shown.length) + ' more') + '</button>';
     }
     if (!uq.length && !shown.length) h += '<div class="mh-empty">Nothing coming up. Tap <b>+</b> on any song and choose <b>Play next</b> or <b>Add to queue</b>.</div>';
     return h;
@@ -20778,14 +20789,30 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       else { eT = "No songs yet"; eS = isAdminUnlocked ? "Use Manage Playlist to add the first songs." : "Songs added by your admin will show up here."; }
       h += '<div class="mh-empty mh-empty-rich"><span class="mh-eic">' + ic(eIc, "w-5 h-5") + '</span><b>' + eT + '</b>' + (eS ? '<small>' + eS + '</small>' : '') + eB + '</div>';
     }
-    items.forEach(function (tr, i) { h += rowHTML(tr, i + 1, hv.tab); });
+    var lk = hv.tab + "|" + hv.sub + "|" + q;
+    if (lk !== limKey) { limKey = lk; lim = 50; }          /* new tab / category / search: start again at 50 */
+    items.slice(0, lim).forEach(function (tr, i) { h += rowHTML(tr, i + 1, hv.tab); });
+    if (items.length > lim) h += '<div class="mh-sentinel" id="mh-sentinel"><span class="mh-dots" aria-label="Loading"><i></i><i></i><i></i><i></i></span></div>';
     return h;
+  }
+  function hubWatchEnd() {
+    if (limObs) { limObs.disconnect(); limObs = null; }
+    clearTimeout(limT);
+    var sn = $("mh-sentinel"), body = $("mh-body");
+    if (!sn || !body || !window.IntersectionObserver) return;
+    limObs = new IntersectionObserver(function (es) {
+      if (!es[0].isIntersecting) return;
+      limObs.disconnect(); limObs = null;
+      limT = setTimeout(function () { lim += 50; hubList(); }, 600);   /* show the spinner briefly, then add 50 more */
+    }, { root: body, rootMargin: "0px 0px 40px 0px", threshold: 0.1 });
+    limObs.observe(sn);
   }
   function hubList(anim) {
     if (!hubIsOpen) return;
     var body = $("mh-body"), list = $("mh-list"); if (!body || !list) return;
     var top = body.scrollTop, html = hubListHTML();
     if (list._h !== html) { list.innerHTML = html; list._h = html; icons(list); body.scrollTop = top; }
+    hubWatchEnd();
     popId = "";
     if (anim) {
       list.classList.remove("mh-enter"); void list.offsetWidth; list.classList.add("mh-enter");
@@ -20805,6 +20832,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function hubRefresh(anim) { if (!hubIsOpen) return; hubNow(); hubList(anim); updateSleepUi(); }
 
   function hubOpen() {
+    qShow = 40; qLoading = false;
     holdLayout(640);
     clearTimeout(veilT); bar.classList.add("mu-veil");      /* keep the small player hidden behind the library */
     open(true);                                             /* a minimized pill stays minimized: no layout work during the slide */
@@ -20996,6 +21024,10 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       case "q-up": { var qi = UQ.indexOf(id); if (qi > 0) { UQ.splice(qi, 1); UQ.splice(qi - 1, 0, id); hubList(); } } break;
       case "q-rm": { var qj = UQ.indexOf(id); if (qj >= 0) { UQ.splice(qj, 1); hubList(); } } break;
       case "q-clear": UQ = []; hubList(); break;
+      case "q-more": if (!qLoading) {
+        qLoading = true; hubList();
+        setTimeout(function () { qShow += 40; qLoading = false; hubList(); }, 700);
+      } break;
       case "sleeptoggle": { var sw = el.closest(".mh-sleep"); if (sw) { var op = sw.classList.toggle("open"); el.setAttribute("aria-expanded", op ? "true" : "false"); } } break;
       case "sleep": setSleep(el.getAttribute("data-v")); { var sw2 = el.closest(".mh-sleep"); if (sw2) { sw2.classList.remove("open"); var th = sw2.querySelector("[data-mh=sleeptoggle]"); if (th) th.setAttribute("aria-expanded", "false"); } } break;
     }

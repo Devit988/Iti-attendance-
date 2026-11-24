@@ -18756,7 +18756,6 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     .mh.mh-show .mh-back { opacity: 1; }
     .mh.mh-show .mh-sheet { transform: none; transition: transform .52s var(--mh-ios); }
     /* off-screen rows are not laid out or painted, so opening a long library stays cheap */
-    .mh-item { content-visibility: auto; contain-intrinsic-size: auto 3.7rem; }
 
     .mh-head { flex: none; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
     .mh-grab { width: 2.4rem; height: .26rem; border-radius: 9999px; margin: .55rem auto 0; background: var(--mh-sub); opacity: .45; }
@@ -18921,7 +18920,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     .mh-now .mh-nt { grid-area: title; }
     .mh-now .viz { grid-area: viz; }
     .mh-now #mh-fav-cur { grid-area: fav; }
-    .mh-now .mh-nt b { font-size: 1.02rem; }
+    .mh-now .mh-nt b { font-size: 1.02rem; min-height: 2.5em; }   /* same height for 1- and 2-line titles, so nothing below moves when the song changes */
     @media (max-height: 640px) { .mh-now .mh-cover { width: min(52%, 9rem); } }
     /* tinted subcategory chips (resting state only; the selected chip keeps the theme colour) */
     .mh-chip[style*="--ch"]:not(.on) { background: hsla(var(--ch), 80%, 60%, .15); border-color: hsla(var(--ch), 80%, 58%, .4) !important; }
@@ -19755,7 +19754,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     try { document.body.classList.toggle("music-playing", !!playing); } catch (e) {}
     renderSotd();
     paintLoading();
-    hubRefresh();
+    hubRefreshSoon();
   }
 
   function meta() {
@@ -20063,7 +20062,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     } else if (t.length && !bar.classList.contains("hidden")) { curId = t[0].id; meta(); }
     renderAdminList();
     renderSotd();
-    hubRefresh();
+    hubRefreshSoon();
   }
 
   /* ---------- admin: playlist manager ---------- */
@@ -20535,10 +20534,12 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     return Q.sub && subName(Q.sub) ? "All songs \u00b7 " + subName(Q.sub) : "All songs";
   }
   /* song cover thumbnail for list rows (falls back to a note icon if there is no cover or it fails to load) */
+  var thLoaded = {};
+  window.itiThSeen = function (u) { if (u) thLoaded[u] = 1; };
   function songThumb(tr, eq) {
     var cu = coverFor(tr);
     return '<span class="mh-th" aria-hidden="true"><span class="mh-ph">\u266a</span>' +
-      (cu ? '<img src="' + escapeHTML(cu) + '" alt="" loading="lazy" decoding="async" draggable="false" onload="this.classList.add(\'ld\')" onerror="this.remove()" />' : '') +
+      (cu ? '<img src="' + escapeHTML(cu) + '" alt="" loading="lazy" decoding="async" draggable="false"' + (thLoaded[cu] ? ' class="ld"' : '') + ' onload="this.classList.add(\'ld\');itiThSeen(this.getAttribute(\'src\'))" onerror="this.remove()" />' : '') +
       (eq ? '<span class="mh-eqo"><span class="mh-eq"><i></i><i></i><i></i></span></span>' : '') + '</span>';
   }
   function qRow(tr, n, kind) {
@@ -20795,6 +20796,12 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (items.length > lim) h += '<div class="mh-sentinel" id="mh-sentinel"><span class="mh-dots" aria-label="Loading"><i></i><i></i><i></i><i></i></span></div>';
     return h;
   }
+  /* after a tab change keep the tab bar where the person is looking (only scroll up if it had been scrolled off the top) */
+  function hubKeepTabs() {
+    var b = $("mh-body"), tb = $("mh-tabs"); if (!b || !tb) return;
+    var off = tb.getBoundingClientRect().top - b.getBoundingClientRect().top + b.scrollTop - 8;
+    if (b.scrollTop > off) b.scrollTop = Math.max(0, off);
+  }
   function hubWatchEnd() {
     if (limObs) { limObs.disconnect(); limObs = null; }
     clearTimeout(limT);
@@ -20807,11 +20814,25 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     }, { root: body, rootMargin: "0px 0px 40px 0px", threshold: 0.1 });
     limObs.observe(sn);
   }
+  /* replace only the top-level blocks whose markup changed (e.g. the old and new playing row), so every other row,
+     thumbnail and the scroll position stay untouched; falls back to a full rebuild when the structure differs */
+  function patchList(list, html) {
+    var t = document.createElement("template"); t.innerHTML = html;
+    var fresh = Array.prototype.slice.call(t.content.children), keys = fresh.map(function (n) { return n.outerHTML; });
+    var ok = list._k && list._k.length === keys.length && list.children.length === keys.length &&
+             list.childNodes.length === list.children.length && t.content.childNodes.length === fresh.length;
+    if (!ok) { list.innerHTML = html; list._k = keys; icons(list); return; }
+    for (var i = 0; i < keys.length; i++) {
+      if (list._k[i] === keys[i]) continue;
+      var old = list.children[i]; list.replaceChild(fresh[i], old); icons(fresh[i]);
+    }
+    list._k = keys;
+  }
   function hubList(anim) {
     if (!hubIsOpen) return;
     var body = $("mh-body"), list = $("mh-list"); if (!body || !list) return;
     var top = body.scrollTop, html = hubListHTML();
-    if (list._h !== html) { list.innerHTML = html; list._h = html; icons(list); body.scrollTop = top; }
+    if (list._h !== html) { patchList(list, html); list._h = html; body.scrollTop = top; }
     hubWatchEnd();
     popId = "";
     if (anim) {
@@ -20829,6 +20850,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     var tools = $("mh-tools"); if (tools) tools.classList.toggle("hidden", hv.tab === "pl" || hv.tab === "q");
     icons(hub);
   }
+  var hrRaf = 0;
+  function hubRefreshSoon() { if (hrRaf) return; hrRaf = requestAnimationFrame(function () { hrRaf = 0; hubRefresh(); }); }
   function hubRefresh(anim) { if (!hubIsOpen) return; hubNow(); hubList(anim); updateSleepUi(); }
 
   function hubOpen() {
@@ -20982,7 +21005,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     switch (a) {
       case "minimize": case "close": hubClose(true); break;
       case "stop": hubClose(false); close(); break;
-      case "tab": hv.tab = el.getAttribute("data-tab"); hv.menu = ""; hv.sub = ""; hv.add = false; hv.pl = ""; hv.q = ""; { var si = $("mh-search"); if (si) si.value = ""; } hubList(true); $("mh-body").scrollTop = 0; break;
+      case "tab": hv.tab = el.getAttribute("data-tab"); hv.menu = ""; hv.sub = ""; hv.add = false; hv.pl = ""; hv.q = ""; { var si = $("mh-search"); if (si) si.value = ""; } hubList(true); hubKeepTabs(); break;
       case "play": if (id === curId) toggle(); else playIn(ctx, id); break;
       case "fav": toggleFav(id); popId = id; hubRefresh(); break;
       case "fav-cur": if (curId) { toggleFav(curId); hubRefresh(); if (isFav(curId)) { el.classList.remove("mh-pop"); void el.offsetWidth; el.classList.add("mh-pop"); } } else toast("Play a song first", "info"); break;

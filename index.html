@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <title>ITI CONNECT — Your Academic Information Hub</title>
   <meta name="description" content="ITI CONNECT — Your Academic Information Hub. Attendance, results, study materials, educational videos and exam preparation for ITI and technical education students. Independently developed and maintained by DEVIT." />
   <meta name="application-name" content="ITI CONNECT" />
@@ -106,7 +104,7 @@
   var KEY = "iti_look_v1";
   var THEMES = [{"k": "midnight", "n": "Midnight", "c": ["#020617", "#0f172a", "#1e293b", "#334155", "#475569"], "t": "#f1f5f9", "a": "amber"}, {"k": "ocean", "n": "Ocean", "c": ["#03131d", "#0a2233", "#12354d", "#1d4b6a", "#2c6286"], "t": "#e8f3f9", "a": "sky"}, {"k": "forest", "n": "Forest", "c": ["#04140d", "#0b2318", "#123324", "#1b4733", "#2a5f47"], "t": "#e9f5ee", "a": "emerald"}, {"k": "violet", "n": "Violet", "c": ["#0c0817", "#181029", "#241a40", "#342758", "#47377a"], "t": "#f0ecfa", "a": "violet"}, {"k": "rose", "n": "Rose", "c": ["#170710", "#2a0f1f", "#3d172d", "#54233f", "#6e3354"], "t": "#fbebf1", "a": "rose"}, {"k": "sunset", "n": "Sunset", "c": ["#160a05", "#281508", "#3a210d", "#523117", "#6b4524"], "t": "#fbefe4", "a": "orange"}, {"k": "graphite", "n": "Graphite", "c": ["#000000", "#111113", "#1d1d20", "#34343a", "#4d4d54"], "t": "#f1f1f2", "a": "amber"}];
   var ACCENTS = [{"k": "amber", "n": "Amber", "s": [[254, 243, 199], [253, 230, 138], [252, 211, 77], [251, 191, 36], [245, 158, 11], [217, 119, 6], [180, 83, 9], [146, 64, 14], [69, 26, 3]]}, {"k": "sky", "n": "Sky", "s": [[224, 242, 254], [186, 230, 253], [125, 211, 252], [56, 189, 248], [14, 165, 233], [2, 132, 199], [3, 105, 161], [7, 89, 133], [8, 47, 73]]}, {"k": "emerald", "n": "Emerald", "s": [[209, 250, 229], [167, 243, 208], [110, 231, 183], [52, 211, 153], [16, 185, 129], [5, 150, 105], [4, 120, 87], [6, 95, 70], [2, 44, 34]]}, {"k": "teal", "n": "Teal", "s": [[204, 251, 241], [153, 246, 228], [94, 234, 212], [45, 212, 191], [20, 184, 166], [13, 148, 136], [15, 118, 110], [17, 94, 89], [4, 47, 46]]}, {"k": "violet", "n": "Violet", "s": [[237, 233, 254], [221, 214, 254], [196, 181, 253], [167, 139, 250], [139, 92, 246], [124, 58, 237], [109, 40, 217], [91, 33, 182], [46, 16, 101]]}, {"k": "rose", "n": "Rose", "s": [[255, 228, 230], [254, 205, 211], [253, 164, 175], [251, 113, 133], [244, 63, 94], [225, 29, 72], [190, 18, 60], [159, 18, 57], [76, 5, 25]]}, {"k": "orange", "n": "Orange", "s": [[255, 237, 213], [254, 215, 170], [253, 186, 116], [251, 146, 60], [249, 115, 22], [234, 88, 12], [194, 65, 12], [154, 52, 18], [67, 20, 7]]}];
-  var DEF = { ct: "midnight", acc: "amber", cust: "#f59e0b", rad: "md", font: "inter", glass: true, hdrt: "orange", hdrbg: "default", tag: true, hdrhide: true };
+  var DEF = { ct: "midnight", acc: "amber", cust: "#f59e0b", rad: "md", font: "inter", glass: true, hdrt: "orange", hdrbg: "default", tag: true, hdrhide: true, pv: false, mid: true };
   var root = document.documentElement, st = {}, k;
   function load() { var o = {}; try { o = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {} st = {}; for (k in DEF) st[k] = (k in o) ? o[k] : DEF[k]; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -137,6 +135,7 @@
     attr("data-ct", st.ct, "midnight"); attr("data-acc", st.acc, "amber"); attr("data-rad", st.rad, "md"); attr("data-font", st.font, "inter");
     attr("data-hdrt", st.hdrt, "orange"); attr("data-hdrbg", st.hdrbg, "default"); attr("data-tag", st.tag ? "on" : "off", "on"); attr("data-hdrfix", st.hdrhide ? "auto" : "fixed", "auto");
     root.classList.toggle("no-glass", !st.glass);
+    root.classList.toggle("pv-on", !!st.pv);
     var i, s = accScale();
     if (st.acc === "amber") for (i = 1; i <= 9; i++) root.style.removeProperty("--a" + i);
     else for (i = 0; i < 9; i++) root.style.setProperty("--a" + (i + 1), s[i].join(" "));
@@ -5710,7 +5709,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                 class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
               <input type="text" id="trainee-name-input" required placeholder="Trainee Full Name"
                 class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
-              <input type="text" id="trainee-roll-input" required placeholder="Reg ID (e.g. 250819008899)"
+              <input type="text" id="trainee-roll-input" required placeholder="Reg ID (e.g. 250819000000)"
                 class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
             </div>
             <div class="grid grid-cols-3 gap-2">
@@ -5789,6 +5788,20 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
               <input type="email" id="setting-admin-email" placeholder="instructor.iti@gmail.com"
                 class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-amber-500" />
             </div>
+            <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer">
+              <input type="checkbox" id="setting-allow-reveal" class="mt-0.5 w-4 h-4 accent-amber-500" />
+              <span class="min-w-0">
+                <span class="block text-[11px] font-bold text-white">Allow users to reveal hidden IDs &amp; blurred info</span>
+                <span class="block text-[10px] text-slate-400">Off by default. When off, masked NCVT IDs and blurred names/marks cannot be revealed by tapping or the Show button. Admin always sees everything.</span>
+              </span>
+            </label>
+            <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-900 border border-slate-700 cursor-pointer">
+              <input type="checkbox" id="setting-publish-results" class="mt-0.5 w-4 h-4 accent-amber-500" />
+              <span class="min-w-0">
+                <span class="block text-[11px] font-bold text-white">Make NCVT IDs &amp; results public</span>
+                <span class="block text-[10px] text-slate-400">Off = marks, results and NCVT IDs are stored admin-only and nobody else can read them. On = published for everyone. Needs Google Admin sign-in to sync.</span>
+              </span>
+            </label>
             <button type="submit"
               class="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition btn-tap">
               Update Security Settings
@@ -5840,6 +5853,14 @@ service cloud.firestore {
     match /iti_portals/{portalId}/media/{mediaId} {
       allow read: if true;
       allow write: if isAdmin() || (adminEmail() == '' &amp;&amp; request.auth != null);
+    }
+    // NCVT IDs + marks: private copy is admin-only; the public copy exists only while the admin publishes results
+    match /iti_portals/{portalId}/trainee_data/private {
+      allow read, write: if isAdmin();
+    }
+    match /iti_portals/{portalId}/trainee_data/public {
+      allow read: if true;
+      allow write: if isAdmin();
     }
     // SECURITY: the first two rules allow any signed-in user to write ONLY while
     // settings.adminEmail is empty. Set adminEmail right after first setup so this stops applying.
@@ -6100,7 +6121,7 @@ service cloud.firestore {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
                 <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">NCVT Registration No</label>
-                <input type="text" id="marks-reg-input" placeholder="e.g. 250819008869"
+                <input type="text" id="marks-reg-input" placeholder="e.g. 250819000000"
                   class="w-full px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-white focus:outline-none focus:border-amber-500" />
               </div>
               <div>
@@ -6264,7 +6285,7 @@ service cloud.firestore {
       <div class="flex items-center justify-between px-4 py-3 bg-[#0c1322] border-b border-slate-800">
         <div class="min-w-0">
           <h3 id="report-trainee-name" class="text-sm font-bold text-white truncate">Trainee Profile</h3>
-          <p id="report-trainee-roll" class="text-[11px] font-mono text-amber-400">NCVT Reg ID</p>
+          <p class="flex items-center gap-2"><span id="report-trainee-roll" class="pv-s text-[11px] font-mono text-amber-400">NCVT Reg ID</span><button type="button" id="report-roll-eye" onclick="pvToggleReportRoll()" class="hidden px-1.5 py-0.5 rounded-md border border-amber-500/40 text-[10px] font-bold text-amber-300 btn-tap" aria-label="Show or hide NCVT ID">Show</button></p>
         </div>
         <button aria-label="Close" type="button" onclick="closeModal('modal-trainee-report')" class="p-1 rounded-lg text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -6589,7 +6610,7 @@ service cloud.firestore {
   <!-- ===================================================================== -->
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     window.__FB_SDK__ = {
@@ -6599,6 +6620,8 @@ service cloud.firestore {
       doc,
       setDoc,
       onSnapshot,
+      getDoc,
+      deleteDoc,
       getAuth,
       GoogleAuthProvider,
       signInWithPopup
@@ -6634,24 +6657,9 @@ service cloud.firestore {
       appId: "1:680846674510:web:a8affdd473b1c47bfe911f"
     };
 
-    const DEFAULT_TRAINEES = [
-      { id: "tr-02", rno: "02", name: "Devit Munda", roll: "250819008869", star: true, year1: 555, year2: 556, internal: 94 },
-      { id: "tr-03", rno: "03", name: "Ayan Karmakar", roll: "250819008805", star: false, year1: 512, year2: 520, internal: 88 },
-      { id: "tr-04", rno: "04", name: "Arijit Das", roll: "250819008842", star: false, year1: 498, year2: 506, internal: 85 },
-      { id: "tr-05", rno: "05", name: "Sayani Ghoshal", roll: "250819008858", star: false, year1: 534, year2: 540, internal: 91 },
-      { id: "tr-06", rno: "06", name: "Debarathi Kundu", roll: "250819008830", star: false, year1: 526, year2: 532, internal: 90 },
-      { id: "tr-07", rno: "07", name: "Dipan Halder", roll: "250819007214", star: false, year1: 484, year2: 492, internal: 82 },
-      { id: "tr-08", rno: "08", name: "Shreyasi Ballav", roll: "250819011246", star: false, year1: 519, year2: 524, internal: 89 },
-      { id: "tr-09", rno: "09", name: "Rahul Das", roll: "250819008818", star: false, year1: 472, year2: 486, internal: 80 },
-      { id: "tr-11", rno: "11", name: "Swasti Sarkar", roll: "250819027561", star: false, year1: 508, year2: 514, internal: 87 },
-      { id: "tr-12", rno: "12", name: "Riya Biswas", roll: "250819012840", star: false, year1: 522, year2: 528, internal: 89 },
-      { id: "tr-14", rno: "14", name: "Abhijit Bala", roll: "250819011106", star: false, year1: 488, year2: 496, internal: 84 },
-      { id: "tr-15", rno: "15", name: "Ilias Mondal", roll: "250819012861", star: false, year1: 495, year2: 502, internal: 86 },
-      { id: "tr-16", rno: "16", name: "Barsha Chatterjee", roll: "250819011089", star: false, year1: 530, year2: 538, internal: 92 },
-      { id: "tr-17", rno: "17", name: "Riyad Hossain", roll: "250819011135", star: false, year1: 501, year2: 509, internal: 85 },
-      { id: "tr-18", rno: "18", name: "Shaswat Biswas", roll: "250819008812", star: false, year1: 479, year2: 488, internal: 81 },
-      { id: "tr-20", rno: "20", name: "Anupam Dutta", roll: "250819008877", star: false, year1: 515, year2: 521, internal: 88 }
-    ];
+    /* Trainee data is no longer bundled in this file: it loads from the cloud (Firestore) and the device's saved copy.
+       Keep a private backup of the list (trainees_backup_PRIVATE.json) - never publish it with the site. */
+    const DEFAULT_TRAINEES = [];
 
     const DEFAULT_NOTICES = [
       {
@@ -6866,6 +6874,52 @@ service cloud.firestore {
       const dt = parseISO(iso);
       return dt.toLocaleDateString("en-US", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
     }
+
+    /* ===== Privacy helpers: mask NCVT IDs / short names for non-admin viewers ===== */
+    window.__pvUntil = 0;
+    function pvMasking() {
+      try { if (isAdminUnlocked) return false; } catch (_) {}
+      return !!(window.itiLook && window.itiLook.get().mid) && Date.now() >= window.__pvUntil;
+    }
+    /* Reveal (Show button / tap-to-reveal) works only when admin is unlocked or has enabled it in Security settings. */
+    function pvCanReveal() {
+      try { if (isAdminUnlocked) return true; } catch (_) {}
+      try { return !!(appState && appState.settings && appState.settings.allowReveal === true); } catch (_) { return false; }
+    }
+    window.pvCanReveal = pvCanReveal;
+    function maskRoll(r) {
+      r = String(r == null ? "" : r);
+      if (!r || !pvMasking()) return r;
+      if (r.length <= 4) return r.charAt(0) + "\u2022".repeat(Math.max(r.length - 1, 1));
+      return r.slice(0, 4) + "\u2022".repeat(r.length - 6) + r.slice(-2);
+    }
+    function shortName(n) {
+      n = String(n == null ? "" : n).trim();
+      if (!n || !pvMasking()) return n;
+      var p = n.split(/\s+/);
+      return p.length < 2 ? n : p.slice(0, -1).join(" ") + " " + p[p.length - 1].charAt(0).toUpperCase() + ".";
+    }
+    /* Show real values for 8 s, then re-mask. fn repaints the element. */
+    function pvTemp(fn) {
+      window.__pvUntil = Date.now() + 8000;
+      try { fn(); } catch (_) {}
+      setTimeout(function () { try { fn(); } catch (_) {} }, 8100);
+    }
+    function pvPaintReportRoll() {
+      var el = document.getElementById("report-trainee-roll"), b = document.getElementById("report-roll-eye");
+      if (!el) return;
+      var full = window.__pvCurRoll || "";
+      var revealed = Date.now() < window.__pvUntil;
+      var masked = maskRoll(full) !== full;
+      el.textContent = "NCVT Reg ID: " + maskRoll(full);
+      if (b) { b.classList.toggle("hidden", !full || !pvCanReveal() || !(masked || revealed)); b.textContent = revealed ? "Hide" : "Show"; }
+    }
+    function pvToggleReportRoll() {
+      if (!pvCanReveal()) return;
+      if (Date.now() < window.__pvUntil) { window.__pvUntil = 0; pvPaintReportRoll(); return; }
+      pvTemp(pvPaintReportRoll);
+    }
+    window.pvRefresh = function () { try { pvPaintReportRoll(); } catch (_) {} };
 
     function escapeHTML(str) {
       return String(str ?? "")
@@ -7270,6 +7324,7 @@ service cloud.firestore {
     }
 
     function seedSampleAttendanceIfEmpty() {
+      if (!appState.trainees || !appState.trainees.length) return;
       if (appState.attendance && Object.keys(appState.attendance).length > 0) return;
       const today = new Date();
       for (let offset = 1; offset <= 18; offset++) {
@@ -7362,6 +7417,36 @@ service cloud.firestore {
       }
     }
 
+    /* ===== Trainee data split =====
+       Public portal doc keeps only id / rno / name / star. Everything else (NCVT ID, marks, results links...) lives in:
+         iti_portals/<id>/trainee_data/private  -> admin only
+         iti_portals/<id>/trainee_data/public   -> exists only while the admin has switched "Make NCVT IDs & results public" on */
+    const PUBLIC_TRAINEE_KEYS = ["id", "rno", "name", "star"];
+    window.__privMap = null; window.__pubMap = null; window.__privState = "unknown"; window.__legacyCloud = false; window.__privTried = false;
+    function splitTrainees(list) {
+      const pub = [], map = {};
+      (list || []).forEach((t) => {
+        const p = {}, sens = {}; let n = 0;
+        Object.keys(t).forEach((k) => { if (PUBLIC_TRAINEE_KEYS.indexOf(k) >= 0) p[k] = t[k]; else { sens[k] = t[k]; n++; } });
+        pub.push(p); if (n) map[t.id] = sens;
+      });
+      return { pub: pub, map: map };
+    }
+    function stripSens(t) { const o = {}; PUBLIC_TRAINEE_KEYS.forEach((k) => { if (k in t) o[k] = t[k]; }); return o; }
+    function isLegacyList(list) { return (list || []).some((t) => t && ("roll" in t || "year1" in t || "internal" in t)); }
+    function applySensMap(map) { appState.trainees = (appState.trainees || []).map((t) => Object.assign(stripSens(t), (map && map[t.id]) || {})); }
+    window.loadPrivateTraineeData = async function () {
+      const sdk = window.__FB_SDK__;
+      if (!sdk || !window.__trRefs) return;
+      try {
+        const snap = await sdk.getDoc(window.__trRefs.priv);
+        if (snap.exists()) {
+          window.__privMap = (snap.data() || {}).map || {}; window.__privState = "loaded";
+          applySensMap(window.__privMap); saveLocalState(false); renderAllViews();
+        } else { window.__privState = "missing"; }
+      } catch (e) { window.__privState = "unknown"; itiLog("load private trainee data", e); }
+    };
+
     window.initFirebaseCloud = function () {
       const sdk = window.__FB_SDK__;
       const cfg = getActiveFirebaseConfig();
@@ -7374,10 +7459,20 @@ service cloud.firestore {
         const app = sdk.getApps().length ? sdk.getApps()[0] : sdk.initializeApp(cfg);
         const db = sdk.getFirestore(app);
         const docRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27");
+        const privRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27", "trainee_data", "private");
+        const pubRef = sdk.doc(db, "iti_portals", "chhotojagulia_elec_2025_27", "trainee_data", "public");
+        window.__trRefs = { priv: privRef, pub: pubRef };
 
         window.pushStateToFirebase = async function () {
           try {
+            /* Safety: a device that has no trainees and has not yet received the cloud copy must never overwrite the cloud with an empty list. */
+            if ((!appState.trainees || !appState.trainees.length) && !window.__cloudTraineesLoaded) {
+              itiLog("cloud write skipped", "no trainees loaded yet - waiting for cloud copy");
+              return;
+            }
             const payload = { ...appState, updatedAt: Date.now() };
+            const sp = splitTrainees(appState.trainees);
+            payload.trainees = sp.pub;   /* public doc never carries NCVT IDs or marks */
             payload.settings = { ...(payload.settings || {}) };
             delete payload.settings.adminPin; // PIN stays on this device only
             payload.musicTracks = normalizeMusicTracks(payload.musicTracks); // only { id, title, artist, ytId, url, audioUrl }
@@ -7387,13 +7482,39 @@ service cloud.firestore {
               updateSyncIndicator(false, "Payload Too Large for Cloud");
               return;
             }
+            const publish = payload.settings.publishResults === true;
+            const canWriteSens = window.__privState === "loaded" || window.__legacyCloud === true || (window.__privState === "missing" && Object.keys(sp.map).length > 0);
+            if (canWriteSens) {
+              /* private copy first: if this fails (e.g. rules not published yet) nothing else is written, so no data can be lost */
+              try {
+                await sdk.setDoc(privRef, { map: sp.map, updatedAt: Date.now() });
+                if (publish) await sdk.setDoc(pubRef, { map: sp.map, updatedAt: Date.now() });
+                else await sdk.deleteDoc(pubRef);
+              } catch (e2) {
+                itiLog("cloud write trainee_data", e2);
+                if (e2 && e2.code === "permission-denied") showToast("Trainee data not saved: publish the new Firestore rules and sign in as Google Admin first.", "error");
+                updateSyncIndicator(false, "Local Saved (Trainee data not synced)");
+                return;
+              }
+              window.__privMap = sp.map; window.__privState = "loaded";
+            } else {
+              try { if (isAdminUnlocked) showToast("NCVT IDs & marks not synced - sign in with Google Admin first", "error"); } catch (_) {}
+            }
             await sdk.setDoc(docRef, payload);
+            window.__legacyCloud = false;
             updateSyncIndicator(true, "Synced with Cloud");
           } catch (err) {
             itiLog("cloud write (" + ((err && err.code) || "unknown") + ")", err);
             updateSyncIndicator(false, (err && err.code === "permission-denied") ? "Local Saved (Cloud Write Restricted)" : "Local Saved (Cloud Error - will retry on next save)");
           }
         };
+
+        if (window.__dvUnsubPub) { try { window.__dvUnsubPub(); } catch (e) {} }
+        window.__dvUnsubPub = sdk.onSnapshot(pubRef, (snap) => {
+          window.__pubMap = snap.exists() ? ((snap.data() || {}).map || {}) : null;
+          let adm = false; try { adm = isAdminUnlocked; } catch (_) {}
+          if (!window.__privMap && !adm && !window.__legacyCloud) { applySensMap(window.__pubMap || {}); saveLocalState(false); renderAllViews(); }
+        }, (err) => { itiLog("published trainee data listener", err); });
 
         if (window.__dvUnsub) { try { window.__dvUnsub(); } catch (e) {} }
         window.__dvUnsub = sdk.onSnapshot(
@@ -7402,9 +7523,19 @@ service cloud.firestore {
             if (snap.exists()) {
               const remote = snap.data();
               if (remote && Array.isArray(remote.trainees)) {
+                window.__cloudTraineesLoaded = true;
+                window.__legacyCloud = isLegacyList(remote.trainees);
+                let trList = remote.trainees;
+                if (!window.__legacyCloud) {
+                  let localMap = null;
+                  try { if (isAdminUnlocked) localMap = splitTrainees(appState.trainees).map; } catch (_) {}
+                  const map = window.__privMap || window.__pubMap || localMap || {};
+                  trList = remote.trainees.map((t) => Object.assign({}, t, map[t.id] || {}));
+                }
                 appState = {
                   ...appState,
                   ...remote,
+                  trainees: trList,
                   videos: Array.isArray(remote.videos)
                     ? normalizeVideosList(remote.videos)
                     : appState.videos,
@@ -7574,7 +7705,7 @@ service cloud.firestore {
         mRank,
         cardRibbonClass,
         badgesHTML: badges.join(""),
-        displayNameHTML: formatTraineeDisplayName(tr, rewardMaps, scope)
+        displayNameHTML: '<span class="pv-s">' + formatTraineeDisplayName(tr, rewardMaps, scope) + "</span>"
       };
     }
 
@@ -8961,9 +9092,9 @@ service cloud.firestore {
           cat: "trainees", label: "Trainees", icon: "users", items: tr.slice(0, 6).map((x) => {
             const t = x.t, st = calculateTraineeStats(t.id, "ALL");
             return {
-              sc: x.sc, key: "t:" + t.id, title: t.name || "",
+              sc: x.sc, key: "t:" + t.id, title: shortName(t.name || ""),
               icon: `<span class="w-8 h-8 rounded-lg ${AMB} border flex items-center justify-center text-[11px] font-extrabold shrink-0">R.${escapeHTML(t.rno || "--")}</span>`,
-              sub: `Reg: ${t.roll || "--"} \u2022 ${st.presentDays}/${st.workingDays} days \u2022 ${st.pct}%`
+              sub: `Reg: ${maskRoll(t.roll) || "--"} \u2022 ${st.presentDays}/${st.workingDays} days \u2022 ${st.pct}%`
             };
           })
         });
@@ -10912,7 +11043,7 @@ service cloud.firestore {
       const maxInt = Number(appState.internalMeta?.maxMarks) || 100;
 
       document.getElementById("report-trainee-name").innerHTML = `R.${escapeHTML(tr.rno || "--")} &bull; <span class="inline-block pt-1">${rw.displayNameHTML}</span>`;
-      document.getElementById("report-trainee-roll").textContent = `NCVT Reg ID: ${tr.roll}`;
+      window.__pvCurRoll = tr.roll || ""; pvPaintReportRoll();
 
       const privBanner = document.getElementById("report-privilege-banner");
       if (privBanner) {
@@ -11206,7 +11337,7 @@ service cloud.firestore {
 
       ctx.fillStyle = C.sub;
       ctx.font = "600 11px monospace";
-      ctx.fillText(`NCVT Registration ID: ${tr.roll}`, 28, 82);
+      ctx.fillText(`NCVT Registration ID: ${maskRoll(tr.roll)}`, 28, 82);
 
       const drawBox = (x, y, w, h, title, val, color) => {
         rr(x, y, w, h, 12);
@@ -11388,6 +11519,8 @@ service cloud.firestore {
     });
 
     function updateAdminUIState() {
+      if (isAdminUnlocked && !window.__privTried) { window.__privTried = true; setTimeout(function () { if (window.loadPrivateTraineeData) window.loadPrivateTraineeData(); }, 0); }
+      else if (!isAdminUnlocked) window.__privTried = false;
       document.querySelectorAll(".admin-only").forEach((el) => {
         el.classList.toggle("hidden", !isAdminUnlocked);
       });
@@ -11407,6 +11540,8 @@ service cloud.firestore {
         if (intLbl) intLbl.textContent = `Internal (/${maxInt})`;
         if (pinField) pinField.value = appState.settings.adminPin || DEFAULT_ADMIN_PIN;
         if (emailField) emailField.value = appState.settings.adminEmail || "";
+        const pbField = document.getElementById("setting-publish-results"); if (pbField) pbField.checked = appState.settings.publishResults === true;
+        const rvField = document.getElementById("setting-allow-reveal"); if (rvField) rvField.checked = appState.settings.allowReveal === true;
         const activeCfg = getActiveFirebaseConfig();
         if (fbField) fbField.value = activeCfg ? JSON.stringify(activeCfg, null, 2) : "";
       }
@@ -11475,6 +11610,7 @@ service cloud.firestore {
           isAdminUnlocked = true;
           updateAdminUIState();
           showToast(`Signed in as ${email}`, "success");
+          window.__privTried = true; if (window.loadPrivateTraineeData) window.loadPrivateTraineeData();
         } else {
           showToast("Unauthorized Google account", "error");
         }
@@ -11800,7 +11936,12 @@ service cloud.firestore {
       const newEmail = document.getElementById("setting-admin-email").value.trim();
       if (newPin) appState.settings.adminPin = newPin;
       appState.settings.adminEmail = newEmail;
+      const rvEl = document.getElementById("setting-allow-reveal");
+      appState.settings.allowReveal = !!(rvEl && rvEl.checked);
+      const pbEl = document.getElementById("setting-publish-results");
+      appState.settings.publishResults = !!(pbEl && pbEl.checked);
       saveLocalState(true);
+      if (window.pvRefresh) window.pvRefresh();
       showToast("Security settings updated", "success");
     }
 
@@ -12411,7 +12552,12 @@ service cloud.firestore {
       const officialUrl = (tr.ncvtResultUrl && tr.ncvtResultUrl.trim()) || OFFICIAL_NCVT_PORTAL_URL;
 
       document.getElementById("resdet-trainee-name").textContent = tr.name;
-      document.getElementById("resdet-meta-line").textContent = `Roll No: ${tr.rno || "--"}${tr.roll ? ` • Reg No: ${tr.roll}` : ""}`;
+      {
+        const metaEl = document.getElementById("resdet-meta-line");
+        const paintMeta = () => { metaEl.textContent = `Roll No: ${tr.rno || "--"}${tr.roll ? ` • Reg No: ${maskRoll(tr.roll)}` : ""}`; metaEl.title = pvCanReveal() && maskRoll(tr.roll) !== String(tr.roll || "") ? "Tap to show ID" : ""; };
+        paintMeta();
+        metaEl.onclick = () => { if (pvCanReveal() && maskRoll(tr.roll) !== String(tr.roll || "")) pvTemp(paintMeta); };
+      }
 
       document.getElementById("resdet-exam-card").innerHTML = `
         <div class="flex items-center justify-between gap-2">
@@ -14406,7 +14552,7 @@ service cloud.firestore {
             '<div class="min-w-0">' +
               '<div class="flex items-center gap-1.5 min-w-0 pt-0.5"><span class="font-mono text-[11px] font-extrabold text-amber-400 shrink-0">R.' + escapeHTML(tr.rno || "--") + '</span>' +
               '<span class="text-xs sm:text-[13px] font-bold text-white truncate">' + rw.displayNameHTML + "</span></div>" +
-              '<div class="text-[10px] text-slate-400 truncate">' + meta.title + " &bull; Reg: " + escapeHTML(tr.roll || "--") + "</div>" +
+              '<div class="text-[10px] text-slate-400 truncate">' + meta.title + " &bull; Reg: " + escapeHTML(maskRoll(tr.roll) || "--") + "</div>" +
             "</div>" +
           "</div>" +
           '<div class="flex items-center gap-1 shrink-0">' +
@@ -15107,6 +15253,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     else if (k === "rad" || k === "font" || k === "hdrt" || k === "hdrbg") { var o = {}; o[k] = v; L.set(o); }
     else if (k === "tag" || k === "hdrhide") { var q = {}; q[k] = !L.get()[k]; L.set(q); }
     else if (k === "glass") L.set({ glass: !L.get().glass });
+    else if (k === "pv" || k === "mid") { var pq = {}; pq[k] = !L.get()[k]; L.set(pq); if (window.pvRefresh) window.pvRefresh(); }
   }
   function paintCust(root) {
     var L = window.itiLook, s = L.get(), hex = s.cust;
@@ -15122,6 +15269,12 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       lseg("hdrbg", [["default", "Default"], ["tint", "Accent tint"]], s.hdrbg, "Header background", "Add a soft accent-coloured wash to the top bar.") +
       lsw("tag", s.tag, "Show tagline", "The line “Your Academic Information Hub” under the title.") +
       lsw("hdrhide", s.hdrhide, "Hide header while scrolling", "Turn off to keep the header always visible."));
+  }
+  function privacyCard() {
+    var L = window.itiLook; if (!L) return ""; var s = L.get();
+    return card("Privacy",
+      lsw("pv", s.pv, "Privacy mode", "Blur trainee names, IDs and marks. Tap-to-reveal works only if admin allows it.") +
+      lsw("mid", s.mid, "Mask NCVT IDs", "Show IDs like 2508\u2022\u2022\u2022\u2022\u2022\u202269 unless admin is unlocked. Revealing works only if admin allows it."));
   }
   function lookCard() {
     var L = window.itiLook; if (!L) return ""; var s = L.get();
@@ -15148,6 +15301,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       card("Appearance", seg("theme", [["bright", "Bright"], ["dark", "Dark"]], bright ? "bright" : "dark", "Theme", "Switch between bright and dark mode.") + seg("size", [["sm", "A−"], ["md", "A"], ["lg", "A+"]], prefs.size, "Text size", "Makes text smaller or larger across the site.") + sw("anim", prefs.anim, "Animations", "Slide, fade and glow effects. Turn off for a faster, smoother feel on slower phones.")) +
       lookCard() +
       headerCard() +
+      privacyCard() +
       card("Video", sw("catAuto", prefs.catAuto, "Autoplay on category change", "When you pick a category, its first video starts automatically (muted) and the rest follow in order.") + sw("autoplay", autoplayEnabled, "Autoplay next video", "Plays the list in order. Starts muted if your browser requires it.") + sw("loop", autoplayLoop, "Loop list", "Start again from the first video after the last one.") + sw("remember", prefs.remember, "Remember last category", "Reopen the category you were watching.")) +
       card("Music", sw("musicAuto", prefs.musicAuto, "Autoplay on Music open", "Starts the first track (muted if your browser requires it) when you open Music or switch subcategory; the rest follow in order.") + sw("musicRemember", prefs.musicRemember, "Remember last music subcategory", "Reopen the subcategory you were listening to.") + sw("musicHideEmpty", prefs.musicHideEmpty, "Hide empty subcategories", "Only list music subcategories that have tracks.") + musicPlayerRows() + inf("Playlists", "Each subcategory has its own order")) +
       card("Notifications", seg("toasts", [["all", "All"], ["errors", "Errors"], ["off", "Off"]], prefs.toasts, "In-app messages", "Pop-up messages such as “Saved” or “Video unavailable”. Errors only hides the rest.")) +
@@ -30338,5 +30492,29 @@ html.no-glass #quiz-arena-root{--cd:#16123a;--cd2:#251f55}
 html.no-glass.bright-mode #quiz-arena-root{--cd:#fff;--cd2:#f5f3ff}
 </style>
 
+
+<style id="privacy-css">
+  html.pv-on .pv-s, html.pv-on #report-academics-grid, html.pv-on #report-combined-card, html.pv-on #report-merit-card,
+  html.pv-on #report-stats-grid, html.pv-on #resdet-trainee-name, html.pv-on #resdet-meta-line, html.pv-on #resdet-exam-card,
+  html.pv-on #trainee-search-results [onclick^="selectSearchItem('t:"] > span.min-w-0 {
+    filter: blur(6px); -webkit-filter: blur(6px); transition: filter .2s ease; cursor: pointer; user-select: none; -webkit-user-select: none;
+  }
+  html.pv-on .pv-show { filter: none !important; -webkit-filter: none !important; user-select: auto; -webkit-user-select: auto; }
+  @media (prefers-reduced-motion: reduce) { html.pv-on .pv-s { transition: none; } }
+</style>
+<script id="privacy-js">
+(function () {
+  var SEL = ".pv-s, #report-academics-grid, #report-combined-card, #report-merit-card, #report-stats-grid, #resdet-trainee-name, #resdet-meta-line, #resdet-exam-card, #trainee-search-results [onclick^=\"selectSearchItem('t:\"] > span.min-w-0";
+  document.addEventListener("click", function (e) {
+    if (!document.documentElement.classList.contains("pv-on")) return;
+    if (!(window.pvCanReveal && window.pvCanReveal())) return;   /* admin has not allowed reveal */
+    var t = e.target.closest && e.target.closest(SEL);
+    if (!t || t.classList.contains("pv-show")) return;
+    e.preventDefault(); e.stopPropagation();   /* first tap reveals, second tap acts */
+    t.classList.add("pv-show");
+    setTimeout(function () { t.classList.remove("pv-show"); }, 5000);
+  }, true);
+})();
+</script>
 </body>
 </html>

@@ -4,13 +4,13 @@
    - Update prompt: new versions wait until the user taps "Refresh"
    - Offline files: the page can ask this worker to save PDFs/notes for offline use
    Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v45";
+var VERSION = "v47";
 var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline
 var MAX_FILES = 40;
 
-var SHELL = ["./", "./index.html", "./og-image.png", "./quiz_bank.json", "./quiz_arena.js"];
+var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png", "./quiz_bank.json", "./quiz_arena.js"];
 
 var CDN_PRECACHE = [
   "https://cdn.tailwindcss.com/3.4.17",
@@ -80,17 +80,26 @@ self.addEventListener("fetch", function (e) {
     return;
   }
 
-  /* Same-origin: network first, cache when offline (also finds saved offline files). */
+  /* Same-origin: network first, but on a slow/weak connection fall back to the cached copy after 4 s
+     (the network request still finishes and refreshes the cache for next time). */
+  var fromCache = function () {
+    return caches.match(req).then(function (hit) {
+      return hit || (req.mode === "navigate" ? caches.match("./index.html") : Response.error());
+    });
+  };
+  var netP = fetch(req).then(function (res) {
+    if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
+    return res;
+  });
+  var timeoutP = new Promise(function (resolve) {
+    setTimeout(function () { caches.match(req).then(function (hit) { resolve(hit || null); }); }, 4000);
+  });
   e.respondWith(
-    fetch(req).then(function (res) {
-      if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
-      return res;
-    }).catch(function () {
-      return caches.match(req).then(function (hit) {
-        return hit || (req.mode === "navigate" ? caches.match("./index.html") : Response.error());
-      });
+    Promise.race([netP.catch(function () { return null; }), timeoutP]).then(function (r) {
+      return r || netP.catch(function () { return fromCache(); });
     })
   );
+  e.waitUntil(netP.catch(function () {}));
 });
 
 /* Messages from the page:

@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>ITI CONNECT — Your Academic Information Hub</title>
   <meta name="description" content="ITI CONNECT — Your Academic Information Hub. Attendance, results, study materials, educational videos and exam preparation for ITI and technical education students. Independently developed and maintained by DEVIT." />
   <meta name="application-name" content="ITI CONNECT" />
@@ -49,32 +52,6 @@
       } catch (_) {}
     };
   </script>
-  <script>
-    /* Perf helpers: __poll runs a timer only while the tab is visible; animations pause when the tab is hidden. */
-    try {
-      var __n = navigator, __m = __n.deviceMemory || 0, __k = __n.hardwareConcurrency || 8,
-          __sd = !!(__n.connection && __n.connection.saveData);
-      /* low-end: little RAM, very few cores, or Data Saver on */
-      window.__lowEnd = (__m && __m <= 3) || __k <= 2 || __sd || (__m && __m <= 4 && __k <= 4);
-    } catch (e) { window.__lowEnd = false; }
-    try {
-      var __p = JSON.parse(localStorage.getItem("iti_vl_prefs_v1") || "{}"), __c = document.documentElement.classList;
-      if (__p.blur === false || (__p.blur === undefined && window.__lowEnd)) __c.add("vl-noblur");
-      if (__p.loops === false || (__p.loops === undefined && window.__lowEnd)) __c.add("vl-noloop");
-      if (__p.reduce) __c.add("vl-reduce");
-    } catch (e) {}
-    window.__poll = function (fn, ms) { return setInterval(function () { if (!document.hidden) fn(); }, ms); };
-    document.addEventListener("visibilitychange", function () {
-      document.documentElement.classList.toggle("page-hidden", document.hidden);
-    });
-  </script>
-  <style>
-    html.page-hidden *, html.page-hidden *::before, html.page-hidden *::after { animation-play-state: paused !important; }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
-    }
-  </style>
-  <!-- TODO(perf, later): replace this Tailwind Play CDN with a built, minified tw.css (npx tailwindcss -o tw.css --minify) and add ./tw.css to SHELL in sw.js. -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script>
     tailwind.config = {
@@ -120,7 +97,6 @@
   })();
   </script>
 
-  <!-- TODO(perf, later): self-host Lucide (pinned) or inline only the icons used; self-host Inter with font-display: swap; split big feature scripts into deferred .js files and minify. -->
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.468.0" onerror="var f=document.createElement('script');f.src='https://unpkg.com/lucide@latest';document.head.appendChild(f);"></script>
 
@@ -404,8 +380,8 @@
                   visibility 0s linear 0.3s !important;
       will-change: transform, opacity;
       background-color: rgba(12, 19, 34, 0.52) !important;
-      -webkit-backdrop-filter: blur(8px) saturate(1.5) !important;
-      backdrop-filter: blur(8px) saturate(1.5) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+      backdrop-filter: blur(16px) saturate(1.5) !important;
       border: 1px solid rgba(148, 163, 184, 0.24) !important;
       box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.07) inset !important;
     }
@@ -447,8 +423,8 @@
       border: 1px solid var(--tape-border) !important;
       border-radius: 2rem 2rem 1.75rem 1.75rem !important;
       background-color: var(--tape-bg) !important;
-      -webkit-backdrop-filter: blur(8px) saturate(1.5) !important;
-      backdrop-filter: blur(8px) saturate(1.5) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+      backdrop-filter: blur(16px) saturate(1.5) !important;
       box-shadow: var(--tape-shadow), 0 1px 0 0 var(--tape-inset) inset !important;
       transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
     }
@@ -591,8 +567,8 @@
 
     html.bright-mode #more-sheet {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      -webkit-backdrop-filter: blur(8px) saturate(1.5) !important;
-      backdrop-filter: blur(8px) saturate(1.5) !important;
+      -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+      backdrop-filter: blur(16px) saturate(1.5) !important;
       border-color: rgba(148, 163, 184, 0.36) !important;
       box-shadow: 0 14px 34px -8px rgba(15, 23, 42, 0.18), 0 1px 0 0 rgba(255, 255, 255, 0.78) inset !important;
     }
@@ -704,8 +680,8 @@
     }
     body:not(.non-home-tab) #search-input-box {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow:
         0 10px 30px -8px rgba(0, 0, 0, 0.42),
@@ -722,8 +698,8 @@
     html.bright-mode body:not(.non-home-tab) #search-bar-wrap #search-input-box,
     html.bright-mode body:not(.non-home-tab) #search-bar-wrap.search-minimized #search-input-box {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(8px) saturate(1.45);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
       border-color: rgba(148, 163, 184, 0.32) !important;
       box-shadow:
         0 10px 28px -8px rgba(15, 23, 42, 0.14),
@@ -756,8 +732,8 @@
 
     #daily-trainee-section {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow:
         0 10px 30px -8px rgba(0, 0, 0, 0.42),
@@ -781,8 +757,8 @@
 
     html.bright-mode #daily-trainee-section {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(8px) saturate(1.45);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
       border-color: rgba(148, 163, 184, 0.32) !important;
       box-shadow:
         0 10px 28px -8px rgba(15, 23, 42, 0.14),
@@ -892,8 +868,8 @@
 
     #notices-videos-grid > article, #full-videos-grid > article {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow:
         0 10px 30px -8px rgba(0, 0, 0, 0.42),
@@ -918,8 +894,8 @@
     }
     html.bright-mode #notices-videos-grid > article, html.bright-mode #full-videos-grid > article {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(8px) saturate(1.45);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
       border-color: rgba(148, 163, 184, 0.32) !important;
       box-shadow:
         0 10px 28px -8px rgba(15, 23, 42, 0.14),
@@ -932,8 +908,8 @@
 
     #notices-videos-grid .vid-play-btn, #full-videos-grid .vid-play-btn {
       background-color: rgba(15, 23, 42, 0.42) !important;
-      backdrop-filter: blur(8px) saturate(1.5);
-      -webkit-backdrop-filter: blur(8px) saturate(1.5);
+      backdrop-filter: blur(10px) saturate(1.5);
+      -webkit-backdrop-filter: blur(10px) saturate(1.5);
       border: 1px solid rgba(255, 255, 255, 0.5);
       color: #ffffff !important;
       box-shadow:
@@ -961,7 +937,7 @@
       padding: 6px 8px; margin-bottom: 10px; border-radius: 14px;
       background: rgba(15, 23, 42, 0.55);
       border: 1px solid rgba(148, 163, 184, 0.22);
-      -webkit-backdrop-filter: blur(8px) saturate(1.2); backdrop-filter: blur(8px) saturate(1.2);
+      -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2);
     }
     html.bright-mode .vid-autoplay-bar { background: rgba(255, 255, 255, 0.6); border-color: rgba(100, 116, 139, 0.3); }
     .vid-ap-btn {
@@ -994,8 +970,8 @@
     }
     #trainee-search-results {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow:
         0 14px 36px -8px rgba(0, 0, 0, 0.45),
@@ -1023,8 +999,8 @@
 
     html.bright-mode #trainee-search-results {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(8px) saturate(1.45);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
       border-color: rgba(148, 163, 184, 0.32) !important;
       box-shadow:
         0 14px 34px -8px rgba(15, 23, 42, 0.18),
@@ -1057,7 +1033,7 @@
       position: sticky; top: 0; z-index: 3; box-sizing: border-box; height: 34px; padding: 0 8px;
       display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x;
       background-color: rgba(15, 23, 42, 0.92);
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     }
     #trainee-search-results .srch-bar::-webkit-scrollbar { display: none; }
     #trainee-search-results .srch-pill {
@@ -1076,7 +1052,7 @@
       position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between;
       padding: 6px 12px; font-size: 10px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
       color: #fbbf24; background-color: rgba(15, 23, 42, 0.92);
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     }
     #trainee-search-results.srch-has-bar .srch-grp { top: 34px; }
     #trainee-search-results .srch-grp-l { display: inline-flex; align-items: center; gap: 5px; }
@@ -1155,8 +1131,8 @@
     #home-notice-card,
     #daily-calendar-card {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow:
         0 10px 30px -8px rgba(0, 0, 0, 0.42),
@@ -1186,8 +1162,8 @@
     html.bright-mode #home-notice-card,
     html.bright-mode #daily-calendar-card {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(8px) saturate(1.45);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
       border-color: rgba(148, 163, 184, 0.32) !important;
       box-shadow:
         0 10px 28px -8px rgba(15, 23, 42, 0.14),
@@ -1215,7 +1191,7 @@
     html.theme-transition *::before,
     html.theme-transition *::after {
       transition-property: background-color, color, border-color, outline-color, text-decoration-color,
-                           box-shadow, fill, stroke !important;
+                           box-shadow, fill, stroke, backdrop-filter, -webkit-backdrop-filter !important;
       transition-duration: 0.36s !important;
       transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
       transition-delay: 0s !important;
@@ -1697,23 +1673,23 @@
 
     #daily-class-section {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
     }
     #daily-class-section .bg-slate-950, #daily-class-section .bg-slate-900 { background-color: rgba(255, 255, 255, 0.05) !important; }
     html.bright-mode #daily-class-section {
       background-color: rgba(255, 255, 255, 0.58) !important;
-      backdrop-filter: blur(8px) saturate(1.45);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
       border-color: rgba(148, 163, 184, 0.32) !important;
       box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset !important;
     }
     html.bright-mode #daily-class-section .bg-slate-950, html.bright-mode #daily-class-section .bg-slate-900 { background-color: rgba(255, 255, 255, 0.6) !important; }
 
     .pa-btn {
-      -webkit-backdrop-filter: blur(8px) saturate(1.4); backdrop-filter: blur(8px) saturate(1.4);
+      -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
       box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.07) inset;
       line-height: 1.2; min-width: 0;
     }
@@ -1728,7 +1704,7 @@
     .glass-ctl {
       background-color: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(148, 163, 184, 0.28);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4); backdrop-filter: blur(8px) saturate(1.4);
+      -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
       box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.07) inset;
     }
     html.bright-mode .glass-ctl {
@@ -1754,8 +1730,8 @@
     /* ===== Gallery full-screen preview: frosted glassmorphism ===== */
     #gallery-lightbox {
       background-color: rgba(2, 6, 23, 0.78);
-      -webkit-backdrop-filter: blur(8px) saturate(1.35);
-      backdrop-filter: blur(8px) saturate(1.35);
+      -webkit-backdrop-filter: blur(16px) saturate(1.35);
+      backdrop-filter: blur(16px) saturate(1.35);
       padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem max(0.75rem, env(safe-area-inset-bottom));
       height: 100vh; height: 100dvh; overscroll-behavior: contain;
     }
@@ -1786,8 +1762,8 @@
       background-color: rgba(15, 23, 42, 0.56);
       color: #fde68a;
       border: 1px solid rgba(251, 191, 36, 0.42);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
-      backdrop-filter: blur(8px) saturate(1.45);
+      -webkit-backdrop-filter: blur(12px) saturate(1.45);
+      backdrop-filter: blur(12px) saturate(1.45);
       box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
@@ -1805,8 +1781,8 @@
     .lb-caption-card {
       background-color: rgba(12, 19, 34, 0.55);
       border: 1px solid rgba(148, 163, 184, 0.26);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
-      backdrop-filter: blur(8px) saturate(1.4);
+      -webkit-backdrop-filter: blur(14px) saturate(1.4);
+      backdrop-filter: blur(14px) saturate(1.4);
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5), 0 1px 0 0 rgba(255, 255, 255, 0.06) inset;
     }
     html.bright-mode .lb-caption-card {
@@ -1818,8 +1794,8 @@
       background-color: rgba(16, 185, 129, 0.22);
       color: #6ee7b7;
       border: 1px solid rgba(52, 211, 153, 0.48);
-      -webkit-backdrop-filter: blur(8px) saturate(1.45);
-      backdrop-filter: blur(8px) saturate(1.45);
+      -webkit-backdrop-filter: blur(14px) saturate(1.45);
+      backdrop-filter: blur(14px) saturate(1.45);
       box-shadow: 0 6px 18px -4px rgba(16, 185, 129, 0.28), 0 1px 0 0 rgba(255, 255, 255, 0.12) inset;
     }
     html.bright-mode .lb-download-btn {
@@ -1844,8 +1820,8 @@
     /* Translucent Glassmorphism Video Loading Overlay */
     .vid-glass-loader {
       background-color: rgba(12, 19, 34, 0.24);
-      backdrop-filter: blur(8px) saturate(1.35);
-      -webkit-backdrop-filter: blur(8px) saturate(1.35);
+      backdrop-filter: blur(12px) saturate(1.35);
+      -webkit-backdrop-filter: blur(12px) saturate(1.35);
       border: 1px solid rgba(148, 163, 184, 0.24);
       box-shadow:
         0 10px 28px -8px rgba(0, 0, 0, 0.35),
@@ -1922,7 +1898,7 @@
       position: relative; width: 100%; max-width: 640px; max-height: min(88vh, 860px); max-height: min(88dvh, 860px); max-height: min(88svh, 860px); display: flex; flex-direction: column;
       border-radius: 24px; overflow: hidden; color: #e2e8f0;
       background: linear-gradient(160deg, rgba(30, 41, 66, 0.72), rgba(12, 19, 34, 0.78));
-      backdrop-filter: blur(8px) saturate(1.5); -webkit-backdrop-filter: blur(8px) saturate(1.5);
+      backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
       border: 1px solid rgba(148, 163, 184, 0.28);
       box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.7), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
       opacity: 0; transform: scale(.85) translateY(34px);
@@ -1964,7 +1940,7 @@
 
     /* ===== Comments & Feedback (glass) ===== */
     #feedback-card {
-      background-color: rgba(12, 19, 34, 0.52) !important; backdrop-filter: blur(8px) saturate(1.4); -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      background-color: rgba(12, 19, 34, 0.52) !important; backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
     }
@@ -2081,8 +2057,8 @@ html.bright-mode .dv-m1 { color: #b45309; } html.bright-mode .dv-m2 { color: #47
 /* Translucent glass look for the new Home cards (matches the notice card) */
 #dv-top3, #dv-glance .dv-glance-card {
   background-color: rgba(12, 19, 34, 0.52) !important;
-  backdrop-filter: blur(8px) saturate(1.4);
-  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border-color: rgba(148, 163, 184, 0.22) !important;
   box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
 }
@@ -2094,8 +2070,8 @@ html.bright-mode .dv-m1 { color: #b45309; } html.bright-mode .dv-m2 { color: #47
 }
 html.bright-mode #dv-top3, html.bright-mode #dv-glance .dv-glance-card {
   background-color: rgba(255, 255, 255, 0.58) !important;
-  backdrop-filter: blur(8px) saturate(1.45);
-  -webkit-backdrop-filter: blur(8px) saturate(1.45);
+  backdrop-filter: blur(12px) saturate(1.45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.45);
   border-color: rgba(148, 163, 184, 0.32) !important;
   box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset !important;
 }
@@ -2127,8 +2103,8 @@ html.bright-mode #dv-quick > button {
    ===================================================================== */
 #view-calc .cal-card {
   background-color: rgba(12, 19, 34, 0.52);
-  backdrop-filter: blur(8px) saturate(1.4);
-  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
 }
@@ -2254,7 +2230,7 @@ html.bright-mode #dv-quick > button {
 /* ---------------------- Bright (light) mode ---------------------- */
 html.bright-mode #view-calc .cal-card {
   background-color: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(8px) saturate(1.45); -webkit-backdrop-filter: blur(8px) saturate(1.45);
+  backdrop-filter: blur(12px) saturate(1.45); -webkit-backdrop-filter: blur(12px) saturate(1.45);
   border-color: rgba(148, 163, 184, 0.32);
   box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset;
 }
@@ -2361,8 +2337,8 @@ html.bright-mode #cal-conv-body .calconv-mark { background: #0f172a; box-shadow:
 #view-tools .tl-card,
 #tl-modal .tl-card {
   background-color: rgba(12, 19, 34, 0.52);
-  backdrop-filter: blur(8px) saturate(1.4);
-  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow:
     0 10px 30px -8px rgba(0, 0, 0, 0.42),
@@ -2478,8 +2454,8 @@ html.bright-mode #cal-conv-body .calconv-mark { background: #0f172a; box-shadow:
 html.bright-mode #view-tools .tl-card,
 html.bright-mode #tl-modal .tl-card {
   background-color: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(8px) saturate(1.45);
-  -webkit-backdrop-filter: blur(8px) saturate(1.45);
+  backdrop-filter: blur(12px) saturate(1.45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.45);
   border-color: rgba(148, 163, 184, 0.32);
   box-shadow:
     0 10px 28px -8px rgba(15, 23, 42, 0.14),
@@ -2534,8 +2510,8 @@ html.bright-mode #view-tools .tl-dot { border-color: rgba(100, 116, 139, 0.7); }
    ===================================================================== */
 #view-docs .doc-card {
   background-color: rgba(12, 19, 34, 0.52);
-  backdrop-filter: blur(8px) saturate(1.4);
-  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
 }
@@ -2619,8 +2595,8 @@ html.bright-mode #view-tools .tl-dot { border-color: rgba(100, 116, 139, 0.7); }
 /* ---------------------- Bright (light) mode ---------------------- */
 html.bright-mode #view-docs .doc-card {
   background-color: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(8px) saturate(1.45);
-  -webkit-backdrop-filter: blur(8px) saturate(1.45);
+  backdrop-filter: blur(12px) saturate(1.45);
+  -webkit-backdrop-filter: blur(12px) saturate(1.45);
   border-color: rgba(148, 163, 184, 0.32);
   box-shadow: 0 10px 28px -8px rgba(15, 23, 42, 0.14), 0 1px 0 0 rgba(255, 255, 255, 0.7) inset;
 }
@@ -2741,7 +2717,7 @@ html.bright-mode #view-docs .doc-cmp-badge { color: #92400e; background-color: r
 #doc-rs-editor {
   position: fixed; inset: 0; z-index: 8500; display: none; color: #e2e8f0; outline: none;
   background-color: rgba(2, 6, 23, 0.84);
-  -webkit-backdrop-filter: blur(8px) saturate(1.35); backdrop-filter: blur(8px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35); backdrop-filter: blur(16px) saturate(1.35);
   overscroll-behavior: contain; -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
@@ -2903,7 +2879,7 @@ html.doc-ed-open #toast-container { z-index: 8600 !important; bottom: auto !impo
 #doc-editor-modal {
   position: fixed; inset: 0; z-index: 8500; display: none; color: #e2e8f0; outline: none;
   background-color: rgba(2, 6, 23, 0.84);
-  -webkit-backdrop-filter: blur(8px) saturate(1.35); backdrop-filter: blur(8px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35); backdrop-filter: blur(16px) saturate(1.35);
   overscroll-behavior: contain; -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
@@ -3116,7 +3092,7 @@ html.bright-mode #view-tools .tl-st-bad  { color: #9f1239; background-color: #ff
 @media (max-width:639px){#tl-tablist .tl-seg{flex-direction:column;gap:.15rem;font-size:10.5px;padding:.45rem .2rem}}
 #view-tools .tr-prev{min-height:7rem;background:#fff;border:1px solid rgba(148,163,184,.3);border-radius:.75rem;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:.5rem}
 #view-tools .tr-prev img{max-height:10rem;max-width:100%;object-fit:contain}
-.tr-go{background-color:rgba(16,185,129,.22);color:#6ee7b7;border:1px solid rgba(52,211,153,.48);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);touch-action:manipulation}
+.tr-go{background-color:rgba(16,185,129,.22);color:#6ee7b7;border:1px solid rgba(52,211,153,.48);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);touch-action:manipulation}
 html.bright-mode .tr-go{background-color:rgba(209,250,229,.85);color:#065f46;border-color:#6ee7b7}
 .tr-go:disabled{opacity:.5}
 
@@ -3166,7 +3142,7 @@ html.bright-mode .tr-val{color:#334155}
 .tr-range::-moz-range-thumb{width:20px;height:20px;border-radius:9999px;background:#f59e0b;border:2px solid #fff}
 html.bright-mode .tr-range::-webkit-slider-thumb{background:#d97706}
 
-#tr-toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);max-width:min(92%,22rem);padding:.5rem .8rem;border-radius:.8rem;font-size:12px;font-weight:700;text-align:center;color:#fde68a;opacity:0;pointer-events:none;transition:opacity .25s;z-index:6;background-color:rgba(12,19,34,.82);border:1px solid rgba(251,191,36,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+#tr-toast{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);max-width:min(92%,22rem);padding:.5rem .8rem;border-radius:.8rem;font-size:12px;font-weight:700;text-align:center;color:#fde68a;opacity:0;pointer-events:none;transition:opacity .25s;z-index:6;background-color:rgba(12,19,34,.82);border:1px solid rgba(251,191,36,.45);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 #tr-toast.tr-show{opacity:1}
 html.bright-mode #tr-toast{color:#92400e;background-color:rgba(255,255,255,.92);border-color:rgba(180,83,9,.4)}
 #tr-cam-err{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 32px);max-width:21rem;padding:1rem;border-radius:1rem;text-align:center;display:none;z-index:4}
@@ -3174,7 +3150,7 @@ html.bright-mode #tr-toast{color:#92400e;background-color:rgba(255,255,255,.92);
 #tr-cam-msg{color:#e2e8f0;font-size:12px;font-weight:600;line-height:1.5}
 html.bright-mode #tr-cam-msg{color:#334155}
 
-#tr-unlock{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);display:none;align-items:center;gap:.4rem;padding:.3rem .7rem .3rem .35rem;border-radius:9999px;font-size:10px;font-weight:800;opacity:.45;z-index:7;color:#fde68a;background-color:rgba(15,23,42,.56);border:1px solid rgba(251,191,36,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);touch-action:none}
+#tr-unlock{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);display:none;align-items:center;gap:.4rem;padding:.3rem .7rem .3rem .35rem;border-radius:9999px;font-size:10px;font-weight:800;opacity:.45;z-index:7;color:#fde68a;background-color:rgba(15,23,42,.56);border:1px solid rgba(251,191,36,.42);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);touch-action:none}
 html.bright-mode #tr-unlock{color:#92400e;background-color:rgba(255,255,255,.8);border-color:rgba(180,83,9,.4)}
 #trace-overlay.tr-locked #tr-unlock{display:flex}
 #tr-unlock.tr-hold{opacity:1}
@@ -3355,8 +3331,8 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
 <style id="msg-card-glass">
     #msg-card {
       background-color: rgba(12, 19, 34, 0.52) !important;
-      backdrop-filter: blur(8px) saturate(1.4);
-      -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border-color: rgba(148, 163, 184, 0.22) !important;
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
     }
@@ -8520,7 +8496,7 @@ service cloud.firestore {
       }
 
       updateNavHighlights(navKeyFor(tabName));
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo(0, 0);
       expandSearchBar(false);
       if (window.__syncHeaderAndSearch) window.__syncHeaderAndSearch(true);
       if (window.lucide) {
@@ -9442,7 +9418,7 @@ service cloud.firestore {
 
                 ${
                   thumbUrl
-                    ? `<img src="${thumbUrl}" alt="${safeTitle}" loading="lazy" decoding="async"
+                    ? `<img src="${thumbUrl}" alt="${safeTitle}" loading="lazy"
                         onload="if(this.naturalWidth<=120){this.style.display='none';const b=this.parentElement&&this.parentElement.querySelector('[data-vid-unavail]');if(b)b.classList.remove('hidden');}"
                         onerror="this.style.display='none';const b=this.parentElement&&this.parentElement.querySelector('[data-vid-unavail]');if(b)b.classList.remove('hidden');"
                         class="relative z-10 w-full h-full object-cover group-hover:scale-105 transition duration-300" />`
@@ -9712,7 +9688,6 @@ service cloud.firestore {
       };
 
       rt.pollTimer = setInterval(() => {
-        if (document.hidden) return;
         if (!live()) { dismissLoader(); return; }
         try {
           if (loader.isConnected && !loader.classList.contains("vid-loader-done")) {
@@ -13751,8 +13726,8 @@ service cloud.firestore {
   #home-notice-card, #daily-calendar-card, #daily-trainee-section, #daily-class-section,
   #notices-videos-grid > article, #full-videos-grid > article,
   #trainee-search-results, #modal-trainee-report > div {
-    -webkit-backdrop-filter: blur(8px) saturate(1.6) !important;
-    backdrop-filter: blur(8px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
+    backdrop-filter: blur(14px) saturate(1.6) !important;
     border-color: rgba(148, 163, 184, 0.28) !important;
     box-shadow:
       0 14px 34px -14px rgba(0, 0, 0, 0.6),
@@ -13769,12 +13744,12 @@ service cloud.firestore {
   }
   /* tab bar, search and menu: richer blur only (their own shadows/colours stay) */
   #search-input-box, #search-bar-wrap #search-input-box {
-    -webkit-backdrop-filter: blur(8px) saturate(1.6) !important;
-    backdrop-filter: blur(8px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
+    backdrop-filter: blur(14px) saturate(1.6) !important;
   }
   #more-sheet {
-    -webkit-backdrop-filter: blur(8px) saturate(1.5) !important;
-    backdrop-filter: blur(8px) saturate(1.5) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.5) !important;
+    backdrop-filter: blur(16px) saturate(1.5) !important;
   }
   /* fullscreen gallery preview: let the ambient colours glow through the frosted overlay */
   #gallery-lightbox { background-color: rgba(2, 6, 23, 0.66); }
@@ -14049,7 +14024,7 @@ service cloud.firestore {
     color: #e2e8f0;
     background-color: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(148, 163, 184, 0.28);
-    -webkit-backdrop-filter: blur(8px) saturate(1.5); backdrop-filter: blur(8px) saturate(1.5);
+    -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5);
     box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.07) inset;
     transition: transform 0.28s var(--ico-ease, ease), background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
@@ -14077,7 +14052,7 @@ service cloud.firestore {
     padding: 0.7rem 0.75rem; border-radius: 1rem;
     background-color: rgba(12, 19, 34, 0.52);
     border: 1px solid rgba(148, 163, 184, 0.28);
-    -webkit-backdrop-filter: blur(8px) saturate(1.6); backdrop-filter: blur(8px) saturate(1.6);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6); backdrop-filter: blur(14px) saturate(1.6);
     box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.6), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset, inset 3px 0 0 rgba(245, 158, 11, 0.8);
   }
   html.bright-mode .focus-card {
@@ -14124,7 +14099,7 @@ service cloud.firestore {
     min-height: 34px; padding: 0.4rem 0.6rem; border-radius: 0.8rem;
     font-size: 11px; font-weight: 700; line-height: 1.1; white-space: nowrap;
     color: var(--gb-fg); background-color: var(--gb-bg); border: 1px solid var(--gb-border);
-    -webkit-backdrop-filter: blur(8px) saturate(1.5); backdrop-filter: blur(8px) saturate(1.5);
+    -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5);
     box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.45), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
     transition: transform 0.28s var(--ico-ease, ease), background-color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
@@ -14144,7 +14119,7 @@ service cloud.firestore {
     padding: 0.5rem 0.55rem; border-radius: 1rem;
     background-color: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(148, 163, 184, 0.3);
-    -webkit-backdrop-filter: blur(8px) saturate(1.5); backdrop-filter: blur(8px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5); backdrop-filter: blur(12px) saturate(1.5);
     box-shadow: 0 10px 26px -12px rgba(0, 0, 0, 0.55), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset;
     animation: perfCardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
@@ -14481,22 +14456,6 @@ html.bright-mode{--vl-bg:rgba(255,255,255,.6);--vl-bd:rgba(15,23,42,.14);--vl-tx
 .vl-out{opacity:0;transform:translateX(var(--vl-dx,0));transition:opacity .13s ease,transform .13s ease}
 .vl-in{animation:vlin .24s ease both}@keyframes vlin{from{opacity:0;transform:translateX(var(--vl-dx,0))}to{opacity:1;transform:none}}
 html.vl-reduce *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
-/* user options: glass blur + looping glow/shimmer effects (Settings > Appearance) */
-html.vl-noblur .shadow-xl,html.vl-noblur .shadow-2xl,html.vl-noblur .shadow-lg{box-shadow:0 1px 3px rgba(0,0,0,.28)!important}
-/* off-screen video cards skip layout/paint until near the viewport (the playing card is excluded) */
-#full-videos-grid>[data-vid-card]:not(.vid-card-active),#notices-videos-grid>[data-vid-card]:not(.vid-card-active){content-visibility:auto;contain-intrinsic-size:auto 340px}
-html.vl-reduce #full-videos-grid>[data-vid-card],html.vl-reduce #notices-videos-grid>[data-vid-card]{content-visibility:visible}
-html.vl-noblur *,html.vl-noblur *::before,html.vl-noblur *::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-html.vl-noloop .new-badge::after,
-html.vl-noloop #main-header .hdr-ico::before,
-html.vl-noloop .name-gold-effect,
-html.vl-noloop .rk-name,
-html.vl-noloop .rk-shine,
-html.vl-noloop .rk-crown,
-html.vl-noloop .reward-pill.star-fx,
-html.vl-noloop body.music-playing .mh-ambient.on,
-html.vl-noloop body.music-playing #iti-music-bar.mu-mini::after,
-html.vl-noloop #dv-sotd .sd-card.sd-play::after{animation:none!important}
 html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .dv-dots{position:relative;width:30px;height:30px;animation:dvDotsSpin .9s linear infinite}
 .dv-dots i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.55)}
@@ -14547,7 +14506,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .vl-seg{flex:none;display:inline-flex;border-radius:10px;border:1px solid var(--vl-bd);overflow:hidden}.vl-seg button{padding:.4rem .65rem;font-size:11px;font-weight:700;color:var(--vl-tx)}.vl-seg button[aria-pressed=true]{background:var(--vl-onbg);color:var(--vl-on)}
 .vl-val{font-size:12px;font-weight:600;color:var(--vl-pt);text-align:right;max-width:55%;overflow-wrap:anywhere}
 /* music subcategory bar + admin extras */
-.vl-subx{flex:none;margin-left:auto;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:var(--vl-on);background:var(--vl-bg);border:1px solid var(--vl-bd);-webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4)}
+.vl-subx{flex:none;margin-left:auto;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:var(--vl-on);background:var(--vl-bg);border:1px solid var(--vl-bd);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
 .vl-subx svg{width:15px;height:15px;transition:transform .3s}.vl-bar.vl-subexp .vl-subx{background:var(--vl-onbg);border-color:var(--vl-on)}.vl-bar.vl-subexp .vl-subx svg{transform:rotate(180deg)}
 .vl-bar.vl-subexp .vl-subscroll{flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none;row-gap:.4rem;padding-right:2px}
 .vl-bar.vl-subhid .vl-subx{display:none}
@@ -14617,10 +14576,8 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   var PK = "iti_vl_prefs_v1", CK = "iti_vl_lastcat_v1", P = ["notices", "videos"];
   function rd(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
   function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-  var PD = { catAuto: false, remember: true, reduce: false, blur: true, loops: true, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
+  var PD = { catAuto: false, remember: true, reduce: false, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
   var prefs = Object.assign({}, PD, rd(PK));
-  /* low-end phones start with blur and glow effects off, unless the person already chose */
-  (function () { var sv = rd(PK) || {}; if (window.__lowEnd) { if (sv.blur === undefined) prefs.blur = false; if (sv.loops === undefined) prefs.loops = false; } })();
   if (!prefs._apOff) { prefs.catAuto = false; prefs._apOff = 1; wr(PK, prefs); } /* one-time reset: autoplay now off by default */
   var st = { notices: { cat: "all", sub: "all", t: null }, videos: { cat: "all", sub: "all", t: null } };
   (function () { var lc = rd(CK); P.forEach(function (p) { if (prefs.remember && lc[p]) st[p].cat = lc[p]; if (prefs.musicRemember && lc[p + "_sub"]) st[p].sub = lc[p + "_sub"]; }); })();
@@ -15056,7 +15013,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 
   /* ---------- Settings (only controls that actually do something) ---------- */
   function applyPrefs() {
-    var h = document.documentElement; h.classList.toggle("vl-reduce", !!prefs.reduce); h.classList.toggle("vl-noblur", prefs.blur === false); h.classList.toggle("vl-noloop", prefs.loops === false); h.classList.toggle("vl-sm", prefs.size === "sm"); h.classList.toggle("vl-lg", prefs.size === "lg");
+    var h = document.documentElement; h.classList.toggle("vl-reduce", !!prefs.reduce); h.classList.toggle("vl-sm", prefs.size === "sm"); h.classList.toggle("vl-lg", prefs.size === "lg");
   }
   function savePrefs() { wr(PK, prefs); }
   function sw(k, on, t, s) { return '<div class="vl-sr"><div><b>' + t + "</b><small>" + s + '</small></div><button type="button" class="vl-sw" role="switch" aria-checked="' + !!on + '" data-set="' + k + '" aria-label="' + t + '"><i></i></button></div>'; }
@@ -15087,7 +15044,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     try { used = Math.round(new Blob([localStorage.getItem(STORAGE_KEY) || ""]).size / 1024); } catch (e) {}
     root.innerHTML = '<div class="vl-sh bg-[#0f172a] border border-slate-800/90 rounded-2xl px-3 py-3 shadow-xl"><button type="button" class="vl-ico" onclick="vlSettingsBack()" aria-label="Back" title="Back"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><h2 class="text-sm sm:text-base font-bold text-white">Settings</h2></div><div class="vl-set">' +
       card("General", act("sync", "Sync with cloud", "Push saved changes to the shared cloud copy now.", "Sync now") + act("cache", "Clear cached playlist data", "Forces the next playlist refresh to fetch fresh data.", "Clear") + act("reset", "Reset these settings", "Restores the options on this page to their defaults.", "Reset")) +
-      card("Appearance", seg("theme", [["bright", "Bright"], ["dark", "Dark"]], bright ? "bright" : "dark", "Theme", "Switch between bright and dark mode.") + seg("size", [["sm", "A−"], ["md", "A"], ["lg", "A+"]], prefs.size, "Text size", "Makes text smaller or larger across the site.") + sw("reduce", prefs.reduce, "Reduce motion", "Turns off slide and fade animations.") + sw("blur", prefs.blur !== false, "Translucent glass effect", "Frosted-glass blur on the header, bars and panels, plus heavy shadows. Turn off if scrolling feels slow.") + sw("loops", prefs.loops !== false, "Glow & shimmer effects", "Looping glows, shimmers and sweeps on badges, ranks and the music bar. Turn off to save battery.") + act("perf", "Performance mode", "One tap: blur, glows and animations all off (or all back on).", (prefs.blur === false && prefs.loops === false && prefs.reduce) ? "Turn effects on" : "Turn effects off")) +
+      card("Appearance", seg("theme", [["bright", "Bright"], ["dark", "Dark"]], bright ? "bright" : "dark", "Theme", "Switch between bright and dark mode.") + seg("size", [["sm", "A−"], ["md", "A"], ["lg", "A+"]], prefs.size, "Text size", "Makes text smaller or larger across the site.") + sw("reduce", prefs.reduce, "Reduce motion", "Turns off slide and fade animations.")) +
       card("Video", sw("catAuto", prefs.catAuto, "Autoplay on category change", "When you pick a category, its first video starts automatically (muted) and the rest follow in order.") + sw("autoplay", autoplayEnabled, "Autoplay next video", "Plays the list in order. Starts muted if your browser requires it.") + sw("loop", autoplayLoop, "Loop list", "Start again from the first video after the last one.") + sw("remember", prefs.remember, "Remember last category", "Reopen the category you were watching.")) +
       card("Music", sw("musicAuto", prefs.musicAuto, "Autoplay on Music open", "Starts the first track (muted if your browser requires it) when you open Music or switch subcategory; the rest follow in order.") + sw("musicRemember", prefs.musicRemember, "Remember last music subcategory", "Reopen the subcategory you were listening to.") + sw("musicHideEmpty", prefs.musicHideEmpty, "Hide empty subcategories", "Only list music subcategories that have tracks.") + musicPlayerRows() + inf("Playlists", "Each subcategory has its own order")) +
       card("Notifications", seg("toasts", [["all", "All"], ["errors", "Errors"], ["off", "Off"]], prefs.toasts, "In-app messages", "Pop-up messages such as “Saved” or “Video unavailable”. Errors only hides the rest.")) +
@@ -15110,8 +15067,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
         if (x === "sync") manualCloudSync();
         else if (x === "cache") { try { localStorage.removeItem(YT_PLAYLIST_CACHE_KEY); showToast("Playlist cache cleared", "success"); } catch (y) {} }
         else if (x === "forget") { try { localStorage.removeItem(CK); } catch (y) {} showToast("Remembered category and music subcategory cleared", "success"); }
-        else if (x === "perf") { var lite = prefs.blur === false && prefs.loops === false && prefs.reduce; prefs.blur = lite; prefs.loops = lite; prefs.reduce = !lite; savePrefs(); applyPrefs(); showToast(lite ? "Effects on" : "Performance mode on", "success"); }
-        else if (x === "reset") { prefs = Object.assign({}, PD, window.__lowEnd ? { blur: false, loops: false } : {}); savePrefs(); applyPrefs(); showToast("Settings reset", "success"); }
+        else if (x === "reset") { prefs = Object.assign({}, PD); savePrefs(); applyPrefs(); showToast("Settings reset", "success"); }
       }
       renderSettings();
     });
@@ -15587,7 +15543,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   /* ---------- init ---------- */
   applyPrefs(); mount(); setupSettings();
   P.forEach(function (p) { if (st[p].cat !== "all" && st[p].cat !== "__watched" && st[p].cat !== "__saved" && !cats().some(function (c) { return c.id === st[p].cat; })) st[p].cat = "all"; fixSub(p); paint(p, false); rerender(p); });
-  __poll(function () { P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; d.querySelector("[data-vl-add]").hidden = !isAdminUnlocked; }); }, 1500);
+  setInterval(function () { P.forEach(function (q) { var d = bar(q); if (d) d.querySelector("[data-vl-manage]").hidden = !isAdminUnlocked; d.querySelector("[data-vl-add]").hidden = !isAdminUnlocked; }); }, 1500);
 })();
 </script>
 
@@ -15936,7 +15892,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 
     // Re-apply when cloud settings arrive (commentsMode may change remotely)
     let lastMode = null, lastMail = null;
-    __poll(() => {
+    setInterval(() => {
       const m = mode(); if (m !== lastMode) { lastMode = m; applyMode(); startPublic(); }
       const to = ((appState.settings && (appState.settings.contactEmail || appState.settings.adminEmail)) || "").trim();
       if (to !== lastMail) { lastMail = to; const a = $("fbk-mail-btn"); if (a) a.setAttribute("href", to ? "mailto:" + to + "?subject=" + encodeURIComponent("ITI CONNECT – Website feedback") : "#"); }
@@ -17129,7 +17085,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     const g = document.getElementById(id);
     if (g) mo.observe(g, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
   });
-  __poll(sync, 1500); // picks up admin unlock / comment-mode changes
+  setInterval(sync, 1500); // picks up admin unlock / comment-mode changes
   sync();
 
   // ---- posting ----
@@ -17420,7 +17376,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     } catch (e) {}
     setTimeout(function () { paintPause(btn, isPaused(p)); }, 250);
   }
-  __poll(function () {
+  setInterval(function () {
     document.querySelectorAll("[data-vx-pause]").forEach(function (b) {
       var c = b.closest("[data-vid-card]"); if (!c) return;
       var p = c.getAttribute("data-vid-prefix"), s = activeInlinePlayerState[p];
@@ -17473,7 +17429,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   ["notices-videos-grid", "full-videos-grid"].forEach(function (id) { var g = document.getElementById(id); if (g) new MutationObserver(scan).observe(g, { childList: true }); });
   scan();
 
-  __poll(function () {
+  setInterval(function () {
     ["videos", "notices"].forEach(function (p) {
       try {
         var s = activeInlinePlayerState[p], rt = ytRuntime[p]; if (!s || !s.videoId || !rt) return;
@@ -17612,7 +17568,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       return [x, sc];
     }).filter(function (a) { return a && a[1] > 1; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3).map(function (a) { return a[0]; });
   }
-  __poll(function () {
+  setInterval(function () {
     try {
       var s = activeInlinePlayerState[P], id = s && s.videoId || null; if (id === lastAct) return; lastAct = id;
       var box = document.getElementById("vx-related"); if (!box) return;
@@ -17679,7 +17635,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   }
 
   var last = null;
-  __poll(function () {
+  setInterval(function () {
     setup();
     try {
       var g = document.getElementById("full-videos-grid"); if (!g) return;
@@ -17722,7 +17678,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     '.vl-bar[data-vl] .vl-input{margin-top:0;min-height:36px;padding:.25rem .65rem;border-radius:12px;gap:.45rem}',
     '.vl-bar[data-vl] .vl-input input{font-size:12.5px;padding:.1rem 0}',
     '#vx-opt-toggle{background:var(--vl-bg)!important;border:1px solid var(--vl-bd)!important;color:var(--vl-tx)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}',
-    '#vx-topics-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;margin:.4rem auto 0;padding:0;border-radius:50%;color:var(--vl-on);background:var(--vl-bg);border:1px solid var(--vl-bd);-webkit-backdrop-filter:blur(8px) saturate(1.4);backdrop-filter:blur(8px) saturate(1.4);box-shadow:0 2px 10px rgba(0,0,0,.12)}',
+    '#vx-topics-toggle{display:flex;align-items:center;justify-content:center;width:34px;height:34px;margin:.4rem auto 0;padding:0;border-radius:50%;color:var(--vl-on);background:var(--vl-bg);border:1px solid var(--vl-bd);-webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4);box-shadow:0 2px 10px rgba(0,0,0,.12)}',
     '#vx-topics-toggle svg{width:16px;height:16px;transition:transform .3s}',
     '#vx-topics-toggle[aria-expanded="true"]{background:var(--vl-onbg);border-color:var(--vl-on)}#vx-topics-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}',
     '#vx-tools button,#vx-tools select,#vx-sleep,[data-vx-rel],[data-vx-resume]{min-height:40px}',
@@ -17843,7 +17799,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     /* a topic was picked: fold the topic list back up */
     if (d.classList.contains("vx-open")) setTopics(d, false);
   });
-  __poll(tick, 1000); tick();
+  setInterval(tick, 1000); tick();
 })();
 </script>
 
@@ -17937,7 +17893,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     want.forEach(function (x) { h.appendChild(x); });
   }
   function run() { try { var oldStrip = $("vx-today"); if (oldStrip) oldStrip.remove(); examPill(); quick(); decorate(); reorder(); } catch (e) { console.error("home layout", e); } }
-  run(); __poll(run, 1500);
+  run(); setInterval(run, 1500);
 })();
 </script>
 
@@ -17955,7 +17911,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .vx-drawer-in{min-height:0;overflow:hidden}
 .vx-drawer-pad{margin:0 0 8px;padding:10px;border-radius:12px;display:flex;flex-direction:column;gap:8px;
   background:rgba(255,255,255,.05);border:1px solid rgba(148,163,184,.18);
-  -webkit-backdrop-filter:blur(8px) saturate(1.3);backdrop-filter:blur(8px) saturate(1.3);
+  -webkit-backdrop-filter:blur(12px) saturate(1.3);backdrop-filter:blur(12px) saturate(1.3);
   transform:translate3d(0,-8px,0) scale(.985);transform-origin:top center;
   transition:transform .45s cubic-bezier(.22,1,.36,1)}
 .vx-drawer.open .vx-drawer-pad{transform:none}
@@ -18013,7 +17969,7 @@ html.bright-mode .vx-drawer button,html.bright-mode .vx-drawer select{color:#334
     if (t.id === "vx-playall" || t.id === "vx-shuffle") setTimeout(function () { setOpen(false); }, 250);
   });
   document.addEventListener("change", function (e) { if (e.target && e.target.id === "vx-sort") setTimeout(function () { setOpen(false); }, 250); });
-  __poll(ensure, 1000); ensure();
+  setInterval(ensure, 500); ensure();
 })();
 </script>
 <script>
@@ -18033,12 +17989,12 @@ document.addEventListener("click",function(e){
     if(!m||!seg||!seg.parentNode)return;
     if(seg.nextElementSibling!==m){seg.parentNode.insertBefore(m,seg.nextSibling);m.style.margin="0 0 .6rem";}
   }
-  __poll(place,800);place();
+  setInterval(place,400);place();
 })();
 </script>
 <style id="dv-lv-play-style">
 #dv-latest-video .dv-lv-thumb .rounded-full.bg-amber-500{width:44px!important;height:44px!important;
-background-color:rgba(15,23,42,.42)!important;-webkit-backdrop-filter:blur(8px) saturate(1.5);backdrop-filter:blur(8px) saturate(1.5);
+background-color:rgba(15,23,42,.42)!important;-webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5);
 border:1px solid rgba(255,255,255,.5);color:#fff!important;
 box-shadow:0 0 16px rgba(251,191,36,.5),0 6px 16px -4px rgba(0,0,0,.45),0 1px 0 0 rgba(255,255,255,.45) inset!important;
 transition:transform .25s cubic-bezier(.22,1,.36,1),background-color .25s,box-shadow .25s,border-color .25s}
@@ -18047,7 +18003,7 @@ transition:transform .25s cubic-bezier(.22,1,.36,1),background-color .25s,box-sh
 </style>
 <style id="vx-mini-style">
 .tab-view.vx-keep.hidden{display:block!important;position:fixed!important;left:-200vw;top:0;width:min(100vw,640px);pointer-events:none}
-#vx-mini{position:fixed;left:.75rem;right:.75rem;bottom:calc(env(safe-area-inset-bottom,0px) + 5.6rem);z-index:55;display:flex;align-items:center;gap:.4rem;padding:.4rem .5rem .4rem .75rem;border-radius:999px;background:var(--vl-bg,rgba(30,41,59,.5));color:var(--vl-pt,#e2e8f0);border:1px solid var(--vl-bd,rgba(148,163,184,.28));-webkit-backdrop-filter:blur(8px) saturate(1.5);backdrop-filter:blur(8px) saturate(1.5);box-shadow:0 8px 24px -6px rgba(0,0,0,.35);transform:translateY(140%);opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .25s}
+#vx-mini{position:fixed;left:.75rem;right:.75rem;bottom:calc(env(safe-area-inset-bottom,0px) + 5.6rem);z-index:55;display:flex;align-items:center;gap:.4rem;padding:.4rem .5rem .4rem .75rem;border-radius:999px;background:var(--vl-bg,rgba(30,41,59,.5));color:var(--vl-pt,#e2e8f0);border:1px solid var(--vl-bd,rgba(148,163,184,.28));-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);box-shadow:0 8px 24px -6px rgba(0,0,0,.35);transform:translateY(140%);opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.22,1,.36,1),opacity .25s}
 #vx-mini.show{transform:none;opacity:1;pointer-events:auto}
 #vx-mini .vm-t{flex:1;min-width:0;text-align:left;font-size:12px;font-weight:700;line-height:1.2}
 #vx-mini .vm-t small{display:block;font-size:10px;font-weight:600;opacity:.7}
@@ -18129,7 +18085,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (view && view.id === "view-" + t) end();
     return r;
   };
-  __poll(function () {
+  setInterval(function () {
     if (!view) return;
     var card = activeCard(view);
     if (!card || !isPlayingEl(card)) { end(); return; }
@@ -18311,14 +18267,14 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     /* ---- Keyboard shortcuts: HUD + help sheet (glass) ---- */
     #mu-kb-hud { position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 4.5rem); transform:translate(-50%,-8px); z-index:95; padding:.45rem .95rem; border-radius:9999px;
       font-size:.78rem; font-weight:800; color:#f1f5f9; background:rgba(12,19,34,.52); border:1px solid rgba(148,163,184,.22);
-      backdrop-filter:blur(8px) saturate(1.4); -webkit-backdrop-filter:blur(8px) saturate(1.4);
+      backdrop-filter:blur(12px) saturate(1.4); -webkit-backdrop-filter:blur(12px) saturate(1.4);
       box-shadow:0 10px 30px -8px rgba(0,0,0,.42), 0 1px 0 0 rgba(255,255,255,.05) inset; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; }
     #mu-kb-hud.on { opacity:1; transform:translate(-50%,0); }
     #mu-kb-help { position:fixed; inset:0; z-index:90; display:flex; align-items:center; justify-content:center; padding:1rem; background:rgba(2,6,23,.55);
       backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
     #mu-kb-help.hidden { display:none; }
     #mu-kb-help .kb-card { width:min(100%,24rem); max-height:86vh; overflow:auto; padding:.9rem 1rem 1rem; border-radius:1.2rem; color:#f1f5f9;
-      background:rgba(12,19,34,.52); border:1px solid rgba(148,163,184,.22); backdrop-filter:blur(8px) saturate(1.4); -webkit-backdrop-filter:blur(8px) saturate(1.4);
+      background:rgba(12,19,34,.52); border:1px solid rgba(148,163,184,.22); backdrop-filter:blur(12px) saturate(1.4); -webkit-backdrop-filter:blur(12px) saturate(1.4);
       box-shadow:0 10px 30px -8px rgba(0,0,0,.42), 0 1px 0 0 rgba(255,255,255,.05) inset; }
     #mu-kb-help .kb-h { display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem; font-size:.9rem; }
     #mu-kb-help .kb-x { width:1.8rem; height:1.8rem; border-radius:9999px; border:1px solid rgba(148,163,184,.28); background:rgba(255,255,255,.06); color:inherit; cursor:pointer; }
@@ -18441,7 +18397,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     /* ---- Glass look for Song of the Day + Song requests (same recipe as the notice / feedback cards) ---- */
     #dv-sotd .sd-card, #songreq-admin, #modal-song-request > div {
       background-color: rgba(12, 19, 34, 0.52) !important; background-image: none !important;
-      backdrop-filter: blur(8px) saturate(1.4); -webkit-backdrop-filter: blur(8px) saturate(1.4);
+      backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
       border: 1px solid rgba(148, 163, 184, 0.22) !important;
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.42), 0 1px 0 0 rgba(255, 255, 255, 0.05) inset !important;
     }
@@ -18484,7 +18440,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       border-radius: 1.9rem; border: 1px solid var(--tape-border);
       background-color: var(--mh-glass);
       background-image: radial-gradient(120% 55% at 50% 0%, var(--mh-tint), transparent 62%);
-      -webkit-backdrop-filter: blur(8px) saturate(1.6); backdrop-filter: blur(8px) saturate(1.6);
+      -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
       box-shadow: var(--tape-shadow), 0 24px 60px -24px rgba(0,0,0,.45), 0 1px 0 0 var(--tape-inset) inset;
       transform: translate3d(0, 112%, 0); transform-origin: 50% 100%; backface-visibility: hidden;
       transition: transform .4s var(--mh-ios); will-change: transform; }
@@ -18546,7 +18502,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     .mh-chip.on { background: var(--mh-primary); color: var(--mh-primary-fg); border-color: transparent !important; box-shadow: 0 6px 14px -8px var(--mh-primary-glow); }
 
     .mh-tabs { position: sticky; top: .3rem; z-index: 3; display: grid; grid-template-columns: repeat(3, 1fr); margin-top: .85rem; padding: .25rem; border-radius: 1.1rem;
-      background: var(--mh-sticky); border: 1px solid var(--tape-border); -webkit-backdrop-filter: blur(8px) saturate(1.4); backdrop-filter: blur(8px) saturate(1.4);
+      background: var(--mh-sticky); border: 1px solid var(--tape-border); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
       box-shadow: 0 8px 20px -14px rgba(0,0,0,.4); }
     .mh-ind { position: absolute; top: .25rem; bottom: .25rem; left: .25rem; width: calc((100% - .5rem) / 3); border-radius: .85rem; background: var(--mh-ind);
       transform: translate3d(calc(var(--i, 0) * 100%), 0, 0); transition: transform .45s var(--mh-ease); will-change: transform; pointer-events: none; }
@@ -18592,7 +18548,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     @keyframes mh-eq { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
 
     .mh-menu { margin: .1rem 0 .4rem 2rem; padding: .4rem; border-radius: 1rem; background: var(--mh-sticky); border: 1px solid var(--tape-border);
-      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); animation: mh-menu .32s var(--mh-ease) both; transform-origin: 20% 0; }
+      -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); animation: mh-menu .32s var(--mh-ease) both; transform-origin: 20% 0; }
     @keyframes mh-menu { from { opacity: 0; transform: translate3d(0, -6px, 0) scale(.97); } to { opacity: 1; transform: none; } }
     .mh-mt { padding: .2rem .5rem .35rem; font-size: .64rem; font-weight: 800; color: var(--mh-sub); text-transform: uppercase; letter-spacing: .05em; }
     .mh-mi { width: 100%; display: flex; align-items: center; gap: .5rem; padding: .5rem; border-radius: .7rem; background: transparent; font-size: .78rem; font-weight: 700; text-align: left; transition: background-color .25s ease; }
@@ -18708,7 +18664,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     color: var(--mu-fg);
     border: 1px solid var(--tape-border); border-radius: 1.5rem;
     background-color: var(--tape-bg);
-    -webkit-backdrop-filter: blur(8px) saturate(1.5); backdrop-filter: blur(8px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
     box-shadow: var(--tape-shadow), 0 1px 0 0 var(--tape-inset) inset;
     transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     animation: mu-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1);
@@ -18812,8 +18768,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   /* Same glass as the site's cards (notice card, tab bar, more-sheet) */
   #iti-music-bar {
     background-color: rgba(12, 19, 34, 0.52) !important;
-    -webkit-backdrop-filter: blur(8px) saturate(1.6) !important;
-    backdrop-filter: blur(8px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
+    backdrop-filter: blur(14px) saturate(1.6) !important;
     border-color: rgba(148, 163, 184, 0.28) !important;
     box-shadow: 0 14px 34px -14px rgba(0, 0, 0, 0.6), 0 1px 0 0 rgba(255, 255, 255, 0.08) inset !important;
   }
@@ -18835,7 +18791,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   /* Translucent play/pause + progress */
   #iti-music-bar .mu-btn.mu-main {
     background-color: rgba(251, 191, 36, 0.22) !important;
-    -webkit-backdrop-filter: blur(8px) saturate(1.5); backdrop-filter: blur(8px) saturate(1.5);
+    -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5);
     color: var(--mu-accent); border: 1px solid rgba(251, 191, 36, 0.5);
     box-shadow: 0 6px 16px -8px var(--tape-glow), 0 1px 0 0 rgba(255, 255, 255, 0.18) inset;
   }
@@ -29934,10 +29890,9 @@ document.addEventListener("keydown", function (e) {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     tracking = true;
-    document.addEventListener("touchmove", onMove, { passive: false });
   }, { passive: true });
 
-  function onMove(e) {
+  document.addEventListener("touchmove", function (e) {
     if (!tracking || e.touches.length !== 1) return;
     var t = e.touches[0], dy = t.clientY - startY, dx = t.clientX - startX;
     if (!active) {
@@ -29952,11 +29907,10 @@ document.addEventListener("keydown", function (e) {
     if (d <= 0) { main.style.transform = "translate3d(0,0,0)"; return; }
     if (e.cancelable) e.preventDefault();
     main.style.transform = "translate3d(0," + (dir * curve(d)).toFixed(1) + "px,0)";
-  }
+  }, { passive: false });
 
-  function stop() { tracking = false; document.removeEventListener("touchmove", onMove, { passive: false }); release(); }
-  document.addEventListener("touchend", stop, { passive: true });
-  document.addEventListener("touchcancel", stop, { passive: true });
+  document.addEventListener("touchend", function () { tracking = false; release(); }, { passive: true });
+  document.addEventListener("touchcancel", function () { tracking = false; release(); }, { passive: true });
 })();
 </script>
 

@@ -21032,9 +21032,18 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       case "sleep": setSleep(el.getAttribute("data-v")); { var sw2 = el.closest(".mh-sleep"); if (sw2) { sw2.classList.remove("open"); var th = sw2.querySelector("[data-mh=sleeptoggle]"); if (th) th.setAttribute("aria-expanded", "false"); } } break;
     }
   });
+  /* bring the search box to the top of the panel so the results sit right under it (above the keyboard) */
+  function hubSearchJump() {
+    var b = $("mh-body"), t = $("mh-tools"); if (!b || !t || t.classList.contains("hidden")) return;
+    var d = t.getBoundingClientRect().top - b.getBoundingClientRect().top - 6;
+    if (Math.abs(d) > 2) b.scrollTop += d;
+  }
+  hub.addEventListener("focusin", function (e) {
+    if (e.target && e.target.id === "mh-search") { setTimeout(hubSearchJump, 120); setTimeout(hubSearchJump, 420); }   /* again after the keyboard has finished opening */
+  });
   hub.addEventListener("input", function (e) {
     if (!e.target) return;
-    if (e.target.id === "mh-search") { hv.q = e.target.value; hubList(); }
+    if (e.target.id === "mh-search") { hv.q = e.target.value; hubList(); hubSearchJump(); }
     else if (e.target.id === "mh-vol") { U.vol = Math.max(0, Math.min(1, Number(e.target.value) / 100)); U.muted = false; applyVol(); volUi(); }
   });
   hub.addEventListener("change", function (e) { if (e.target && e.target.id === "mh-vol") saveU(); });

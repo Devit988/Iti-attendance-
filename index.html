@@ -6965,7 +6965,7 @@ service cloud.firestore {
     function toggleThemeMode() {
       const root = document.documentElement;
       const isBright = root.classList.contains("bright-mode");
-      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduceMotion = root.classList.contains("vl-reduce") || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
       if (!reduceMotion) {
         root.classList.add("theme-transition");
         void root.offsetWidth;
@@ -6977,7 +6977,7 @@ service cloud.firestore {
 
     // ---- Header clock & calendar animations (touch only #header-live-clock / #header-date-label / their pills) ----
     function hdrReducedMotion() {
-      return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      return document.documentElement.classList.contains("vl-reduce") || !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     }
 
     function hdrPulse(pillId) {
@@ -14455,7 +14455,9 @@ html.bright-mode{--vl-bg:rgba(255,255,255,.6);--vl-bd:rgba(15,23,42,.14);--vl-tx
 .vl-none{padding:1.25rem .75rem;text-align:center;font-size:12px;color:var(--vl-ps)}.vl-none b{display:block;color:var(--vl-pt);font-size:13px;margin-bottom:.2rem}
 .vl-out{opacity:0;transform:translateX(var(--vl-dx,0));transition:opacity .13s ease,transform .13s ease}
 .vl-in{animation:vlin .24s ease both}@keyframes vlin{from{opacity:0;transform:translateX(var(--vl-dx,0))}to{opacity:1;transform:none}}
-html.vl-reduce *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+html.vl-reduce *,html.vl-reduce *::before,html.vl-reduce *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+html.vl-reduce body.music-playing #iti-music-bar.mu-mini::after,html.vl-reduce #dv-sotd .sd-card.sd-play::after{animation:none!important;opacity:.34}
+html.vl-reduce .mu-btn.mu-loading::after{animation:mu-spin .8s linear infinite!important}
 html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
 .dv-dots{position:relative;width:30px;height:30px;animation:dvDotsSpin .9s linear infinite}
 .dv-dots i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.55)}
@@ -14576,8 +14578,11 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   var PK = "iti_vl_prefs_v1", CK = "iti_vl_lastcat_v1", P = ["notices", "videos"];
   function rd(k) { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } }
   function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-  var PD = { catAuto: false, remember: true, reduce: false, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
+  var PD = { catAuto: false, remember: true, reduce: false, anim: true, size: "md", toasts: "all", nocookie: false, musicAuto: false, musicRemember: true, musicHideEmpty: false };
   var prefs = Object.assign({}, PD, rd(PK));
+  /* Animations on/off: "reduce" is the stored truth; first run follows the phone's own reduce-motion setting */
+  try { if (!("reduce" in rd(PK)) && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) prefs.reduce = true; } catch (e) {}
+  prefs.anim = !prefs.reduce;
   if (!prefs._apOff) { prefs.catAuto = false; prefs._apOff = 1; wr(PK, prefs); } /* one-time reset: autoplay now off by default */
   var st = { notices: { cat: "all", sub: "all", t: null }, videos: { cat: "all", sub: "all", t: null } };
   (function () { var lc = rd(CK); P.forEach(function (p) { if (prefs.remember && lc[p]) st[p].cat = lc[p]; if (prefs.musicRemember && lc[p + "_sub"]) st[p].sub = lc[p + "_sub"]; }); })();
@@ -15044,7 +15049,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
     try { used = Math.round(new Blob([localStorage.getItem(STORAGE_KEY) || ""]).size / 1024); } catch (e) {}
     root.innerHTML = '<div class="vl-sh bg-[#0f172a] border border-slate-800/90 rounded-2xl px-3 py-3 shadow-xl"><button type="button" class="vl-ico" onclick="vlSettingsBack()" aria-label="Back" title="Back"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button><h2 class="text-sm sm:text-base font-bold text-white">Settings</h2></div><div class="vl-set">' +
       card("General", act("sync", "Sync with cloud", "Push saved changes to the shared cloud copy now.", "Sync now") + act("cache", "Clear cached playlist data", "Forces the next playlist refresh to fetch fresh data.", "Clear") + act("reset", "Reset these settings", "Restores the options on this page to their defaults.", "Reset")) +
-      card("Appearance", seg("theme", [["bright", "Bright"], ["dark", "Dark"]], bright ? "bright" : "dark", "Theme", "Switch between bright and dark mode.") + seg("size", [["sm", "A−"], ["md", "A"], ["lg", "A+"]], prefs.size, "Text size", "Makes text smaller or larger across the site.") + sw("reduce", prefs.reduce, "Reduce motion", "Turns off slide and fade animations.")) +
+      card("Appearance", seg("theme", [["bright", "Bright"], ["dark", "Dark"]], bright ? "bright" : "dark", "Theme", "Switch between bright and dark mode.") + seg("size", [["sm", "A−"], ["md", "A"], ["lg", "A+"]], prefs.size, "Text size", "Makes text smaller or larger across the site.") + sw("anim", prefs.anim, "Animations", "Slide, fade and glow effects. Turn off for a faster, smoother feel on slower phones.")) +
       card("Video", sw("catAuto", prefs.catAuto, "Autoplay on category change", "When you pick a category, its first video starts automatically (muted) and the rest follow in order.") + sw("autoplay", autoplayEnabled, "Autoplay next video", "Plays the list in order. Starts muted if your browser requires it.") + sw("loop", autoplayLoop, "Loop list", "Start again from the first video after the last one.") + sw("remember", prefs.remember, "Remember last category", "Reopen the category you were watching.")) +
       card("Music", sw("musicAuto", prefs.musicAuto, "Autoplay on Music open", "Starts the first track (muted if your browser requires it) when you open Music or switch subcategory; the rest follow in order.") + sw("musicRemember", prefs.musicRemember, "Remember last music subcategory", "Reopen the subcategory you were listening to.") + sw("musicHideEmpty", prefs.musicHideEmpty, "Hide empty subcategories", "Only list music subcategories that have tracks.") + musicPlayerRows() + inf("Playlists", "Each subcategory has its own order")) +
       card("Notifications", seg("toasts", [["all", "All"], ["errors", "Errors"], ["off", "Off"]], prefs.toasts, "In-app messages", "Pop-up messages such as “Saved” or “Video unavailable”. Errors only hides the rest.")) +
@@ -15060,6 +15065,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       } else if (mg) { if (window.itiMusicSetSetting) window.itiMusicSetSetting(mg.getAttribute("data-mseg"), mg.getAttribute("data-v"));
       } else if (s) { var k = s.getAttribute("data-set");
         if (k === "autoplay") toggleAutoplay(); else if (k === "loop") toggleAutoplayLoop();
+        else if (k === "anim") { prefs.anim = !prefs.anim; prefs.reduce = !prefs.anim; savePrefs(); applyPrefs(); }
         else { prefs[k] = !prefs[k]; if (k === "remember" || k === "musicRemember") persist(); savePrefs(); applyPrefs(); }
       } else if (g) { var key = g.getAttribute("data-seg"), v = g.getAttribute("data-v");
         if (key === "theme") applyThemeMode(v); else { prefs[key] = v; savePrefs(); applyPrefs(); }
@@ -18713,7 +18719,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   .mu-info { flex: 1; min-width: 0; }
   .mu-title { overflow: hidden; white-space: nowrap; font-size: 0.82rem; font-weight: 800; line-height: 1.25; }
   .mu-title > span { display: inline-block; padding-right: 0.4rem; will-change: transform; }
-  .mu-title.mu-scroll > span { animation: mu-marquee var(--mu-dur, 9s) ease-in-out infinite alternate; }
+  .mu-title.mu-scroll > span { animation: mu-marquee var(--mu-marq, 9s) ease-in-out infinite alternate; }
   @keyframes mu-marquee { 0%, 12% { transform: translateX(0); } 88%, 100% { transform: translateX(var(--mu-shift, 0px)); } }
   .mu-sub { display: flex; gap: 0.4rem; font-size: 0.66rem; font-weight: 700; color: var(--mu-sub); white-space: nowrap; overflow: hidden; }
   .mu-sub #music-track-artist { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -18821,6 +18827,14 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 
   /* Minimized pill (music keeps playing) */
   #iti-music-bar .mu-btn.mu-sm { width: 2.2rem; height: 2.2rem; }
+  /* Minimised bar: play/pause button uses the same solid amber as the Home "Recently played" button (.sd-go) */
+  #iti-music-bar.mu-mini #music-mini-play.mu-main {
+    background: linear-gradient(135deg, #fcd34d, #f59e0b) !important;
+    color: #1f1300 !important; border-color: transparent !important;
+    box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4) !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  #iti-music-bar.mu-mini #music-mini-play.mu-main:hover { filter: brightness(1.06); }
   #iti-music-bar.mu-mini { border-radius: 1.7rem; padding: 0.35rem 0.4rem 0.35rem 1rem; }
   #iti-music-bar.mu-mini .mu-title { font-size: 0.78rem; }
 
@@ -18958,10 +18972,10 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 .mh-col { flex: none; width: 2.7rem; height: 2.7rem; margin-right: .5rem; border-radius: .6rem; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; background: linear-gradient(135deg, #d97706, #7c2d12); }
 .mh-col.one { grid-template-columns: 1fr; grid-template-rows: 1fr; }
 .mh-col img { width: 100%; height: 100%; object-fit: cover; display: block; }
-@keyframes mu-swl { from { transform: translate3d(60px, 0, 0); opacity: .2; } to { transform: none; opacity: 1; } }
-@keyframes mu-swr { from { transform: translate3d(-60px, 0, 0); opacity: .2; } to { transform: none; opacity: 1; } }
-#iti-music-bar.mu-swl { animation: mu-swl .22s ease-out; }
-#iti-music-bar.mu-swr { animation: mu-swr .22s ease-out; }
+@keyframes mu-swl { from { transform: translate3d(var(--mu-swx, 60px), 0, 0); opacity: var(--mu-swo, .2); } to { transform: none; opacity: 1; } }
+@keyframes mu-swr { from { transform: translate3d(var(--mu-swx, -60px), 0, 0); opacity: var(--mu-swo, .2); } to { transform: none; opacity: 1; } }
+#iti-music-bar.mu-swl { animation: mu-swl .28s cubic-bezier(.22, 1, .36, 1); }
+#iti-music-bar.mu-swr { animation: mu-swr .28s cubic-bezier(.22, 1, .36, 1); }
 </style>
 <script id="iti-music-script">
 /* ===== ITI Music Mini-Player: R2/Cloud audio first, YouTube IFrame backup, Firestore-synced playlist ===== */
@@ -19476,7 +19490,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       tEl.classList.remove("mu-scroll");
       requestAnimationFrame(function () {
         var over = span ? span.offsetWidth - tEl.clientWidth : 0;
-        if (over > 4) { tEl.style.setProperty("--mu-shift", "-" + (over + 6) + "px"); tEl.style.setProperty("--mu-dur", Math.max(6, over / 18 + 4) + "s"); tEl.classList.add("mu-scroll"); }
+        if (over > 4) { tEl.style.setProperty("--mu-shift", "-" + (over + 6) + "px"); tEl.style.setProperty("--mu-marq", Math.max(6, over / 18 + 4) + "s"); tEl.classList.add("mu-scroll"); }
       });
     }
     mediaMeta();
@@ -20571,9 +20585,14 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     hubIsOpen = true; hv.menu = "";
     hub.classList.remove("hidden"); document.body.classList.add("mh-lock");
     sheet.style.transform = ""; back.style.opacity = "";
-    hubRefresh(false);                                      /* all heavy work happens before the first animated frame */
     void sheet.offsetWidth;
-    requestAnimationFrame(function () { requestAnimationFrame(function () { if (hubIsOpen) hub.classList.add("mh-show"); }); });
+    /* the slide is a compositor transform, so start it on the very next frame and build the song list right after it
+       (the sheet is still off-screen for those first frames, so nobody sees it fill in) */
+    requestAnimationFrame(function () {
+      if (!hubIsOpen) return;
+      hub.classList.add("mh-show");
+      requestAnimationFrame(function () { setTimeout(function () { if (hubIsOpen) hubRefresh(false); }, 0); });
+    });
   }
   /* minimize = slide the sheet down and leave the compact player playing; stop = also close the player */
   function hubClose(minimizeBar) {
@@ -20662,15 +20681,20 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (!pd || (e && e.pointerId !== pd.id)) return;
     var d = pd; pd = null; if (d.raf) cancelAnimationFrame(d.raf);
     if (d.h) {
-      bar.style.transition = ""; bar.style.transform = ""; bar.style.opacity = "";
       swallowClick = true; clearTimeout(noClickT); noClickT = setTimeout(function () { swallowClick = false; }, 350);
       var vx = Math.abs(d.dx) / Math.max(1, Date.now() - d.t);
-      if (Math.abs(d.dx) > 60 || (vx > 0.5 && Math.abs(d.dx) > 30)) {
+      if (Math.abs(d.dx) > 50 || (vx > 0.35 && Math.abs(d.dx) > 24)) {
         var left = d.dx < 0;
+        /* keep the bar exactly where the finger left it and let the animation glide it home (no snap back, no jump) */
+        bar.style.transition = "none"; bar.style.transform = ""; bar.style.opacity = "";
+        bar.style.setProperty("--mu-swx", (d.dx * 0.55) + "px");
+        bar.style.setProperty("--mu-swo", String(Math.max(0.45, 1 - Math.abs(d.dx) / 500)));
         if (left) next(); else prev(true);
         bar.classList.remove("mu-swl", "mu-swr"); void bar.offsetWidth;
         bar.classList.add(left ? "mu-swl" : "mu-swr");
-        setTimeout(function () { bar.classList.remove("mu-swl", "mu-swr"); }, 260);
+        setTimeout(function () { bar.classList.remove("mu-swl", "mu-swr"); bar.style.transition = ""; }, 320);
+      } else {
+        bar.style.transition = ""; bar.style.transform = ""; bar.style.opacity = "";   /* short drag: ease back */
       }
       return;
     }
@@ -20678,7 +20702,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     bar.style.transition = ""; bar.style.transform = "";
     swallowClick = true; clearTimeout(noClickT); noClickT = setTimeout(function () { swallowClick = false; }, 350);
     var v = d.dy / Math.max(1, Date.now() - d.t);
-    if (d.dy > 40 || (v > 0.5 && d.dy > 28)) hubOpen();
+    if (d.dy > 22 || (v > 0.3 && d.dy > 10)) hubOpen();
   }
   bar.addEventListener("pointerup", endPillDrag);
   bar.addEventListener("pointercancel", endPillDrag);

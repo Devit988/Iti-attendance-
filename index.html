@@ -18982,13 +18982,13 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   @keyframes mu-rise { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
   body.iti-music-open { padding-bottom: calc(var(--nav-offset) + var(--iti-music-h, 0px) + 0.75rem); }
 
-  /* Visible YouTube player: policy minimum is 200x200, we render 280x256 */
+  /* Visible YouTube player: policy minimum is 200x200, which is what we render (smaller player = YouTube picks a lower resolution = less data) */
   #music-yt-host {
-    flex: none; width: 280px; height: 256px; border-radius: 1rem; overflow: hidden;
+    flex: none; width: 200px; height: 200px; border-radius: 1rem; overflow: hidden;
     background: #000; border: 1px solid var(--tape-border);
     box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.55);
   }
-  #music-yt-host iframe, #music-yt-player { display: block; width: 280px; height: 256px; min-width: 200px; min-height: 200px; max-width: none; border: 0; }
+  #music-yt-host iframe, #music-yt-player { display: block; width: 200px; height: 200px; min-width: 200px; min-height: 200px; max-width: none; border: 0; }
 
   .mu-row { display: flex; align-items: center; gap: 0.5rem; }
   .mu-ctrl { margin-top: 0.55rem; }
@@ -19168,7 +19168,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
   #music-video-wrap { display: grid; grid-template-rows: 1fr; transition: grid-template-rows var(--mu-dur) var(--mu-ease); pointer-events: none; }
   #music-video-wrap .mu-vsp { min-height: 0; overflow: hidden; }
-  #music-video-wrap .mu-vh { height: calc(256px + 0.6rem); }
+  #music-video-wrap .mu-vh { height: calc(200px + 0.6rem); }
   #iti-music-bar.mu-collapsed #music-video-wrap, #iti-music-bar.mu-mini #music-video-wrap { grid-template-rows: 0fr; }
 
   /* audio-file mode: no video needed, so the preview area folds away and the toggle is hidden */
@@ -19355,7 +19355,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
         var q = ["enablejsapi=1", "widget_referrer=" + encodeURIComponent(location.href.split("#")[0])];
         Object.keys(vars).forEach(function (k) { q.push(k + "=" + encodeURIComponent(vars[k])); });
         var f = document.createElement("iframe");
-        f.id = "music-yt-player"; f.width = 280; f.height = 256; f.setAttribute("frameborder", "0");
+        f.id = "music-yt-player"; f.width = 200; f.height = 200; f.setAttribute("frameborder", "0");
         f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
         f.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
         f.setAttribute("title", "Music video preview");
@@ -19363,7 +19363,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
         host.parentNode.replaceChild(f, host);
       }
       player = new YT.Player("music-yt-player", {
-        width: 280, height: 256, videoId: vid, playerVars: vars,
+        width: 200, height: 200, videoId: vid, playerVars: vars,
         events: { onReady: onReady, onStateChange: onState, onError: onErr }
       });
       apiState = "ready";
@@ -19386,10 +19386,10 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (mode !== "yt") { if (e.data === S.PLAYING) { try { player.pauseVideo(); } catch (er) {} } return; }
     buffering = e.data === S.BUFFERING;
     if (e.data === S.PLAYING) {
-      playing = true; errStreak = 0; bgTry = 0; lowQ(); stopVideos(); ui(); startTick(); tick();
+      playing = true; errStreak = 0; bgTry = 0; markRecent(); lowQ(); stopVideos(); ui(); startTick(); tick(); posStateYt(); setTimeout(posStateYt, 1200);
       if (resumeAt > 0) { var ra = resumeAt; resumeAt = 0; try { player.seekTo(ra, true); } catch (er) {} }
     } else if (e.data === S.PAUSED) {
-      playing = false; ui(); tick();
+      playing = false; ui(); tick(); posStateYt();
       var now = Date.now();
       if (wantPlay && document.hidden) {   /* paused by the phone while in the background: try a few times, then wait for the person to come back */
         if (bgTry < 3) { bgTry++; setTimeout(function () { if (wantPlay && !playing && mode === "yt") { try { player.playVideo(); } catch (er) {} } }, 500 * bgTry); }
@@ -19489,7 +19489,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 
   audio.addEventListener("playing", function () {
     if (mode !== "audio") return;
-    clearStall(); playing = true; errStreak = 0; stopVideos(); ui(); startTick(); tick();
+    clearStall(); playing = true; errStreak = 0; markRecent(); stopVideos(); ui(); startTick(); tick();
   });
   audio.addEventListener("pause", function () {
     if (mode !== "audio" || audio.ended) return;
@@ -19537,13 +19537,26 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       navigator.mediaSession.setPositionState({ duration: d, playbackRate: audio.playbackRate || 1, position: Math.max(0, Math.min(audio.currentTime || 0, d)) });
     } catch (e) {}
   }
+  function posStateYt() {
+    if (!("mediaSession" in navigator) || !navigator.mediaSession.setPositionState || mode !== "yt" || !ready || !player) return;
+    try {
+      var d = player.getDuration(), c = player.getCurrentTime(), vd = player.getVideoData && player.getVideoData();
+      if (!isFinite(d) || d <= 0 || (vd && vd.isLive)) { navigator.mediaSession.setPositionState(); return; }   /* live: no fixed length */
+      navigator.mediaSession.setPositionState({ duration: d, playbackRate: 1, position: Math.max(0, Math.min(c || 0, d)) });
+    } catch (e) {}
+  }
   function seekTo(sec) {
+    if (mode === "yt") {
+      if (!ready || !player) return;
+      try { var yd = player.getDuration(); if (isFinite(yd) && yd > 0) player.seekTo(Math.max(0, Math.min(sec, yd)), true); } catch (e) {}
+      setTimeout(posStateYt, 400); return;
+    }
     if (mode !== "audio") return;
     var d = audio.duration; if (!isFinite(d) || d <= 0) return;
     try { audio.currentTime = Math.max(0, Math.min(sec, d)); } catch (e) {}
     tick(); posState();
   }
-  function seekBy(delta) { seekTo((audio.currentTime || 0) + delta); }
+  function seekBy(delta) { var c = 0; try { c = mode === "yt" ? (player.getCurrentTime() || 0) : (audio.currentTime || 0); } catch (e) {} seekTo(c + delta); }
   /* Lock-screen Play / Pause for YouTube tracks: talk to the player directly (no fade, no state lookups) so it works while the page is in the background */
   function mediaPauseYt() {
     wantPlay = false; fadeGain = 1; try { applyVol(); } catch (e) {}
@@ -19565,7 +19578,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       navigator.mediaSession.setActionHandler("pause", function () { if (mode === "yt") mediaPauseYt(); else if (playing) toggle(); else if (wantPlay) { wantPlay = false; ui(); } });
       navigator.mediaSession.setActionHandler("nexttrack", function () { next(); });
       [["seekbackward", -1], ["seekforward", 1]].forEach(function (a) {
-        try { navigator.mediaSession.setActionHandler(a[0], function (d) { if (mode === "audio") seekBy(a[1] * ((d && d.seekOffset) || 10)); }); } catch (e) {}
+        try { navigator.mediaSession.setActionHandler(a[0], function (d) { if (mode) seekBy(a[1] * ((d && d.seekOffset) || 10)); }); } catch (e) {}
       });
       try { navigator.mediaSession.setActionHandler("seekto", function (d) { if (d && typeof d.seekTime === "number") seekTo(d.seekTime); }); } catch (e) {}
     } catch (e) {}
@@ -21003,18 +21016,24 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function resumeYt() { bgTry = 0; syncKeepAlive(); if (wantPlay && mode === "yt" && ready && !playing) { try { player.playVideo(); } catch (e) {} } }
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") resumeYt(); });
   window.addEventListener("pageshow", resumeYt);
+  setInterval(function () { if (mode === "yt" && playing) posStateYt(); }, 4000);
   window.addEventListener("focus", resumeYt);
 
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") saveResume(true); });
   window.addEventListener("pagehide", function () { saveResume(true); });
   applyVol(); volUi();
 
-  /* ---------- Song of the Day: admin pins a track (synced), otherwise a daily pick ---------- */
+  /* ---------- Song of the Day: admin pin wins; otherwise the song this person played last; otherwise a daily pick ---------- */
+  var LAST_KEY = "iti-music-last-v1";
+  function markRecent() { if (!curId) return; try { localStorage.setItem(LAST_KEY, JSON.stringify({ id: curId, ts: Date.now() })); } catch (e) {} }
+  function recentId() { try { var o = JSON.parse(localStorage.getItem(LAST_KEY) || "null"); return o && typeof o.id === "string" ? o.id : ""; } catch (e) { return ""; } }
   function sotdToday() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function sotdPick() {
     var t = tracks(); if (!t.length) return null;
     var pin = appState && appState.songOfDay;
     if (pin && pin.id) { var i = idxOf(pin.id); if (i >= 0) return { tr: t[i], note: String(pin.note || ""), pinned: true }; }
+    var ri = recentId(), rx = ri ? idxOf(ri) : -1;
+    if (rx >= 0) return { tr: t[rx], note: "", pinned: false, recent: true };
     var n = Math.floor(Date.now() / 86400000);   /* same pick all day for everyone */
     return { tr: t[n % t.length], note: "", pinned: false };
   }
@@ -21026,11 +21045,11 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     box.innerHTML = '<div class="sd-card">' +
       (cv ? '<img class="sd-cov" src="' + escapeHTML(cv) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'" />'
           : '<div class="sd-cov ph"><i data-lucide="music" class="w-5 h-5"></i></div>') +
-      '<div class="sd-tx"><div class="sd-k"><i data-lucide="sparkles" class="w-3 h-3"></i>Song of the Day' + (now ? '<span class="viz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>' : '') + '</div>' +
+      '<div class="sd-tx"><div class="sd-k"><i data-lucide="' + (pk.recent ? "history" : "sparkles") + '" class="w-3 h-3"></i>' + (pk.recent ? "Recently played" : "Song of the Day") + '' + (now ? '<span class="viz" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>' : '') + '</div>' +
       '<div class="sd-t">' + escapeHTML(tr.title) + '</div>' +
       '<div class="sd-a">' + escapeHTML(tr.artist || "Music") + '</div>' +
       (pk.note ? '<div class="sd-n">' + escapeHTML(pk.note) + '</div>' : '') + '</div>' +
-      '<button type="button" class="sd-go btn-tap" onclick="itiSotdPlay()" aria-label="' + (now ? "Pause" : "Play") + ' song of the day">' +
+      '<button type="button" class="sd-go btn-tap" onclick="itiSotdPlay()" aria-label="' + (now ? "Pause" : "Play") + ' ">' +
       '<i data-lucide="' + (now ? "pause" : "play") + '" class="w-5 h-5"></i></button></div>';
     box.classList.remove("hidden");
     icons(box);

@@ -5090,7 +5090,7 @@ html.bright-mode #tr-ring-c{stroke:#d97706}
       </button>
     </div>
 
-    <div id="music-list-panel" class="mu-lp" aria-label="Playlist"><div class="mu-lpi"><div id="music-list" class="mu-list" role="listbox"></div></div></div>
+    <div id="music-list-panel" class="mu-lp" aria-label="Playlist"><div class="mu-lpi"><div id="music-list-tools" class="mu-tools"><input type="search" id="music-list-search" class="mu-search" placeholder="Search songs" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search songs" /><div id="music-list-chips" class="mu-chips hidden" role="tablist" aria-label="Song categories"></div></div><div id="music-list" class="mu-list" role="listbox"></div></div></div>
 
     <button type="button" onclick="openManageMusic()" class="admin-only hidden mu-manage btn-tap">
       <i data-lucide="list-music" class="w-3.5 h-3.5"></i><span>Manage Playlist</span>
@@ -19110,12 +19110,28 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
      so the browser/YouTube never treats it as hidden and pauses the music. */
   /* Song picker */
   .mu-list {
-    margin-top: 0.55rem; max-height: 11rem; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; scrollbar-width: thin;
+    margin-top: 0.4rem; max-height: clamp(11rem, 42vh, 20rem); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; scrollbar-width: thin;
     border-radius: 1rem; padding: 0.25rem; border: 1px solid rgba(148, 163, 184, 0.28);
     background-color: rgba(255, 255, 255, 0.05);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   }
   html.bright-mode .mu-list { background-color: rgba(255, 255, 255, 0.5); border-color: rgba(148, 163, 184, 0.4); }
+  .mu-tools { margin-top: 0.55rem; }
+  .mu-search { width: 100%; padding: 0.45rem 0.8rem; border-radius: 0.9rem; font-size: 0.76rem; font-weight: 700; color: var(--mu-fg);
+    background-color: rgba(255, 255, 255, 0.06); border: 1px solid rgba(148, 163, 184, 0.28); outline: none; -webkit-appearance: none; appearance: none; }
+  .mu-search::placeholder { color: var(--mu-sub); }
+  .mu-search:focus { border-color: rgba(251, 191, 36, 0.55); }
+  html.bright-mode .mu-search { background-color: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.4); }
+  .mu-chips { display: flex; gap: 0.35rem; overflow-x: auto; margin-top: 0.4rem; padding-bottom: 0.1rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .mu-chips::-webkit-scrollbar { display: none; }
+  .mu-chips.hidden { display: none; }
+  .mu-chip { flex: none; padding: 0.28rem 0.7rem; border-radius: 9999px; font-size: 0.68rem; font-weight: 800; white-space: nowrap; color: var(--mu-fg);
+    background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(148, 163, 184, 0.28); }
+  .mu-chip.on { background: rgba(251, 191, 36, 0.2); border-color: rgba(251, 191, 36, 0.55); color: var(--mu-accent); }
+  html.bright-mode .mu-chip { background: rgba(255, 255, 255, 0.6); border-color: rgba(148, 163, 184, 0.4); }
+  .mu-th { position: relative; flex: none; width: 2.3rem; height: 2.3rem; border-radius: 0.6rem; overflow: hidden; background: rgba(148, 163, 184, 0.22); }
+  .mu-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .mu-empty { padding: 0.7rem; text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--mu-sub); }
   .mu-item {
     width: 100%; display: flex; align-items: center; gap: 0.55rem; text-align: left;
     padding: 0.45rem 0.55rem; border-radius: 0.8rem; color: var(--mu-fg); border: 1px solid transparent; background: transparent;
@@ -19264,7 +19280,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 
   var player = null, apiState = "idle", ready = false, pendingPlay = false;
   var MINIMIZE_KEEPS_PLAYING = true; /* false = minimizing pauses (strict YouTube "video stays visible" policy) */
-  var wantPlay = false, lastResume = 0;
+  var wantPlay = false, lastResume = 0, bgTry = 0;
   var buffering = false, loadSince = 0;   /* drives the loading ring on the play buttons */
   var LOW_Q = "tiny"; /* lowest quality (144p) for the YouTube backup; YouTube may treat this as a hint only */
   function lowQ() { try { player.setPlaybackQuality(LOW_Q); } catch (e) {} }
@@ -19370,12 +19386,14 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (mode !== "yt") { if (e.data === S.PLAYING) { try { player.pauseVideo(); } catch (er) {} } return; }
     buffering = e.data === S.BUFFERING;
     if (e.data === S.PLAYING) {
-      playing = true; errStreak = 0; lowQ(); stopVideos(); ui(); startTick(); tick();
+      playing = true; errStreak = 0; bgTry = 0; lowQ(); stopVideos(); ui(); startTick(); tick();
       if (resumeAt > 0) { var ra = resumeAt; resumeAt = 0; try { player.seekTo(ra, true); } catch (er) {} }
     } else if (e.data === S.PAUSED) {
       playing = false; ui(); tick();
       var now = Date.now();
-      if (wantPlay && now - lastResume > 2500) { lastResume = now; setTimeout(function () { if (wantPlay && !playing && mode === "yt") { try { player.playVideo(); } catch (er) {} } }, 250); }
+      if (wantPlay && document.hidden) {   /* paused by the phone while in the background: try a few times, then wait for the person to come back */
+        if (bgTry < 3) { bgTry++; setTimeout(function () { if (wantPlay && !playing && mode === "yt") { try { player.playVideo(); } catch (er) {} } }, 500 * bgTry); }
+      } else if (wantPlay && now - lastResume > 2500) { lastResume = now; setTimeout(function () { if (wantPlay && !playing && mode === "yt") { try { player.playVideo(); } catch (er) {} } }, 250); }
     } else if (e.data === S.ENDED) {
       onEnded();
     } else if (e.data === S.CUED) {
@@ -19397,6 +19415,28 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     var c = e && e.data;
     trackFailed(c === 153 || c === 152 ? "YouTube blocked the player here (error " + c + ") \u2014 skipping."
       : c === 101 || c === 150 ? "This video can't be embedded \u2014 skipping." : "This track can't be played \u2014 skipping.");
+  }
+
+  /* ---------- background keep-alive for YouTube tracks ----------
+     The YouTube iframe alone is not "media" to the phone: the tab gets throttled / paused when the screen locks
+     and no lock-screen controls appear. A silent looping clip in this page keeps it registered as playing media. */
+  var keepEl = null;
+  function silentWav() {
+    var n = 8000, b = new Uint8Array(44 + n), dv = new DataView(b.buffer);
+    function w(o, str) { for (var i = 0; i < str.length; i++) b[o + i] = str.charCodeAt(i); }
+    w(0, "RIFF"); dv.setUint32(4, 36 + n, true); w(8, "WAVE"); w(12, "fmt "); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true);
+    dv.setUint16(22, 1, true); dv.setUint32(24, 8000, true); dv.setUint32(28, 8000, true); dv.setUint16(32, 1, true); dv.setUint16(34, 8, true);
+    w(36, "data"); dv.setUint32(40, n, true); for (var i = 0; i < n; i++) b[44 + i] = 128;
+    return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+  }
+  function syncKeepAlive() {
+    var want = mode === "yt" && wantPlay && !bar.classList.contains("hidden");
+    if (want) {
+      if (!keepEl) {
+        try { keepEl = new Audio(); keepEl.loop = true; keepEl.preload = "auto"; keepEl.setAttribute("playsinline", ""); keepEl.src = silentWav(); } catch (e) { keepEl = null; return; }
+      }
+      if (keepEl.paused) { try { var p = keepEl.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    } else if (keepEl && !keepEl.paused) { try { keepEl.pause(); } catch (e) {} }
   }
 
   /* ---------- <audio> engine ---------- */
@@ -19472,7 +19512,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 
   /* lock-screen / notification controls for the audio engine */
   function mediaMeta() {
-    if (!("mediaSession" in navigator) || !window.MediaMetadata || mode !== "audio") return;
+    if (!("mediaSession" in navigator) || !window.MediaMetadata || !mode) return;
     var tr = curTrack(); if (!tr) return;
     try { navigator.mediaSession.metadata = new MediaMetadata({ title: tr.title, artist: tr.artist || "ITI CONNECT", album: "ITI CONNECT", artwork: artworkFor(tr) }); } catch (e) {}
   }
@@ -19506,8 +19546,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function seekBy(delta) { seekTo((audio.currentTime || 0) + delta); }
   if ("mediaSession" in navigator) {
     try {
-      navigator.mediaSession.setActionHandler("play", function () { if (mode === "audio" && audio.paused) toggle(); });
-      navigator.mediaSession.setActionHandler("pause", function () { if (mode === "audio" && !audio.paused) toggle(); });
+      navigator.mediaSession.setActionHandler("play", function () { if (!playing) toggle(); });
+      navigator.mediaSession.setActionHandler("pause", function () { if (playing || wantPlay) toggle(); });
       navigator.mediaSession.setActionHandler("nexttrack", function () { next(); });
       [["seekbackward", -1], ["seekforward", 1]].forEach(function (a) {
         try { navigator.mediaSession.setActionHandler(a[0], function (d) { if (mode === "audio") seekBy(a[1] * ((d && d.seekOffset) || 10)); }); } catch (e) {}
@@ -19666,7 +19706,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       mb.setAttribute("aria-label", playing ? "Pause" : "Play");
     }
     renderList();
-    if ("mediaSession" in navigator && mode === "audio") { try { navigator.mediaSession.playbackState = playing ? "playing" : "paused"; } catch (e) {} }
+    if ("mediaSession" in navigator && mode) { try { navigator.mediaSession.playbackState = playing ? "playing" : "paused"; } catch (e) {} }
+    syncKeepAlive();
     var chip = $("dv-quick-music"); if (chip) chip.classList.toggle("mu-live", playing);
     try { document.body.classList.toggle("music-playing", !!playing); } catch (e) {}
     renderSotd();
@@ -19693,17 +19734,65 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     hubNow();
   }
 
+  /* Rows are rebuilt only when the track list changes; play/track changes just move the highlight. */
+  function thumbFor(tr) {
+    if (tr.thumb) return tr.thumb;
+    if (tr.ytId && /^[\w-]{11}$/.test(tr.ytId)) return "https://i.ytimg.com/vi/" + tr.ytId + "/default.jpg";
+    return "";
+  }
+  /* category chips: only subcategories that actually contain songs (and aren't hidden) */
+  function chipSubs(t) {
+    var all = Array.isArray(appState.musicSubs) ? appState.musicSubs : [], used = {}, out = [];
+    t.forEach(function (tr) { if (tr.sub) used[tr.sub] = 1; });
+    all.forEach(function (c) { if (c && c.id && !c.hidden && used[c.id]) out.push({ id: String(c.id), name: String(c.name || c.id) }); });
+    return out;
+  }
+  function drawChips(cs) {
+    var box = $("music-list-chips"); if (!box) return;
+    if (cs.length < 1) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+    box.classList.remove("hidden");
+    box.innerHTML = [{ id: "all", name: "All" }].concat(cs).map(function (c) {
+      return '<button type="button" class="mu-chip btn-tap' + (c.id === listSub ? " on" : "") + '" role="tab" aria-selected="' + (c.id === listSub) + '" data-sub="' + escapeHTML(c.id) + '">' + escapeHTML(c.name) + '</button>';
+    }).join("");
+  }
+  var listSig = "", listCur = null, listPlaying = null, listQ = "", listSub = "all";
   function renderList() {
     var panel = $("music-list-panel"), list = $("music-list");
     if (!panel || !list || !panel.classList.contains("mu-open")) return;
     var t = tracks();
-    if (!t.length) { list.innerHTML = '<div class="mu-item"><div class="mu-t"><small>No songs yet</small></div></div>'; return; }
-    list.innerHTML = t.map(function (tr, i) {
-      var cur = tr.id === curId;
-      return '<button type="button" class="mu-item btn-tap' + (cur ? " mu-cur" : "") + '" role="option" aria-selected="' + cur + '" data-id="' + escapeHTML(tr.id) + '">' +
-        '<span class="mu-n">' + (cur && playing ? "\u25b6" : (i + 1)) + '</span>' +
-        '<span class="mu-t"><b>' + escapeHTML(tr.title) + '</b><small>' + escapeHTML(tr.artist || (tr.audioUrl ? "Audio" : "YouTube")) + '</small></span></button>';
-    }).join("");
+    var cs = chipSubs(t);
+    if (listSub !== "all" && !cs.some(function (c) { return c.id === listSub; })) listSub = "all";
+    var sig = listQ + "\u0003" + listSub + "\u0003" + cs.map(function (c) { return c.id + c.name; }).join(",") + "\u0003" + t.map(function (tr) { return tr.id + "\u0001" + tr.title + "\u0001" + (tr.artist || "") + "\u0001" + (tr.audioUrl ? "a" : "y") + "\u0001" + (tr.thumb || "") + "\u0001" + (tr.sub || ""); }).join("\u0002");
+    if (sig !== listSig) {
+      listSig = sig; listCur = null; listPlaying = null;
+      drawChips(cs);
+      if (!t.length) { list.innerHTML = '<div class="mu-item"><div class="mu-t"><small>No songs yet</small></div></div>'; return; }
+      var shown = [];
+      t.forEach(function (tr, i) {
+        if (listSub !== "all" && tr.sub !== listSub) return;
+        if (listQ && (tr.title + " " + (tr.artist || "")).toLowerCase().indexOf(listQ) < 0) return;
+        shown.push([tr, i]);
+      });
+      if (!shown.length) { list.innerHTML = '<div class="mu-empty">No songs match &ldquo;' + escapeHTML(listQ) + '&rdquo;</div>'; return; }
+      list.innerHTML = shown.map(function (p) {
+        var tr = p[0], i = p[1];
+        return '<button type="button" class="mu-item btn-tap" role="option" aria-selected="false" data-id="' + escapeHTML(tr.id) + '" data-n="' + (i + 1) + '">' +
+          '<span class="mu-n">' + (i + 1) + '</span>' +
+          (function (u) { return '<span class="mu-th" aria-hidden="true">' + (u ? '<img src="' + escapeHTML(u) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()">' : '') + '</span>'; })(thumbFor(tr)) +
+          '<span class="mu-t"><b>' + escapeHTML(tr.title) + '</b><small>' + escapeHTML(tr.artist || (tr.audioUrl ? "Audio" : "YouTube")) + '</small></span></button>';
+      }).join("");
+    }
+    if (listCur === curId && listPlaying === playing) return;
+    var rows = list.children;
+    for (var k = 0; k < rows.length; k++) {
+      var r = rows[k], id = r.getAttribute("data-id"); if (!id) continue;
+      var cur = id === curId, n = r.firstElementChild;
+      r.classList.toggle("mu-cur", cur);
+      r.setAttribute("aria-selected", cur ? "true" : "false");
+      var txt = cur && playing ? "\u25b6" : r.getAttribute("data-n");
+      if (n && n.textContent !== txt) n.textContent = txt;
+    }
+    listCur = curId; listPlaying = playing;
   }
   function toggleList(force) {
     var panel = $("music-list-panel"), btn = $("music-list-btn"); if (!panel) return;
@@ -19719,9 +19808,27 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   $("music-list-panel").addEventListener("click", function (e) {
     var b = e.target.closest(".mu-item[data-id]"); if (!b) return;
     var i = idxOf(b.getAttribute("data-id")); if (i < 0) return;
-    if (tracks()[i].id === curId && playing) return;
+    if (tracks()[i].id === curId) { toggle(); return; }   /* tap the current song = play / pause */
     loadTrack(i, true);
   });
+
+  (function () {
+    var cb = $("music-list-chips");
+    if (cb) cb.addEventListener("click", function (e) {
+      var b = e.target.closest(".mu-chip[data-sub]"); if (!b) return;
+      listSub = b.getAttribute("data-sub") || "all";
+      renderList();
+      var l = $("music-list"); if (l) l.scrollTop = 0;
+    });
+  })();
+  (function () {
+    var q = $("music-list-search"); if (!q) return;
+    q.addEventListener("input", function () {
+      listQ = q.value.trim().toLowerCase().slice(0, 60);
+      renderList();
+      var l = $("music-list"); if (l) l.scrollTop = 0;
+    });
+  })();
 
   /* time text: elapsed / total, or tap to show time remaining */
   function timeTxt(cur, dur) {
@@ -20873,9 +20980,10 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   if ("mediaSession" in navigator) { try { navigator.mediaSession.setActionHandler("previoustrack", function () { prev(); }); } catch (e) {} }
 
   /* ---------- public API (inline handlers + other scripts) ---------- */
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible" && wantPlay && mode === "yt" && ready && !playing) { try { player.playVideo(); } catch (e) {} }
-  });
+  function resumeYt() { bgTry = 0; syncKeepAlive(); if (wantPlay && mode === "yt" && ready && !playing) { try { player.playVideo(); } catch (e) {} } }
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") resumeYt(); });
+  window.addEventListener("pageshow", resumeYt);
+  window.addEventListener("focus", resumeYt);
 
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") saveResume(true); });
   window.addEventListener("pagehide", function () { saveResume(true); });

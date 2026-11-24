@@ -18658,14 +18658,18 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     animation: mu-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   }
   #iti-music-bar::-webkit-scrollbar { display: none; }
-  /* slim progress line along the top edge of the minimised bar */
-  #iti-music-bar::after { content: ""; position: absolute; left: 1.2rem; right: 1.2rem; top: 0; height: 3px; border-radius: 3px; pointer-events: none; opacity: 0; transition: opacity .3s ease;
-    background: linear-gradient(var(--mu-accent), var(--mu-accent)) no-repeat left center / var(--mu-pct, 0%) 100%, var(--mu-track, rgba(148, 163, 184, .32)); }
-  #iti-music-bar.mu-mini::after { opacity: .95; }
-  /* live streams have no end, so the line pulses softly instead of sitting at 100% */
-  @keyframes mu-livepulse { 0%, 100% { opacity: .3; } 50% { opacity: .85; } }
-  #iti-music-bar.mu-mini.mu-live::after { animation: mu-livepulse 2.4s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce) { #iti-music-bar.mu-mini.mu-live::after { animation: none; opacity: .5; } }
+  /* minimised bar: the progress fill covers the whole pill (behind the text and buttons) and glows while playing */
+  #iti-music-bar::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: var(--mu-pct, 0%); z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+    transition: width .6s linear, opacity .3s ease;
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .55) 50%, transparent 70%) 200% 0 / 60% 100% no-repeat, linear-gradient(90deg, rgba(251, 191, 36, 0) 0%, var(--mu-accent) 100%); }
+  #iti-music-bar.mu-mini::after { opacity: .3; box-shadow: 0 0 14px 1px var(--mu-accent); }
+  /* playing: the fill breathes and a soft light sweeps across it */
+  @keyframes mu-glow { 0%, 100% { opacity: .24; box-shadow: 0 0 6px 0 var(--mu-accent); } 50% { opacity: .46; box-shadow: 0 0 20px 3px var(--mu-accent); } }
+  @keyframes mu-sweep { from { background-position: 200% 0, 0 0; } to { background-position: -120% 0, 0 0; } }
+  body.music-playing #iti-music-bar.mu-mini::after { animation: mu-glow 2.2s ease-in-out infinite, mu-sweep 2.8s linear infinite; }
+  /* live streams have no end, so the fill spans the whole bar and just pulses */
+  #iti-music-bar.mu-mini.mu-live::after { width: 100%; }
+  @media (prefers-reduced-motion: reduce) { body.music-playing #iti-music-bar.mu-mini::after { animation: none; opacity: .34; } }
   #iti-music-bar.hidden { display: none !important; }
   html.bright-mode #iti-music-bar {
     --mu-fg: #0f172a; --mu-sub: #475569; --mu-chip: rgba(15, 23, 42, 0.08);
@@ -18974,8 +18978,6 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   var MINIMIZE_KEEPS_PLAYING = true; /* false = minimizing pauses (strict YouTube "video stays visible" policy) */
   var wantPlay = false, lastResume = 0, bgTry = 0;
   var buffering = false, loadSince = 0;   /* drives the loading ring on the play buttons */
-  var LOW_Q = "tiny"; /* lowest quality (144p) for the YouTube backup; YouTube may treat this as a hint only */
-  function lowQ() { try { player.setPlaybackQuality(LOW_Q); } catch (e) {} }
   var introFor = null;
   var curId = null, loadedYt = "", playing = false, tickTimer = null, dragging = false, errStreak = 0, ro = null;
   var resumeAt = 0, anchor = null, curFromQ = false, UQ = [];   /* resume position, queue anchor, "Play next" queue (this session) */
@@ -19038,7 +19040,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     loadApi().then(function () {
       var cur = curTrack();
       var vid = cur && hasYt(cur) && !useAudio(cur) ? cur.ytId : undefined;
-      var vars = { playsinline: 1, rel: 0, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, vq: LOW_Q };
+      var vars = { playsinline: 1, rel: 0, modestbranding: 1, controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3 };
       if (/^https?:$/.test(location.protocol)) vars.origin = location.origin;
       loadedYt = vid || "";
       /* build the iframe ourselves so it always sends a referrer/origin (YouTube answers "Error 153" without one) */
@@ -19066,11 +19068,11 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
 
   function onReady() {
-    ready = true; lowQ(); applyVol();
+    ready = true; applyVol();
     var tr = curTrack();
     if (mode !== "yt" || !tr || !hasYt(tr)) { pendingPlay = false; return; }
     if (pendingPlay) { pendingPlay = false; ytPlay(tr); }
-    else if (loadedYt !== tr.ytId) { loadedYt = tr.ytId; try { player.cueVideoById({ videoId: tr.ytId, suggestedQuality: LOW_Q }); lowQ(); } catch (e) {} }
+    else if (loadedYt !== tr.ytId) { loadedYt = tr.ytId; try { player.cueVideoById({ videoId: tr.ytId }); } catch (e) {} }
   }
 
   function onState(e) {
@@ -19078,7 +19080,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     if (mode !== "yt") { if (e.data === S.PLAYING) { try { player.pauseVideo(); } catch (er) {} } return; }
     buffering = e.data === S.BUFFERING;
     if (e.data === S.PLAYING) {
-      playing = true; errStreak = 0; bgTry = 0; markRecent(); lowQ(); stopVideos(); ui(); startTick(); tick(); posStateYt(); setTimeout(posStateYt, 1200);
+      playing = true; errStreak = 0; bgTry = 0; markRecent(); stopVideos(); ui(); startTick(); tick(); posStateYt(); setTimeout(posStateYt, 1200);
       if (resumeAt > 0) { var ra = resumeAt; resumeAt = 0; try { player.seekTo(ra, true); } catch (er) {} }
     } else if (e.data === S.PAUSED) {
       playing = false; ui(); tick(); posStateYt();
@@ -19284,13 +19286,13 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     stopVideos();
     try {
       if (loadedYt === tr.ytId) player.playVideo();
-      else { loadedYt = tr.ytId; player.loadVideoById({ videoId: tr.ytId, suggestedQuality: LOW_Q }); lowQ(); }
+      else { loadedYt = tr.ytId; player.loadVideoById({ videoId: tr.ytId }); }
     } catch (e) {}
   }
   function ytCue(tr) {
     pendingPlay = false;
     if (!ready) { initPlayer(); return; }
-    loadedYt = tr.ytId; try { player.cueVideoById({ videoId: tr.ytId, suggestedQuality: LOW_Q }); lowQ(); } catch (e) {}
+    loadedYt = tr.ytId; try { player.cueVideoById({ videoId: tr.ytId }); } catch (e) {}
   }
 
   function startTrack(tr, auto) {

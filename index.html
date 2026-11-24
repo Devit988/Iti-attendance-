@@ -19544,10 +19544,25 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     tick(); posState();
   }
   function seekBy(delta) { seekTo((audio.currentTime || 0) + delta); }
+  /* Lock-screen Play / Pause for YouTube tracks: talk to the player directly (no fade, no state lookups) so it works while the page is in the background */
+  function mediaPauseYt() {
+    wantPlay = false; fadeGain = 1; try { applyVol(); } catch (e) {}
+    try { if (ready && player) player.pauseVideo(); } catch (e) {}
+    playing = false; ui();
+  }
+  function mediaPlayYt() {
+    if (!curTrack()) { toggle(); return; }
+    wantPlay = true; bgTry = 0; fadeGain = 1; try { applyVol(); } catch (e) {}
+    syncKeepAlive();
+    if (ready && player) {
+      try { player.playVideo(); } catch (e) {}
+      setTimeout(function () { if (wantPlay && !playing && mode === "yt") playCurrent(); }, 1500);   /* still silent: reload the track */
+    } else playCurrent();
+  }
   if ("mediaSession" in navigator) {
     try {
-      navigator.mediaSession.setActionHandler("play", function () { if (!playing) toggle(); });
-      navigator.mediaSession.setActionHandler("pause", function () { if (playing || wantPlay) toggle(); });
+      navigator.mediaSession.setActionHandler("play", function () { if (mode === "yt") mediaPlayYt(); else if (!playing) toggle(); });
+      navigator.mediaSession.setActionHandler("pause", function () { if (mode === "yt") mediaPauseYt(); else if (playing) toggle(); else if (wantPlay) { wantPlay = false; ui(); } });
       navigator.mediaSession.setActionHandler("nexttrack", function () { next(); });
       [["seekbackward", -1], ["seekforward", 1]].forEach(function (a) {
         try { navigator.mediaSession.setActionHandler(a[0], function (d) { if (mode === "audio") seekBy(a[1] * ((d && d.seekOffset) || 10)); }); } catch (e) {}
@@ -19611,13 +19626,18 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function playCurrent() { var tr = curTrack(); if (tr) startTrack(tr, true); }
 
   /* short volume ramp so pause / resume never cut in or out abruptly */
+  var fadeT = 0;
   function fadeTo(target, ms, done) {
-    cancelAnimationFrame(fadeRaf);
-    var from = fadeGain, t0 = performance.now();
+    cancelAnimationFrame(fadeRaf); clearTimeout(fadeT);
+    var from = fadeGain, t0 = performance.now(), fin = false;
+    function finish() { if (fin) return; fin = true; clearTimeout(fadeT); fadeGain = target; try { applyVol(); } catch (e) {} if (done) done(); }
+    if (document.hidden) { finish(); return; }          /* screen locked / app in background: animation frames don't run, so jump straight to the end */
+    fadeT = setTimeout(finish, ms + 150);                /* safety net if the page is hidden mid-fade */
     (function step(now) {
+      if (fin) return;
       var k = Math.min(1, (now - t0) / ms);
       fadeGain = from + (target - from) * k; try { applyVol(); } catch (e) {}
-      if (k < 1) fadeRaf = requestAnimationFrame(step); else if (done) done();
+      if (k < 1) fadeRaf = requestAnimationFrame(step); else finish();
     })(t0);
   }
   function fadePause(doPause) {

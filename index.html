@@ -15134,6 +15134,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       paint(p, false);
     });
   }
+  function subHueV(id) { var hs = [38, 200, 160, 330, 265, 8, 120, 185, 290, 55], n = 0, k = String(id || ""); for (var i = 0; i < k.length; i++) n = (n * 31 + k.charCodeAt(i)) >>> 0; return hs[n % hs.length]; }
   function subRow(p, shown) {
     var d = bar(p); if (!d) return; shown = shown || visAll(p);
     d.classList.toggle("vl-music", st[p].cat === "music");
@@ -15143,7 +15144,7 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
       if (!prefs.musicHideEmpty || isAdminUnlocked || st[p].sub === s.id) return true;
       return shown.some(function (v) { return v._cat === "music" && v._sub === s.id; });
     }));
-    var html = list.map(function (c) { return '<button type="button" role="tab" class="vl-cat" data-sub="' + esc(c.id) + '">' + esc(c.name) + "</button>"; }).join("");
+    var html = list.map(function (c) { return '<button type="button" role="tab" class="vl-cat"' + (c.id === "all" ? "" : ' style="--ch:' + subHueV(c.id) + '"') + ' data-sub="' + esc(c.id) + '">' + esc(c.name) + "</button>"; }).join("");
     if (sc._sig !== html) { sc.innerHTML = html; sc._sig = html; }
   }
   function paint(p, scroll) {
@@ -15400,11 +15401,17 @@ html.vl-sm{font-size:14.5px}html.vl-lg{font-size:18px}
   function act(k, t, s, label) { return '<div class="vl-sr"><div><b>' + t + "</b><small>" + s + '</small></div><button type="button" class="vl-b" data-act="' + k + '">' + label + "</button></div>"; }
   function msw(k, on, t, s) { return '<div class="vl-sr"><div><b>' + t + "</b><small>" + s + '</small></div><button type="button" class="vl-sw" role="switch" aria-checked="' + !!on + '" data-ms="' + k + '" aria-label="' + t + '"><i></i></button></div>'; }
   function mseg(k, opts, val, t, s) { return '<div class="vl-sr"><div><b>' + t + "</b><small>" + s + '</small></div><div class="vl-seg">' + opts.map(function (o) { return '<button type="button" data-mseg="' + k + '" data-v="' + o[0] + '" aria-pressed="' + (o[0] === val) + '">' + o[1] + "</button>"; }).join("") + "</div></div>"; }
+  function maccRow(val) {
+    var o = [["amber", "Amber", "#fbbf24"], ["blue", "Blue", "#60a5fa"], ["green", "Green", "#34d399"], ["pink", "Pink", "#f472b6"], ["purple", "Purple", "#a78bfa"], ["red", "Red", "#f87171"], ["cyan", "Cyan", "#22d3ee"]];
+    return '<div class="vl-sr vl-sr-acc"><div><b>Accent colour</b><small>Colour used by the music player.</small></div><div class="vl-seg vl-acc" role="group" aria-label="Accent colour">' +
+      o.map(function (x) { return '<button type="button" data-mseg="acc" data-v="' + x[0] + '" aria-pressed="' + (x[0] === val) + '" aria-label="' + x[1] + '" title="' + x[1] + '" style="--sw:' + x[2] + '"></button>'; }).join("") + "</div></div>";
+  }
   function musicPlayerRows() {
     var m = window.itiMusicGetSettings ? window.itiMusicGetSettings() : null; if (!m) return "";
     return msw("vizOn", m.vizOn, "Visualizer", "Shows the animated bars while music plays.") +
       mseg("viz", [["bars", "Bars"], ["wave", "Wave"], ["dots", "Dots"]], m.viz, "Visualizer style", "Tap a visualizer in the player to switch too.") +
-      mseg("acc", [["amber", "Amber"], ["blue", "Blue"], ["green", "Green"], ["pink", "Pink"]], m.acc, "Accent colour", "Colour used by the music player.") +
+      maccRow(m.acc) +
+      msw("vinyl", m.vinyl, "Vinyl cover", "Shows the big cover as a round record that spins while music plays.") +
       msw("vib", m.vib, "Vibration on tap", "A short buzz when you tap player buttons.") +
       msw("auto", m.auto, "Auto-play next song", "Starts the next song when one finishes.") +
       msw("hp", m.hp, "Pause if headphones unplug", "Pauses music when headphones or Bluetooth disconnect.");
@@ -18511,6 +18518,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   <div id="mh-root" class="mh hidden" role="dialog" aria-modal="true" aria-label="Music library">
     <div class="mh-back" data-mh="minimize"></div>
     <div class="mh-sheet">
+      <div class="mh-ambient" id="mh-ambient" aria-hidden="true"></div>
       <div class="mh-head" id="mh-head">
         <div class="mh-grab"></div>
         <div class="mh-top">
@@ -18641,6 +18649,25 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     body[data-acc="pink"] .mh { --mh-primary: linear-gradient(135deg,#f9a8d4,#ec4899); --mh-primary-fg: #0b1220; --mh-primary-glow: rgba(244,114,182,.45); --mh-ind: rgba(244,114,182,.2); --mh-ind-fg: #f472b6; --mh-tint: rgba(244,114,182,.2); }
     html.bright-mode body[data-acc="pink"] .mh { --mh-primary: linear-gradient(135deg,#ec4899,#db2777); --mh-primary-fg: #fff; --mh-primary-glow: rgba(219,39,119,.4); --mh-ind: rgba(219,39,119,.15); --mh-ind-fg: #be185d; --mh-tint: rgba(219,39,119,.15); }
     body[data-acc="pink"] .viz i { background: linear-gradient(to top, #ec4899, #f472b6); }
+    body[data-acc="purple"] #iti-music-bar { --mu-accent: #a78bfa; }
+    html.bright-mode body[data-acc="purple"] #iti-music-bar { --mu-accent: #6d28d9; }
+    body[data-acc="purple"] .mh { --mh-primary: linear-gradient(135deg,#c4b5fd,#8b5cf6); --mh-primary-fg: #0b1220; --mh-primary-glow: rgba(167,139,250,.45); --mh-ind: rgba(167,139,250,.2); --mh-ind-fg: #a78bfa; --mh-tint: rgba(167,139,250,.2); }
+    html.bright-mode body[data-acc="purple"] .mh { --mh-primary: linear-gradient(135deg,#8b5cf6,#7c3aed); --mh-primary-fg: #fff; --mh-primary-glow: rgba(124,58,237,.4); --mh-ind: rgba(124,58,237,.15); --mh-ind-fg: #6d28d9; --mh-tint: rgba(124,58,237,.15); }
+    body[data-acc="purple"] .viz i { background: linear-gradient(to top, #8b5cf6, #a78bfa); }
+    body[data-acc="red"] #iti-music-bar { --mu-accent: #f87171; }
+    html.bright-mode body[data-acc="red"] #iti-music-bar { --mu-accent: #b91c1c; }
+    body[data-acc="red"] .mh { --mh-primary: linear-gradient(135deg,#fca5a5,#ef4444); --mh-primary-fg: #0b1220; --mh-primary-glow: rgba(248,113,113,.45); --mh-ind: rgba(248,113,113,.2); --mh-ind-fg: #f87171; --mh-tint: rgba(248,113,113,.2); }
+    html.bright-mode body[data-acc="red"] .mh { --mh-primary: linear-gradient(135deg,#ef4444,#dc2626); --mh-primary-fg: #fff; --mh-primary-glow: rgba(220,38,38,.4); --mh-ind: rgba(220,38,38,.15); --mh-ind-fg: #b91c1c; --mh-tint: rgba(220,38,38,.15); }
+    body[data-acc="red"] .viz i { background: linear-gradient(to top, #ef4444, #f87171); }
+    body[data-acc="cyan"] #iti-music-bar { --mu-accent: #22d3ee; }
+    html.bright-mode body[data-acc="cyan"] #iti-music-bar { --mu-accent: #0e7490; }
+    body[data-acc="cyan"] .mh { --mh-primary: linear-gradient(135deg,#67e8f9,#06b6d4); --mh-primary-fg: #0b1220; --mh-primary-glow: rgba(34,211,238,.45); --mh-ind: rgba(34,211,238,.2); --mh-ind-fg: #22d3ee; --mh-tint: rgba(34,211,238,.2); }
+    html.bright-mode body[data-acc="cyan"] .mh { --mh-primary: linear-gradient(135deg,#06b6d4,#0891b2); --mh-primary-fg: #fff; --mh-primary-glow: rgba(8,145,178,.4); --mh-ind: rgba(8,145,178,.15); --mh-ind-fg: #0e7490; --mh-tint: rgba(8,145,178,.15); }
+    body[data-acc="cyan"] .viz i { background: linear-gradient(to top, #06b6d4, #22d3ee); }
+    .vl-sr-acc { flex-wrap: wrap; gap: .55rem; }
+    .vl-sr-acc .vl-acc { width: 100%; flex-wrap: wrap; gap: .5rem; border: 0; border-radius: 0; overflow: visible; }
+    .vl-acc button { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 50%; background: var(--sw); border: 2px solid transparent; box-shadow: 0 0 0 1px rgba(148,163,184,.4) inset; transition: transform .15s ease, box-shadow .15s ease; }
+    .vl-acc button[aria-pressed="true"] { transform: scale(1.12); box-shadow: 0 0 0 2px var(--vl-pn, #0f172a), 0 0 0 4px var(--sw); background: var(--sw); }
     /* LIVE badge */
     .mu-islive { color: #fff !important; background: #dc2626; border-radius: 9999px; padding: .08rem .5rem !important; letter-spacing: .08em; font-weight: 800; display: inline-block; align-self: flex-end; }
     .mu-islive::before { content: ""; display: inline-block; width: .4rem; height: .4rem; border-radius: 50%; background: #fff; margin-right: .3rem; vertical-align: middle; animation: mu-livepulse 1.2s ease-in-out infinite; }
@@ -18862,6 +18889,49 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     .mh-more { text-align: center; padding: .6rem; font-size: .72rem; font-weight: 700; color: var(--mh-sub); }
     .mh-cover { flex: none; width: 2.9rem; height: 2.9rem; border-radius: .75rem; object-fit: cover; background: var(--mh-chip); border: 1px solid var(--tape-border); }
     .mh-cover[hidden] { display: none; }
+    /* ---- hero Now playing: big cover + blurred cover backdrop ---- */
+    .mh-ambient { position: absolute; left: 0; right: 0; top: 0; height: 58%; z-index: 0; pointer-events: none; background-size: cover; background-position: center;
+      filter: blur(30px) saturate(1.5); transform: scale(1.25); opacity: 0; transition: opacity .6s ease;
+      -webkit-mask-image: linear-gradient(#000 35%, transparent); mask-image: linear-gradient(#000 35%, transparent); }
+    .mh-ambient.on { opacity: .42; }
+    html.bright-mode .mh-ambient.on { opacity: .26; }
+    .mh-sheet > .mh-head, .mh-sheet > .mh-body { position: relative; z-index: 1; }
+    .mh-now { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "cover cover cover" "title viz fav"; align-items: center; column-gap: .6rem; row-gap: .8rem; padding: .9rem .9rem .8rem; border-radius: 1.5rem; }
+    .mh-now .mh-cover { grid-area: cover; justify-self: center; width: min(78%, 14.5rem); height: auto; aspect-ratio: 1 / 1; border-radius: 1.3rem; border: 1px solid var(--tape-border);
+      box-shadow: 0 18px 38px -16px rgba(0,0,0,.6), 0 1px 0 0 var(--tape-inset) inset; }
+    .mh-now .mh-nt { grid-area: title; }
+    .mh-now .viz { grid-area: viz; }
+    .mh-now #mh-fav-cur { grid-area: fav; }
+    .mh-now .mh-nt b { font-size: 1.02rem; }
+    @media (max-height: 640px) { .mh-now .mh-cover { width: min(52%, 9rem); } }
+    /* tinted subcategory chips (resting state only; the selected chip keeps the theme colour) */
+    .mh-chip[style*="--ch"]:not(.on) { background: hsla(var(--ch), 80%, 60%, .15); border-color: hsla(var(--ch), 80%, 58%, .4) !important; }
+    .mh-chip[style*="--ch"]:not(.on)::before { content: ""; display: inline-block; width: .38rem; height: .38rem; margin-right: .38rem; border-radius: 50%; vertical-align: .08em; background: hsl(var(--ch), 80%, 58%); }
+    .vl-subscroll .vl-cat[style*="--ch"]:not(.on) { background: hsla(var(--ch), 80%, 60%, .14); border-color: hsla(var(--ch), 80%, 58%, .38); }
+    .vl-subscroll .vl-cat[style*="--ch"]:not(.on)::before { content: ""; display: inline-block; width: .36rem; height: .36rem; margin-right: .35rem; border-radius: 50%; vertical-align: .08em; background: hsl(var(--ch), 80%, 58%); }
+    /* thumbnails fade in over the placeholder note; richer empty states */
+    .mh-th img { opacity: 0; transition: opacity .3s ease; }
+    .mh-th img.ld { opacity: 1; }
+    .mh-empty-rich { display: flex; flex-direction: column; align-items: center; gap: .3rem; padding: 1.6rem 1rem; }
+    .mh-empty-rich b { font-size: .84rem; font-weight: 800; color: var(--mh-fg); }
+    .mh-empty-rich small { font-size: .72rem; font-weight: 600; color: var(--mh-sub); }
+    .mh-empty-rich .mh-pill { margin-top: .5rem; }
+    .mh-eic { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; margin-bottom: .2rem; border-radius: 50%; background: var(--mh-ind); color: var(--mh-ind-fg); }
+    /* optional spinning vinyl cover (Settings > Music player > Vinyl cover) */
+    @keyframes mh-spin { to { transform: rotate(360deg); } }
+    body[data-vinyl="1"] .mh-now .mh-cover { width: min(66%, 12.5rem); border-radius: 50%; border: 6px solid rgba(15,23,42,.88);
+      box-shadow: 0 18px 38px -16px rgba(0,0,0,.65), 0 0 0 2px rgba(148,163,184,.25), inset 0 0 0 2px rgba(255,255,255,.08);
+      -webkit-mask-image: radial-gradient(circle, transparent 0 7%, #000 7.4%); mask-image: radial-gradient(circle, transparent 0 7%, #000 7.4%); }
+    body[data-vinyl="1"].music-playing .mh-now .mh-cover:not(.mh-swap) { animation: mh-spin 14s linear infinite; }
+    body[data-vinyl="1"] .mh-now .mh-cover.mh-swap { transform: scale(.94); }
+    /* cover crossfade between songs */
+    .mh-now .mh-cover { transition: opacity .35s ease, transform .45s cubic-bezier(.22, 1, .36, 1); }
+    .mh-now .mh-cover.mh-swap { opacity: 0; transform: scale(.94); }
+    /* soft breathing glow behind the cover while music plays (opacity only, so it stays smooth on phones) */
+    @keyframes mh-breathe { 0%, 100% { opacity: .32; } 50% { opacity: .56; } }
+    @keyframes mh-breathe-b { 0%, 100% { opacity: .2; } 50% { opacity: .34; } }
+    body.music-playing .mh-ambient.on { animation: mh-breathe 4.2s ease-in-out infinite; }
+    html.bright-mode body.music-playing .mh-ambient.on { animation-name: mh-breathe-b; }
     @media (prefers-reduced-motion: reduce) {
       .mh *, .mh-sheet, .mh-back { animation: none !important; transition-duration: .01s !important; }
     }
@@ -18887,6 +18957,10 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     animation: mu-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1);
   }
   #iti-music-bar::-webkit-scrollbar { display: none; }
+  /* slim progress line along the top edge of the minimised bar */
+  #iti-music-bar::after { content: ""; position: absolute; left: 1.2rem; right: 1.2rem; top: 0; height: 2px; border-radius: 2px; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+    background: var(--mu-accent) no-repeat left center / var(--mu-pct, 0%) 100%; }
+  #iti-music-bar.mu-mini::after { opacity: .95; }
   #iti-music-bar.hidden { display: none !important; }
   html.bright-mode #iti-music-bar {
     --mu-fg: #0f172a; --mu-sub: #475569; --mu-chip: rgba(15, 23, 42, 0.08);
@@ -19113,6 +19187,20 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   #music-seek { transition: none; }
   #music-seek::-webkit-slider-thumb { transition: transform 0.15s ease; }
   #music-seek:active::-webkit-slider-thumb { transform: scale(1.25); }
+
+  /* bigger seek bar: thicker track, tall invisible touch area, thumb shows only while touching / hovering */
+  #music-seek, html.bright-mode #music-seek {
+    box-sizing: content-box; height: 0.55rem; padding: 0.6rem 0; margin: -0.35rem 0 -0.2rem; border-width: 0; border-radius: 9999px;
+    background-clip: content-box; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #music-seek::-webkit-slider-thumb { width: 1.2rem; height: 1.2rem; transform: scale(0.35); opacity: 0; transition: transform 0.18s ease, opacity 0.18s ease; }
+  #music-seek::-moz-range-thumb { width: 1.05rem; height: 1.05rem; transform: scale(0.35); opacity: 0; transition: transform 0.18s ease, opacity 0.18s ease; }
+  #music-seek:hover::-webkit-slider-thumb, #music-seek:focus-visible::-webkit-slider-thumb { transform: scale(1); opacity: 1; }
+  #music-seek:hover::-moz-range-thumb, #music-seek:focus-visible::-moz-range-thumb { transform: scale(1); opacity: 1; }
+  #music-seek:active::-webkit-slider-thumb { transform: scale(1.2); opacity: 1; }
+  #music-seek:active::-moz-range-thumb { transform: scale(1.2); opacity: 1; }
+  .mu-time { font-size: 0.7rem; }
 
   @media (prefers-reduced-motion: reduce) {
     #iti-music-bar, #iti-music-bar *, #music-yt-host, #music-video-wrap, .mu-fold, .mu-lp { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
@@ -19628,7 +19716,9 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     return fmt(cur) + " / " + (dur > 0 ? fmt(dur) : "--:--");
   }
   function setLiveLbl(l, on) { if (!l) return; l.classList.toggle("mu-islive", on); }
-  function resetSeek() { var s = $("music-seek"); if (s) { s.value = 0; s.style.setProperty("--mu-pct", "0%"); } var l = $("music-time-label"); if (l) l.textContent = "0:00 / --:--"; }
+  var muBarEl = null;
+  function setPct(el, v) { el.style.setProperty("--mu-pct", v); if (!muBarEl) muBarEl = document.getElementById("iti-music-bar"); if (muBarEl) muBarEl.style.setProperty("--mu-pct", v); }
+  function resetSeek() { var s = $("music-seek"); if (s) { s.value = 0; setPct(s, "0%"); } var l = $("music-time-label"); if (l) l.textContent = "0:00 / --:--"; }
 
   function readTime() {
     if (mode === "audio") {
@@ -19674,9 +19764,9 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       if (cur > 0.5) introFor = null;
     }
     var s = $("music-seek"), l = $("music-time-label");
-    if (r.live || (r.yt && playing && dur <= 0)) { if (s) { s.disabled = true; s.value = 10000; s.style.setProperty("--mu-pct", "100%"); } if (l) { l.textContent = "LIVE"; setLiveLbl(l, true); } return; }
+    if (r.live || (r.yt && playing && dur <= 0)) { if (s) { s.disabled = true; s.value = 10000; setPct(s, "100%"); } if (l) { l.textContent = "LIVE"; setLiveLbl(l, true); } return; }
     setLiveLbl(l, false);
-    if (s) { s.disabled = dur <= 0; var f = dur > 0 ? Math.min(1, cur / dur) : 0; s.value = Math.round(f * 10000); s.style.setProperty("--mu-pct", (f * 100).toFixed(2) + "%"); }
+    if (s) { s.disabled = dur <= 0; var f = dur > 0 ? Math.min(1, cur / dur) : 0; s.value = Math.round(f * 10000); setPct(s, (f * 100).toFixed(2) + "%"); }
     var txt = timeTxt(cur, dur);
     if (l && l.textContent !== txt) l.textContent = txt;
     if (playing) saveResume(false);
@@ -19695,7 +19785,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   seek.addEventListener("input", function () {
     dragging = true;
     var r = readTime(), dur = r ? r.dur : 0;
-    var v = Number(seek.value); seek.style.setProperty("--mu-pct", (v / 100) + "%");
+    var v = Number(seek.value); setPct(seek, (v / 100) + "%");
     var l = $("music-time-label"); if (l && dur > 0) l.textContent = timeTxt(dur * v / 10000, dur);
   });
   function commitSeek() {
@@ -20186,13 +20276,13 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       if (typeof o.vib === "boolean") U.vib = o.vib;
       if (typeof o.auto === "boolean") U.auto = o.auto;
       if (typeof o.hp === "boolean") U.hp = o.hp;
-      if (o.acc === "blue" || o.acc === "green" || o.acc === "pink") U.acc = o.acc;
+      if (["blue", "green", "pink", "purple", "red", "cyan"].indexOf(o.acc) >= 0) U.acc = o.acc; if (typeof o.vinyl === "boolean") U.vinyl = o.vinyl;
     } catch (e) {}
     try { applySettings(); } catch (e) {}
   })();
   function applySettings() {
     var b = document.body;
-    b.setAttribute("data-viz", U.viz); b.setAttribute("data-acc", U.acc);
+    b.setAttribute("data-viz", U.viz); b.setAttribute("data-acc", U.acc); b.setAttribute("data-vinyl", U.vinyl ? "1" : "0");
     b.classList.toggle("mu-viz-off", !U.vizOn);
   }
   function saveU() { try { localStorage.setItem(LS_KEY, JSON.stringify(U)); } catch (e) {} }
@@ -20227,12 +20317,14 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
   function subName(id) { if (!id) return ""; var l = subList(); for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i].name; return ""; }
   function coverFor(tr) { return tr ? (tr.thumb || (tr.ytId ? "https://i.ytimg.com/vi/" + tr.ytId + "/mqdefault.jpg" : "")) : ""; }
+  /* each music subcategory gets its own steady tint (same id -> same colour, everywhere) */
+  function subHue(id) { var hs = [38, 200, 160, 330, 265, 8, 120, 185, 290, 55], n = 0, k = String(id || ""); for (var i = 0; i < k.length; i++) n = (n * 31 + k.charCodeAt(i)) >>> 0; return hs[n % hs.length]; }
   function subChipsHTML() {
     var used = {}; tracks().forEach(function (t) { if (t.sub) used[t.sub] = 1; });
     var list = subList().filter(function (x) { return used[x.id] && (!x.hidden || isAdminUnlocked); });
     if (!list.length) return "";
     var h = '<div class="mh-chips"><button type="button" class="mh-chip' + (hv.sub ? "" : " on") + '" data-mh="sub" data-v="">All</button>';
-    list.forEach(function (x) { h += '<button type="button" class="mh-chip' + (hv.sub === x.id ? " on" : "") + '" data-mh="sub" data-v="' + escapeHTML(x.id) + '">' + escapeHTML(x.name) + '</button>'; });
+    list.forEach(function (x) { h += '<button type="button" class="mh-chip' + (hv.sub === x.id ? " on" : "") + '" style="--ch:' + subHue(x.id) + '" data-mh="sub" data-v="' + escapeHTML(x.id) + '">' + escapeHTML(x.name) + '</button>'; });
     return h + '</div>';
   }
 
@@ -20280,7 +20372,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   function songThumb(tr, eq) {
     var cu = coverFor(tr);
     return '<span class="mh-th" aria-hidden="true"><span class="mh-ph">\u266a</span>' +
-      (cu ? '<img src="' + escapeHTML(cu) + '" alt="" loading="lazy" decoding="async" draggable="false" onerror="this.remove()" />' : '') +
+      (cu ? '<img src="' + escapeHTML(cu) + '" alt="" loading="lazy" decoding="async" draggable="false" onload="this.classList.add(\'ld\')" onerror="this.remove()" />' : '') +
       (eq ? '<span class="mh-eqo"><span class="mh-eq"><i></i><i></i><i></i></span></span>' : '') + '</span>';
   }
   function qRow(tr, n, kind) {
@@ -20406,8 +20498,25 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     var f = $("mh-fav-cur"); if (f) f.classList.toggle("on", !!(tr && isFav(tr.id)));
     var sh = $("mh-shuffle"); if (sh) sh.classList.toggle("on", U.shuffle);
     var rp = $("mh-repeat"); if (rp) { rp.classList.toggle("on", U.repeat !== "off"); setBtn("mh-repeat", U.repeat === "one" ? "repeat-1" : "repeat", "w-4 h-4"); }
-    var cv = $("mh-cover");
-    if (cv) { var cu = tr ? coverFor(tr) : ""; if (cu) { if (cv.getAttribute("src") !== cu) { cv.src = cu; cv.hidden = false; } } else { cv.hidden = true; cv.removeAttribute("src"); } }
+    var cv = $("mh-cover"), am = $("mh-ambient");
+    var cu = tr ? coverFor(tr) : "";
+    if (cv) {
+      /* sharper cover for the big card: try the HD YouTube thumbnail first, fall back to the normal one */
+      var big = cu && !tr.thumb && tr.ytId ? "https://i.ytimg.com/vi/" + tr.ytId + "/maxresdefault.jpg" : cu;
+      if (big) {
+        if (cv.getAttribute("data-for") !== big) {
+          cv.setAttribute("data-for", big); cv.setAttribute("data-fb", cu); cv.hidden = false;
+          cv.onerror = function () { var fb = cv.getAttribute("data-fb"); if (fb && cv.getAttribute("src") !== fb) cv.src = fb; else { cv.hidden = true; cv.classList.remove("mh-swap"); } };
+          cv.onload = function () {
+            if (cv.naturalWidth && cv.naturalWidth <= 120 && cv.getAttribute("data-fb") && cv.getAttribute("src") !== cv.getAttribute("data-fb")) { cv.src = cv.getAttribute("data-fb"); return; }
+            cv.classList.remove("mh-swap");
+          };
+          if (cv.getAttribute("src")) cv.classList.add("mh-swap");   /* fade the old cover out; onload fades the new one in */
+          cv.src = big;
+        }
+      } else { cv.hidden = true; cv.removeAttribute("src"); cv.removeAttribute("data-for"); }
+    }
+    if (am) { if (cu) { am.style.backgroundImage = 'url("' + cu.replace(/"/g, "%22") + '")'; am.classList.add("on"); } else { am.classList.remove("on"); } }
     volUi();
   }
 
@@ -20506,7 +20615,12 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     var h = hv.tab === "all" ? subChipsHTML() : "";
     if (items.length && !q) h += actionsHTML();
     if (!items.length) {
-      h += '<div class="mh-empty">' + (q ? "No songs match your search." : (hv.tab === "fav" ? "No favourites yet. Tap the heart on any song to save it here." : "The playlist is empty.")) + '</div>';
+      var eIc = q ? "search-x" : (hv.tab === "fav" ? "heart" : "music"), eT, eS = "", eB = "";
+      if (q) { eT = "No songs match \u201c" + escapeHTML(hv.q.trim().slice(0, 30)) + "\u201d"; eS = "Try a shorter word or check the spelling."; }
+      else if (hv.tab === "fav") { eT = "No favourites yet"; eS = "Tap the heart on any song to keep it here."; }
+      else if (hv.sub) { eT = "Nothing in " + escapeHTML(subName(hv.sub)) + " yet"; eB = '<button type="button" class="mh-pill" data-mh="sub" data-v="">Show all songs</button>'; }
+      else { eT = "No songs yet"; eS = isAdminUnlocked ? "Use Manage Playlist to add the first songs." : "Songs added by your admin will show up here."; }
+      h += '<div class="mh-empty mh-empty-rich"><span class="mh-eic">' + ic(eIc, "w-5 h-5") + '</span><b>' + eT + '</b>' + (eS ? '<small>' + eS + '</small>' : '') + eB + '</div>';
     }
     items.forEach(function (tr, i) { h += rowHTML(tr, i + 1, hv.tab); });
     return h;
@@ -20900,11 +21014,11 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   window.itiMusicToggleList = toggleList;
   window.itiMusicExpand = expand;
   /* bridge so the app Settings page can read / change the music preferences */
-  window.itiMusicGetSettings = function () { return { vizOn: !!U.vizOn, viz: U.viz, vib: !!U.vib, auto: !!U.auto, hp: !!U.hp, acc: U.acc }; };
+  window.itiMusicGetSettings = function () { return { vizOn: !!U.vizOn, viz: U.viz, vib: !!U.vib, auto: !!U.auto, hp: !!U.hp, acc: U.acc, vinyl: !!U.vinyl }; };
   window.itiMusicSetSetting = function (k, v) {
-    if (k === "vizOn" || k === "vib" || k === "auto" || k === "hp") U[k] = !!v;
+    if (k === "vizOn" || k === "vib" || k === "auto" || k === "hp" || k === "vinyl") U[k] = !!v;
     else if (k === "viz" && ["bars", "wave", "dots"].indexOf(v) >= 0) U.viz = v;
-    else if (k === "acc" && ["amber", "blue", "green", "pink"].indexOf(v) >= 0) U.acc = v;
+    else if (k === "acc" && ["amber", "blue", "green", "pink", "purple", "red", "cyan"].indexOf(v) >= 0) U.acc = v;
     else return;
     saveU(); applySettings();
   };

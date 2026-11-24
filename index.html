@@ -8698,6 +8698,8 @@ service cloud.firestore {
 
       let cachedH = 0, lastWrapT = null, lastSearchT = null;
       function syncStickyOffsets(remeasure) {
+        /* safety net: at the very top of the page the header must be showing (a hidden header up there leaves a blank gap) */
+        if (headerHidden && !window.__tmScrollLocked && Math.max(0, window.scrollY) <= 12) headerHidden = false;
         if (!cachedH || remeasure === true) cachedH = header.offsetHeight || 0;
         const h = cachedH;
         const wt = headerHidden ? `translateY(-${h}px)` : "translateY(0px)";
@@ -8716,7 +8718,7 @@ service cloud.firestore {
 
       function handleScrollImmediate() {
         if (window.__tmScrollLocked) { ticking = false; return; }
-        if (Date.now() < (window.__vpResizeUntil || 0)) { lastY = Math.max(0, window.scrollY); ticking = false; return; }
+        if (Date.now() < (window.__vpResizeUntil || 0)) { lastY = Math.max(0, window.scrollY); syncStickyOffsets(); ticking = false; return; }
         const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         const curY = Math.min(maxScroll, Math.max(0, window.scrollY));
         const delta = curY - lastY;
@@ -8762,6 +8764,13 @@ service cloud.firestore {
         },
         { passive: true }
       );
+
+      /* failsafe: events that can leave the header hidden while the page is back at the top (no scroll event fires then) */
+      const revealIfTop = () => { if (headerHidden) syncStickyOffsets(); };
+      ["touchend", "scrollend", "pageshow", "orientationchange"].forEach((ev) =>
+        window.addEventListener(ev, () => setTimeout(revealIfTop, ev === "touchend" ? 0 : 120), { passive: true })
+      );
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) revealIfTop(); });
     }
 
     // =========================================================================
@@ -18958,9 +18967,13 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   }
   #iti-music-bar::-webkit-scrollbar { display: none; }
   /* slim progress line along the top edge of the minimised bar */
-  #iti-music-bar::after { content: ""; position: absolute; left: 1.2rem; right: 1.2rem; top: 0; height: 2px; border-radius: 2px; pointer-events: none; opacity: 0; transition: opacity .3s ease;
-    background: var(--mu-accent) no-repeat left center / var(--mu-pct, 0%) 100%; }
+  #iti-music-bar::after { content: ""; position: absolute; left: 1.2rem; right: 1.2rem; top: 0; height: 3px; border-radius: 3px; pointer-events: none; opacity: 0; transition: opacity .3s ease;
+    background: linear-gradient(var(--mu-accent), var(--mu-accent)) no-repeat left center / var(--mu-pct, 0%) 100%, var(--mu-track, rgba(148, 163, 184, .32)); }
   #iti-music-bar.mu-mini::after { opacity: .95; }
+  /* live streams have no end, so the line pulses softly instead of sitting at 100% */
+  @keyframes mu-livepulse { 0%, 100% { opacity: .3; } 50% { opacity: .85; } }
+  #iti-music-bar.mu-mini.mu-live::after { animation: mu-livepulse 2.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { #iti-music-bar.mu-mini.mu-live::after { animation: none; opacity: .5; } }
   #iti-music-bar.hidden { display: none !important; }
   html.bright-mode #iti-music-bar {
     --mu-fg: #0f172a; --mu-sub: #475569; --mu-chip: rgba(15, 23, 42, 0.08);
@@ -19716,9 +19729,12 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     return fmt(cur) + " / " + (dur > 0 ? fmt(dur) : "--:--");
   }
   function setLiveLbl(l, on) { if (!l) return; l.classList.toggle("mu-islive", on); }
-  var muBarEl = null;
-  function setPct(el, v) { el.style.setProperty("--mu-pct", v); if (!muBarEl) muBarEl = document.getElementById("iti-music-bar"); if (muBarEl) muBarEl.style.setProperty("--mu-pct", v); }
-  function resetSeek() { var s = $("music-seek"); if (s) { s.value = 0; setPct(s, "0%"); } var l = $("music-time-label"); if (l) l.textContent = "0:00 / --:--"; }
+  var barPct = "0%";
+  function setBarPct(q) { barPct = q; if (bar.classList.contains("mu-mini") && bar.style.getPropertyValue("--mu-pct") !== q) bar.style.setProperty("--mu-pct", q); }
+  /* seek keeps full precision; the mini-bar line only needs 0.25% steps and is only written while the bar is minimised (less style work per frame) */
+  function setPct(el, v, noBar) { el.style.setProperty("--mu-pct", v); if (noBar) return; var n = parseFloat(v); setBarPct(isFinite(n) ? (Math.round(n * 4) / 4) + "%" : v); }
+  function setBarLive(on) { bar.classList.toggle("mu-live", !!on); }
+  function resetSeek() { var s = $("music-seek"); if (s) { setBarLive(false); s.value = 0; setPct(s, "0%"); } var l = $("music-time-label"); if (l) l.textContent = "0:00 / --:--"; }
 
   function readTime() {
     if (mode === "audio") {
@@ -19764,8 +19780,8 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
       if (cur > 0.5) introFor = null;
     }
     var s = $("music-seek"), l = $("music-time-label");
-    if (r.live || (r.yt && playing && dur <= 0)) { if (s) { s.disabled = true; s.value = 10000; setPct(s, "100%"); } if (l) { l.textContent = "LIVE"; setLiveLbl(l, true); } return; }
-    setLiveLbl(l, false);
+    if (r.live || (r.yt && playing && dur <= 0)) { setBarLive(!!r.live); setBarPct(r.live ? "100%" : "0%"); if (s) { s.disabled = true; s.value = 10000; setPct(s, "100%", true); } if (l) { l.textContent = "LIVE"; setLiveLbl(l, true); } return; }
+    setLiveLbl(l, false); setBarLive(false);
     if (s) { s.disabled = dur <= 0; var f = dur > 0 ? Math.min(1, cur / dur) : 0; s.value = Math.round(f * 10000); setPct(s, (f * 100).toFixed(2) + "%"); }
     var txt = timeTxt(cur, dur);
     if (l && l.textContent !== txt) l.textContent = txt;
@@ -19817,7 +19833,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
 
   function minimize() {
     if (playing && mode === "yt" && !MINIMIZE_KEEPS_PLAYING) { wantPlay = false; try { player.pauseVideo(); } catch (e) {} }
-    bar.classList.add("mu-mini"); setCollapsed(true); meta(); syncHeight();
+    bar.classList.add("mu-mini"); bar.style.setProperty("--mu-pct", barPct); setCollapsed(true); meta(); syncHeight();
   }
   function expand() {
     bar.classList.remove("mu-mini"); setCollapsed(false); meta(); syncHeight();

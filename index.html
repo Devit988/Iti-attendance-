@@ -18374,6 +18374,19 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     body[data-acc="cyan"] .mh { --mh-primary: linear-gradient(135deg,#67e8f9,#06b6d4); --mh-primary-fg: #0b1220; --mh-primary-glow: rgba(34,211,238,.45); --mh-ind: rgba(34,211,238,.2); --mh-ind-fg: #22d3ee; --mh-tint: rgba(34,211,238,.2); }
     html.bright-mode body[data-acc="cyan"] .mh { --mh-primary: linear-gradient(135deg,#06b6d4,#0891b2); --mh-primary-fg: #fff; --mh-primary-glow: rgba(8,145,178,.4); --mh-ind: rgba(8,145,178,.15); --mh-ind-fg: #0e7490; --mh-tint: rgba(8,145,178,.15); }
     body[data-acc="cyan"] .viz i { background: linear-gradient(to top, #06b6d4, #22d3ee); }
+    /* Play/pause buttons (Home card + minimised bar) follow the chosen accent colour, same palette as the library sheet */
+    body[data-acc="blue"] #dv-sotd, body[data-acc="blue"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#93c5fd,#3b82f6); --mu-btn-fg: #0b1220; --mu-btn-glow: 0 4px 14px rgba(96,165,250,.45); }
+    html.bright-mode body[data-acc="blue"] #dv-sotd, html.bright-mode body[data-acc="blue"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#3b82f6,#2563eb); --mu-btn-fg: #fff; --mu-btn-glow: 0 4px 14px rgba(37,99,235,.4); }
+    body[data-acc="green"] #dv-sotd, body[data-acc="green"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#6ee7b7,#10b981); --mu-btn-fg: #0b1220; --mu-btn-glow: 0 4px 14px rgba(52,211,153,.45); }
+    html.bright-mode body[data-acc="green"] #dv-sotd, html.bright-mode body[data-acc="green"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#10b981,#059669); --mu-btn-fg: #fff; --mu-btn-glow: 0 4px 14px rgba(5,150,105,.4); }
+    body[data-acc="pink"] #dv-sotd, body[data-acc="pink"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#f9a8d4,#ec4899); --mu-btn-fg: #0b1220; --mu-btn-glow: 0 4px 14px rgba(244,114,182,.45); }
+    html.bright-mode body[data-acc="pink"] #dv-sotd, html.bright-mode body[data-acc="pink"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#ec4899,#db2777); --mu-btn-fg: #fff; --mu-btn-glow: 0 4px 14px rgba(219,39,119,.4); }
+    body[data-acc="purple"] #dv-sotd, body[data-acc="purple"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#c4b5fd,#8b5cf6); --mu-btn-fg: #0b1220; --mu-btn-glow: 0 4px 14px rgba(167,139,250,.45); }
+    html.bright-mode body[data-acc="purple"] #dv-sotd, html.bright-mode body[data-acc="purple"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#8b5cf6,#7c3aed); --mu-btn-fg: #fff; --mu-btn-glow: 0 4px 14px rgba(124,58,237,.4); }
+    body[data-acc="red"] #dv-sotd, body[data-acc="red"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#fca5a5,#ef4444); --mu-btn-fg: #0b1220; --mu-btn-glow: 0 4px 14px rgba(248,113,113,.45); }
+    html.bright-mode body[data-acc="red"] #dv-sotd, html.bright-mode body[data-acc="red"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#ef4444,#dc2626); --mu-btn-fg: #fff; --mu-btn-glow: 0 4px 14px rgba(220,38,38,.4); }
+    body[data-acc="cyan"] #dv-sotd, body[data-acc="cyan"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#67e8f9,#06b6d4); --mu-btn-fg: #0b1220; --mu-btn-glow: 0 4px 14px rgba(34,211,238,.45); }
+    html.bright-mode body[data-acc="cyan"] #dv-sotd, html.bright-mode body[data-acc="cyan"] #iti-music-bar { --mu-btn: linear-gradient(135deg,#06b6d4,#0891b2); --mu-btn-fg: #fff; --mu-btn-glow: 0 4px 14px rgba(8,145,178,.4); }
     .vl-sr-acc { flex-wrap: wrap; gap: .55rem; }
     .vl-sr-acc .vl-acc { width: 100%; flex-wrap: wrap; gap: .5rem; border: 0; border-radius: 0; overflow: visible; }
     .vl-acc button { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 50%; background: var(--sw); border: 2px solid transparent; box-shadow: 0 0 0 1px rgba(148,163,184,.4) inset; transition: transform .15s ease, box-shadow .15s ease; }
@@ -18395,7 +18408,7 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
     #dv-sotd .sd-a { font-size:11px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     #dv-sotd .sd-n { font-size:11px; color:#cbd5e1; margin-top:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     #dv-sotd .sd-go { flex:none; width:2.6rem; height:2.6rem; border-radius:9999px; border:0; cursor:pointer; display:flex; align-items:center; justify-content:center;
-      background: linear-gradient(135deg,#fcd34d,#f59e0b); color:#1f1300; box-shadow:0 4px 14px rgba(251,191,36,.4); }
+      background: var(--mu-btn, linear-gradient(135deg,#fcd34d,#f59e0b)); color: var(--mu-btn-fg, #1f1300); box-shadow: var(--mu-btn-glow, 0 4px 14px rgba(251,191,36,.4)); }
     html.bright-mode #dv-sotd .sd-card { background: linear-gradient(135deg, rgba(245,158,11,.16), rgba(255,255,255,.7)); border-color: rgba(217,119,6,.4); }
     html.bright-mode #dv-sotd .sd-t { color:#0f172a; } html.bright-mode #dv-sotd .sd-a { color:#475569; } html.bright-mode #dv-sotd .sd-n { color:#334155; }
     html.bright-mode #dv-sotd .sd-k { color:#b45309; }
@@ -18829,9 +18842,9 @@ html.bright-mode #nt-bell .nt-badge{background:linear-gradient(135deg,#ff7a1a,#e
   #iti-music-bar .mu-btn.mu-sm { width: 2.2rem; height: 2.2rem; }
   /* Minimised bar: play/pause button uses the same solid amber as the Home "Recently played" button (.sd-go) */
   #iti-music-bar.mu-mini #music-mini-play.mu-main {
-    background: linear-gradient(135deg, #fcd34d, #f59e0b) !important;
-    color: #1f1300 !important; border-color: transparent !important;
-    box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4) !important;
+    background: var(--mu-btn, linear-gradient(135deg, #fcd34d, #f59e0b)) !important;
+    color: var(--mu-btn-fg, #1f1300) !important; border-color: transparent !important;
+    box-shadow: var(--mu-btn-glow, 0 4px 14px rgba(251, 191, 36, 0.4)) !important;
     -webkit-backdrop-filter: none; backdrop-filter: none;
   }
   #iti-music-bar.mu-mini #music-mini-play.mu-main:hover { filter: brightness(1.06); }

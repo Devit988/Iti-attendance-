@@ -666,57 +666,6 @@
       return { x: pad + (col + 0.5) * cw, y: s - pad - (row + 0.5) * cw, cw: cw };
     }
 
-    function ldShade(hex, f) {
-      var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
-      function m(v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }
-      return "rgb(" + m(r) + "," + m(g) + "," + m(b) + ")";
-    }
-
-    function drawPawn(c, x, y, r, color, lift) {
-      lift = lift || 0;
-      c.save();
-      c.fillStyle = "rgba(0,0,0,.28)"; c.beginPath(); c.ellipse(x, y + r * 0.78, r * 0.78, r * 0.26, 0, 0, TAU); c.fill();
-      y -= lift;
-      var i, ry = [0.58, 0.36], rw = [0.86, 0.70];
-      for (i = 0; i < 2; i++) {
-        var g = c.createLinearGradient(x - r, y, x + r, y);
-        g.addColorStop(0, ldShade(color, -0.35)); g.addColorStop(0.45, ldShade(color, 0.25)); g.addColorStop(1, ldShade(color, -0.25));
-        c.fillStyle = g; c.beginPath(); c.ellipse(x, y + r * ry[i], r * rw[i], r * 0.24, 0, 0, TAU); c.fill();
-        c.strokeStyle = "rgba(0,0,0,.25)"; c.lineWidth = 1; c.stroke();
-      }
-      // body
-      var bg = c.createLinearGradient(x - r * 0.6, y, x + r * 0.6, y);
-      bg.addColorStop(0, ldShade(color, -0.3)); bg.addColorStop(0.5, ldShade(color, 0.2)); bg.addColorStop(1, ldShade(color, -0.3));
-      c.fillStyle = bg; c.beginPath(); c.moveTo(x - r * 0.62, y + r * 0.4); c.quadraticCurveTo(x - r * 0.5, y + r * 0.05, x - r * 0.3, y - r * 0.1);
-      c.lineTo(x + r * 0.3, y - r * 0.1); c.quadraticCurveTo(x + r * 0.5, y + r * 0.05, x + r * 0.62, y + r * 0.4); c.closePath(); c.fill();
-      // head
-      var hg = c.createRadialGradient(x - r * 0.15, y - r * 0.45, r * 0.05, x, y - r * 0.3, r * 0.6);
-      hg.addColorStop(0, "#ffe6c8"); hg.addColorStop(1, "#e9a97a");
-      c.fillStyle = "#4a2a1a"; c.beginPath(); c.arc(x, y - r * 0.32, r * 0.58, Math.PI * 0.95, Math.PI * 2.05); c.fill();
-      c.fillStyle = hg; c.beginPath(); c.arc(x, y - r * 0.26, r * 0.52, 0, TAU); c.fill();
-      c.fillStyle = "#4a2a1a"; c.beginPath(); c.arc(x, y - r * 0.36, r * 0.55, Math.PI * 1.05, Math.PI * 1.95); c.lineTo(x + r * 0.55, y - r * 0.5); c.lineTo(x - r * 0.55, y - r * 0.5); c.fill();
-      c.fillStyle = "#2b1a12"; c.beginPath(); c.arc(x - r * 0.18, y - r * 0.2, r * 0.07, 0, TAU); c.arc(x + r * 0.18, y - r * 0.2, r * 0.07, 0, TAU); c.fill();
-      // crown
-      var cy = y - r * 0.88, cwid = r * 0.42;
-      c.fillStyle = "#fbbf24"; c.strokeStyle = "#b45309"; c.lineWidth = 1;
-      c.beginPath(); c.moveTo(x - cwid, cy + r * 0.2); c.lineTo(x - cwid, cy - r * 0.05); c.lineTo(x - cwid * 0.45, cy + r * 0.08);
-      c.lineTo(x, cy - r * 0.18); c.lineTo(x + cwid * 0.45, cy + r * 0.08); c.lineTo(x + cwid, cy - r * 0.05); c.lineTo(x + cwid, cy + r * 0.2); c.closePath(); c.fill(); c.stroke();
-      c.fillStyle = "#38bdf8"; c.beginPath(); c.arc(x, cy + r * 0.08, r * 0.07, 0, TAU); c.fill();
-      c.restore();
-    }
-
-    var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-    function dieFace(v) {
-      if (!v) return '<span class="ld-q">?</span>';
-      var h = '<div class="ld-pips">', on = PIPS[v] || [], i;
-      for (i = 0; i < 9; i++) h += '<i' + (on.indexOf(i) >= 0 ? ' class="o"' : '') + '></i>';
-      return h + '</div>';
-    }
-    function setDie(idx, v, anim) {
-      var el = q("#ld-die-" + idx, host); if (!el) return;
-      el.innerHTML = dieFace(v);
-      if (anim) { el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
-    }
 
     function buildCache() {
       if (!size || !offCtx) return;
@@ -1361,6 +1310,58 @@
     var st = null, rm = null, busy = false;
     var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1;
     var raf = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
+
+    function ldShade(hex, f) {
+      var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+      function m(v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }
+      return "rgb(" + m(r) + "," + m(g) + "," + m(b) + ")";
+    }
+
+    function drawPawn(c, x, y, r, color, lift) {
+      lift = lift || 0;
+      c.save();
+      c.fillStyle = "rgba(0,0,0,.28)"; c.beginPath(); c.ellipse(x, y + r * 0.78, r * 0.78, r * 0.26, 0, 0, TAU); c.fill();
+      y -= lift;
+      var i, ry = [0.58, 0.36], rw = [0.86, 0.70];
+      for (i = 0; i < 2; i++) {
+        var g = c.createLinearGradient(x - r, y, x + r, y);
+        g.addColorStop(0, ldShade(color, -0.35)); g.addColorStop(0.45, ldShade(color, 0.25)); g.addColorStop(1, ldShade(color, -0.25));
+        c.fillStyle = g; c.beginPath(); c.ellipse(x, y + r * ry[i], r * rw[i], r * 0.24, 0, 0, TAU); c.fill();
+        c.strokeStyle = "rgba(0,0,0,.25)"; c.lineWidth = 1; c.stroke();
+      }
+      // body
+      var bg = c.createLinearGradient(x - r * 0.6, y, x + r * 0.6, y);
+      bg.addColorStop(0, ldShade(color, -0.3)); bg.addColorStop(0.5, ldShade(color, 0.2)); bg.addColorStop(1, ldShade(color, -0.3));
+      c.fillStyle = bg; c.beginPath(); c.moveTo(x - r * 0.62, y + r * 0.4); c.quadraticCurveTo(x - r * 0.5, y + r * 0.05, x - r * 0.3, y - r * 0.1);
+      c.lineTo(x + r * 0.3, y - r * 0.1); c.quadraticCurveTo(x + r * 0.5, y + r * 0.05, x + r * 0.62, y + r * 0.4); c.closePath(); c.fill();
+      // head
+      var hg = c.createRadialGradient(x - r * 0.15, y - r * 0.45, r * 0.05, x, y - r * 0.3, r * 0.6);
+      hg.addColorStop(0, "#ffe6c8"); hg.addColorStop(1, "#e9a97a");
+      c.fillStyle = "#4a2a1a"; c.beginPath(); c.arc(x, y - r * 0.32, r * 0.58, Math.PI * 0.95, Math.PI * 2.05); c.fill();
+      c.fillStyle = hg; c.beginPath(); c.arc(x, y - r * 0.26, r * 0.52, 0, TAU); c.fill();
+      c.fillStyle = "#4a2a1a"; c.beginPath(); c.arc(x, y - r * 0.36, r * 0.55, Math.PI * 1.05, Math.PI * 1.95); c.lineTo(x + r * 0.55, y - r * 0.5); c.lineTo(x - r * 0.55, y - r * 0.5); c.fill();
+      c.fillStyle = "#2b1a12"; c.beginPath(); c.arc(x - r * 0.18, y - r * 0.2, r * 0.07, 0, TAU); c.arc(x + r * 0.18, y - r * 0.2, r * 0.07, 0, TAU); c.fill();
+      // crown
+      var cy = y - r * 0.88, cwid = r * 0.42;
+      c.fillStyle = "#fbbf24"; c.strokeStyle = "#b45309"; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(x - cwid, cy + r * 0.2); c.lineTo(x - cwid, cy - r * 0.05); c.lineTo(x - cwid * 0.45, cy + r * 0.08);
+      c.lineTo(x, cy - r * 0.18); c.lineTo(x + cwid * 0.45, cy + r * 0.08); c.lineTo(x + cwid, cy - r * 0.05); c.lineTo(x + cwid, cy + r * 0.2); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = "#38bdf8"; c.beginPath(); c.arc(x, cy + r * 0.08, r * 0.07, 0, TAU); c.fill();
+      c.restore();
+    }
+
+    var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    function dieFace(v) {
+      if (!v) return '<span class="ld-q">?</span>';
+      var h = '<div class="ld-pips">', on = PIPS[v] || [], i;
+      for (i = 0; i < 9; i++) h += '<i' + (on.indexOf(i) >= 0 ? ' class="o"' : '') + '></i>';
+      return h + '</div>';
+    }
+    function setDie(idx, v, anim) {
+      var el = q("#ld-die-" + idx, host); if (!el) return;
+      el.innerHTML = dieFace(v);
+      if (anim) { el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
+    }
 
     if (pendingInvite && pendingInvite.game === "ludo") {
       cfg.mode = "online"; cfg.code = pendingInvite.code;

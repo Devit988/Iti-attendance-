@@ -1,16 +1,16 @@
 /* ITI CONNECT service worker v2
-   - Offline app shell (index.html, og-image.png, Quiz Arena: quiz_arena.js + quiz_bank.json)
+   - Offline app shell (index.html, og-image.png, Quiz Arena: quiz_arena.js + arena_games.js + quiz_bank.json)
    - CDN files (Tailwind, Lucide, Firebase SDK, fonts) cached so the app renders offline
    - Update prompt: new versions wait until the user taps "Refresh"
    - Offline files: the page can ask this worker to save PDFs/notes for offline use
    Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v56";
+var VERSION = "v57";
 var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline
 var MAX_FILES = 40;
 
-var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png", "./quiz_bank.json", "./quiz_arena.js"];
+var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png", "./quiz_bank.json", "./quiz_arena.js", "./arena_games.js"];
 
 var CDN_PRECACHE = [
   "https://cdn.tailwindcss.com/3.4.17",

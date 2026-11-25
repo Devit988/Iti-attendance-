@@ -527,7 +527,27 @@
       R + ".bg-emo:active{transform:scale(.9)}",
       R + ".bg-bubble{position:absolute;right:6px;top:-14px;font-size:20px;pointer-events:none;animation:bgPop 1.3s ease-out forwards;z-index:5}",
       "@keyframes bgPop{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}80%{opacity:1;transform:translateY(-12px) scale(1)}100%{opacity:0;transform:translateY(-20px) scale(.9)}}",
-      "@media(prefers-reduced-motion:reduce){" + R + ".bg-dice.roll," + R + ".bg-bubble{animation:none}}"
+      R + ".ld-pc{position:relative;display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:14px;background:linear-gradient(135deg,var(--c),var(--cd));border:2.5px solid rgba(255,255,255,.45);box-shadow:0 4px 12px -4px rgba(0,0,0,.5);opacity:.78;transition:transform .2s,opacity .2s,box-shadow .2s;min-width:0}",
+      R + ".ld-pc.turn{opacity:1;transform:scale(1.03);border-color:#fff;box-shadow:0 0 0 2px #fde047,0 0 18px 2px var(--c);animation:ldGlow 1.1s ease-in-out infinite}",
+      R + ".ld-av{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.9);color:var(--cd);display:grid;place-items:center;font-weight:900;font-size:17px;flex:none}",
+      R + ".ld-in{flex:1;min-width:0;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45)}",
+      R + ".ld-nm{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      R + ".ld-hm{font-size:10px;font-weight:700;opacity:.92}",
+      R + ".ld-die{width:46px;height:46px;border-radius:12px;background:linear-gradient(145deg,#fff,#dbe4f0);border:0;display:grid;place-items:center;flex:none;box-shadow:0 3px 0 #9fb0c8,0 6px 10px -3px rgba(0,0,0,.45);padding:0}",
+      R + ".ld-die:disabled{opacity:.9}",
+      R + ".ld-die.ready{animation:ldReady .8s ease-in-out infinite;box-shadow:0 3px 0 #9fb0c8,0 0 0 3px #fde047,0 0 14px #fde047}",
+      R + ".ld-die:active:not(:disabled){transform:translateY(2px) scale(.95)}",
+      R + ".ld-die.roll{animation:ldRoll .36s cubic-bezier(.3,.7,.4,1)}",
+      R + ".ld-die.land{animation:ldLand .22s ease-out}",
+      R + ".ld-pips{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:30px;height:30px;gap:1px}",
+      R + ".ld-pips i{border-radius:50%;margin:auto;width:6px;height:6px}",
+      R + ".ld-pips i.o{background:radial-gradient(circle at 35% 30%,#60a5fa,#1d4ed8)}",
+      R + ".ld-q{font-weight:900;color:#64748b;font-size:20px}",
+      "@keyframes ldGlow{50%{box-shadow:0 0 0 2px #fde047,0 0 26px 5px var(--c)}}",
+      "@keyframes ldReady{50%{transform:scale(1.1) rotate(-4deg)}}",
+      "@keyframes ldRoll{0%{transform:translateY(0) rotate(0) scale(1)}25%{transform:translateY(-16px) rotate(140deg) scale(1.18)}55%{transform:translateY(-4px) rotate(300deg) scale(1.1)}80%{transform:translateY(0) rotate(380deg) scale(.95)}100%{transform:translateY(0) rotate(360deg) scale(1)}}",
+      "@keyframes ldLand{0%{transform:scale(1.25)}60%{transform:scale(.92)}100%{transform:scale(1)}}",
+      "@media(prefers-reduced-motion:reduce){" + R + ".bg-dice.roll," + R + ".ld-die.roll," + R + ".ld-die.ready," + R + ".ld-pc.turn," + R + ".bg-bubble{animation:none}}"
     ];
     var st = document.createElement("style"); st.id = "ag-style"; st.textContent = css.join("\n");
     document.head.appendChild(st);
@@ -646,96 +666,112 @@
       return { x: pad + (col + 0.5) * cw, y: s - pad - (row + 0.5) * cw, cw: cw };
     }
 
+    function ldShade(hex, f) {
+      var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+      function m(v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }
+      return "rgb(" + m(r) + "," + m(g) + "," + m(b) + ")";
+    }
+
+    function drawPawn(c, x, y, r, color, lift) {
+      lift = lift || 0;
+      c.save();
+      c.fillStyle = "rgba(0,0,0,.28)"; c.beginPath(); c.ellipse(x, y + r * 0.78, r * 0.78, r * 0.26, 0, 0, TAU); c.fill();
+      y -= lift;
+      var i, ry = [0.58, 0.36], rw = [0.86, 0.70];
+      for (i = 0; i < 2; i++) {
+        var g = c.createLinearGradient(x - r, y, x + r, y);
+        g.addColorStop(0, ldShade(color, -0.35)); g.addColorStop(0.45, ldShade(color, 0.25)); g.addColorStop(1, ldShade(color, -0.25));
+        c.fillStyle = g; c.beginPath(); c.ellipse(x, y + r * ry[i], r * rw[i], r * 0.24, 0, 0, TAU); c.fill();
+        c.strokeStyle = "rgba(0,0,0,.25)"; c.lineWidth = 1; c.stroke();
+      }
+      // body
+      var bg = c.createLinearGradient(x - r * 0.6, y, x + r * 0.6, y);
+      bg.addColorStop(0, ldShade(color, -0.3)); bg.addColorStop(0.5, ldShade(color, 0.2)); bg.addColorStop(1, ldShade(color, -0.3));
+      c.fillStyle = bg; c.beginPath(); c.moveTo(x - r * 0.62, y + r * 0.4); c.quadraticCurveTo(x - r * 0.5, y + r * 0.05, x - r * 0.3, y - r * 0.1);
+      c.lineTo(x + r * 0.3, y - r * 0.1); c.quadraticCurveTo(x + r * 0.5, y + r * 0.05, x + r * 0.62, y + r * 0.4); c.closePath(); c.fill();
+      // head
+      var hg = c.createRadialGradient(x - r * 0.15, y - r * 0.45, r * 0.05, x, y - r * 0.3, r * 0.6);
+      hg.addColorStop(0, "#ffe6c8"); hg.addColorStop(1, "#e9a97a");
+      c.fillStyle = "#4a2a1a"; c.beginPath(); c.arc(x, y - r * 0.32, r * 0.58, Math.PI * 0.95, Math.PI * 2.05); c.fill();
+      c.fillStyle = hg; c.beginPath(); c.arc(x, y - r * 0.26, r * 0.52, 0, TAU); c.fill();
+      c.fillStyle = "#4a2a1a"; c.beginPath(); c.arc(x, y - r * 0.36, r * 0.55, Math.PI * 1.05, Math.PI * 1.95); c.lineTo(x + r * 0.55, y - r * 0.5); c.lineTo(x - r * 0.55, y - r * 0.5); c.fill();
+      c.fillStyle = "#2b1a12"; c.beginPath(); c.arc(x - r * 0.18, y - r * 0.2, r * 0.07, 0, TAU); c.arc(x + r * 0.18, y - r * 0.2, r * 0.07, 0, TAU); c.fill();
+      // crown
+      var cy = y - r * 0.88, cwid = r * 0.42;
+      c.fillStyle = "#fbbf24"; c.strokeStyle = "#b45309"; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(x - cwid, cy + r * 0.2); c.lineTo(x - cwid, cy - r * 0.05); c.lineTo(x - cwid * 0.45, cy + r * 0.08);
+      c.lineTo(x, cy - r * 0.18); c.lineTo(x + cwid * 0.45, cy + r * 0.08); c.lineTo(x + cwid, cy - r * 0.05); c.lineTo(x + cwid, cy + r * 0.2); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = "#38bdf8"; c.beginPath(); c.arc(x, cy + r * 0.08, r * 0.07, 0, TAU); c.fill();
+      c.restore();
+    }
+
+    var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    function dieFace(v) {
+      if (!v) return '<span class="ld-q">?</span>';
+      var h = '<div class="ld-pips">', on = PIPS[v] || [], i;
+      for (i = 0; i < 9; i++) h += '<i' + (on.indexOf(i) >= 0 ? ' class="o"' : '') + '></i>';
+      return h + '</div>';
+    }
+    function setDie(idx, v, anim) {
+      var el = q("#ld-die-" + idx, host); if (!el) return;
+      el.innerHTML = dieFace(v);
+      if (anim) { el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
+    }
+
     function buildCache() {
       if (!size || !offCtx) return;
-      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark;
+      var key = size + "|" + dpr + "|ldk";
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
-      offCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintBoardBg(offCtx, 0, 0, size, size, 16);
-
-      var pad = size * 0.04, inner = size - pad * 2, cw = inner / 10, r, c, num, x, y;
-      offCtx.textAlign = "left"; offCtx.textBaseline = "top";
-      offCtx.font = "700 " + Math.max(9, Math.round(cw * 0.27)) + "px Inter,system-ui,sans-serif";
-
-      for (r = 0; r < 10; r++) {
-        for (c = 0; c < 10; c++) {
-          num = r * 10 + (r % 2 === 0 ? c + 1 : 10 - c);
-          x = pad + c * cw; y = size - pad - (r + 1) * cw;
-          offCtx.fillStyle = (r + c) % 2 === 0 ? b.cellA : b.cellB;
-          if (b.modern) {
-            offCtx.globalAlpha = 0.72;
-            rr(offCtx, x + 1, y + 1, cw - 2, cw - 2, 4);
-            offCtx.fill();
-            offCtx.globalAlpha = 1;
-            offCtx.strokeStyle = alpha(b.line, 0.35); offCtx.lineWidth = 1; offCtx.stroke();
-          } else {
-            offCtx.fillRect(x, y, cw, cw);
-            offCtx.strokeStyle = alpha(b.line, 0.45); offCtx.lineWidth = 1; offCtx.strokeRect(x, y, cw, cw);
-          }
-          if (num === 1 || num === 100) {
-            offCtx.fillStyle = alpha(b.accent, b.modern ? 0.25 : 0.3);
-            offCtx.fillRect(x + 1, y + 1, cw - 2, cw - 2);
-          }
-          offCtx.fillStyle = num === 100 ? b.accent : alpha(b.text, 0.75);
-          offCtx.fillText(num === 100 ? "100★" : String(num), x + cw * 0.1, y + cw * 0.08);
+      var c = offCtx; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var cw = size / 15, i, j, x, y;
+      var wg = c.createLinearGradient(0, 0, size, size);
+      wg.addColorStop(0, "#8a5a30"); wg.addColorStop(1, "#5a3518");
+      rr(c, 0, 0, size, size, size * 0.03); c.fillStyle = wg; c.fill();
+      c.strokeStyle = "rgba(255,220,170,.35)"; c.lineWidth = 3; rr(c, 2, 2, size - 4, size - 4, size * 0.03); c.stroke();
+      // yards
+      var yards = [[0, 0], [9, 0], [9, 9], [0, 9]];
+      for (i = 0; i < 4; i++) {
+        var col = SEAT_COLORS[i]; x = yards[i][0] * cw; y = yards[i][1] * cw;
+        rr(c, x + cw * 0.12, y + cw * 0.12, cw * 5.76, cw * 5.76, cw * 0.5); c.fillStyle = "#e8cfa0"; c.fill();
+        var yg = c.createLinearGradient(x, y, x + cw * 6, y + cw * 6);
+        yg.addColorStop(0, ldShade(col, 0.12)); yg.addColorStop(1, ldShade(col, -0.12));
+        rr(c, x + cw * 0.55, y + cw * 0.55, cw * 4.9, cw * 4.9, cw * 0.4); c.fillStyle = yg; c.fill();
+        c.strokeStyle = ldShade(col, 0.55); c.lineWidth = 2.5; c.stroke();
+        for (j = 0; j < 4; j++) {
+          var sp = YARD_SPOTS[i][j];
+          c.beginPath(); c.arc(sp[0] * cw, sp[1] * cw, cw * 0.5, 0, TAU); c.fillStyle = ldShade(col, -0.32); c.fill();
         }
       }
-
-      var k, p1, p2, dx, dy, len, ux, uy, nx, ny, rail, steps, i, t, rx, ry;
-      for (k in LADDERS) {
-        p1 = cellCenter(+k, size); p2 = cellCenter(LADDERS[k], size);
-        dx = p2.x - p1.x; dy = p2.y - p1.y; len = Math.hypot(dx, dy) || 1;
-        ux = dx / len; uy = dy / len; nx = -uy; ny = ux;
-        rail = cw * 0.19; steps = Math.max(4, Math.floor(len / (cw * 0.32)));
-        offCtx.save(); offCtx.lineCap = "round";
-        if (b.modern) {
-          offCtx.strokeStyle = "#34d399"; offCtx.shadowColor = "#10b981"; offCtx.shadowBlur = 10; offCtx.lineWidth = Math.max(2.5, cw * 0.08);
-        } else {
-          offCtx.strokeStyle = "#92400e"; offCtx.lineWidth = Math.max(3, cw * 0.09);
-        }
-        offCtx.beginPath();
-        offCtx.moveTo(p1.x + nx * rail, p1.y + ny * rail); offCtx.lineTo(p2.x + nx * rail, p2.y + ny * rail);
-        offCtx.moveTo(p1.x - nx * rail, p1.y - ny * rail); offCtx.lineTo(p2.x - nx * rail, p2.y - ny * rail);
-        offCtx.stroke();
-        offCtx.lineWidth = Math.max(2, cw * 0.065);
-        if (b.modern) offCtx.strokeStyle = "#fde047";
-        offCtx.beginPath();
-        for (i = 1; i < steps; i++) {
-          t = i / steps; rx = p1.x + dx * t; ry = p1.y + dy * t;
-          offCtx.moveTo(rx + nx * rail, ry + ny * rail); offCtx.lineTo(rx - nx * rail, ry - ny * rail);
-        }
-        offCtx.stroke(); offCtx.restore();
+      // track
+      for (i = 0; i < 52; i++) {
+        x = TRACK[i][0] * cw; y = TRACK[i][1] * cw;
+        rr(c, x + 1, y + 1, cw - 2, cw - 2, cw * 0.14);
+        c.fillStyle = (TRACK[i][0] + TRACK[i][1]) % 2 ? "#f5e3bb" : "#f1b560"; c.fill();
       }
-
-      var idx = 0, sCols = ["#f43f5e", "#a855f7", "#fb923c", "#ec4899"], sc, cx1, cy1, cx2, cy2, ang;
-      for (k in SNAKES) {
-        p1 = cellCenter(+k, size); p2 = cellCenter(SNAKES[k], size);
-        dx = p2.x - p1.x; dy = p2.y - p1.y; len = Math.hypot(dx, dy) || 1;
-        nx = -dy / len; ny = dx / len;
-        sc = sCols[idx % sCols.length]; idx++;
-        cx1 = p1.x + dx * 0.33 + nx * cw * 0.65; cy1 = p1.y + dy * 0.33 + ny * cw * 0.65;
-        cx2 = p1.x + dx * 0.68 - nx * cw * 0.65; cy2 = p1.y + dy * 0.68 - ny * cw * 0.65;
-        offCtx.save(); offCtx.lineCap = "round";
-        offCtx.beginPath(); offCtx.moveTo(p1.x, p1.y); offCtx.bezierCurveTo(cx1, cy1, cx2, cy2, p2.x, p2.y);
-        if (b.modern) {
-          offCtx.strokeStyle = sc; offCtx.shadowColor = sc; offCtx.shadowBlur = 12; offCtx.lineWidth = Math.max(4, cw * 0.16); offCtx.stroke();
-          offCtx.strokeStyle = "rgba(255,255,255,0.65)"; offCtx.lineWidth = Math.max(1.5, cw * 0.045); offCtx.stroke();
-        } else {
-          offCtx.strokeStyle = shade(sc, -0.2); offCtx.lineWidth = Math.max(5, cw * 0.19); offCtx.stroke();
-          offCtx.strokeStyle = "#fde047"; offCtx.setLineDash([cw * 0.12, cw * 0.14]); offCtx.lineWidth = Math.max(2, cw * 0.08); offCtx.stroke();
-          offCtx.setLineDash([]);
+      // start tiles + home lanes
+      for (i = 0; i < 4; i++) {
+        var sc = SEAT_COLORS[i], sq = TRACK[START_IDX[i]];
+        rr(c, sq[0] * cw + 1, sq[1] * cw + 1, cw - 2, cw - 2, cw * 0.14); c.fillStyle = sc; c.fill();
+        for (j = 0; j < 5; j++) {
+          x = HOME_LANES[i][j][0] * cw; y = HOME_LANES[i][j][1] * cw;
+          rr(c, x + 1, y + 1, cw - 2, cw - 2, cw * 0.14); c.fillStyle = ldShade(sc, 0.35); c.fill();
+          c.strokeStyle = sc; c.lineWidth = 2; c.strokeRect(x + cw * 0.22, y + cw * 0.22, cw * 0.56, cw * 0.56);
         }
-        ang = Math.atan2(cy1 - p1.y, cx1 - p1.x);
-        offCtx.translate(p1.x, p1.y); offCtx.rotate(ang);
-        offCtx.fillStyle = shade(sc, b.modern ? 0.15 : -0.15);
-        offCtx.beginPath(); offCtx.ellipse(0, 0, cw * 0.17, cw * 0.13, 0, 0, TAU); offCtx.fill();
-        offCtx.fillStyle = "#fff";
-        offCtx.beginPath(); offCtx.arc(-cw * 0.04, -cw * 0.06, cw * 0.035, 0, TAU); offCtx.arc(-cw * 0.04, cw * 0.06, cw * 0.035, 0, TAU); offCtx.fill();
-        offCtx.fillStyle = "#000";
-        offCtx.beginPath(); offCtx.arc(-cw * 0.05, -cw * 0.06, cw * 0.018, 0, TAU); offCtx.arc(-cw * 0.05, cw * 0.06, cw * 0.018, 0, TAU); offCtx.fill();
-        offCtx.restore();
+      }
+      // safe stars
+      for (i = 0; i < SAFE_TRACK.length; i++) {
+        if (SAFE_TRACK.indexOf(START_IDX[0]) >= 0 && (SAFE_TRACK[i] % 13 === 0)) { /* start tiles get a white star */ }
+        var q2 = TRACK[SAFE_TRACK[i]], isStart = SAFE_TRACK[i] % 13 === 0;
+        if (!isStart) { rr(c, q2[0] * cw + 1, q2[1] * cw + 1, cw - 2, cw - 2, cw * 0.14); c.fillStyle = "#c2692a"; c.fill(); }
+        drawStar(c, (q2[0] + 0.5) * cw, (q2[1] + 0.5) * cw, cw * 0.3, isStart ? "#fff" : "#5a2d0c");
+      }
+      // centre
+      var cx = 7.5 * cw, cy = 7.5 * cw, tris = [[[6, 6], [6, 9]], [[6, 6], [9, 6]], [[9, 6], [9, 9]], [[6, 9], [9, 9]]];
+      for (i = 0; i < 4; i++) {
+        c.beginPath(); c.moveTo(cx, cy); c.lineTo(tris[i][0][0] * cw, tris[i][0][1] * cw); c.lineTo(tris[i][1][0] * cw, tris[i][1][1] * cw); c.closePath();
+        c.fillStyle = SEAT_COLORS[i]; c.fill(); c.strokeStyle = "#fff8"; c.lineWidth = 1.5; c.stroke();
       }
     }
 
@@ -1433,8 +1469,8 @@
       if (off && off.width) ctx.drawImage(off, 0, 0, size, size);
       if (!st) return;
 
-      var cw = size / 15, baseR = Math.max(8, cw * 0.36), pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
-      var groups = {}, list = [], i, t, pl, key;
+      var cw = size / 15, baseR = Math.max(10, cw * 0.5), pulse = 0.5 + 0.5 * Math.sin(performance.now() / 160);
+      var groups = {}, list = [], i, t, pl, key, draws = [];
 
       for (i = 0; i < st.players.length; i++) {
         pl = st.players[i];
@@ -1446,26 +1482,23 @@
           if (!anim) { if (!groups[key]) groups[key] = []; groups[key].push(item); }
         }
       }
-
       for (i = 0; i < list.length; i++) {
         var it = list[i];
-        if (it.anim) { drawToken(ctx, it.anim.x, it.anim.y, baseR * 1.12, it.pl.color); continue; }
+        if (it.anim) { it.screenX = it.anim.x; it.screenY = it.anim.y; draws.push({ x: it.anim.x, y: it.anim.y - cw * 0.1, r: baseR * 1.1, c: it.pl.color, lift: cw * 0.1, z: 1e6 }); continue; }
         var pos = tokenCoords(it.pl.seat, it.tIdx, it.step, size);
-        var grp = groups[it.key] || [it], idx = grp.indexOf(it), len = grp.length;
-        var ox = 0, oy = 0, sc = 1;
-        if (len > 1) {
-          var ang = (idx / len) * TAU - Math.PI / 4, dist = cw * 0.18;
-          ox = Math.cos(ang) * dist; oy = Math.sin(ang) * dist; sc = 0.8;
-        }
+        var grp = groups[it.key] || [it], idx = grp.indexOf(it), len = grp.length, ox = 0, oy = 0, sc = 1;
+        if (len > 1) { sc = 0.86; ox = (idx - (len - 1) / 2) * cw * 0.26; oy = -idx * cw * 0.05; }
         it.screenX = pos.x + ox; it.screenY = pos.y + oy;
-        if (st.awaitMove && it.pIdx === st.turn && st.validTokens.indexOf(it.tIdx) >= 0) {
-          ctx.save();
-          ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5;
-          ctx.beginPath(); ctx.arc(it.screenX, it.screenY, baseR * (0.95 + pulse * 0.25), 0, TAU); ctx.stroke();
-          ctx.restore();
+        var valid = st.awaitMove && it.pIdx === st.turn && st.validTokens.indexOf(it.tIdx) >= 0, lift = 0;
+        if (valid) {
+          lift = Math.abs(Math.sin(performance.now() / 220)) * cw * 0.16;
+          ctx.save(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.shadowColor = "#fde047"; ctx.shadowBlur = 10;
+          ctx.beginPath(); ctx.ellipse(it.screenX, it.screenY + baseR * 0.78, baseR * (0.9 + pulse * 0.2), baseR * 0.34, 0, 0, TAU); ctx.stroke(); ctx.restore();
         }
-        drawToken(ctx, it.screenX, it.screenY, baseR * sc, it.pl.color);
+        draws.push({ x: it.screenX, y: it.screenY - cw * 0.12, r: baseR * sc, c: it.pl.color, lift: lift, z: it.screenY });
       }
+      draws.sort(function (p, q3) { return p.z - q3.z; });
+      for (i = 0; i < draws.length; i++) drawPawn(ctx, draws[i].x, draws[i].y, draws[i].r, draws[i].c, draws[i].lift);
       st._rendered = list;
 
       for (i = particles.length - 1; i >= 0; i--) {
@@ -1520,7 +1553,7 @@
         if (!st || i >= steps.length) { pl.anims[tIdx] = null; drawFrame(); if (onDone) onDone(); return; }
         var from = tokenCoords(pl.seat, tIdx, pl.tokens[tIdx], size);
         var to = tokenCoords(pl.seat, tIdx, steps[i], size);
-        var start = performance.now(), ms = api.dur(120);
+        var start = performance.now(), ms = api.dur(62);
         playSfx("move");
         function tick(now) {
           if (!st) return;
@@ -1600,7 +1633,7 @@
           st.winner = pl; st.busy = false; playSfx("win");
           try { if (navigator.vibrate) navigator.vibrate([40, 40, 80]); } catch (e) { }
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
-          setTimeout(function () { view = "result"; render(); }, api.dur(750));
+          setTimeout(function () { view = "result"; render(); }, api.dur(420));
           return;
         }
         endTurn(bonus, isActor);
@@ -1640,7 +1673,7 @@
         st.sixes = (st.sixes || 0) + 1; playSfx("six");
         if (st.sixes >= 3) {
           setMsg(pl.name + " rolled three 6s! Turn skipped");
-          setTimeout(function () { endTurn(false, true); }, api.dur(700));
+          setTimeout(function () { endTurn(false, true); }, api.dur(320));
           return;
         }
       } else { st.sixes = 0; }
@@ -1648,12 +1681,12 @@
       var valid = legalMoves(pl, val);
       if (!valid.length) {
         setMsg("No valid moves for " + pl.name);
-        setTimeout(function () { endTurn(val === 6, true); }, api.dur(650));
+        setTimeout(function () { endTurn(val === 6, true); }, api.dur(260));
         return;
       }
       if (pl.bot) {
         var pick = pickBestBotToken(pl, valid, val);
-        setTimeout(function () { executeTokenMove(st.turn, pick, val, true); }, api.dur(350));
+        setTimeout(function () { executeTokenMove(st.turn, pick, val, true); }, api.dur(130));
         return;
       }
       if (valid.length === 1 && P.autoMove) {
@@ -1679,20 +1712,20 @@
     function rollDice() {
       if (!canActNow() || st.busy || st.awaitMove) return;
       st.busy = true; updateHUD(); playSfx("dice");
-      var btn = q("#ld-dice-btn", host);
-      if (btn) { btn.classList.remove("roll"); void btn.offsetWidth; btn.classList.add("roll"); }
-      var ticks = 0, finalVal = 1 + Math.floor(Math.random() * 6);
+      var turn = st.turn, ticks = 0, N = 7, finalVal = 1 + Math.floor(Math.random() * 6);
+      setDie(turn, 1 + Math.floor(Math.random() * 6), true);
       clearInterval(diceT);
       diceT = setInterval(function () {
         ticks++;
-        var show = ticks >= 6 ? finalVal : 1 + Math.floor(Math.random() * 6);
-        st.dice = show;
-        if (btn) btn.innerHTML = diceSVG(show);
-        if (ticks >= 6) {
+        var show = ticks >= N ? finalVal : 1 + Math.floor(Math.random() * 6);
+        st.dice = show; st.players[turn].lastDice = show;
+        setDie(turn, show, false);
+        if (ticks >= N) {
           clearInterval(diceT);
+          var el = q("#ld-die-" + turn, host); if (el) { el.classList.remove("land"); void el.offsetWidth; el.classList.add("land"); }
           afterDice(finalVal);
         }
-      }, api.dur(60));
+      }, api.dur(48));
     }
 
     function handleBoardTap(e) {
@@ -1713,7 +1746,7 @@
     function maybeBot() {
       clearTimeout(botT);
       if (!st || st.busy || st.awaitMove || st.winner || rm) return;
-      if (st.players[st.turn].bot) botT = setTimeout(rollDice, api.dur(520));
+      if (st.players[st.turn].bot) botT = setTimeout(rollDice, api.dur(220));
     }
 
     function sendEmoji(emo) {
@@ -1828,7 +1861,7 @@
             var actorIdx = ld.lastMove.by;
             if (st.players[actorIdx] && st.players[actorIdx].uid !== rm.uid) {
               st.dice = ld.lastMove.dice;
-              var btn = q("#ld-dice-btn", host); if (btn) btn.innerHTML = diceSVG(st.dice);
+              st.players[actorIdx].lastDice = st.dice; setDie(actorIdx, st.dice, true);
               playSfx("dice");
               executeTokenMove(actorIdx, ld.lastMove.tIdx, ld.lastMove.dice, false);
             }
@@ -1861,23 +1894,22 @@
 
     function updateHUD() {
       if (!st || !host) return;
-      var pl = st.players[st.turn], btn = q("#ld-dice-btn", host), can = canActNow();
-      if (btn) btn.disabled = !can || st.busy || st.awaitMove;
+      var pl = st.players[st.turn], can = canActNow();
+      qa(".ld-pc", host).forEach(function (el) {
+        var idx = +el.getAttribute("data-i"), mine = idx === st.turn;
+        el.classList.toggle("turn", mine);
+        var die = el.querySelector(".ld-die");
+        if (die) { die.disabled = !(mine && can && !st.busy && !st.awaitMove); die.classList.toggle("ready", mine && can && !st.busy && !st.awaitMove); }
+        var hm = el.querySelector(".ld-home");
+        if (hm && st.players[idx]) hm.textContent = st.players[idx].tokens.filter(function (v) { return v === 56; }).length + "/" + st.players[idx].tokens.length;
+      });
       var hint = q("#ld-roll-hint", host);
       if (hint) {
-        if (st.awaitMove) hint.textContent = can ? "Tap a glowing piece on the board" : pl.name + " is choosing a piece…";
-        else if (st.busy) hint.textContent = "Moving…";
-        else if (rm) hint.textContent = can ? "Your turn — Tap dice!" : "Waiting for " + pl.name + "…";
-        else hint.textContent = pl.bot ? pl.name + " is rolling…" : "Tap dice to roll";
+        if (st.awaitMove) hint.textContent = can ? "Tap a glowing piece" : pl.name + " is choosing…";
+        else if (st.busy) hint.textContent = "";
+        else if (rm) hint.textContent = can ? "Your turn — tap your dice!" : "Waiting for " + pl.name + "…";
+        else hint.textContent = pl.bot ? pl.name + " is rolling…" : "Tap " + pl.name + "'s dice";
       }
-      qa(".bg-pchip", host).forEach(function (el, idx) {
-        el.classList.toggle("turn", idx === st.turn);
-        var homeEl = el.querySelector(".ld-home");
-        if (homeEl && st.players[idx]) {
-          var done = st.players[idx].tokens.filter(function (v) { return v === 56; }).length;
-          homeEl.textContent = done + "/" + st.players[idx].tokens.length;
-        }
-      });
     }
 
     function renderSetup() {
@@ -1943,25 +1975,30 @@
       host.innerHTML = h; icons();
     }
 
+    function ldCard(seat) {
+      var idx = -1, i;
+      for (i = 0; i < st.players.length; i++) if (st.players[i].seat === seat) idx = i;
+      if (idx < 0) return '<div></div>';
+      var pl = st.players[idx], done = pl.tokens.filter(function (v) { return v === 56; }).length;
+      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="ld-pc' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + ldShade(pl.color, -0.3) + '">' +
+        '<div class="ld-av">' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</div>' +
+        '<div class="ld-in"><div class="ld-nm">' + esc(pl.name) + '</div><div class="ld-hm">Home <span class="ld-home">' + done + '/' + pl.tokens.length + '</span></div></div>' +
+        '<button type="button" id="ld-die-' + idx + '" class="ld-die" data-ld="roll" aria-label="Roll dice">' + dieFace(pl.lastDice || 0) + '</button></div>';
+    }
+
     function renderGame() {
-      var h = '<div class="bg-box space-y-2.5">';
-      h += '<div class="ag-glass p-2.5 flex items-center justify-between gap-2">' +
+      var h = '<div class="bg-box space-y-2">';
+      h += '<div class="flex items-center justify-between gap-2">' +
         '<button type="button" class="bg-sec" style="padding:.45rem .6rem" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="ld-msg" class="text-xs font-extrabold text-center truncate flex-1">' + esc(st.msg) + '</div>' +
         '<button type="button" id="ld-auto-btn" class="bg-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto</button></div>';
-      h += '<div class="bg-cv-wrap ag-glass"><canvas id="ld-canvas" class="bg-cv"></canvas></div>';
-      h += '<div class="ag-glass p-2.5 space-y-2"><div class="flex items-center gap-2.5">' +
-        '<button type="button" id="ld-dice-btn" class="bg-dice" data-ld="roll" aria-label="Roll dice">' + diceSVG(st.dice) + '</button>' +
-        '<div class="min-w-0 flex-1 space-y-1.5">' +
-        '<div id="ld-roll-hint" class="text-xs font-extrabold">Tap dice to roll</div>' +
-        '<div class="grid grid-cols-2 gap-1.5">' + st.players.map(function (pl, idx) {
-          var done = pl.tokens.filter(function (v) { return v === 56; }).length;
-          return '<div id="ld-chip-' + idx + '" class="bg-pchip' + (idx === st.turn ? " turn" : "") + '"><span class="bg-dot" style="background:' + pl.color + '"></span>' +
-            '<span class="truncate flex-1">' + esc(pl.name) + '</span><span class="ld-home qa-ac font-extrabold">' + done + '/' + pl.tokens.length + '</span></div>';
-        }).join("") + '</div></div></div>';
+      h += '<div class="grid grid-cols-2 gap-2">' + ldCard(0) + ldCard(1) + '</div>';
+      h += '<div class="bg-cv-wrap"><canvas id="ld-canvas" class="bg-cv"></canvas></div>';
+      h += '<div class="grid grid-cols-2 gap-2">' + ldCard(3) + ldCard(2) + '</div>';
+      h += '<div id="ld-roll-hint" class="text-xs font-extrabold text-center" style="min-height:1rem"></div>';
       h += '<div class="bg-emo-bar">' + ["👏", "😂", "🔥", "😱"].map(function (em) {
         return '<button type="button" class="bg-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>';
-      }).join("") + '</div></div></div>';
+      }).join("") + '</div></div>';
       host.innerHTML = h; icons();
       cv = q("#ld-canvas", host); ctx = cv.getContext("2d");
       cv.addEventListener("click", handleBoardTap);

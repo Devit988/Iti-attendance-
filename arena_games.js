@@ -385,11 +385,17 @@
       try { GAMES[id].mount(pane, api); } catch (e) { pane.innerHTML = '<div class="ag-card ag-glass ag-ph"><p class="ag-ph-d">This game failed to start. Please refresh the page.</p></div>'; }
     }
   }
+  function setPlaying(on) {
+    var w = root && root.querySelector(".ag-wrap"); if (!w) return;
+    var was = w.classList.contains("ag-playing");
+    w.classList.toggle("ag-playing", !!on);
+    if (on && !was) { try { root.scrollIntoView({ block: "start" }); } catch (e) { } }
+  }
   function setTab(id) {
     if (!has(TABS, id) || !root) return;
     var prev = P.tab;
     if (prev !== id && GAMES[prev] && GAMES[prev].onHide) { try { GAMES[prev].onHide(); } catch (e) { } }
-    P.tab = id; savePrefs();
+    P.tab = id; savePrefs(); setPlaying(false);
     if (id !== "quiz") mountGame(id);
     applyVars(); syncUI();
     if (GAMES[id] && mounted[id] === "game" && GAMES[id].onShow) { try { GAMES[id].onShow(); } catch (e) { } }
@@ -512,11 +518,17 @@
       R + ".bg-pill{padding:.32rem .65rem;border-radius:999px;font-size:11px;font-weight:700;background:var(--ag-bg2);border:1px solid var(--ag-bd)}",
       R + ".bg-pill.on{color:var(--ag-actx);background:var(--ag-on);border-color:var(--ag-onb)}",
       R + ".bg-cv-wrap{position:relative;width:100%;max-width:440px;margin:0 auto;aspect-ratio:1/1;border-radius:16px;overflow:hidden}",
+      R + ".ag-playing .ag-bar,"+R+".ag-playing .ag-cz,"+R+".ag-playing .ag-speed-tag{display:none!important}",
+      R + ".ag-playing .bg-box{max-width:none}",
+      R + "#ag-pane-snakes .bg-cv-wrap,"+R+"#ag-pane-ludo .bg-cv-wrap{width:100%}",
+      R + ".ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 330px));width:min(100%,calc(100dvh - 330px));min-width:240px}",
+      R + ".ag-playing #ag-pane-ludo .bg-cv-wrap{width:min(100%,calc(100vh - 400px));width:min(100%,calc(100dvh - 400px));min-width:240px}",
+      R + ".ag-playing .bg-emo{padding:.15rem 0;font-size:15px}",
       R + ".bg-cv{display:block;width:100%;height:100%;touch-action:manipulation}",
       R + ".bg-dice{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;border:2px solid var(--ag-onb);background:var(--ag-bg2);box-shadow:0 8px 20px -6px rgba(0,0,0,.45);transition:transform .15s,border-color .2s;flex:none}",
       R + ".bg-dice:active:not(:disabled){transform:scale(.93)}",
       R + ".bg-dice:disabled{opacity:.55}",
-      R + ".bg-dice.roll{animation:bgSpin .42s ease-in-out}",
+      R + ".bg-dice.roll{animation:bgSpin 1s ease-in-out}",
       "@keyframes bgSpin{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-16deg) scale(1.1)}70%{transform:rotate(16deg) scale(1.1)}100%{transform:rotate(0) scale(1)}}",
       R + ".bg-pchip{position:relative;display:flex;align-items:center;gap:6px;padding:.38rem .58rem;border-radius:.8rem;background:var(--ag-bg2);border:1.5px solid var(--ag-bd);font-size:11.5px;font-weight:700;min-width:0;transition:border-color .2s,background .2s}",
       R + ".bg-pchip.turn{border-color:var(--ag-onb);background:var(--ag-on)}",
@@ -537,8 +549,8 @@
       R + ".ld-die:disabled{opacity:.9}",
       R + ".ld-die.ready{animation:ldReady .8s ease-in-out infinite;box-shadow:0 3px 0 #9fb0c8,0 0 0 3px #fde047,0 0 14px #fde047}",
       R + ".ld-die:active:not(:disabled){transform:translateY(2px) scale(.95)}",
-      R + ".ld-die.roll{animation:ldRoll .36s cubic-bezier(.3,.7,.4,1)}",
-      R + ".ld-die.land{animation:ldLand .22s ease-out}",
+      R + ".ld-die.roll{animation:ldRoll 1s cubic-bezier(.3,.7,.4,1)}",
+      R + ".ld-die.land{animation:ldLand .4s ease-out}",
       R + ".ld-pips{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:30px;height:30px;gap:1px}",
       R + ".ld-pips i{border-radius:50%;margin:auto;width:6px;height:6px}",
       R + ".ld-pips i.o{background:radial-gradient(circle at 35% 30%,#60a5fa,#1d4ed8)}",
@@ -669,58 +681,80 @@
 
     function buildCache() {
       if (!size || !offCtx) return;
-      var key = size + "|" + dpr + "|ldk";
+      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl2";
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
       var c = offCtx; c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var cw = size / 15, i, j, x, y;
-      var wg = c.createLinearGradient(0, 0, size, size);
-      wg.addColorStop(0, "#8a5a30"); wg.addColorStop(1, "#5a3518");
-      rr(c, 0, 0, size, size, size * 0.03); c.fillStyle = wg; c.fill();
-      c.strokeStyle = "rgba(255,220,170,.35)"; c.lineWidth = 3; rr(c, 2, 2, size - 4, size - 4, size * 0.03); c.stroke();
-      // yards
-      var yards = [[0, 0], [9, 0], [9, 9], [0, 9]];
-      for (i = 0; i < 4; i++) {
-        var col = SEAT_COLORS[i]; x = yards[i][0] * cw; y = yards[i][1] * cw;
-        rr(c, x + cw * 0.12, y + cw * 0.12, cw * 5.76, cw * 5.76, cw * 0.5); c.fillStyle = "#e8cfa0"; c.fill();
-        var yg = c.createLinearGradient(x, y, x + cw * 6, y + cw * 6);
-        yg.addColorStop(0, ldShade(col, 0.12)); yg.addColorStop(1, ldShade(col, -0.12));
-        rr(c, x + cw * 0.55, y + cw * 0.55, cw * 4.9, cw * 4.9, cw * 0.4); c.fillStyle = yg; c.fill();
-        c.strokeStyle = ldShade(col, 0.55); c.lineWidth = 2.5; c.stroke();
-        for (j = 0; j < 4; j++) {
-          var sp = YARD_SPOTS[i][j];
-          c.beginPath(); c.arc(sp[0] * cw, sp[1] * cw, cw * 0.5, 0, TAU); c.fillStyle = ldShade(col, -0.32); c.fill();
+      paintBoardBg(c, 0, 0, size, size, 16);
+
+      var i, n, p, cw = cellCenter(1, size).cw;
+      // cells
+      for (n = 1; n <= 100; n++) {
+        p = cellCenter(n, size);
+        var x = p.x - cw / 2, y = p.y - cw / 2, alt = (Math.floor((n - 1) / 10) + (n - 1)) % 2 === 0;
+        c.fillStyle = b.modern ? alpha(alt ? b.cellA : b.cellB, 0.9) : (alt ? b.cellA : b.cellB);
+        c.fillRect(x, y, cw, cw);
+        c.strokeStyle = alpha(b.line, 0.35); c.lineWidth = 1; c.strokeRect(x, y, cw, cw);
+      }
+      // numbers
+      c.textAlign = "left"; c.textBaseline = "top";
+      c.font = "700 " + Math.max(8, Math.round(cw * 0.26)) + "px sans-serif";
+      c.fillStyle = alpha(b.text, 0.75);
+      for (n = 1; n <= 100; n++) {
+        p = cellCenter(n, size);
+        c.fillText(String(n), p.x - cw / 2 + cw * 0.08, p.y - cw / 2 + cw * 0.06);
+      }
+      // start / finish labels
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.font = "800 " + Math.max(8, Math.round(cw * 0.2)) + "px sans-serif";
+      c.fillStyle = b.accent;
+      p = cellCenter(1, size); c.fillText("START", p.x, p.y + cw * 0.3);
+      p = cellCenter(100, size); c.fillText("WIN", p.x, p.y + cw * 0.3);
+
+      // ladders
+      var k, f, t, dx, dy, len, nx, ny, rungs, r;
+      for (k in LADDERS) {
+        f = cellCenter(+k, size); t = cellCenter(LADDERS[k], size);
+        dx = t.x - f.x; dy = t.y - f.y; len = Math.sqrt(dx * dx + dy * dy) || 1;
+        nx = -dy / len * cw * 0.16; ny = dx / len * cw * 0.16;
+        c.save(); c.lineCap = "round";
+        c.strokeStyle = "#a16207"; c.lineWidth = Math.max(2.5, cw * 0.075);
+        c.beginPath(); c.moveTo(f.x + nx, f.y + ny); c.lineTo(t.x + nx, t.y + ny); c.stroke();
+        c.beginPath(); c.moveTo(f.x - nx, f.y - ny); c.lineTo(t.x - nx, t.y - ny); c.stroke();
+        c.strokeStyle = "#fbbf24"; c.lineWidth = Math.max(2, cw * 0.06);
+        rungs = Math.max(3, Math.round(len / (cw * 0.42)));
+        for (r = 1; r < rungs; r++) {
+          var u = r / rungs;
+          c.beginPath(); c.moveTo(f.x + dx * u + nx, f.y + dy * u + ny); c.lineTo(f.x + dx * u - nx, f.y + dy * u - ny); c.stroke();
         }
+        c.restore();
       }
-      // track
-      for (i = 0; i < 52; i++) {
-        x = TRACK[i][0] * cw; y = TRACK[i][1] * cw;
-        rr(c, x + 1, y + 1, cw - 2, cw - 2, cw * 0.14);
-        c.fillStyle = (TRACK[i][0] + TRACK[i][1]) % 2 ? "#f5e3bb" : "#f1b560"; c.fill();
-      }
-      // start tiles + home lanes
-      for (i = 0; i < 4; i++) {
-        var sc = SEAT_COLORS[i], sq = TRACK[START_IDX[i]];
-        rr(c, sq[0] * cw + 1, sq[1] * cw + 1, cw - 2, cw - 2, cw * 0.14); c.fillStyle = sc; c.fill();
-        for (j = 0; j < 5; j++) {
-          x = HOME_LANES[i][j][0] * cw; y = HOME_LANES[i][j][1] * cw;
-          rr(c, x + 1, y + 1, cw - 2, cw - 2, cw * 0.14); c.fillStyle = ldShade(sc, 0.35); c.fill();
-          c.strokeStyle = sc; c.lineWidth = 2; c.strokeRect(x + cw * 0.22, y + cw * 0.22, cw * 0.56, cw * 0.56);
+      // snakes
+      var si = 0, cols = ["#ef4444", "#f97316", "#a855f7", "#ec4899"];
+      for (k in SNAKES) {
+        f = cellCenter(+k, size); t = cellCenter(SNAKES[k], size);
+        dx = t.x - f.x; dy = t.y - f.y; len = Math.sqrt(dx * dx + dy * dy) || 1;
+        nx = -dy / len; ny = dx / len;
+        var amp = cw * 0.38 * (si % 2 ? -1 : 1), col = cols[si % cols.length]; si++;
+        var pts = [], steps = 28, w;
+        for (i = 0; i <= steps; i++) {
+          var tt = i / steps; w = Math.sin(tt * Math.PI * 3) * amp;
+          pts.push([f.x + dx * tt + nx * w, f.y + dy * tt + ny * w]);
         }
-      }
-      // safe stars
-      for (i = 0; i < SAFE_TRACK.length; i++) {
-        if (SAFE_TRACK.indexOf(START_IDX[0]) >= 0 && (SAFE_TRACK[i] % 13 === 0)) { /* start tiles get a white star */ }
-        var q2 = TRACK[SAFE_TRACK[i]], isStart = SAFE_TRACK[i] % 13 === 0;
-        if (!isStart) { rr(c, q2[0] * cw + 1, q2[1] * cw + 1, cw - 2, cw - 2, cw * 0.14); c.fillStyle = "#c2692a"; c.fill(); }
-        drawStar(c, (q2[0] + 0.5) * cw, (q2[1] + 0.5) * cw, cw * 0.3, isStart ? "#fff" : "#5a2d0c");
-      }
-      // centre
-      var cx = 7.5 * cw, cy = 7.5 * cw, tris = [[[6, 6], [6, 9]], [[6, 6], [9, 6]], [[9, 6], [9, 9]], [[6, 9], [9, 9]]];
-      for (i = 0; i < 4; i++) {
-        c.beginPath(); c.moveTo(cx, cy); c.lineTo(tris[i][0][0] * cw, tris[i][0][1] * cw); c.lineTo(tris[i][1][0] * cw, tris[i][1][1] * cw); c.closePath();
-        c.fillStyle = SEAT_COLORS[i]; c.fill(); c.strokeStyle = "#fff8"; c.lineWidth = 1.5; c.stroke();
+        c.save(); c.lineCap = "round"; c.lineJoin = "round";
+        c.strokeStyle = "rgba(0,0,0,.35)"; c.lineWidth = Math.max(5, cw * 0.2);
+        c.beginPath(); for (i = 0; i <= steps; i++) c[i ? "lineTo" : "moveTo"](pts[i][0] + 1.5, pts[i][1] + 2); c.stroke();
+        c.strokeStyle = col; c.lineWidth = Math.max(4, cw * 0.16);
+        c.beginPath(); for (i = 0; i <= steps; i++) c[i ? "lineTo" : "moveTo"](pts[i][0], pts[i][1]); c.stroke();
+        c.strokeStyle = "rgba(255,255,255,.45)"; c.lineWidth = Math.max(1.5, cw * 0.05); c.setLineDash([cw * 0.12, cw * 0.14]);
+        c.beginPath(); for (i = 0; i <= steps; i++) c[i ? "lineTo" : "moveTo"](pts[i][0], pts[i][1]); c.stroke();
+        c.setLineDash([]);
+        // head (at the higher square) with eyes
+        c.fillStyle = col; c.beginPath(); c.arc(pts[0][0], pts[0][1], cw * 0.17, 0, TAU); c.fill();
+        c.fillStyle = "#fff"; c.beginPath(); c.arc(pts[0][0] - cw * 0.06, pts[0][1] - cw * 0.04, cw * 0.04, 0, TAU); c.arc(pts[0][0] + cw * 0.06, pts[0][1] - cw * 0.04, cw * 0.04, 0, TAU); c.fill();
+        c.fillStyle = "#111"; c.beginPath(); c.arc(pts[0][0] - cw * 0.06, pts[0][1] - cw * 0.04, cw * 0.018, 0, TAU); c.arc(pts[0][0] + cw * 0.06, pts[0][1] - cw * 0.04, cw * 0.018, 0, TAU); c.fill();
+        c.restore();
       }
     }
 
@@ -806,7 +840,7 @@
       function stepNext() {
         if (!st || i >= steps.length) { pl.anim = null; drawFrame(); if (onDone) onDone(); return; }
         var from = cellCenter(pl.pos, size), to = cellCenter(steps[i], size);
-        var start = performance.now(), ms = api.dur(130);
+        var start = performance.now(), ms = api.dur(280);
         playSfx("move");
         function tick(now) {
           if (!st) return;
@@ -823,7 +857,7 @@
 
     function animateJump(pl, dest, isLadder, onDone) {
       var from = cellCenter(pl.pos, size), to = cellCenter(dest, size);
-      var start = performance.now(), ms = api.dur(420);
+      var start = performance.now(), ms = api.dur(1000);
       playSfx(isLadder ? "ladder" : "snake");
       if (!isLadder) { try { if (navigator.vibrate) navigator.vibrate([35, 30, 35]); } catch (e) { } }
       spawnSparks(from.x, from.y, isLadder ? "#34d399" : "#f43f5e", 16);
@@ -874,7 +908,7 @@
       if (rolledSix) playSfx("six");
       if (target > 100) {
         setMsg("Need exact " + (100 - pl.pos) + " to finish!");
-        setTimeout(function () { finishTurn(rolledSix, isActor); }, api.dur(600));
+        setTimeout(function () { finishTurn(rolledSix, isActor); }, api.dur(1000));
         return;
       }
       var path = [], s;
@@ -887,7 +921,7 @@
           var c = cellCenter(100, size); spawnSparks(c.x, c.y, "#fbbf24", 32);
           try { if (navigator.vibrate) navigator.vibrate([40, 40, 80]); } catch (e) { }
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
-          setTimeout(function () { view = "result"; render(); }, api.dur(750));
+          setTimeout(function () { view = "result"; render(); }, api.dur(1300));
           return;
         }
         if (LADDERS[pl.pos]) {
@@ -910,21 +944,23 @@
       return !st.players[st.turn].bot;
     }
 
-    function rollDice() {
-      if (!canRollNow()) return;
+    function rollDice(byBot) {
+      if (byBot === true) { if (rm || !st || st.busy || st.winner || !st.players[st.turn].bot) return; }
+      else if (!canRollNow()) return;
       st.busy = true; updateHUD();
       playSfx("dice");
       var btn = q("#sl-dice-btn", host);
       if (btn) { btn.classList.remove("roll"); void btn.offsetWidth; btn.classList.add("roll"); }
       var ticks = 0, finalVal = 1 + Math.floor(Math.random() * 6);
       clearInterval(diceT);
-      diceT = setInterval(function () {
+      var SLN = 12;
+      (function slTick() {
         ticks++;
-        var show = ticks >= 6 ? finalVal : 1 + Math.floor(Math.random() * 6);
+        var show = ticks >= SLN ? finalVal : 1 + Math.floor(Math.random() * 6);
         st.dice = show;
         if (btn) btn.innerHTML = diceSVG(show);
-        if (ticks >= 6) {
-          clearInterval(diceT);
+        if (ticks < SLN) { diceT = setTimeout(slTick, api.dur(70 + ticks * 12)); return; }
+        {
           st.rollId = (st.rollId || 0) + 1;
           if (rm) {
             rm.F.updateDoc(rm.ref, {
@@ -934,13 +970,13 @@
           }
           executeMove(st.turn, finalVal, true);
         }
-      }, api.dur(60));
+      })();
     }
 
     function maybeBot() {
       clearTimeout(botT);
       if (!st || st.busy || st.winner || rm) return;
-      if (st.players[st.turn].bot) botT = setTimeout(rollDice, api.dur(520));
+      if (st.players[st.turn].bot) botT = setTimeout(function () { rollDice(true); }, api.dur(1200));
     }
 
     function sendEmoji(emo) {
@@ -1168,7 +1204,7 @@
       h += '<div class="ag-glass p-2.5 flex items-center justify-between gap-2">' +
         '<button type="button" class="bg-sec" style="padding:.45rem .6rem" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="sl-msg" class="text-xs font-extrabold text-center truncate flex-1">' + esc(st.msg) + '</div>' +
-        '<span class="text-xs font-bold qa-t2 shrink-0">' + P.speed + '×</span></div>';
+        '<span class="text-xs font-bold qa-t2 shrink-0 ag-speed-tag">' + P.speed + '×</span></div>';
       h += '<div class="bg-cv-wrap ag-glass"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
       h += '<div class="ag-glass p-2.5 space-y-2"><div class="flex items-center gap-2.5">' +
         '<button type="button" id="sl-dice-btn" class="bg-dice" data-sl="roll" aria-label="Roll dice">' + diceSVG(st.dice) + '</button>' +
@@ -1210,6 +1246,7 @@
 
     function render() {
       if (!host) return;
+      setPlaying(view === "game" && !!st);
       if (view === "lobby" && rm) renderLobby();
       else if (view === "game" && st) renderGame();
       else if (view === "result" && st) renderResult();
@@ -1257,7 +1294,7 @@
         });
         render();
       },
-      onShow: function () { resizeBoard(); kickLoop(); },
+      onShow: function () { setPlaying(view === "game" && !!st); resizeBoard(); kickLoop(); },
       onHide: function () { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } }
     });
   })();
@@ -1554,7 +1591,7 @@
         if (!st || i >= steps.length) { pl.anims[tIdx] = null; drawFrame(); if (onDone) onDone(); return; }
         var from = tokenCoords(pl.seat, tIdx, pl.tokens[tIdx], size);
         var to = tokenCoords(pl.seat, tIdx, steps[i], size);
-        var start = performance.now(), ms = api.dur(62);
+        var start = performance.now(), ms = api.dur(190);
         playSfx("move");
         function tick(now) {
           if (!st) return;
@@ -1634,7 +1671,7 @@
           st.winner = pl; st.busy = false; playSfx("win");
           try { if (navigator.vibrate) navigator.vibrate([40, 40, 80]); } catch (e) { }
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
-          setTimeout(function () { view = "result"; render(); }, api.dur(420));
+          setTimeout(function () { view = "result"; render(); }, api.dur(1000));
           return;
         }
         endTurn(bonus, isActor);
@@ -1674,7 +1711,7 @@
         st.sixes = (st.sixes || 0) + 1; playSfx("six");
         if (st.sixes >= 3) {
           setMsg(pl.name + " rolled three 6s! Turn skipped");
-          setTimeout(function () { endTurn(false, true); }, api.dur(320));
+          setTimeout(function () { endTurn(false, true); }, api.dur(800));
           return;
         }
       } else { st.sixes = 0; }
@@ -1682,12 +1719,12 @@
       var valid = legalMoves(pl, val);
       if (!valid.length) {
         setMsg("No valid moves for " + pl.name);
-        setTimeout(function () { endTurn(val === 6, true); }, api.dur(260));
+        setTimeout(function () { endTurn(val === 6, true); }, api.dur(700));
         return;
       }
       if (pl.bot) {
         var pick = pickBestBotToken(pl, valid, val);
-        setTimeout(function () { executeTokenMove(st.turn, pick, val, true); }, api.dur(130));
+        setTimeout(function () { executeTokenMove(st.turn, pick, val, true); }, api.dur(600));
         return;
       }
       if (valid.length === 1 && P.autoMove) {
@@ -1715,20 +1752,20 @@
       if (byBot === true) { if (rm || !st.players[st.turn].bot) return; }
       else if (!canActNow()) return;
       st.busy = true; updateHUD(); playSfx("dice");
-      var turn = st.turn, ticks = 0, N = 7, finalVal = 1 + Math.floor(Math.random() * 6);
+      var turn = st.turn, ticks = 0, N = 12, finalVal = 1 + Math.floor(Math.random() * 6);
       setDie(turn, 1 + Math.floor(Math.random() * 6), true);
       clearInterval(diceT);
-      diceT = setInterval(function () {
+      (function ldTick() {
         ticks++;
         var show = ticks >= N ? finalVal : 1 + Math.floor(Math.random() * 6);
         st.dice = show; st.players[turn].lastDice = show;
         setDie(turn, show, false);
-        if (ticks >= N) {
-          clearInterval(diceT);
+        if (ticks < N) { diceT = setTimeout(ldTick, api.dur(70 + ticks * 12)); return; }
+        {
           var el = q("#ld-die-" + turn, host); if (el) { el.classList.remove("land"); void el.offsetWidth; el.classList.add("land"); }
           afterDice(finalVal);
         }
-      }, api.dur(48));
+      })();
     }
 
     function handleBoardTap(e) {
@@ -1749,7 +1786,7 @@
     function maybeBot() {
       clearTimeout(botT);
       if (!st || st.busy || st.awaitMove || st.winner || rm) return;
-      if (st.players[st.turn].bot) botT = setTimeout(function () { rollDice(true); }, api.dur(220));
+      if (st.players[st.turn].bot) botT = setTimeout(function () { rollDice(true); }, api.dur(1000));
     }
 
     function sendEmoji(emo) {
@@ -2040,6 +2077,7 @@
 
     function render() {
       if (!host) return;
+      setPlaying(view === "game" && !!st);
       if (view === "lobby" && rm) renderLobby();
       else if (view === "game" && st) renderGame();
       else if (view === "result" && st) renderResult();
@@ -2091,7 +2129,7 @@
         });
         render();
       },
-      onShow: function () { resizeBoard(); kickLoop(); },
+      onShow: function () { setPlaying(view === "game" && !!st); resizeBoard(); kickLoop(); },
       onHide: function () { if (raf) { window.cancelAnimationFrame(raf); raf = 0; } }
     });
   })();

@@ -1561,7 +1561,7 @@
           pl.anims[tIdx] = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t - arc };
           drawFrame();
           if (t < 1) raf = window.requestAnimationFrame(tick);
-          else { pl.tokens[tIdx] = steps[i]; i++; next(); }
+          else { raf = 0; pl.tokens[tIdx] = steps[i]; i++; next(); }
         }
         raf = window.requestAnimationFrame(tick);
       }
@@ -1570,7 +1570,7 @@
 
     function pushOnlineState(nextTurn, winnerIdx, msg) {
       if (!rm || !st) return;
-      var allTokens = st.players.map(function (p) { return p.tokens.slice(); });
+      var allTokens = st.players.map(function (p) { return { t: p.tokens.slice() }; });
       var up = {
         "ld.tokens": allTokens,
         "ld.turn": nextTurn,
@@ -1699,7 +1699,7 @@
     }
 
     function sendAndMove(tIdx, val) {
-      st.moveId = (st.moveId || 0) + 1;
+      st.moveId = Math.max((st.moveId || 0) + 1, Date.now());
       if (rm) {
         rm.F.updateDoc(rm.ref, {
           "ld.lastMove": { by: st.turn, tIdx: tIdx, dice: val, id: st.moveId },
@@ -1709,8 +1709,10 @@
       executeTokenMove(st.turn, tIdx, val, true);
     }
 
-    function rollDice() {
-      if (!canActNow() || st.busy || st.awaitMove) return;
+    function rollDice(byBot) {
+      if (!st || st.winner || st.busy || st.awaitMove) return;
+      if (byBot === true) { if (rm || !st.players[st.turn].bot) return; }
+      else if (!canActNow()) return;
       st.busy = true; updateHUD(); playSfx("dice");
       var turn = st.turn, ticks = 0, N = 7, finalVal = 1 + Math.floor(Math.random() * 6);
       setDie(turn, 1 + Math.floor(Math.random() * 6), true);
@@ -1746,7 +1748,7 @@
     function maybeBot() {
       clearTimeout(botT);
       if (!st || st.busy || st.awaitMove || st.winner || rm) return;
-      if (st.players[st.turn].bot) botT = setTimeout(rollDice, api.dur(220));
+      if (st.players[st.turn].bot) botT = setTimeout(function () { rollDice(true); }, api.dur(220));
     }
 
     function sendEmoji(emo) {
@@ -1825,7 +1827,7 @@
         return a === d.hostId ? -1 : b === d.hostId ? 1 : (d.players[a].joinedAt || 0) - (d.players[b].joinedAt || 0);
       });
       if (uids.length < 2) return;
-      var initToks = uids.map(function () { return d.turbo ? [0, -1] : [-1, -1, -1, -1]; });
+      var initToks = uids.map(function () { return { t: d.turbo ? [0, -1] : [-1, -1, -1, -1] }; });
       rm.F.updateDoc(rm.ref, {
         status: "playing",
         ld: { order: uids, tokens: initToks, turn: 0, dice: 6, sixes: 0, moveId: 0, msg: d.players[uids[0]].name + "'s turn" }
@@ -1846,7 +1848,7 @@
           if (!st || view !== "game") {
             var pls = ld.order.map(function (u, idx) {
               var seat = seats[idx];
-              return { uid: u, seat: seat, name: (d.players[u] && d.players[u].name) || SEAT_NAMES[seat], color: SEAT_COLORS[seat], tokens: (ld.tokens[idx] || [-1, -1]).slice(), bot: false, anims: [] };
+              return { uid: u, seat: seat, name: (d.players[u] && d.players[u].name) || SEAT_NAMES[seat], color: SEAT_COLORS[seat], tokens: ((ld.tokens[idx] && ld.tokens[idx].t) || [-1, -1]).slice(), bot: false, anims: [] };
             });
             st = { players: pls, turn: ld.turn || 0, dice: ld.dice || 6, sixes: ld.sixes || 0, moveId: ld.moveId || 0, busy: false, awaitMove: false, validTokens: [], winner: null, msg: ld.msg || "" };
             particles = []; view = "game"; render();
@@ -1856,7 +1858,7 @@
             var myIdx = st.players.findIndex(function (p) { return p.uid === rm.uid; });
             if (ld.react.by !== myIdx) showReaction(ld.react.by, ld.react.emo);
           }
-          if (ld.lastMove && ld.lastMove.id && ld.lastMove.id > rm.lastMoveId) {
+          if (ld.lastMove && ld.lastMove.id && ld.lastMove.id !== rm.lastMoveId) {
             rm.lastMoveId = ld.lastMove.id;
             var actorIdx = ld.lastMove.by;
             if (st.players[actorIdx] && st.players[actorIdx].uid !== rm.uid) {
@@ -1867,13 +1869,13 @@
             }
           } else if (!st.busy && !st.awaitMove) {
             st.turn = ld.turn; st.sixes = ld.sixes || 0;
-            st.players.forEach(function (p, i) { if (ld.tokens[i]) p.tokens = ld.tokens[i].slice(); });
+            st.players.forEach(function (p, i) { if (ld.tokens[i] && ld.tokens[i].t) p.tokens = ld.tokens[i].t.slice(); });
             if (ld.msg) setMsg(ld.msg);
             updateHUD(); drawFrame();
           }
         } else if (d.status === "finished" && d.ld && st) {
           var wIdx = d.ld.winner != null ? d.ld.winner : 0;
-          st.players.forEach(function (p, i) { if (d.ld.tokens[i]) p.tokens = d.ld.tokens[i].slice(); });
+          st.players.forEach(function (p, i) { if (d.ld.tokens[i] && d.ld.tokens[i].t) p.tokens = d.ld.tokens[i].t.slice(); });
           st.winner = st.players[wIdx] || st.players[0];
           view = "result"; render();
         }

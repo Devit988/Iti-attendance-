@@ -2,6 +2,7 @@
  *  Mounts into <div id="quiz-arena-root"></div>. Needs ./quiz_bank.json.
  *  Live rooms: Firestore doc battles/{roomCode}, Firebase v10.12.2 (same app as index.html),
  *  anonymous Firebase Auth for the player id. Invite link: ?battle=XXXX
+ *  Tug of War (1v1): battleType "tug" rooms - synchronized rounds, High-Voltage power bar (see the TUG section below)
  *  API: window.QuizArena, window.QuizArenaMulti.{createRoom(cfg), joinRoom(code, cfg)}
  *  Admin: custom questions live in Firestore quiz_meta/custom_questions (1 read, cached in localStorage)
  */
@@ -14,6 +15,9 @@
   var EXTRA_ID_MIN = 50000;
   var SEC_PER_Q = 12;
   var COUNTS = [10, 15, 20, 25, 50];
+  /* 1v1 Tug of War tuning */
+  var TUG_SEC = 10, TUG_FLASH = 1600, TUG_PULL = 15, TUG_TIE = 8, TUG_OVER = 1.5, TUG_MISS = 3, TUG_SD = 3;
+  /* seconds per question | pause between rounds (ms) | pull (one right) | pull (both right, faster) | overdrive multiplier | AFK rounds before forfeit | sudden-death reserve questions */
   var TOPICS = [
     ["iti", "all", "All ITI"],
     ["iti", "elec", "ITI ELEC"],
@@ -69,7 +73,7 @@
   var root = null, view = null, msgEl = null, msgT = 0;
   var bank = [], bankState = "loading";
   var screen = "setup", G = null, last = null, reviewOpen = false;
-  var S = { mode: "solo", players: 2, count: 10, main: "iti", sub: "all", name: "" };
+  var S = { mode: "solo", players: 2, count: 10, main: "iti", sub: "all", name: "", battle: "classic" };
   var R = null, busy = false, pendingCode = "", codeDraft = "", FBR = null, FBP = null, FBC = null;
   var baseBank = [], baseById = {}, custom = { updatedAt: 0, items: [] }, AD = null;
 
@@ -98,11 +102,12 @@
       else if ([2, 3, 4].indexOf(p.players) > -1) S.mode = "multi";
       if ([2, 3, 4].indexOf(p.players) > -1) S.players = p.players;
       if (COUNTS.indexOf(p.count) > -1) S.count = p.count;
+      if (p.battle === "tug" || p.battle === "classic") S.battle = p.battle;
       if (validTopic(p.main, p.sub)) { S.main = p.main; S.sub = p.sub; }
     } catch (e) { }
   }
   function savePrefs() {
-    lsSet(LS.prefs, JSON.stringify({ mode: S.mode, players: S.players, count: S.count, main: S.main, sub: S.sub }));
+    lsSet(LS.prefs, JSON.stringify({ mode: S.mode, players: S.players, count: S.count, main: S.main, sub: S.sub, battle: S.battle }));
   }
 
   /* ---------- question pools ---------- */
@@ -395,6 +400,54 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
 .qa-enter{animation:qaEnter .36s cubic-bezier(.22,1,.36,1) both}
 @keyframes qaEnter{from{opacity:0;transform:translateY(-8px) scale(.985)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.qa-ind{transition:none}.qa-pill.qa-just,.qa-enter{animation:none}}
+
+/* ===== v6: 1v1 High-Voltage Tug of War (amber gold vs electric cyan) ===== */
+#quiz-arena-root{--tga:#f59e0b;--tga2:#fbbf24;--tgb:#22d3ee;--tgb2:#0891b2;--tgat:#fbbf24;--tgbt:#22d3ee;--tgtr:rgba(148,163,184,.18)}
+html.bright-mode #quiz-arena-root{--tgat:#b45309;--tgbt:#0e7490;--tgtr:rgba(100,116,139,.2)}
+.qa-gt .qa-pill{font-size:10.5px;white-space:normal;line-height:1.15;padding:.3rem .25rem;min-height:32px}
+.qa-gt .qa-pill .qa-i{width:13px;height:13px;margin-right:.22rem;vertical-align:-2px;display:inline-block}
+.qa-lock .qa-pill:disabled{text-decoration:none;opacity:.4}
+.qa-tug{margin-top:.75rem;padding:.65rem .75rem .75rem}
+.qa-tug-h{display:flex;justify-content:space-between;align-items:flex-end;gap:.5rem}
+.qa-te{min-width:0;flex:1;padding:.3rem .5rem;border-radius:.85rem;border:1px solid transparent;transition:box-shadow .25s,border-color .25s}
+.qa-te.r{text-align:right}
+.qa-tn{font-size:12px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qa-tp{font-size:26px;line-height:1.05;font-weight:900;font-variant-numeric:tabular-nums}
+.qa-te.l .qa-tn,.qa-te.l .qa-tp{color:var(--tgat)}
+.qa-te.r .qa-tn,.qa-te.r .qa-tp{color:var(--tgbt)}
+.qa-tsub{font-size:10px;font-weight:800;color:var(--t2);min-height:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qa-beamw{position:relative;padding:7px 16px;margin-top:.2rem}
+.qa-beam{position:relative;height:20px;border-radius:999px;overflow:hidden;background:var(--tgtr);border:1px solid var(--bd);box-shadow:0 0 18px -5px rgba(251,191,36,.4),0 0 18px -5px rgba(34,211,238,.4)}
+.qa-bl,.qa-br{position:absolute;top:0;bottom:0;transition:width .6s cubic-bezier(.3,1.25,.5,1)}
+.qa-bl{left:0;background:linear-gradient(90deg,var(--tga),var(--tga2))}
+.qa-br{right:0;background:linear-gradient(270deg,var(--tgb2),var(--tgb))}
+.qa-bl::after,.qa-br::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(110deg,rgba(255,255,255,0) 0 10px,rgba(255,255,255,.3) 10px 14px,rgba(255,255,255,0) 14px 24px);background-size:48px 100%;animation:qaFlow 1s linear infinite}
+.qa-br::after{animation-direction:reverse}
+@keyframes qaFlow{to{background-position:48px 0}}
+.qa-mk{position:absolute;top:4px;bottom:4px;width:1px;background:rgba(255,255,255,.4);z-index:1}
+.qa-lane{position:absolute;left:16px;right:16px;top:0;bottom:0;pointer-events:none}
+.qa-core{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;z-index:2;background:radial-gradient(circle,#fff 0 18%,#fef3c7 30%,rgba(251,191,36,.92) 48%,rgba(34,211,238,.85) 72%,rgba(34,211,238,0) 100%);box-shadow:0 0 12px 3px rgba(255,255,255,.9),0 0 26px 8px rgba(251,191,36,.55),0 0 34px 10px rgba(34,211,238,.45);transition:left .6s cubic-bezier(.3,1.25,.5,1);animation:qaSpark .5s ease-in-out infinite alternate}
+@keyframes qaSpark{from{transform:scale(.88)}to{transform:scale(1.14)}}
+.qa-core::before,.qa-core::after{content:"";position:absolute;left:50%;top:50%;width:48px;height:2px;margin:-1px 0 0 -24px;background:linear-gradient(90deg,transparent,#fff,transparent);transform:rotate(35deg);animation:qaZap .35s steps(2) infinite}
+.qa-core::after{transform:rotate(-35deg);animation-delay:.17s}
+@keyframes qaZap{0%{opacity:1}50%{opacity:.15}100%{opacity:.9}}
+.qa-tug.crit-l .qa-te.l,.qa-tug.crit-r .qa-te.r{border-color:var(--bdc);animation:qaCrit .8s ease-in-out infinite}
+@keyframes qaCrit{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0),inset 0 0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 16px 2px rgba(239,68,68,.55),inset 0 0 14px rgba(251,191,36,.35)}}
+.qa-tt{height:5px;border-radius:99px;background:var(--cd2);border:1px solid var(--bd);overflow:hidden;margin-top:.6rem}
+.qa-tt>i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#f59e0b,#fbbf24);transition:width .2s linear}
+.qa-tt.low>i{background:linear-gradient(90deg,#e11d48,var(--bdc))}
+.qa-shake{animation:qaShake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes qaShake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-3px)}40%,60%{transform:translateX(3px)}}
+.qa-fl{text-align:center;padding:1.1rem .4rem;animation:qaEnter .3s both}
+.qa-fl b{display:block;font-size:26px;line-height:1.15;font-weight:900}
+.qa-fl span{display:block;margin-top:.35rem;font-size:12.5px;font-weight:700;color:var(--t2)}
+.qa-fl.me b{color:var(--tgat)}.qa-fl.opp b{color:var(--tgbt)}.qa-fl.blk b{color:var(--bdc)}
+.qa-vs{font-size:2.7rem;line-height:1;font-weight:900;font-variant-numeric:tabular-nums}
+.qa-vs .a{color:var(--tgat)}.qa-vs .b{color:var(--tgbt)}
+.qa-vs .v{font-size:1rem;font-weight:800;color:var(--t2);margin:0 .55rem;vertical-align:middle}
+.qa-win{display:inline-flex;align-items:center;gap:.4rem;padding:.38rem .9rem;border-radius:999px;font-weight:900;font-size:13px;color:#1f1300;background:linear-gradient(135deg,#fde68a,#fbbf24 55%,#f59e0b);box-shadow:0 6px 18px -8px rgba(245,158,11,.8)}
+.qa-win.lose{color:var(--tx);background:var(--cd2);border:1px solid var(--bd);box-shadow:none}
+@media (prefers-reduced-motion:reduce){.qa-core,.qa-core::before,.qa-core::after,.qa-bl::after,.qa-br::after,.qa-tug.crit-l .qa-te.l,.qa-tug.crit-r .qa-te.r,.qa-shake,.qa-fl{animation:none}.qa-bl,.qa-br,.qa-core,.qa-tt>i{transition:none}}
 `;
     document.head.appendChild(st);
   }
@@ -453,7 +506,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     var topicKey = S.main + "|" + (elecParts(S.main, S.sub) ? "elec" : S.sub);
     var modeChg = !!lastDraw && lastDraw.mode !== S.mode, topicChg = !!lastDraw && lastDraw.topic !== topicKey, plChg = !!lastDraw && lastDraw.players !== S.players;
     var enter = modeChg ? " qa-enter" : "";
-    var ready = bankState === "ok", st = liveStreak(), multi = S.mode === "multi", h = "";
+    var ready = bankState === "ok", st = liveStreak(), multi = S.mode === "multi", tug = multi && S.battle === "tug", h = "";
     var canStart = ready && feasible(S.count);
 
     h += '<div class="qa-glass qa-setup p-3.5 space-y-3">';
@@ -483,9 +536,17 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
       h += '<div class="qa-inner p-2 space-y-2' + enter + '">';
       h += '<div class="flex gap-1.5"><input id="qa-code" class="qa-in" style="width:5.8rem;text-align:center;letter-spacing:.26em;font-weight:800;padding-left:.9rem" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="0000" value="' + esc(codeDraft || pendingCode || "") + '" aria-label="4-digit room code">';
       h += '<button type="button" class="qa-sec btn-tap flex-1 font-extrabold" style="padding:.5rem .7rem" data-a="join">' + ico("log-in") + "Join room</button></div>";
-      h += '<div class="flex items-center gap-2"><span class="qa-lbl shrink-0">Room size</span><div class="grid grid-cols-3 gap-1.5 flex-1">' +
-        [2, 3, 4].map(function (n) { return '<button type="button" class="qa-pill btn-tap text-center' + (S.players === n ? " on" + (plChg ? " qa-just" : "") : "") + '" style="padding:.34rem 0" data-a="players" data-k="' + n + '" aria-pressed="' + (S.players === n) + '">' + n + "P</button>"; }).join("") +
-        "</div></div></div>";
+      /* game type: Classic 2-4P race | Tug of War 1v1 (locks the room to 2 players) */
+      h += '<div class="flex items-center gap-2"><span class="qa-lbl shrink-0">Game type</span><div class="grid grid-cols-2 gap-1.5 flex-1 qa-gt" role="group" aria-label="Game type">' +
+        [["classic", "Classic Battle", "swords"], ["tug", "Tug of War (1v1)", "zap"]].map(function (t) {
+          var on = S.battle === t[0];
+          return '<button type="button" class="qa-pill btn-tap text-center' + (on ? " on" : "") + '" data-a="btype" data-k="' + t[0] + '" aria-pressed="' + on + '">' + ico(t[2]) + t[1] + "</button>";
+        }).join("") + "</div></div>";
+      h += '<div class="flex items-center gap-2"><span class="qa-lbl shrink-0">Room size</span><div class="grid grid-cols-3 gap-1.5 flex-1' + (tug ? " qa-lock" : "") + '">' +
+        [2, 3, 4].map(function (n) { var on = tug ? n === 2 : S.players === n; return '<button type="button" class="qa-pill btn-tap text-center' + (on ? " on" + (plChg && !tug ? " qa-just" : "") : "") + '" style="padding:.34rem 0" data-a="players" data-k="' + n + '" aria-pressed="' + on + '"' + (tug && n !== 2 ? " disabled" : "") + '>' + n + "P</button>"; }).join("") +
+        "</div></div>";
+      if (tug) h += '<div class="text-xs qa-t2" style="line-height:1.35">⚡ 1v1 power bar · 10s rounds · both players see the same question · first to knock the bar to 100% wins.</div>';
+      h += "</div>";
     }
 
     /* inline name */
@@ -515,7 +576,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
 
     /* single primary CTA */
     h += '<button type="button" class="qa-cta btn-tap' + enter + '" data-a="' + (multi ? "create" : "start") + '"' + (canStart ? "" : " disabled") + ">" +
-      ico(multi ? "plus" : "play") + (multi ? "Create Room" : "Start Quiz") + "</button>";
+      ico(multi ? (tug ? "zap" : "plus") : "play") + (multi ? (tug ? "Create Tug of War Room" : "Create Room") : "Start Quiz") + "</button>";
     if (ready && !canStart && !(S.main === "iti" && S.sub === "elec")) h += '<div class="text-xs qa-t2 text-center" style="margin-top:-.3rem">Not enough questions in this topic yet.</div>';
     h += "</div>";
     view.innerHTML = h; icons();
@@ -787,8 +848,9 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
   M.createRoom = function (c) {
     if (busy || R) return;
     if (!online()) { toast("Live rooms need an internet connection"); return; }
-    var ids = c.questionIds || [], max = c.players, name = (c.name || "Player").slice(0, 16);
-    if ([2, 3, 4].indexOf(max) < 0 || COUNTS.indexOf(c.count) < 0 || ids.length !== c.count) { toast("Pick 2–4 players and a valid question count"); return; }
+    var ids = c.questionIds || [], max = c.players, name = (c.name || "Player").slice(0, 16), tug = c.battle === "tug";
+    if (tug) max = 2;
+    if ([2, 3, 4].indexOf(max) < 0 || COUNTS.indexOf(c.count) < 0 || (tug ? ids.length < c.count : ids.length !== c.count)) { toast("Pick 2–4 players and a valid question count"); return; }
     busy = true; toast("Creating room…");
     loadFb().then(function (f) {
       var tries = 0, F = f.F;
@@ -797,10 +859,13 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
         return F.getDoc(ref).then(function (s) { return s.exists(); }, function () { return true; }).then(function (taken) {
           if (taken) { if (++tries >= 8) throw { code: "no-code" }; return attempt(); }
           var pl = {}; pl[f.uid] = { name: name, score: 0, qIndex: 0, done: false };
-          return F.setDoc(ref, {
+          if (tug) { pl[f.uid].streak = 0; pl[f.uid].miss = 0; }
+          var docData = {
             status: "waiting", hostId: f.uid, maxPlayers: max, questionCount: c.count, categoryLabel: String(c.label || "").slice(0, 60),
             qIds: ids, startedAt: null, expireAt: F.Timestamp.fromMillis(Date.now() + EXPIRE_MS), players: pl
-          }).then(function () { return { code: code, ref: ref }; }, function (e) {
+          };
+          if (tug) { docData.battleType = "tug"; docData.rope = 50; docData.roundIndex = 0; docData.roundStartAt = null; docData.lastRes = null; docData.winnerId = null; docData.endReason = null; docData.forfeitId = null; }
+          return F.setDoc(ref, docData).then(function () { return { code: code, ref: ref }; }, function (e) {
             if (e && e.code === "permission-denied" && ++tries < 8) return attempt(); throw e;
           });
         });
@@ -830,14 +895,14 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
       .catch(fail).then(function () { busy = false; });
   };
   function openRoom(code, ref, isHost, c) {
-    R = { code: code, ref: ref, uid: FBR.uid, isHost: isHost, cfg: c, room: null, unsub: null, started: false, starting: false, ending: false, closed: false, final: null, base: 0, startT: 0, endT: 0, cd: 0, watch: 0 };
+    R = { code: code, ref: ref, uid: FBR.uid, isHost: isHost, cfg: c, room: null, unsub: null, started: false, starting: false, ending: false, closed: false, final: null, base: 0, startT: 0, endT: 0, cd: 0, watch: 0, resT: 0, resBusy: false, resTry: 0, resSched: -1, tugEndT: 0 };
     R.unsub = FBR.F.onSnapshot(ref, onRoom, function (e) { fail(e); });
   }
   function resetMatch() {
     if (G && G.mp) { stopGame(); G = null; }
     if (!R) return;
-    clearInterval(R.cd); clearInterval(R.watch); clearTimeout(R.endT); clearTimeout(R.startT);
-    R.started = R.starting = R.ending = false; R.final = null; R.endT = 0;
+    clearInterval(R.cd); clearInterval(R.watch); clearTimeout(R.endT); clearTimeout(R.startT); clearTimeout(R.resT); clearTimeout(R.tugEndT);
+    R.started = R.starting = R.ending = false; R.final = null; R.endT = 0; R.resBusy = false; R.resSched = -1; R.resTry = 0; R.tugEndT = 0;
   }
   function teardown() {
     if (!R) return;
@@ -867,19 +932,23 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     var n = Object.keys(R.room.players).length;
     if (n < 2 || (!R.isHost && n < R.room.maxPlayers)) { R.starting = false; return; }
     R.starting = true;
-    FBR.F.updateDoc(R.ref, { status: "playing", startedAt: Date.now() + 3000 }).catch(function (e) {
+    var t0 = Date.now() + 3000, up0 = { status: "playing", startedAt: t0 };
+    if (tugOn(R.room)) { up0.roundStartAt = t0; up0.roundIndex = 0; up0.rope = 50; }
+    FBR.F.updateDoc(R.ref, up0).catch(function (e) {
       if (R) R.starting = false;
       if (R && R.isHost && !(e && e.code === "permission-denied")) fail(e);
     });
   }
   function onPlaying(d) {
+    var tug = tugOn(d);
     if (!R.started) {
       R.started = true; R.starting = false; clearTimeout(R.startT);
       var recv = Date.now(), base = Number(d.startedAt) || 0;
       if (Math.abs(base - (recv + 3000)) > 8000) base = recv + 3000;   /* guards against wrong phone clocks */
-      R.base = base; R.watch = setInterval(watchTick, 1000);
+      R.base = base; R.watch = tug ? setInterval(tugTick, 200) : setInterval(watchTick, 1000);
       runCountdown(base); return;
     }
+    if (tug) { tugSync(d); return; }
     updateRank(); if (screen === "mwait") renderWait();
     checkEnd();
   }
@@ -894,6 +963,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     }, 100);
   }
   function startMulti(base) {
+    if (tugOn(R.room)) { startTug(base); return; }
     var byId = {}; baseBank.forEach(function (q) { byId[q.id] = q; }); custom.items.forEach(function (it) { if (it && !checkQ(it)) byId[it.id] = it; }); bank.forEach(function (q) { byId[q.id] = q; });
     var qs = (R.room.qIds || []).map(function (id) { return byId[id]; }).filter(Boolean).map(prep);
     if (qs.length !== R.room.qIds.length) { toast("Question bank is out of date — refresh the app"); leaveRoom(); return; }
@@ -911,7 +981,8 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
   }
   function mpFinish() { mpPush(true); screen = "mwait"; render(); checkEnd(); }
   function leaveMatch() {
-    mpPush(true); var r = R; teardown(); screen = "setup"; render();
+    if (G && G.tug) tugForfeit(); else mpPush(true);
+    var r = R; teardown(); screen = "setup"; render();
     if (r) toast("You left the match");
   }
   function checkEnd() {
@@ -937,6 +1008,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     if (left < -2500 && R.room.status === "playing") { if (G && !G.done) { G.timeUp = true; finish(); } scheduleEnd(); }
   }
   function onFinished(d) {
+    if (tugOn(d)) { onTugFinished(d); return; }
     if (!R.started && screen !== "mresult") { resetMatch(); }      /* joined late / missed the start */
     if (G && G.mp) { if (!G.done) stopGame(); }
     clearInterval(R.watch); clearTimeout(R.endT);
@@ -958,10 +1030,17 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     if (!R || !R.isHost || busy || !R.room) return;
     var d = R.room, c = R.cfg || { main: S.main, sub: S.sub, count: d.questionCount };
     if (!feasible(d.questionCount, c)) { toast("Not enough questions for a rematch"); return; }
-    var ids = pick({ main: c.main, sub: c.sub, count: d.questionCount }).map(function (q) { return q.id; }), pl = {};
-    Object.keys(d.players).forEach(function (id) { pl[id] = { name: d.players[id].name, score: 0, qIndex: 0, done: false }; });
+    var tug = tugOn(d), cc = { main: c.main, sub: c.sub, count: d.questionCount };
+    var ids = tug ? tugIds(cc) : pick(cc).map(function (q) { return q.id; }), pl = {}, upd;
+    Object.keys(d.players).forEach(function (id) {
+      if (tug && d.forfeitId && id === d.forfeitId && id !== R.uid) return;      /* the player who left is not carried into the rematch */
+      pl[id] = { name: d.players[id].name, score: 0, qIndex: 0, done: false };
+      if (tug) { pl[id].streak = 0; pl[id].miss = 0; pl[id].ans = null; }
+    });
+    upd = { status: "waiting", qIds: ids, startedAt: null, players: pl };
+    if (tug) { upd.rope = 50; upd.roundIndex = 0; upd.roundStartAt = null; upd.lastRes = null; upd.winnerId = null; upd.endReason = null; upd.forfeitId = null; }
     busy = true;
-    FBR.F.updateDoc(R.ref, { status: "waiting", qIds: ids, startedAt: null, players: pl }).catch(fail).then(function () { busy = false; });
+    FBR.F.updateDoc(R.ref, upd).catch(fail).then(function () { busy = false; });
   }
 
   /* --- lobby / countdown / waiting / podium screens --- */
@@ -971,7 +1050,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     h = '<div class="qa-wrap"><div class="flex items-center justify-between"><div class="flex items-center gap-2">' + ico("users", "qa-ac") + '<span class="text-lg font-extrabold">Live Room</span></div>' +
       '<button type="button" class="qa-ic btn-tap" data-a="leave" aria-label="Leave room">' + ico("x") + "</button></div>";
     h += '<div class="qa-glass p-5 text-center mt-3"><div class="text-xs font-bold qa-t2">ROOM CODE</div><div class="qa-code">' + R.code + '</div>' +
-      '<div class="text-xs qa-t2 mt-1">' + esc(d.categoryLabel) + " · " + d.questionCount + " questions</div></div>";
+      '<div class="text-xs qa-t2 mt-1">' + (tugOn(d) ? "⚡ Tug of War · 1v1 · " : "") + esc(d.categoryLabel) + " · " + d.questionCount + " questions</div></div>";
     h += '<div class="grid grid-cols-2 gap-2.5 mt-3"><button type="button" class="qa-sec btn-tap" data-a="copy">' + ico("copy") + "Copy Code</button>" +
       '<a class="qa-sec btn-tap" style="text-decoration:none;color:inherit" target="_blank" rel="noopener" href="' + wa + '">' + ico("send") + "Invite on WhatsApp</a></div>";
     h += '<div class="qa-lbl">Players · ' + n + " / " + d.maxPlayers + '</div><div class="grid gap-2">';
@@ -990,7 +1069,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     view.innerHTML = h; icons();
   }
   function renderCountdown() {
-    view.innerHTML = '<div class="qa-wrap text-center" style="padding-top:18vh"><div class="text-sm font-bold qa-t2">Get ready!</div><div class="qa-big qa-bump" id="qa-cd" style="font-size:7rem;margin-top:1rem">3</div>' +
+    view.innerHTML = '<div class="qa-wrap text-center" style="padding-top:18vh"><div class="text-sm font-bold qa-t2">' + (tugOn(R.room) ? "⚡ Power Clash — get ready!" : "Get ready!") + '</div><div class="qa-big qa-bump" id="qa-cd" style="font-size:7rem;margin-top:1rem">3</div>' +
       '<div class="text-xs qa-t2 mt-4">' + esc(R.room.categoryLabel) + " · " + R.room.questionCount + " questions</div></div>";
   }
   function renderWait() {
@@ -1004,6 +1083,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     view.innerHTML = h;
   }
   function renderPodium() {
+    if (tugOn(R.room)) { renderTugResult(); return; }
     var rk = R.final, d = R.room, myPos = 0, h, order, hts = [120, 92, 70], ordn = [];
     rk.forEach(function (p, i) { if (p.id === R.uid) myPos = i + 1; });
     h = '<div class="qa-wrap"><div class="qa-glass p-4 text-center"><div class="text-xs font-bold qa-t2">' + esc(d.categoryLabel) + '</div><div class="text-lg font-extrabold mt-1">Battle Results</div>' +
@@ -1059,26 +1139,398 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     x.fillStyle = "#94a3b8"; x.font = "500 28px " + F; x.fillText(new Date().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), W / 2, 1322);
     return c;
   }
-  function podiumBlob(cb) { try { drawPodium(R.final, R.room).toBlob(cb, "image/png"); } catch (e) { toast("Couldn’t create the image"); } }
+  function podiumBlob(cb) { try { (tugOn(R.room) ? drawTugCard(R.room) : drawPodium(R.final, R.room)).toBlob(cb, "image/png"); } catch (e) { toast("Couldn’t create the image"); } }
   function podiumDownload() {
     podiumBlob(function (b) {
       if (!b) { toast("Couldn’t create the image"); return; }
       var u = URL.createObjectURL(b), a = document.createElement("a");
-      a.href = u; a.download = "ITI-CONNECT-Podium-" + ymd(new Date()) + ".png"; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(u); }, 4000); toast("Podium card saved");
+      a.href = u; a.download = (tugOn(R.room) ? "ITI-CONNECT-Power-Clash-" : "ITI-CONNECT-Podium-") + ymd(new Date()) + ".png"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 4000); toast(tugOn(R.room) ? "Victory card saved" : "Podium card saved");
     });
   }
   function podiumShare() {
     podiumBlob(function (b) {
       if (!b) return;
-      var f = new File([b], "ITI-CONNECT-Podium.png", { type: "image/png" });
-      navigator.share({ files: [f], title: "ITI CONNECT Quiz Battle", text: R.final[0].name + " won the Quiz Arena battle!" }).catch(function () { });
+      var t = tugOn(R.room), f = new File([b], t ? "ITI-CONNECT-Power-Clash.png" : "ITI-CONNECT-Podium.png", { type: "image/png" });
+      navigator.share({ files: [f], title: t ? "ITI CONNECT Power Clash" : "ITI CONNECT Quiz Battle", text: t ? tugShareText() : R.final[0].name + " won the Quiz Arena battle!" }).catch(function () { });
     });
   }
 
+  /* room config sent to M.createRoom (tug rooms: 2 players, regular questions + sudden-death reserves) */
   function cfg() {
-    return { name: S.name || "Player", players: S.players, count: S.count, main: S.main, sub: S.sub, label: catLabel(), secPerQ: SEC_PER_Q, questionIds: pick(S).map(function (q) { return q.id; }) };
+    var tug = S.battle === "tug";
+    return {
+      name: S.name || "Player", players: tug ? 2 : S.players, battle: tug ? "tug" : "classic", count: S.count, main: S.main, sub: S.sub, label: catLabel(), secPerQ: SEC_PER_Q,
+      questionIds: tug ? tugIds(S) : pick(S).map(function (q) { return q.id; })
+    };
   }
+
+  /* =====================================================================
+   *  1v1 HIGH-VOLTAGE TUG OF WAR  (battleType: "tug")
+   *  Extra fields on battles/{code} (tug rooms only):
+   *    battleType:"tug"  rope:50 (the HOST's share of the bar, 0-100; each player sees themself on the left)
+   *    roundIndex  roundStartAt(ms)  lastRes{r,w,pull,od,h,o,sd}  winnerId  endReason  forfeitId
+   *    players.{uid}: { ans:{r,k,ok,ms}, streak, miss }   (a player only ever writes their OWN ans)
+   *    qIds = questionCount regular questions + up to TUG_SD sudden-death reserves
+   *  Rounds resolve inside a Firestore transaction guarded by roundIndex, so no matter which
+   *  client (or both) tries, exactly one resolution is applied per round.
+   * ===================================================================== */
+  function tugOn(d) { return !!d && d.battleType === "tug"; }
+  function otherOf(d, id) { var k; for (k in d.players) if (k !== id) return k; return ""; }
+  function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+  function pctOf(d) { return clamp(Math.round(typeof d.rope === "number" ? d.rope : 50), 0, 100); }
+  function myPct(d) { var r = pctOf(d); return d.hostId === R.uid ? r : 100 - r; }
+  function setT(id, t) { var e = $(id); if (e && e.textContent !== t) e.textContent = t; }
+
+  function tugIds(c) {
+    var ids = pick({ main: c.main, sub: c.sub, count: c.count }).map(function (q) { return q.id; });
+    return ids.concat(tugExtra(c, ids));
+  }
+  function tugExtra(c, ids) {          /* sudden-death reserves: same topic first, then anything, then (tiny bank) a repeat */
+    var used = {}, have = {}, m, pool, ex, out;
+    ids.forEach(function (id) { used[id] = 1; });
+    if (c.main === "mix") { m = mixPools(); pool = m.a.concat(m.b); } else pool = poolFor(c.main, c.sub);
+    ex = shuffle(pool.filter(function (q) { return !used[q.id]; }));
+    if (ex.length < TUG_SD) {
+      ex.forEach(function (q) { have[q.id] = 1; });
+      ex = ex.concat(shuffle(bank.filter(function (q) { return !used[q.id] && !have[q.id]; })));
+    }
+    out = ex.slice(0, TUG_SD).map(function (q) { return q.id; });
+    if (!out.length && ids.length) out = [ids[Math.floor(Math.random() * ids.length)]];
+    return out;
+  }
+  function roomQs() {
+    var byId = {};
+    baseBank.forEach(function (q) { byId[q.id] = q; });
+    custom.items.forEach(function (it) { if (it && !checkQ(it)) byId[it.id] = it; });
+    bank.forEach(function (q) { byId[q.id] = q; });
+    var qs = (R.room.qIds || []).map(function (id) { return byId[id]; }).filter(Boolean).map(prep);
+    return qs.length === (R.room.qIds || []).length ? qs : null;
+  }
+
+  /* --- pure round resolver (used inside the transaction and as a "is it ready?" dry-run) --- */
+  function tugCompute(d, forced) {
+    var hid = d.hostId, oid = otherOf(d, hid), A = d.players && d.players[hid], B = oid && d.players[oid];
+    if (!A || !B) return null;
+    var r = d.roundIndex || 0, n = d.questionCount || 0, sd = r >= n;
+    var a = A.ans && A.ans.r === r ? A.ans : null, b = B.ans && B.ans.r === r ? B.ans : null;
+    var aOk = !!(a && a.ok), bOk = !!(b && b.ok);
+    /* ready when both answered, or (sudden death) someone already got it right, or the timer ran out */
+    if (!forced && !(a && b) && !(sd && (aOk || bOk))) return null;
+    var rope = typeof d.rope === "number" ? d.rope : 50;
+    var nA = aOk ? (A.streak || 0) + 1 : 0, nB = bOk ? (B.streak || 0) + 1 : 0;           /* consecutive-correct streaks */
+    var mA = a ? 0 : (A.miss || 0) + 1, mB = b ? 0 : (B.miss || 0) + 1;                    /* consecutive no-answer rounds */
+    var win = "", pull = 0, od = "", end = "", winner = "", forfeit = "", base = 0;
+    if (sd) {
+      if (aOk && bOk) win = a.ms <= b.ms ? hid : oid; else if (aOk) win = hid; else if (bOk) win = oid;
+      if (win) { end = "sudden"; winner = win; }
+    } else {
+      if (aOk !== bOk) { win = aOk ? hid : oid; base = TUG_PULL; }                         /* one right, one wrong: +15 */
+      else if (aOk && bOk) { win = a.ms <= b.ms ? hid : oid; base = TUG_TIE; }            /* both right: faster pulls +8 */
+      if (win) {
+        var over = (win === hid ? nA : nB) >= 3;                                           /* Overdrive: 3rd+ correct in a row */
+        pull = Math.round(base * (over ? TUG_OVER : 1)); if (over) od = win;
+        rope = clamp(rope + (win === hid ? pull : -pull), 0, 100);
+      }
+    }
+    if (!end) {
+      if (rope >= 100) { end = "ko"; winner = hid; }
+      else if (rope <= 0) { end = "ko"; winner = oid; }
+      else if (mA >= TUG_MISS && mB < TUG_MISS) { end = "forfeit"; winner = oid; forfeit = hid; }      /* opponent vanished */
+      else if (mB >= TUG_MISS && mA < TUG_MISS) { end = "forfeit"; winner = hid; forfeit = oid; }
+      else if (mA >= TUG_MISS && mB >= TUG_MISS) { end = rope === 50 ? "draw" : "points"; winner = rope > 50 ? hid : rope < 50 ? oid : ""; }
+      else if (!sd && r >= n - 1 && rope !== 50) { end = "points"; winner = rope > 50 ? hid : oid; }
+      else if (sd && r + 1 >= (d.qIds || []).length) { end = "draw"; winner = ""; }               /* sudden-death reserves used up */
+    }
+    var up = {};
+    up["players." + hid + ".streak"] = nA; up["players." + hid + ".miss"] = mA;
+    up["players." + oid + ".streak"] = nB; up["players." + oid + ".miss"] = mB;
+    up.rope = rope; up.lastRes = { r: r, w: win, pull: pull, od: od, h: aOk, o: bOk, sd: sd };
+    if (end) { up.status = "finished"; up.winnerId = winner; up.endReason = end; up.forfeitId = forfeit; up.finishedAt = Date.now(); }
+    else { up.roundIndex = r + 1; up.roundStartAt = Date.now() + TUG_FLASH; }
+    return { up: up };
+  }
+  function tugResolve(round, forced) {
+    if (!R || !FBR || R.resBusy) return;
+    var now = Date.now(); if (forced && now - R.resTry < 1500) return;
+    R.resTry = now; R.resBusy = true;
+    var r0 = R, F = FBR.F;
+    F.runTransaction(FBR.db, function (tx) {
+      return tx.get(r0.ref).then(function (s) {
+        if (!s.exists()) return null;
+        var d = s.data();
+        if (d.status !== "playing" || d.battleType !== "tug" || (d.roundIndex || 0) !== round) return null;   /* someone already resolved it */
+        var res = tugCompute(d, forced); if (!res) return null;
+        tx.update(r0.ref, res.up); return res;
+      });
+    }).catch(function () { }).then(function () { r0.resBusy = false; });
+  }
+  function tugMaybeResolve(d) {         /* both answered (or sudden-death hit): resolve right away, host first */
+    if (!R || d.status !== "playing") return;
+    var r = d.roundIndex || 0;
+    if (R.resSched === r || !tugCompute(d, false)) return;
+    R.resSched = r; clearTimeout(R.resT);
+    R.resT = setTimeout(function () { if (R) tugResolve(r, false); }, R.isHost ? 120 : 700 + Math.random() * 500);
+  }
+  function tugForfeit() {               /* leaving mid-match: the opponent wins immediately */
+    if (!R || !FBR) return;
+    var F = FBR.F, ref = R.ref, me = R.uid;
+    F.runTransaction(FBR.db, function (tx) {
+      return tx.get(ref).then(function (s) {
+        if (!s.exists()) return;
+        var d = s.data(); if (d.status !== "playing" || d.battleType !== "tug") return;
+        tx.update(ref, { status: "finished", winnerId: otherOf(d, me), endReason: "forfeit", forfeitId: me, finishedAt: Date.now() });
+      });
+    }).catch(function () { });
+  }
+
+  /* --- match lifecycle on this device --- */
+  function startTug(base) {
+    var qs = roomQs();
+    if (!qs) { toast("Question bank is out of date — refresh the app"); leaveRoom(); return; }
+    G = { tug: true, mp: true, qs: qs, i: 0, round: -1, phase: "wait", locked: false, picked: -1, roundStart: base, shownAt: base, flash: null, paintKey: "", shake: false,
+      tick: 0, adv: 0, quitAt: 0, done: false, finishing: false, timeUp: false, jit: Math.random() * 700, log: [] };
+    screen = "tug"; renderTug(); tugSync(R.room);
+  }
+  function tugFlash(d, fin) {
+    var lr = d.lastRes, me = R.uid, iWon = !!lr && lr.w === me, t, s, cls;
+    if (fin && d.endReason === "forfeit") return { cls: d.winnerId === me ? "me" : "opp", title: d.winnerId === me ? "Opponent left!" : "Match over", sub: "Victory by forfeit" };
+    if (fin && d.endReason === "ko") return { cls: d.winnerId === me ? "me" : "opp", title: "K.O.!", sub: d.winnerId === me ? "You maxed out the power bar" : "The opponent maxed out the power bar" };
+    if (!lr) return { cls: "blk", title: "Next round", sub: "" };
+    if (lr.sd) {
+      if (!lr.w) return { cls: "blk", title: "Surge Blocked!", sub: "Nobody scored — another sudden-death question" };
+      return { cls: iWon ? "me" : "opp", title: iWon ? "You strike first!" : "They strike first!", sub: "Sudden death decided" };
+    }
+    if (!lr.w) return { cls: "blk", title: "Surge Blocked!", sub: "No movement this round" };
+    cls = iWon ? "me" : "opp";
+    t = lr.od ? "Overdrive ×1.5!" : iWon ? "Power surge!" : "Counter-surge!";
+    s = (iWon ? "You pulled the core +" : "Opponent pulled the core +") + lr.pull + "%" + (lr.h && lr.o ? " · faster answer" : "");
+    return { cls: cls, title: t, sub: s };
+  }
+  function tugNewRound(d, r) {
+    var prev = G.round, recv = Date.now(), rsa = Number(d.roundStartAt) || 0, want = recv + TUG_FLASH, lr = d.lastRes;
+    G.round = r; G.locked = false; G.picked = -1; G.paintKey = "";
+    if (prev < 0) { G.roundStart = R.base; G.flash = null; tugShowQ(); return; }          /* first question: countdown just ended */
+    G.roundStart = Math.abs(rsa - want) <= 600 ? rsa : want;                             /* trust the shared start only if clocks agree */
+    G.phase = "wait"; G.flash = tugFlash(d, false);
+    if (lr && lr.od) {
+      G.shake = true;
+      if (lr.od === R.uid) { try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) { } }
+    }
+  }
+  function tugSync(d) {                 /* every room snapshot lands here while a tug match is on screen */
+    if (!G || !G.tug || !R) return;
+    var r = d.roundIndex || 0;
+    if (d.status === "playing" && G.round !== r) tugNewRound(d, r);
+    if (d.status === "finished") { G.phase = "wait"; G.flash = tugFlash(d, true); G.paintKey = ""; }
+    tugPaint(); tugMaybeResolve(d);
+  }
+  function tugShowQ() {
+    if (!G || !G.tug) return;
+    G.phase = "q"; G.locked = false; G.picked = -1; G.shownAt = G.roundStart; G.paintKey = "";
+    tugPaintCard(); tugStatus();
+  }
+  function tugAnswer(k) {
+    if (!G || !G.tug || G.done || G.finishing || G.locked || G.phase !== "q" || !R || !R.room) return;
+    var q = G.qs[G.round]; if (!q || !q.o[k]) return;
+    G.locked = true; G.picked = k;
+    var ok = !!q.o[k].ok, ms = Math.max(0, Date.now() - G.shownAt), up = {}, F = FBR.F, ref = R.ref;
+    up["players." + R.uid + ".ans"] = { r: G.round, k: k, ok: ok, ms: ms };
+    F.updateDoc(ref, up).catch(function () { setTimeout(function () { F.updateDoc(ref, up).catch(function () { }); }, 900); });
+    G.paintKey = ""; tugPaintCard(); tugStatus();
+  }
+  function tugTick() {                  /* 5x/second: timer, question reveal, timeout resolution, disconnect safety */
+    if (!R) return;
+    if (!root || !document.body.contains(root)) {
+      clearInterval(R.watch);
+      if (G && G.tug && !G.done && R.room && R.room.status === "playing") tugForfeit();
+      teardown(); return;
+    }
+    if (!G || !G.tug || G.round < 0 || G.done || G.finishing || !R.room || R.room.status !== "playing") return;
+    var now = Date.now(), end = G.roundStart + TUG_SEC * 1000, rem = end - now, chip = $("qa-timechip"), bar = $("qa-ttbar"), tt = $("qa-tt");
+    if (G.phase === "wait" && now >= G.roundStart) tugShowQ();
+    if (G.phase === "q") {
+      setT("qa-ttime", String(Math.max(0, Math.ceil(rem / 1000))));
+      if (bar) bar.style.width = clamp(rem / (TUG_SEC * 1000) * 100, 0, 100) + "%";
+      if (chip) chip.classList.toggle("low", rem <= 3000);
+      if (tt) tt.classList.toggle("low", rem <= 3000);
+      if (rem <= 0 && !G.locked) { G.locked = true; G.paintKey = ""; tugPaintCard(); tugStatus(); }       /* time's up: counts as a miss */
+    } else {
+      setT("qa-ttime", String(TUG_SEC)); if (bar) bar.style.width = "100%"; if (chip) chip.classList.remove("low"); if (tt) tt.classList.remove("low");
+    }
+    /* timeout / stuck-opponent safety net: whoever is still here resolves the round (host first, guest a bit later) */
+    if (now - end >= (R.isHost ? 1500 : 2400 + G.jit)) tugResolve(G.round, true);
+  }
+  function onTugFinished(d) {
+    clearInterval(R.watch); clearTimeout(R.endT); clearTimeout(R.resT);
+    R.final = rankList(d);
+    if (screen === "mresult") { render(); return; }
+    if (G && G.tug && !G.done && screen === "tug") {
+      if (!G.finishing) { G.finishing = true; tugSync(d); clearTimeout(R.tugEndT); R.tugEndT = setTimeout(tugToResult, 2000); }
+      return;
+    }
+    tugToResult();
+  }
+  function tugToResult() {
+    if (!R || screen === "mresult") return;
+    R.tugEndT = 0; if (G && G.tug) stopGame();
+    bumpStreak(); screen = "mresult"; render();
+  }
+
+  /* --- tug screen: shell is built once, then only the changing bits are painted --- */
+  function renderTug() {
+    var h = '<div class="qa-wrap"><div class="flex items-center justify-between gap-2">' +
+      '<button type="button" class="qa-ic btn-tap" data-a="quit" aria-label="Forfeit and leave">' + ico("x") + "</button>" +
+      '<div class="qa-chip amb">' + ico("zap") + '<span id="qa-trdt">Round 1</span></div>' +
+      '<div class="qa-chip" id="qa-timechip">' + ico("clock") + '<span id="qa-ttime">' + TUG_SEC + "</span></div></div>" +
+      '<div class="qa-glass qa-tug" id="qa-tug">' +
+      '<div class="qa-tug-h">' +
+      '<div class="qa-te l"><div class="qa-tn" id="qa-tnl"></div><div class="qa-tp" id="qa-tpl">50%</div><div class="qa-tsub" id="qa-tsl"></div></div>' +
+      '<div class="qa-te r"><div class="qa-tn" id="qa-tnr"></div><div class="qa-tp" id="qa-tpr">50%</div><div class="qa-tsub" id="qa-tsr"></div></div></div>' +
+      '<div class="qa-beamw"><div class="qa-beam"><div class="qa-bl" id="qa-bl" style="width:50%"></div><div class="qa-br" id="qa-br" style="width:50%"></div>' +
+      '<i class="qa-mk" style="left:20%"></i><i class="qa-mk" style="left:80%"></i></div>' +
+      '<div class="qa-lane"><div class="qa-core" id="qa-core" style="left:50%"></div></div></div></div>' +
+      '<div class="qa-tt" id="qa-tt"><i id="qa-ttbar"></i></div>' +
+      '<div class="qa-glass qa-card qa-nosel" id="qa-tcard"></div>' +
+      '<div class="grid gap-2.5 mt-3 qa-nosel" id="qa-topts"></div>' +
+      '<div class="text-xs qa-t2 text-center mt-3" id="qa-tstat" style="min-height:1rem"></div></div>';
+    view.innerHTML = h; icons(); G.paintKey = ""; tugPaint();
+  }
+  function streakTxt(n) { return n >= 2 ? "⚡ ×1.5 ready" : n === 1 ? "🔥 1 streak" : ""; }
+  function tugPaint() {
+    if (!G || !G.tug || !R || !R.room || !$("qa-tug")) return;
+    var d = R.room, me = d.players[R.uid] || {}, op = d.players[otherOf(d, R.uid)] || {}, n = d.questionCount || 0;
+    setT("qa-trdt", G.round >= n && G.round > -1 ? "Sudden Death" : "Round " + Math.max(1, Math.min(G.round + 1, n)) + " / " + n);
+    setT("qa-tnl", me.name || "You"); setT("qa-tnr", op.name || "Opponent");
+    setT("qa-tsl", streakTxt(me.streak || 0)); setT("qa-tsr", streakTxt(op.streak || 0));
+    tugPaintBeam(d); tugPaintCard(); tugStatus();
+  }
+  function tugPaintBeam(d) {
+    var my = myPct(d), l = $("qa-bl"), r = $("qa-br"), c = $("qa-core"), t = $("qa-tug");
+    if (l) l.style.width = my + "%"; if (r) r.style.width = (100 - my) + "%"; if (c) c.style.left = my + "%";
+    setT("qa-tpl", my + "%"); setT("qa-tpr", (100 - my) + "%");
+    if (t) { t.classList.toggle("crit-l", my <= 20); t.classList.toggle("crit-r", my >= 80); }      /* losing side pulses red/amber */
+  }
+  function tugPaintCard() {
+    var card = $("qa-tcard"), opts = $("qa-topts"); if (!card || !opts || !G) return;
+    var key = G.phase + "|" + G.round + "|" + G.picked + "|" + (G.locked ? 1 : 0) + "|" + (G.flash ? G.flash.title : "");
+    if (key !== G.paintKey) {            /* only rebuild when something visible changed (keeps taps reliable) */
+      G.paintKey = key;
+      if (G.phase === "q" && G.qs[G.round]) {
+        var q = G.qs[G.round], done = G.locked || G.picked > -1;
+        card.innerHTML = '<div class="qa-qtag">' + esc(q.tag) + '</div><p class="qa-q">' + esc(q.q) + "</p>";
+        opts.innerHTML = q.o.map(function (o, k) {
+          var cls = "qa-opt btn-tap", lt = "ABCD".charAt(k);
+          if (done) { if (o.ok) { cls += " qa-ok"; lt = "✓"; } else if (k === G.picked) { cls += " qa-bad"; lt = "✕"; } }
+          return '<button type="button" class="' + cls + '" data-a="opt" data-k="' + k + '"' + (done ? " disabled" : "") + '><span class="qa-let">' + lt + "</span><span>" + esc(o.t) + "</span></button>";
+        }).join("");
+      } else {
+        var f = G.flash || { cls: "blk", title: "Get ready…", sub: "" };
+        card.innerHTML = '<div class="qa-fl ' + f.cls + '"><b>' + esc(f.title) + "</b>" + (f.sub ? "<span>" + esc(f.sub) + "</span>" : "") + "</div>";
+        opts.innerHTML = "";
+      }
+    }
+    if (G.shake) {
+      G.shake = false; card.classList.remove("qa-shake"); void card.offsetWidth; card.classList.add("qa-shake");
+      setTimeout(function () { var c = $("qa-tcard"); if (c) c.classList.remove("qa-shake"); }, 500);
+    }
+  }
+  function tugStatus() {
+    var el = $("qa-tstat"); if (!el || !G || !R || !R.room) return;
+    var d = R.room, op = d.players[otherOf(d, R.uid)], answered = !!(op && op.ans && op.ans.r === G.round), t = "";
+    if (!G.finishing && G.phase === "q") {
+      if (G.picked > -1) t = answered ? "Both locked in — resolving…" : "Locked in · waiting for opponent…";
+      else if (G.locked) t = "Time’s up!";
+      else t = G.round >= d.questionCount ? "Sudden death — first correct answer wins!" : "Faster answer wins ties · 3 in a row = ×1.5 pull";
+    }
+    el.textContent = t;
+  }
+
+  /* --- result screen --- */
+  function renderTugResult() {
+    var d = R.room, me = R.uid, oid = otherOf(d, me), my = myPct(d), won = d.winnerId === me, draw = !d.winnerId, why = d.endReason, line, badge;
+    var mn = d.players[me] ? d.players[me].name : "You", on = d.players[oid] ? d.players[oid].name : "Opponent";
+    var hostGone = !!d.forfeitId && d.forfeitId === d.hostId && !R.isHost;
+    if (why === "ko") line = "Knockout — the power bar maxed out";
+    else if (why === "points") line = "Won on points when the questions ran out";
+    else if (why === "sudden") line = "Decided in sudden death";
+    else if (why === "forfeit") line = (d.forfeitId === me ? "You" : (d.players[d.forfeitId] ? d.players[d.forfeitId].name : "Opponent")) + " left the clash";
+    else line = "No winner — dead heat";
+    badge = draw ? "🤝 Dead heat" : won ? "🏆 You won!" : "⚡ " + esc(on) + " wins";
+    var h = '<div class="qa-wrap"><div class="qa-glass p-5 text-center">' +
+      '<div class="text-xs font-bold qa-t2" style="letter-spacing:.14em">1V1 POWER CLASH</div>' +
+      '<div class="text-xs qa-t2 mt-1">' + esc(d.categoryLabel) + "</div>" +
+      '<div class="qa-vs mt-3"><span class="a">' + my + '%</span><span class="v">vs</span><span class="b">' + (100 - my) + "%</span></div>" +
+      '<div class="flex justify-between gap-3 mt-1 text-xs font-extrabold"><span class="truncate min-w-0" style="color:var(--tgat);max-width:46%">' + esc(mn) + ' (You)</span><span class="truncate min-w-0" style="color:var(--tgbt);max-width:46%">' + esc(on) + "</span></div>" +
+      '<div class="qa-beamw" style="margin-top:.5rem"><div class="qa-beam"><div class="qa-bl" style="width:' + my + '%"></div><div class="qa-br" style="width:' + (100 - my) + '%"></div></div>' +
+      '<div class="qa-lane"><div class="qa-core" style="left:' + my + '%"></div></div></div>' +
+      '<div class="mt-4"><span class="qa-win' + (won ? "" : " lose") + '">' + badge + "</span></div>" +
+      '<div class="text-xs qa-t2 mt-2">' + esc(line) + "</div></div>";
+    h += '<div class="mt-4 grid gap-2.5">';
+    if (R.isHost && !R.closed) h += '<button type="button" class="qa-cta btn-tap" data-a="rematch"' + (busy ? " disabled" : "") + ">" + ico("rotate-ccw") + "Rematch (new questions)</button>";
+    else if (!R.closed) h += '<div class="text-xs qa-t2 text-center">' + (hostGone ? "The host left — leave to start a new room" : "Waiting for the host to start a rematch…") + "</div>";
+    h += '<button type="button" class="qa-sec btn-tap" data-a="mdl">' + ico("download") + "Download Victory Card (PNG)</button>" +
+      (canShareFiles() ? '<button type="button" class="qa-sec btn-tap" data-a="mshare">' + ico("share-2") + "Share on WhatsApp</button>" : "") +
+      '<button type="button" class="qa-sec btn-tap" data-a="leave">' + ico("log-out") + "Leave Room</button></div></div>";
+    view.innerHTML = h; icons();
+  }
+
+  /* --- PNG victory card (same canvas style as drawPodium; the winner is drawn on the amber left side) --- */
+  function drawTugCard(d) {
+    var W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"), F = "system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
+    var hid = d.hostId, oid = otherOf(d, hid), rope = pctOf(d), winG = !!d.winnerId && d.winnerId === oid;
+    var lid = winG ? oid : hid, rid = winG ? hid : oid, lp = winG ? 100 - rope : rope, rp = 100 - lp;
+    var ln = d.players[lid] ? d.players[lid].name : "Player", rn = d.players[rid] ? d.players[rid].name : "Opponent";
+    var g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, "#0b1220"); g.addColorStop(1, "#1e293b"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+    var g1 = x.createRadialGradient(250, 700, 10, 250, 700, 560); g1.addColorStop(0, "rgba(251,191,36,.26)"); g1.addColorStop(1, "rgba(251,191,36,0)"); x.fillStyle = g1; x.fillRect(0, 0, W, H);
+    var g2 = x.createRadialGradient(830, 700, 10, 830, 700, 560); g2.addColorStop(0, "rgba(34,211,238,.22)"); g2.addColorStop(1, "rgba(34,211,238,0)"); x.fillStyle = g2; x.fillRect(0, 0, W, H);
+    x.textAlign = "center"; x.textBaseline = "alphabetic";
+    if ("letterSpacing" in x) x.letterSpacing = "8px";
+    x.fillStyle = "#fbbf24"; x.font = "800 40px " + F; x.fillText("POWER CLASH", W / 2, 120);
+    if ("letterSpacing" in x) x.letterSpacing = "4px";
+    x.fillStyle = "#94a3b8"; x.font = "700 28px " + F; x.fillText("1V1 TUG OF WAR", W / 2, 170);
+    if ("letterSpacing" in x) x.letterSpacing = "0px";
+    x.fillStyle = "#f1f5f9"; x.font = "900 104px " + F; x.fillText(d.winnerId ? "VICTORY" : "DEAD HEAT", W / 2, 330);
+    x.fillStyle = "#fbbf24"; x.font = "700 54px " + F;
+    x.fillText(fit(x, d.winnerId ? (d.players[d.winnerId] ? d.players[d.winnerId].name : "Player") + " wins!" : "Neither side gave way", 900), W / 2, 410);
+    x.fillStyle = "#94a3b8"; x.font = "500 32px " + F; x.fillText(fit(x, String(d.categoryLabel || "") + " · " + d.questionCount + " Qs", 900), W / 2, 466);
+    x.font = "900 170px " + F; x.fillStyle = "#fbbf24"; x.fillText(lp + "%", 270, 700);
+    x.fillStyle = "#22d3ee"; x.fillText(rp + "%", 810, 700);
+    x.fillStyle = "#94a3b8"; x.font = "800 44px " + F; x.fillText("VS", W / 2, 670);
+    x.font = "700 42px " + F; x.fillStyle = "#fde68a"; x.fillText(fit(x, ln, 440), 270, 772);
+    x.fillStyle = "#67e8f9"; x.fillText(fit(x, rn, 440), 810, 772);
+    var bx = 100, bw = 880, by = 840, bh = 46, sx = bx + bw * lp / 100, cy = by + bh / 2;
+    x.save(); rr(x, bx, by, bw, bh, 23); x.clip();
+    x.fillStyle = "rgba(148,163,184,.22)"; x.fillRect(bx, by, bw, bh);
+    var ga = x.createLinearGradient(bx, 0, Math.max(sx, bx + 1), 0); ga.addColorStop(0, "#f59e0b"); ga.addColorStop(1, "#fbbf24"); x.fillStyle = ga; x.fillRect(bx, by, sx - bx, bh);
+    var gb = x.createLinearGradient(Math.min(sx, bx + bw - 1), 0, bx + bw, 0); gb.addColorStop(0, "#22d3ee"); gb.addColorStop(1, "#0891b2"); x.fillStyle = gb; x.fillRect(sx, by, bx + bw - sx, bh);
+    x.restore();
+    x.save(); x.shadowColor = "rgba(255,255,255,.95)"; x.shadowBlur = 44;
+    var cg = x.createRadialGradient(sx, cy, 2, sx, cy, 40); cg.addColorStop(0, "#ffffff"); cg.addColorStop(.35, "#fef3c7"); cg.addColorStop(.62, "rgba(251,191,36,.9)"); cg.addColorStop(1, "rgba(34,211,238,0)");
+    x.fillStyle = cg; x.beginPath(); x.arc(sx, cy, 40, 0, Math.PI * 2); x.fill(); x.restore();
+    x.strokeStyle = "rgba(255,255,255,.9)"; x.lineWidth = 4; x.lineCap = "round";
+    [35, -35].forEach(function (deg) { var a = deg * Math.PI / 180; x.beginPath(); x.moveTo(sx - Math.cos(a) * 52, cy - Math.sin(a) * 52); x.lineTo(sx + Math.cos(a) * 52, cy + Math.sin(a) * 52); x.stroke(); });
+    var rs = { ko: "K.O.", points: "POINTS", sudden: "SUDDEN", forfeit: "FORFEIT", draw: "DRAW" }[d.endReason] || "—";
+    var stats = [["RESULT", rs], ["ROUNDS", String(d.lastRes ? d.lastRes.r + 1 : 0)], ["MARGIN", Math.abs(lp - rp) + "%"]];
+    stats.forEach(function (s, i) {
+      var sbx = 70 + i * 322, sby = 1000, sbw = 296, sbh = 140;
+      rr(x, sbx, sby, sbw, sbh, 28); x.fillStyle = "rgba(255,255,255,.07)"; x.fill(); x.lineWidth = 2; x.strokeStyle = "rgba(148,163,184,.3)"; x.stroke();
+      x.fillStyle = "#f1f5f9"; x.font = "800 52px " + F; x.fillText(fit(x, s[1], sbw - 30), sbx + sbw / 2, sby + 70);
+      x.fillStyle = "#94a3b8"; x.font = "700 26px " + F; x.fillText(s[0], sbx + sbw / 2, sby + 112);
+    });
+    x.fillStyle = "rgba(148,163,184,.3)"; x.fillRect(140, 1205, W - 280, 2);
+    if ("letterSpacing" in x) x.letterSpacing = "10px";
+    x.fillStyle = "#fbbf24"; x.font = "900 58px " + F; x.fillText("ITI CONNECT", W / 2, 1278);
+    if ("letterSpacing" in x) x.letterSpacing = "0px";
+    x.fillStyle = "#94a3b8"; x.font = "500 28px " + F; x.fillText(new Date().toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }), W / 2, 1322);
+    return c;
+  }
+  function tugShareText() {
+    var d = R.room, w = d.winnerId && d.players[d.winnerId] ? d.players[d.winnerId].name : "";
+    return (w ? w + " won" : "It ended in a dead heat in") + " a 1v1 Power Clash on ITI CONNECT Quiz Arena (" + myPct(d) + "% vs " + (100 - myPct(d)) + "%)!";
+  }
+
 
   /* ---------- custom questions: Firestore quiz_meta/custom_questions (1 read) + merge ---------- */
   var CAT = [
@@ -1414,6 +1866,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
   function render() {
     if (!view) return;
     if (screen === "game" && G && !G.done) renderGame();
+    else if (screen === "tug" && G && G.tug && !G.done && R && R.room) renderTug();
     else if (screen === "admin" && AD && adminOn()) renderAdmin();
     else if (screen === "lobby" && R && R.room) renderLobby();
     else if (screen === "countdown" && R && R.room) renderCountdown();
@@ -1434,6 +1887,7 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     else if (a === "mod") { var ep0 = elecParts(S.main, S.sub); if (ep0 && ep0.yr) { S.sub = ep0.yr + (k ? ":" + k : ""); elecOpen = false; ensureCount(); savePrefs(); renderSetup(); } }
     else if (a === "review") toggleReview();
     else if (a === "players") { S.players = +k; savePrefs(); renderSetup(); }
+    else if (a === "btype") { S.battle = k === "tug" ? "tug" : "classic"; savePrefs(); renderSetup(); }
     else if (a === "count") { S.count = +k; savePrefs(); renderSetup(); }
     else if (a === "retry") { loadBank(); }
     else if (a === "start") startSolo();
@@ -1468,11 +1922,11 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
     else if (a === "adedit") adEdit(+k);
     else if (a === "addel") adDelete(+k);
     else if (a === "adrestore") adRestore(+k);
-    else if (a === "opt") answer(+k);
+    else if (a === "opt") { if (G && G.tug) tugAnswer(+k); else answer(+k); }
     else if (a === "quit") {
       var now = Date.now();
       if (G && now - G.quitAt < 2500) { if (G.mp) leaveMatch(); else { stopGame(); screen = "setup"; render(); } }
-      else { if (G) G.quitAt = now; toast(G && G.mp ? "Tap ✕ again to leave the match" : "Tap ✕ again to quit"); }
+      else { if (G) G.quitAt = now; toast(G && G.tug ? "Tap ✕ again to forfeit the clash" : G && G.mp ? "Tap ✕ again to leave the match" : "Tap ✕ again to quit"); }
     }
     else if (a === "again") startSolo();
     else if (a === "setup") { screen = "setup"; render(); }
@@ -1487,14 +1941,16 @@ html.bright-mode .qa-ind{background:linear-gradient(135deg,rgba(217,119,6,.22),r
   }
 
   function onKey(e) {
-    if (screen !== "game" || !G || G.locked || G.done || !root || !document.body.contains(root)) return;
+    var tg = screen === "tug";
+    if ((screen !== "game" && !tg) || !G || G.locked || G.done || !root || !document.body.contains(root)) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     var t = e.target, tn = t && t.tagName;
     if (tn === "INPUT" || tn === "TEXTAREA" || tn === "SELECT" || (t && t.isContentEditable)) return;
     var k = "1234".indexOf(e.key);
     if (k < 0) k = "abcd".indexOf(String(e.key).toLowerCase());
-    if (e.key.length !== 1 || k < 0 || !G.qs[G.i] || k >= G.qs[G.i].o.length) return;
-    e.preventDefault(); answer(k);
+    var kq = G.qs[tg ? G.round : G.i];
+    if (e.key.length !== 1 || k < 0 || !kq || k >= kq.o.length) return;
+    e.preventDefault(); if (tg) tugAnswer(k); else answer(k);
   }
 
   /* ---------- bank + mount ---------- */

@@ -1012,6 +1012,15 @@
       "html.bright-mode " + R.trim() + "{--ag-tx:#1e293b;--ag-t2:#475569;--ag-bg:rgba(255,255,255,.68);--ag-bg2:rgba(255,255,255,.78);--ag-bd:rgba(148,163,184,.42);--ag-ac:#b45309;--ag-actx:#92400e;--ag-on:rgba(217,119,6,.14);--ag-onb:rgba(217,119,6,.55);--ag-sh:0 10px 28px -10px rgba(15,23,42,.18),0 1px 0 0 rgba(255,255,255,.8) inset}",
       R + ".ag-off{display:none!important}",
       R + ".ag-wrap{color:var(--ag-tx);margin-bottom:.75rem}",
+      /* Ludo setup screen: show the LUDO ARENA banner right under the game tabs, above Arena Studio */
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero){display:flex;flex-direction:column;gap:10px}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) > *{order:3}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) > .ag-bar{order:0;margin-bottom:0}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) > .ag-cz{order:2;margin-bottom:0}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) #ag-pane-ludo{display:contents}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) #ag-pane-ludo > .lx{display:contents}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) #ag-pane-ludo > .lx > *{order:3}",
+      R + ".ag-wrap:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) #ag-pane-ludo > .lx > .lx-hero{order:1}",
       R + ".ag-wrap *{box-sizing:border-box}",
       R + ".ag-wrap button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}",
       R + ".ag-i{width:16px;height:16px;flex:none}",
@@ -2048,6 +2057,14 @@
         R + ".lx-mini .lx-sh{display:none}",
         R + ".lx-mini::before{width:50px;height:50px;margin:-25px 0 0 -25px}",
         R + ".lx-mini .lx-die:disabled{opacity:.8}",
+        R + ".lx-pc.lx-pd{gap:6px;padding:5px 6px 5px 5px}",
+        R + ".lx-pd .lx-av{width:30px;height:30px;font-size:14px}",
+        R + ".lx-pd .lx-nm{font-size:11.5px}",
+        R + ".lx-pd .lx-tks{gap:3px}",
+        R + ".lx-pd .lx-tk{width:9px;height:9px}",
+        R + ".lx-pd .lx-mini{width:38px;height:38px}",
+        R + ".lx-pd .lx-mini .lx-die{--s:28px;margin:5px}",
+        R + ".lx-pd .lx-mini::before{width:40px;height:40px;margin:-20px 0 0 -20px}",
         R + ".lx-bw{position:relative;width:100%;max-width:520px;margin:2px auto;aspect-ratio:1/1}",
         R + ".ag-playing .lx-bw{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
         R + ".lx-bw.shake{animation:lxShake .45s ease-in-out}",
@@ -3083,7 +3100,7 @@
       if (idx < 0) return '<div></div>';
       var pl = st.players[idx], dots = "", k;
       for (k = 0; k < pl.tokens.length; k++) dots += '<i class="lx-tk' + (pl.tokens[k] === 56 ? " done" : "") + '"></i>';
-      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
+      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc' + (perDie ? " lx-pd" : "") + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
         '<div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
         '<div class="lx-nfo"><div class="lx-nm">' + esc(pl.name) + '</div><div class="lx-tks">' + dots + '</div></div>' +
 (perDie
@@ -3101,7 +3118,7 @@
       h += '<div class="lx-row lx-enter" style="animation-delay:.05s">' + ldCard(0) + ldCard(1) + '</div>';
       h += '<div class="lx-bw lx-enter" style="animation-delay:.1s"><canvas id="ld-canvas" class="lx-cv"></canvas><div id="ld-toast" class="lx-toast"></div></div>';
       h += '<div class="lx-row lx-enter" style="animation-delay:.15s">' + ldCard(3) + ldCard(2) + '</div>';
-      h += '<div class="lx-dock lx-enter" style="animation-delay:.2s;' + dieVars(cur.color) + '">' +
+      if (!perDie) h += '<div class="lx-dock lx-enter" style="animation-delay:.2s;' + dieVars(cur.color) + '">' +
         '<div class="lx-side">' + ["👏", "😂"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>' +
         '<div class="lx-ctr">' + (perDie ? "" : '<div class="lx-dwrap"><button type="button" id="ld-die" class="lx-die" data-ld="roll" aria-label="Roll dice">' + cubeHTML(false) + '</button><i class="lx-sh"></i></div>') +
         '<div id="ld-roll-hint" class="lx-hint"></div></div>' +

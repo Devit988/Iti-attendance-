@@ -1407,8 +1407,8 @@
       var wrap = q(".bg-cv-wrap", host); if (!wrap) return;
       var w = Math.floor(wrap.clientWidth);
       if (w < 40) return;
-      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
-      if (w !== size || cv.width !== w * dpr) { size = w; cv.width = size * dpr; cv.height = size * dpr; offKey = ""; }
+      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 2.5);
+      if (w !== size || cv.width !== Math.round(w * dpr)) { size = w; cv.width = Math.round(size * dpr); cv.height = Math.round(size * dpr); offKey = ""; }
       drawFrame();
     }
 
@@ -1991,6 +1991,7 @@
     var cfg = { mode: "ai", turbo: true, count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "" };
     var st = null, rm = null, busy = false;
     var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1;
+    var dprCap = 2.5, prevNow = 0, slowN = 0, lastDprT = 0; /* adaptive HD: starts sharp, steps down by itself if frames get slow */
     var raf = 0, lastT = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
     var gen = 0;
     function later(fn, ms) { var g = gen; return setTimeout(function () { if (g !== gen) return; fn(); }, ms); }
@@ -2530,9 +2531,16 @@
       }
     }
 
+    function adaptHd(now) {
+      var dt = now - prevNow; prevNow = now;
+      if (dt <= 0 || dt > 200) { slowN = 0; return; }
+      slowN = dt > 36 ? slowN + 1 : Math.max(0, slowN - 1);
+      if (slowN >= 18 && dprCap > 1.5 && now - lastDprT > 1200) { dprCap = dprCap > 2.4 ? 2 : 1.5; slowN = 0; lastDprT = now; resizeBoard(); }
+    }
     function loop(now) {
       raf = 0;
-      if (!st || view !== "game" || !cv || document.hidden) return;
+      if (!st || view !== "game" || !cv || document.hidden) { prevNow = 0; return; }
+      adaptHd(now);
       var fast = particles.length > 0 || st.awaitMove || st.busy;
       if (fast || now - lastT >= 33) { lastT = now; if (particles.length) stepParticles(); drawFrame(); }
       raf = window.requestAnimationFrame(loop);
@@ -2544,8 +2552,8 @@
       var wrap = q(".lx-bw", host); if (!wrap) return;
       var w = Math.floor(wrap.clientWidth);
       if (w < 40) return;
-      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
-      if (w !== size || cv.width !== w * dpr) { size = w; cv.width = size * dpr; cv.height = size * dpr; offKey = ""; }
+      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), dprCap);
+      if (w !== size || cv.width !== Math.round(w * dpr)) { size = w; cv.width = Math.round(size * dpr); cv.height = Math.round(size * dpr); offKey = ""; }
       drawFrame();
     }
     /* ---------------------------------------------------------------
@@ -4323,10 +4331,10 @@
       bdVignette(c, w, h, 0.5);
     }
   };
-  var bdKey = "", bdResizeT = 0;
+  var bdKey = "", bdResizeT = 0, bdDrawT = 0;
   function drawBackdropScene(el, b) {
     var W = Math.max(window.innerWidth || 360, 200), H = Math.max(window.innerHeight || 640, document.documentElement.clientHeight || 0, 300),
-      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1.5), 2), bid = String(b.id || "").split("_")[0] + (b.dark ? "d" : "l"), key = [bid, W, H, dpr].join("|"), cv = el.querySelector("canvas");
+      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 1.5), bid = String(b.id || "").split("_")[0] + (b.dark ? "d" : "l"), key = [bid, W, H, dpr].join("|"), cv = el.querySelector("canvas");
     if (key === bdKey && cv) return;
     if (!cv) { cv = document.createElement("canvas"); el.appendChild(cv); }
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
@@ -4361,7 +4369,7 @@
         "radial-gradient(circle at 2px 2px," + a(b.glow, 0.26) + " 1.6px," + a(b.glow, 0) + " 2.4px) 0 0/24px 24px",
         "linear-gradient(180deg," + b.base2 + "," + b.base + ")"
       ].join(",");
-      drawBackdropScene(el, b);
+      clearTimeout(bdDrawT); bdDrawT = setTimeout(function () { try { drawBackdropScene(el, b); } catch (e2) { } }, 90); /* after the game appears, so Start never waits on it */
       if (!window.__agBdResize) { window.__agBdResize = 1; window.addEventListener("resize", function () { clearTimeout(bdResizeT); bdResizeT = setTimeout(function () { if (document.documentElement.classList.contains("ag-game-on")) paintBackdrop(); }, 200); }); }
     } catch (e) { }
   }

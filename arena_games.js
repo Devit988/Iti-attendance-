@@ -1319,6 +1319,7 @@
     var fx = { texts: [], rings: [], flash: null, celebrate: null };
     var biteFx = null, climbFx = null, swallowFx = null;
     var SN_COLS = ["#22c55e", "#ef4444", "#a855f7", "#f97316", "#06b6d4", "#eab308", "#ec4899", "#84cc16"];
+    function snCol(i) { var a = api.getSnakeCols ? api.getSnakeCols() : SN_COLS; return a[i % a.length]; }
     var snakeKeys = Object.keys(SNAKES).map(Number);
     var geoT = -1, geoV = {};
 
@@ -1383,7 +1384,7 @@
     /* ---------- static board (cached): glossy tiles + wooden ladders ---------- */
     function buildCache() {
       if (!size || !offCtx) return;
-      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl4";
+      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl5|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood");
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
@@ -1420,27 +1421,28 @@
       p = cellCenter(1, size); c.fillText("START", p.x, p.y + cw * 0.3);
       p = cellCenter(100, size); c.fillStyle = "#92400e"; c.fillText("WIN", p.x, p.y + cw * 0.3);
 
-      var f, t, dx, dy, len, nx, ny, rungs, r, u;
+      var f, t, dx, dy, len, nx, ny, rungs, r, u, LS = api.getLadderStyle ? api.getLadderStyle() : { rail: "#92400e", railHi: "#f59e0b", rung: "#78350f", rungHi: "#fbbf24", bolt: "#451a03" };
       for (k in LADDERS) {
         f = cellCenter(+k, size); t = cellCenter(LADDERS[k], size);
         dx = t.x - f.x; dy = t.y - f.y; len = Math.sqrt(dx * dx + dy * dy) || 1;
         nx = -dy / len * cw * 0.17; ny = dx / len * cw * 0.17;
         c.save(); c.lineCap = "round";
+        if (LS.glow) { c.shadowColor = LS.glow; c.shadowBlur = cw * 0.3; }
         c.strokeStyle = "rgba(0,0,0,.3)"; c.lineWidth = Math.max(3, cw * 0.095);
         c.beginPath(); c.moveTo(f.x + nx + 2, f.y + ny + 3); c.lineTo(t.x + nx + 2, t.y + ny + 3); c.stroke();
         c.beginPath(); c.moveTo(f.x - nx + 2, f.y - ny + 3); c.lineTo(t.x - nx + 2, t.y - ny + 3); c.stroke();
         rungs = Math.max(3, Math.round(len / (cw * 0.42)));
-        c.strokeStyle = "#78350f"; c.lineWidth = Math.max(2, cw * 0.07);
+        c.strokeStyle = LS.rung; c.lineWidth = Math.max(2, cw * 0.07);
         for (r = 1; r < rungs; r++) { u = r / rungs; c.beginPath(); c.moveTo(f.x + dx * u + nx, f.y + dy * u + ny + 1); c.lineTo(f.x + dx * u - nx, f.y + dy * u - ny + 1); c.stroke(); }
-        c.strokeStyle = "#fbbf24"; c.lineWidth = Math.max(1.6, cw * 0.05);
+        c.strokeStyle = LS.rungHi; c.lineWidth = Math.max(1.6, cw * 0.05);
         for (r = 1; r < rungs; r++) { u = r / rungs; c.beginPath(); c.moveTo(f.x + dx * u + nx, f.y + dy * u + ny); c.lineTo(f.x + dx * u - nx, f.y + dy * u - ny); c.stroke(); }
-        c.strokeStyle = "#92400e"; c.lineWidth = Math.max(3, cw * 0.095);
+        c.strokeStyle = LS.rail; c.lineWidth = Math.max(3, cw * 0.095);
         c.beginPath(); c.moveTo(f.x + nx, f.y + ny); c.lineTo(t.x + nx, t.y + ny); c.stroke();
         c.beginPath(); c.moveTo(f.x - nx, f.y - ny); c.lineTo(t.x - nx, t.y - ny); c.stroke();
-        c.strokeStyle = "#f59e0b"; c.lineWidth = Math.max(1.2, cw * 0.035);
+        c.strokeStyle = LS.railHi; c.lineWidth = Math.max(1.2, cw * 0.035);
         c.beginPath(); c.moveTo(f.x + nx, f.y + ny); c.lineTo(t.x + nx, t.y + ny); c.stroke();
         c.beginPath(); c.moveTo(f.x - nx, f.y - ny); c.lineTo(t.x - nx, t.y - ny); c.stroke();
-        c.fillStyle = "#451a03";
+        c.fillStyle = LS.bolt;
         [[f.x + nx, f.y + ny], [f.x - nx, f.y - ny], [t.x + nx, t.y + ny], [t.x - nx, t.y - ny]].forEach(function (q2) { c.beginPath(); c.arc(q2[0], q2[1], cw * 0.06, 0, TAU); c.fill(); });
         c.restore();
       }
@@ -1485,7 +1487,7 @@
 
     /* ---------- the main painter ---------- */
     function drawHead(c, k, now) {
-      var g = geo(k, now), P0 = g.pts[0], P1 = g.pts[4], cw = g.cw, col = SN_COLS[g.si % SN_COLS.length];
+      var g = geo(k, now), P0 = g.pts[0], P1 = g.pts[4], cw = g.cw, col = snCol(g.si);
       var dark = shade(col, -0.5), ang = Math.atan2(P0[1] - P1[1], P0[0] - P1[0]), hr = cw * 0.28, hh = cw * 0.2, open = g.open || 0;
       var ca = Math.cos(ang), sa = Math.sin(ang), tg = headTarget(k), i;
       var lx = (tg.x - P0[0]) * ca + (tg.y - P0[1]) * sa, ly = -(tg.x - P0[0]) * sa + (tg.y - P0[1]) * ca, ll = Math.sqrt(lx * lx + ly * ly) || 1;
@@ -1525,7 +1527,7 @@
       return { x: size / 2, y: size / 2 };
     }
     function drawSnake(c, k, now, skipHead) {
-      var g = geo(k, now), pts = g.pts, cw = g.cw, N = pts.length - 1, col = SN_COLS[g.si % SN_COLS.length], i, tt, wd;
+      var g = geo(k, now), pts = g.pts, cw = g.cw, N = pts.length - 1, col = snCol(g.si), i, tt, wd;
       var dark = shade(col, -0.5), mid = shade(col, -0.14), lite = shade(col, 0.3), a, b2;
       c.save(); c.lineCap = "round"; c.lineJoin = "round";
       c.strokeStyle = "rgba(0,0,0,.26)"; c.lineWidth = cw * 0.17;
@@ -2287,7 +2289,7 @@
             if (st) { st.players.forEach(function (p, i) { p.color = cols[i]; }); updateHUD(); }
             else if (view === "setup") renderSetup();
           }
-          if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "theme" || key === "all") {
+          if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "theme" || key === "snake" || key === "ladder" || key === "all") {
             offKey = ""; drawFrame();
           }
         });
@@ -3912,10 +3914,39 @@
     { id: "lagoon", name: "Neon Lagoon", emoji: "🐧", sub: "Deep sea glow · penguin · prism", grad: "linear-gradient(135deg,#0c2a4d,#06b6d4,#a855f7)", set: { style: "modern", board: "ocean", piece: "penguin", palette: "neon", dice: "neon", trail: "rainbow", center: "jewel" } }
   ];
 
+  /* Snakes & Ladders studio options */
+  var SNAKE_SKINS = [
+    ["jungle",  "Jungle Mix",    ["#22c55e", "#ef4444", "#a855f7", "#f97316", "#06b6d4", "#eab308", "#ec4899", "#84cc16"]],
+    ["team",    "Team Colors",   null],
+    ["emerald", "Emerald Viper", ["#16a34a", "#22c55e", "#15803d", "#4ade80", "#059669", "#10b981", "#65a30d", "#84cc16"]],
+    ["neon",    "Neon Glow",     ["#ff2e93", "#00f59b", "#ffd60a", "#00e5ff", "#a855f7", "#ff6b00", "#22d3ee", "#84ff00"]],
+    ["candy",   "Candy Swirl",   ["#fb7185", "#f9a8d4", "#c084fc", "#fcd34d", "#7dd3fc", "#86efac", "#fda4af", "#d8b4fe"]],
+    ["shadow",  "Shadow Cobra",  ["#475569", "#b91c1c", "#334155", "#7e22ce", "#52525b", "#166534", "#92400e", "#0f766e"]],
+    ["gold",    "Golden Python", ["#f59e0b", "#d97706", "#eab308", "#b45309", "#fbbf24", "#ca8a04", "#f97316", "#a16207"]]
+  ];
+  var LADDER_STYLES = [
+    ["wood",   "Carved Wood", { rail: "#92400e", railHi: "#f59e0b", rung: "#78350f", rungHi: "#fbbf24", bolt: "#451a03" }],
+    ["gold",   "Royal Gold",  { rail: "#b45309", railHi: "#fde047", rung: "#92400e", rungHi: "#fef08a", bolt: "#78350f" }],
+    ["bamboo", "Bamboo",      { rail: "#4d7c0f", railHi: "#bef264", rung: "#365314", rungHi: "#a3e635", bolt: "#1a2e05" }],
+    ["steel",  "Steel",       { rail: "#475569", railHi: "#e2e8f0", rung: "#334155", rungHi: "#cbd5e1", bolt: "#0f172a" }],
+    ["neon",   "Neon Rail",   { rail: "#6d28d9", railHi: "#22d3ee", rung: "#4c1d95", rungHi: "#e879f9", bolt: "#0b0220", glow: "#22d3ee" }],
+    ["candy",  "Candy Cane",  { rail: "#be185d", railHi: "#f9a8d4", rung: "#9d174d", rungHi: "#fbcfe8", bolt: "#500724" }]
+  ];
+  var PRESET_SL = {
+    classic: ["jungle", "wood"], cyber: ["neon", "neon"], maharaja: ["gold", "gold"], casino: ["emerald", "gold"], abyss: ["emerald", "steel"],
+    arcade: ["neon", "steel"], sakura: ["candy", "candy"], volcano: ["shadow", "steel"], aurora: ["neon", "neon"], heritage: ["jungle", "wood"],
+    knight: ["shadow", "steel"], thunder: ["gold", "steel"], candy: ["candy", "candy"], meadow: ["emerald", "bamboo"], toybox: ["jungle", "candy"],
+    ghostpty: ["shadow", "neon"], pole: ["emerald", "steel"], robolab: ["neon", "steel"], zen: ["emerald", "bamboo"], moonsakura: ["candy", "neon"],
+    wizard: ["shadow", "neon"], dojo: ["shadow", "bamboo"], bamboo: ["emerald", "bamboo"], pond: ["emerald", "bamboo"], catcafe: ["candy", "wood"],
+    space: ["neon", "neon"], ruby: ["team", "gold"], frozen: ["team", "steel"], pixelq: ["neon", "neon"], dragon: ["shadow", "gold"],
+    pearl: ["gold", "gold"], lagoon: ["neon", "steel"]
+  };
+  PRESETS.forEach(function (pr) { var m = PRESET_SL[pr.id]; if (m) { pr.set.snake = m[0]; pr.set.ladder = m[1]; } });
+
   var DEFAULTS = {
     open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
-    dice: "ivory", trail: "spark", center: "jewel",
+    dice: "ivory", trail: "spark", center: "jewel", snake: "jungle", ladder: "wood",
     speed: 1, mute: false, haptic: true
   };
 
@@ -3948,13 +3979,15 @@
       if (has(DICE_SKINS, saved.dice)) s.dice = saved.dice;
       if (has(TRAILS, saved.trail)) s.trail = saved.trail;
       if (has(CENTERS, saved.center)) s.center = saved.center;
+      if (has(SNAKE_SKINS, saved.snake)) s.snake = saved.snake;
+      if (has(LADDER_STYLES, saved.ladder)) s.ladder = saved.ladder;
       if (saved.speed === 1 || saved.speed === 1.5 || saved.speed === 2) s.speed = saved.speed;
       if (typeof saved.mute === "boolean") s.mute = saved.mute;
       if (typeof saved.haptic === "boolean") s.haptic = saved.haptic;
     }
     return s;
   }
-  var LOOK_KEYS = ["style", "board", "piece", "palette", "dice", "trail", "center"], savedLook = null, lookCb = null;
+  var LOOK_KEYS = ["style", "board", "piece", "palette", "dice", "trail", "center", "snake", "ladder"], savedLook = null, lookCb = null;
   function saveStudio() {
     try {
       var o = {}, k; for (k in S) o[k] = S[k];
@@ -4559,6 +4592,20 @@
   /* ---------- Bridge onto window.ArenaGames ---------- */
   api.getBoard = getBoard;
   api.getPalette = getPalette;
+  function snakeColsNow() {
+    var i, sk = null;
+    for (i = 0; i < SNAKE_SKINS.length; i++) if (SNAKE_SKINS[i][0] === S.snake) sk = SNAKE_SKINS[i];
+    if (sk && sk[2]) return sk[2];
+    var p = getPalette();
+    return [p[0], p[1], p[2], p[3], shade(p[0], -0.14), shade(p[1], -0.14), shade(p[2], -0.14), shade(p[3], -0.14)];
+  }
+  function ladderNow() {
+    var i, o = LADDER_STYLES[0];
+    for (i = 0; i < LADDER_STYLES.length; i++) if (LADDER_STYLES[i][0] === S.ladder) o = LADDER_STYLES[i];
+    var r = {}, k; for (k in o[2]) r[k] = o[2][k]; r.id = o[0]; return r;
+  }
+  api.getSnakeCols = snakeColsNow;
+  api.getLadderStyle = ladderNow;
   api.paintBoardBg = paintBoardBg;
   api.drawToken = drawToken;
   api.drawCenter = drawCenter;
@@ -4575,7 +4622,7 @@
 
   function notifyGames(key) {
     var snap = api.getPrefs();
-    snap.style = S.style; snap.board = S.board; snap.piece = S.piece; snap.palette = S.palette; snap.dice = S.dice; snap.speed = S.speed;
+    snap.style = S.style; snap.board = S.board; snap.piece = S.piece; snap.palette = S.palette; snap.dice = S.dice; snap.speed = S.speed; snap.snake = S.snake; snap.ladder = S.ladder;
     if (subList.length) {
       for (var i = 0; i < subList.length; i++) { try { subList[i](snap, key); } catch (e) { } }
     } else {
@@ -4828,10 +4875,11 @@
   api.applyLook = function (l) {
     if (!l || typeof l !== "object") return;
     var ok = (has(STYLES, l.style) && BOARD_IDS.indexOf(l.board) >= 0 && has(PIECES, l.piece) && PALETTE_IDS.indexOf(l.palette) >= 0 &&
-      has(DICE_SKINS, l.dice) && has(TRAILS, l.trail) && has(CENTERS, l.center));
+      has(DICE_SKINS, l.dice) && has(TRAILS, l.trail) && has(CENTERS, l.center) &&
+      (l.snake == null || has(SNAKE_SKINS, l.snake)) && (l.ladder == null || has(LADDER_STYLES, l.ladder)));
     if (!ok) return;
     if (!savedLook) savedLook = api.getLook();
-    LOOK_KEYS.forEach(function (k) { S[k] = l[k]; });
+    LOOK_KEYS.forEach(function (k) { if (l[k] !== undefined) S[k] = l[k]; });
     commit("all");
   };
   api.restoreLook = function () {
@@ -4977,8 +5025,18 @@
           '<span class="ag-bn">' + d[1] + '</span></button>';
       }).join("") + '</div><div class="ag-lbl">Hop trail FX</div><div class="ag-seg as-wrap">' +
       TRAILS.map(function (t) { return seg("trail", t[0], t[1]); }).join("") + '</div>' +
-      '<div class="ag-lbl">Ludo center emblem</div><div class="ag-seg as-wrap">' +
-      CENTERS.map(function (c) { return seg("center", c[0], c[1]); }).join("") + '</div></div>';
+      '<div data-g="ludo"><div class="ag-lbl">Ludo center emblem</div><div class="ag-seg as-wrap">' +
+      CENTERS.map(function (c) { return seg("center", c[0], c[1]); }).join("") + '</div></div>' +
+      '<div data-g="snakes" class="ag-off"><div class="ag-lbl">Snake skin</div><div class="as-pals">' + SNAKE_SKINS.map(function (sk) {
+        var cs = sk[2] || ["#ef4444", "#22c55e", "#facc15", "#38bdf8"];
+        return '<button type="button" class="as-pal" data-as="set" data-p="snake" data-k="' + sk[0] + '"><span class="as-pal-d">' +
+          cs.slice(0, 4).map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("") + '</span><span class="ag-bn">' + sk[1] + '</span></button>';
+      }).join("") + '</div><div class="ag-lbl">Ladder style</div><div class="as-dices">' + LADDER_STYLES.map(function (ld) {
+        var o = ld[2];
+        return '<button type="button" class="as-dskin" data-as="set" data-p="ladder" data-k="' + ld[0] + '">' +
+          '<span class="as-dchip" style="background:linear-gradient(135deg,' + o.rail + ',' + o.railHi + ');color:' + o.rungHi + ';border-color:' + o.rungHi + '">☰</span>' +
+          '<span class="ag-bn">' + ld[1] + '</span></button>';
+      }).join("") + '</div></div></div>';
 
     h += '<div class="as-pane ag-off" data-asp="ctrl"><div class="ag-two"><div><div class="ag-lbl" style="margin-top:.1rem">Speed</div><div class="ag-seg">' +
       seg("speed", "1", "1×") + seg("speed", "1.5", "1.5×") + seg("speed", "2", "2×") + '</div></div>' +
@@ -5009,6 +5067,11 @@
     var hdr = cz.querySelector("#ag-cz-h"); if (hdr) hdr.setAttribute("aria-expanded", S.open ? "true" : "false");
     var sum = cz.querySelector("#ag-cz-sum"); if (sum) sum.textContent = (S.board === "auto" ? "Auto" : b.name) + " · " + nameOf(PIECES, S.piece) + " · " + nameOf(DICE_SKINS, S.dice);
     var snd = cz.querySelector("#ag-snd"); if (snd) snd.classList.toggle("ag-muted", !!S.mute);
+    var isSLtab = api.getTab() === "snakes";
+    if (isSLtab && sum) sum.textContent += " · " + nameOf(SNAKE_SKINS, S.snake);
+    cz.querySelectorAll("[data-g]").forEach(function (el) { el.classList.toggle("ag-off", (el.getAttribute("data-g") === "snakes") !== isSLtab); });
+    var tm = cz.querySelector("[data-p='snake'][data-k='team'] .as-pal-d");
+    if (tm) tm.innerHTML = pal.slice(0, 4).map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("");
 
     cz.querySelectorAll("[data-as='cztab']").forEach(function (el) { el.classList.toggle("on", el.getAttribute("data-k") === S.czTab); });
     cz.querySelectorAll(".as-pane").forEach(function (el) { el.classList.toggle("ag-off", el.getAttribute("data-asp") !== S.czTab); });
@@ -5039,6 +5102,97 @@
     });
   }
 
+  /* ---------- Snakes & Ladders live preview scene ---------- */
+  var slPvPhase = -1;
+  function slTrailCol(i, t, pal) {
+    return PV_TC[S.trail] ? PV_TC[S.trail][i % PV_TC[S.trail].length] : S.trail === "fire" ? (i % 2 ? "#f97316" : "#fde047") :
+      S.trail === "rainbow" ? "hsl(" + Math.round((t * 220 + i * 40) % 360) + ",95%,62%)" : S.trail === "star" ? "#fde047" : pal[0];
+  }
+  function slPreview(c, w, h, t, b, pal) {
+    var cols = 7, cw = Math.min((w - 92) / cols, h * 0.36), ox = 12, oy = (h - cw * 2) / 2, i, j, k, u, r, LS = ladderNow(), SC = snakeColsNow();
+    function cc(col, row) { return [ox + (col + 0.5) * cw, oy + (row + 0.5) * cw]; }
+    c.textAlign = "left"; c.textBaseline = "top"; c.font = "800 " + Math.max(7, Math.round(cw * 0.26)) + "px sans-serif";
+    for (j = 0; j < 2; j++) for (i = 0; i < cols; i++) {
+      var x = ox + i * cw + 2, y = oy + j * cw + 2;
+      rr(c, x, y, cw - 4, cw - 4, 6);
+      c.fillStyle = ((i + j) % 2) ? (b.modern ? alpha(b.cellA, 0.92) : b.track) : (b.modern ? alpha(b.cellB, 0.92) : shade(b.track, -0.07));
+      c.fill(); c.strokeStyle = alpha(b.line, 0.5); c.lineWidth = 1; c.stroke();
+      c.fillStyle = alpha(b.text, 0.78); c.fillText(String(j === 1 ? i + 1 : 14 - i), x + 3, y + 2);
+    }
+    /* ladder: bottom col 2 -> top col 4 */
+    var lf = cc(1, 1), lt = cc(3, 0), dx = lt[0] - lf[0], dy = lt[1] - lf[1], len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var nx = -dy / len * cw * 0.17, ny = dx / len * cw * 0.17, rungs = Math.max(3, Math.round(len / (cw * 0.42)));
+    c.save(); c.lineCap = "round";
+    if (LS.glow) { c.shadowColor = LS.glow; c.shadowBlur = cw * 0.3; }
+    function rungsPass(col, lw) {
+      c.strokeStyle = col; c.lineWidth = lw;
+      for (r = 1; r < rungs; r++) { u = r / rungs; c.beginPath(); c.moveTo(lf[0] + dx * u + nx, lf[1] + dy * u + ny); c.lineTo(lf[0] + dx * u - nx, lf[1] + dy * u - ny); c.stroke(); }
+    }
+    function railsPass(col, lw) {
+      c.strokeStyle = col; c.lineWidth = lw;
+      c.beginPath(); c.moveTo(lf[0] + nx, lf[1] + ny); c.lineTo(lt[0] + nx, lt[1] + ny); c.stroke();
+      c.beginPath(); c.moveTo(lf[0] - nx, lf[1] - ny); c.lineTo(lt[0] - nx, lt[1] - ny); c.stroke();
+    }
+    rungsPass(LS.rung, Math.max(2, cw * 0.07)); rungsPass(LS.rungHi, Math.max(1.3, cw * 0.04));
+    railsPass(LS.rail, Math.max(2.6, cw * 0.095)); railsPass(LS.railHi, Math.max(1, cw * 0.035));
+    c.restore();
+    /* snake: top col 7 (head) -> bottom col 5 (tail), gently wiggling */
+    var sh = cc(6, 0), stl = cc(4, 1), sdx = stl[0] - sh[0], sdy = stl[1] - sh[1], slen = Math.sqrt(sdx * sdx + sdy * sdy) || 1, snx = -sdy / slen, sny = sdx / slen, N = 18;
+    function snPt(uu) {
+      var wav = Math.sin(uu * Math.PI * 2.4 + t * 3) * cw * 0.2 * (0.35 + 0.65 * Math.sin(uu * Math.PI));
+      return [sh[0] + sdx * uu + snx * wav, sh[1] + sdy * uu + sny * wav];
+    }
+    var pts = [], col = SC[0], dark = shade(col, -0.5), mid = shade(col, -0.14), lite = shade(col, 0.3), tt, wd, a, b2;
+    for (k = 0; k <= N; k++) pts.push(snPt(k / N));
+    c.save(); c.lineCap = "round"; c.lineJoin = "round";
+    for (k = N; k >= 1; k--) { tt = (k - 0.5) / N; wd = cw * (0.05 + 0.17 * Math.pow(1 - tt, 0.7)); a = pts[k - 1]; b2 = pts[k]; c.strokeStyle = dark; c.lineWidth = wd + cw * 0.05; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke(); }
+    for (k = N; k >= 1; k--) { tt = (k - 0.5) / N; wd = cw * (0.05 + 0.17 * Math.pow(1 - tt, 0.7)); a = pts[k - 1]; b2 = pts[k]; c.strokeStyle = (Math.floor(k / 3) % 2) ? mid : col; c.lineWidth = wd; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke(); }
+    for (k = N; k >= 1; k--) { tt = (k - 0.5) / N; wd = cw * (0.05 + 0.17 * Math.pow(1 - tt, 0.7)); a = pts[k - 1]; b2 = pts[k]; c.strokeStyle = lite; c.lineWidth = wd * 0.26; c.beginPath(); c.moveTo(a[0], a[1] - wd * 0.2); c.lineTo(b2[0], b2[1] - wd * 0.2); c.stroke(); }
+    var hp = pts[0], hq = pts[2], hang = Math.atan2(hp[1] - hq[1], hp[0] - hq[0]), hca = Math.cos(hang), hsa = Math.sin(hang);
+    c.fillStyle = mid; c.strokeStyle = dark; c.lineWidth = cw * 0.04;
+    c.beginPath(); c.ellipse(hp[0] + hca * cw * 0.06, hp[1] + hsa * cw * 0.06, cw * 0.22, cw * 0.17, hang, 0, TAU); c.fill(); c.stroke();
+    for (k = -1; k <= 1; k += 2) {
+      var ex = hp[0] + hca * cw * 0.1 - hsa * k * cw * 0.09, ey = hp[1] + hsa * cw * 0.1 + hca * k * cw * 0.09;
+      c.fillStyle = "#fff"; c.beginPath(); c.arc(ex, ey, cw * 0.06, 0, TAU); c.fill();
+      c.fillStyle = "#0f172a"; c.beginPath(); c.arc(ex + hca * cw * 0.015, ey + hsa * cw * 0.015, cw * 0.03, 0, TAU); c.fill();
+    }
+    c.restore();
+    /* waiting players */
+    drawToken(c, cc(0, 0)[0], cc(0, 0)[1] - cw * 0.08, cw * 0.34, pal[1], S.piece, S.style, 0);
+    drawToken(c, cc(5, 1)[0], cc(5, 1)[1] - cw * 0.08, cw * 0.34, pal[2], S.piece, S.style, 0);
+    drawToken(c, cc(6, 1)[0], cc(6, 1)[1] - cw * 0.08, cw * 0.34, pal[3], S.piece, S.style, 0);
+    /* hero pawn: hop, climb the ladder, hop to the snake, slide down, repeat */
+    function mix(p1, p2, q) { return [p1[0] + (p2[0] - p1[0]) * q, p1[1] + (p2[1] - p1[1]) * q]; }
+    var T = 5.8, tm = t % T, pos, lift = 0, sq = 0, phase, e;
+    var B0 = cc(0, 1), B1 = cc(1, 1), T3 = cc(3, 0), T4 = cc(4, 0), T5 = cc(5, 0), T6 = cc(6, 0);
+    if (tm < 0.6) { u = tm / 0.6; pos = mix(B0, B1, u); lift = Math.sin(u * Math.PI) * cw * 0.42; phase = 0; }
+    else if (tm < 1.0) { pos = B1; phase = 1; }
+    else if (tm < 2.0) { u = tm - 1; e = u * u * (3 - 2 * u); pos = mix(B1, T3, e); lift = cw * 0.14 + Math.abs(Math.sin(u * Math.PI * 5)) * cw * 0.08; phase = 2; }
+    else if (tm < 2.6) { u = (tm - 2) / 0.6; pos = mix(T3, T4, u); lift = Math.sin(u * Math.PI) * cw * 0.42; phase = 3; }
+    else if (tm < 3.2) { u = (tm - 2.6) / 0.6; pos = mix(T4, T5, u); lift = Math.sin(u * Math.PI) * cw * 0.42; phase = 4; }
+    else if (tm < 3.8) { u = (tm - 3.2) / 0.6; pos = mix(T5, T6, u); lift = Math.sin(u * Math.PI) * cw * 0.42; phase = 5; }
+    else if (tm < 4.2) { pos = T6; sq = Math.sin((tm - 3.8) / 0.4 * Math.PI) * 0.12; phase = 6; }
+    else if (tm < 5.2) { u = tm - 4.2; e = u * u * (3 - 2 * u); pos = snPt(e); sq = 0.1 * Math.sin(u * Math.PI); phase = 7; }
+    else { pos = snPt(1); phase = 8; }
+    if (phase !== slPvPhase) {
+      slPvPhase = phase;
+      if (S.trail !== "none" && (phase === 1 || phase === 3 || phase === 4 || phase === 5 || phase === 6 || phase === 8)) {
+        for (i = 0; i < 7; i++) { var ang = Math.random() * TAU, spd = 0.6 + Math.random() * 1.4; pvSparks.push({ x: pos[0], y: pos[1], vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, life: 1, col: slTrailCol(i, t, pal) }); }
+      }
+    }
+    if (S.trail !== "none" && lift > 0 && Math.random() < 0.55) pvSparks.push({ x: pos[0], y: pos[1] - lift * 0.5, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, life: 0.75, col: slTrailCol(Math.floor(Math.random() * 5), t, pal) });
+    for (i = pvSparks.length - 1; i >= 0; i--) {
+      var spk = pvSparks[i]; spk.x += spk.vx; spk.y += spk.vy; spk.life -= 0.045;
+      if (spk.life <= 0) { pvSparks.splice(i, 1); continue; }
+      c.save(); c.globalAlpha = Math.max(0, spk.life); c.fillStyle = spk.col;
+      c.beginPath(); c.arc(spk.x, spk.y, 2.5 * spk.life + 0.8, 0, TAU); c.fill(); c.restore();
+    }
+    c.save();
+    if (sq) { c.translate(pos[0], pos[1]); c.scale(1 + sq, 1 - sq); c.translate(-pos[0], -pos[1]); }
+    drawToken(c, pos[0], pos[1] - cw * 0.08, cw * 0.42, pal[0], S.piece, S.style, lift);
+    c.restore();
+  }
+
   /* ---------- Live Animated Studio Preview ---------- */
   function stopPreview() { if (pvRaf) { window.cancelAnimationFrame(pvRaf); pvRaf = 0; } }
   function startPreview() { if (!pvRaf && root) { pvT0 = performance.now(); pvRaf = window.requestAnimationFrame(drawPreview); } }
@@ -5056,7 +5210,9 @@
     var b = getBoard(), pal = getPalette(), t = (now - pvT0) * 0.001 * S.speed;
     paintBoardBg(c, 0, 0, w, h, 14);
 
-    var cols = 7, cw = Math.min((w - 92) / cols, h * 0.36), ox = 12, oy = (h - cw * 2) / 2, i, j;
+    var cols, cw, ox, oy, i, j;
+    if (api.getTab() === "snakes") { slPreview(c, w, h, t, b, pal); } else {
+    cols = 7; cw = Math.min((w - 92) / cols, h * 0.36); ox = 12; oy = (h - cw * 2) / 2;
     for (i = 0; i < cols; i++) {
       for (j = 0; j < 2; j++) {
         rr(c, ox + i * cw + 2, oy + j * cw + 2, cw - 4, cw - 4, 6);
@@ -5087,6 +5243,7 @@
       c.beginPath(); c.arc(spk.x, spk.y, 2.5 * spk.life + 0.8, 0, TAU); c.fill(); c.restore();
     }
     drawToken(c, hopX, hopY - cw * 0.08, cw * 0.42, pal[0], S.piece, S.style, lift);
+    }
 
     var ds = DICE_SKINS[0];
     for (i = 0; i < DICE_SKINS.length; i++) if (DICE_SKINS[i][0] === S.dice) ds = DICE_SKINS[i];
@@ -5241,6 +5398,7 @@
         var pick = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
         S.style = pick(STYLES)[0]; S.board = pick(BOARD_IDS.slice(1)); S.piece = pick(PIECES)[0];
         S.palette = pick(PALETTE_IDS); S.dice = pick(DICE_SKINS)[0]; S.trail = pick(TRAILS.slice(0, TRAILS.length - 1))[0]; S.center = pick(CENTERS)[0];
+        S.snake = pick(SNAKE_SKINS)[0]; S.ladder = pick(LADDER_STYLES)[0];
         commit("all"); api.playSfx("home"); buzz(18);
       } else if (a === "set") {
         var p = b.getAttribute("data-p"), v = k === "true" ? true : k === "false" ? false : (p === "speed" ? +k : k);

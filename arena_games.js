@@ -115,6 +115,7 @@
   function qa(sel, el) { return Array.prototype.slice.call((el || root).querySelectorAll(sel)); }
   function savedName() { return (ls(NAME_KEY) || "").trim().slice(0, 14) || "Player"; }
   function saveName(n) { var v = String(n || "").trim().slice(0, 14); if (v) lsSet(NAME_KEY, v); }
+  function lookEnd() { try { var a = window.ArenaGames; if (a && a.watchLook) a.watchLook(null); if (a && a.restoreLook) a.restoreLook(); } catch (e) { } }
   function vibrate(pat) { if (!P.haptic) return; try { if (navigator.vibrate) navigator.vibrate(pat); } catch (e) { } }
 
   function copyText(t) {
@@ -1568,7 +1569,7 @@
     /* ---------- Online Rooms for Snakes & Ladders ---------- */
     function leaveOnline() {
       if (!rm) return;
-      var r = rm; rm = null; st = null; gen++;
+      var r = rm; rm = null; lookEnd(); st = null; gen++;
       clearTimeout(r.wd);
       if (r.unsub) r.unsub();
       if (r.isHost && r.data && r.data.status === "waiting") r.F.deleteDoc(r.ref).catch(function () { });
@@ -1655,16 +1656,33 @@
       }, 60000 + rank * 8000);
     }
 
+    function themeSync(g, field) {
+      var a = window.ArenaGames; if (!rm || !g || !a || !a.getLook || !a.applyLook) return;
+      if (rm.isHost) {
+        if (!rm.lookHooked) {
+          rm.lookHooked = true;
+          a.watchLook(function (l) { if (rm && rm.isHost) { rm.lookSent = JSON.stringify(l); var u = {}; u[field + ".theme"] = l; rm.F.updateDoc(rm.ref, u).catch(function () { }); } });
+        }
+        var cur = a.getLook(), sig = JSON.stringify(cur);
+        if (rm.lookSent !== sig && JSON.stringify(g.theme || null) !== sig) {
+          rm.lookSent = sig; var u2 = {}; u2[field + ".theme"] = cur; rm.F.updateDoc(rm.ref, u2).catch(function () { });
+        }
+      } else if (g.theme) {
+        var gs = JSON.stringify(g.theme);
+        if (gs !== rm.lookSig) { rm.lookSig = gs; a.applyLook(g.theme); }
+      }
+    }
     function attachRoom(code, ref, f, isHost) {
       rm = { code: code, ref: ref, F: f.F, uid: f.uid, isHost: isHost, data: null, lastRollId: 0, lastReactId: 0, unsub: null };
       rm.unsub = f.F.onSnapshot(ref, function (snap) {
         if (!rm) return;
-        if (!snap.exists()) { clearTimeout(rm.wd); rm = null; st = null; gen++; view = "setup"; render(); return; }
+        if (!snap.exists()) { clearTimeout(rm.wd); rm = null; lookEnd(); st = null; gen++; view = "setup"; render(); return; }
         var d = snap.data(); rm.data = d;
         if (d.status === "waiting") {
           view = "lobby"; renderLobby();
           if (rm.isHost && Object.keys(d.players).length >= d.maxPlayers) startOnlineMatch();
         } else if (d.status === "playing" && d.sl) {
+          themeSync(d.sl, "sl");
           var sl = d.sl, cols = slColors();
           if (!st || view !== "game") {
             var pls = sl.order.map(function (u, idx) {
@@ -1712,7 +1730,7 @@
     }
 
     function startOfflineMatch() {
-      gen++; clearTimeout(diceT); clearTimeout(botT); rm = null;
+      gen++; clearTimeout(diceT); clearTimeout(botT); rm = null; lookEnd();
       var cols = slColors(), pls = [], i, nm;
       for (i = 0; i < cfg.count; i++) {
         nm = (cfg.names[i] || "").trim() || (cfg.mode === "ai" && i > 0 ? "Bot " + i : "Player " + (i + 1));
@@ -2057,6 +2075,13 @@
         R + ".lx-mini .lx-sh{display:none}",
         R + ".lx-mini::before{width:50px;height:50px;margin:-25px 0 0 -25px}",
         R + ".lx-mini .lx-die:disabled{opacity:.8}",
+        R + ".lx-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}",
+        R + ".lx-cell > .lx-pc{width:100%;box-sizing:border-box}",
+        R + ".lx-big{transition:opacity .25s,filter .25s}",
+        R + ".lx-big.idle{opacity:.45;filter:grayscale(.5)}",
+        R + ".lx-pdl{min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}",
+        R + ".lx-pdl > .lx-rt{margin-top:auto}",
+        R + ".lx-pdl > .lx-rb{margin-bottom:auto}",
         R + ".lx-pc.lx-pd{gap:6px;padding:5px 6px 5px 5px}",
         R + ".lx-pd .lx-av{width:30px;height:30px;font-size:14px}",
         R + ".lx-pd .lx-nm{font-size:11.5px}",
@@ -2814,7 +2839,7 @@
     /* ---------- Online Rooms for Ludo ---------- */
     function leaveOnline() {
       if (!rm) return;
-      var r = rm; rm = null; st = null; gen++;
+      var r = rm; rm = null; lookEnd(); st = null; gen++;
       clearTimeout(r.wd);
       if (r.unsub) r.unsub();
       if (r.isHost && r.data && r.data.status === "waiting") r.F.deleteDoc(r.ref).catch(function () { });
@@ -2901,16 +2926,33 @@
       }, 60000 + rank * 8000);
     }
 
+    function themeSync(g, field) {
+      var a = window.ArenaGames; if (!rm || !g || !a || !a.getLook || !a.applyLook) return;
+      if (rm.isHost) {
+        if (!rm.lookHooked) {
+          rm.lookHooked = true;
+          a.watchLook(function (l) { if (rm && rm.isHost) { rm.lookSent = JSON.stringify(l); var u = {}; u[field + ".theme"] = l; rm.F.updateDoc(rm.ref, u).catch(function () { }); } });
+        }
+        var cur = a.getLook(), sig = JSON.stringify(cur);
+        if (rm.lookSent !== sig && JSON.stringify(g.theme || null) !== sig) {
+          rm.lookSent = sig; var u2 = {}; u2[field + ".theme"] = cur; rm.F.updateDoc(rm.ref, u2).catch(function () { });
+        }
+      } else if (g.theme) {
+        var gs = JSON.stringify(g.theme);
+        if (gs !== rm.lookSig) { rm.lookSig = gs; a.applyLook(g.theme); }
+      }
+    }
     function attachRoom(code, ref, f, isHost) {
       rm = { code: code, ref: ref, F: f.F, uid: f.uid, isHost: isHost, data: null, lastMoveId: 0, lastReactId: 0, unsub: null };
       rm.unsub = f.F.onSnapshot(ref, function (snap) {
         if (!rm) return;
-        if (!snap.exists()) { clearTimeout(rm.wd); rm = null; st = null; gen++; view = "setup"; render(); return; }
+        if (!snap.exists()) { clearTimeout(rm.wd); rm = null; lookEnd(); st = null; gen++; view = "setup"; render(); return; }
         var d = snap.data(); rm.data = d;
         if (d.status === "waiting") {
           view = "lobby"; renderLobby();
           if (rm.isHost && Object.keys(d.players).length >= d.maxPlayers) startOnlineMatch();
         } else if (d.status === "playing" && d.ld) {
+          themeSync(d.ld, "ld");
           var ld = d.ld, seats = seatMap(ld.order.length), cols = seatColors();
           if (!st || view !== "game") {
             var pls = ld.order.map(function (u, idx) {
@@ -2966,7 +3008,7 @@
     }
 
     function startOfflineMatch() {
-      gen++; clearTimeout(diceT); clearTimeout(botT); rm = null;
+      gen++; clearTimeout(diceT); clearTimeout(botT); rm = null; lookEnd();
       var seats = seatMap(cfg.count), cols = seatColors(), pls = [], i, seat, nm;
       for (i = 0; i < cfg.count; i++) {
         seat = seats[i];
@@ -2997,7 +3039,7 @@
         st.players.forEach(function (p, i) {
           var di = dieEl(i), wi = dwEl(i), on = rdy && i === st.turn;
           if (di) { di.disabled = !on; di.classList.toggle("ready", on); }
-          if (wi) wi.classList.toggle("ready", on);
+          if (wi) { wi.classList.toggle("ready", on); wi.classList.toggle("idle", i !== st.turn); }
         });
       } else {
         if (die) { die.disabled = !rdy; die.classList.toggle("ready", rdy); }
@@ -3100,24 +3142,33 @@
       if (idx < 0) return '<div></div>';
       var pl = st.players[idx], dots = "", k;
       for (k = 0; k < pl.tokens.length; k++) dots += '<i class="lx-tk' + (pl.tokens[k] === 56 ? " done" : "") + '"></i>';
-      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc' + (perDie ? " lx-pd" : "") + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
+      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
         '<div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
         '<div class="lx-nfo"><div class="lx-nm">' + esc(pl.name) + '</div><div class="lx-tks">' + dots + '</div></div>' +
-(perDie
-          ? '<div class="lx-dwrap lx-mini" id="ld-dw-' + idx + '" style="' + dieVars("#f59e0b") + '"><button type="button" id="ld-die-' + idx + '" class="lx-die" data-ld="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + cubeHTML(false, idx) + '</button></div>'
-          : '<div class="lx-last" id="ld-last-' + idx + '">' + (pl.lastDice || "–") + '</div>') + '</div>';
+(perDie ? "" : '<div class="lx-last" id="ld-last-' + idx + '">' + (pl.lastDice || "–") + '</div>') + '</div>';
     }
 
+    function dieBlock(idx) {
+      var pl = st.players[idx];
+      return '<div class="lx-dwrap lx-big' + (idx === st.turn ? "" : " idle") + '" id="ld-dw-' + idx + '" style="' + dieVars(pl.color) + '">' +
+        '<button type="button" id="ld-die-' + idx + '" class="lx-die" data-ld="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + cubeHTML(false, idx) + '</button><i class="lx-sh"></i></div>';
+    }
+    function ldCell(seat, top) {
+      var idx = -1, i;
+      for (i = 0; i < st.players.length; i++) if (st.players[i].seat === seat) idx = i;
+      if (idx < 0) return '<div></div>';
+      return '<div class="lx-cell">' + (top ? dieBlock(idx) + ldCard(seat) : ldCard(seat) + dieBlock(idx)) + '</div>';
+    }
     function renderGame() {
-      var cur = st.players[st.turn], h = '<div class="lx lx-gap" style="gap:8px">';
       perDie = !rm && st.players.filter(function (p) { return !p.bot; }).length >= 2;
+      var cur = st.players[st.turn], h = '<div class="lx lx-gap' + (perDie ? " lx-pdl" : "") + '" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
         '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto</button></div>';
-      h += '<div class="lx-row lx-enter" style="animation-delay:.05s">' + ldCard(0) + ldCard(1) + '</div>';
+      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rt" : "") + '" style="animation-delay:.05s">' + (perDie ? ldCell(0, true) + ldCell(1, true) : ldCard(0) + ldCard(1)) + '</div>';
       h += '<div class="lx-bw lx-enter" style="animation-delay:.1s"><canvas id="ld-canvas" class="lx-cv"></canvas><div id="ld-toast" class="lx-toast"></div></div>';
-      h += '<div class="lx-row lx-enter" style="animation-delay:.15s">' + ldCard(3) + ldCard(2) + '</div>';
+      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rb" : "") + '" style="animation-delay:.15s">' + (perDie ? ldCell(3, false) + ldCell(2, false) : ldCard(3) + ldCard(2)) + '</div>';
       if (!perDie) h += '<div class="lx-dock lx-enter" style="animation-delay:.2s;' + dieVars(cur.color) + '">' +
         '<div class="lx-side">' + ["👏", "😂"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>' +
         '<div class="lx-ctr">' + (perDie ? "" : '<div class="lx-dwrap"><button type="button" id="ld-die" class="lx-die" data-ld="roll" aria-label="Roll dice">' + cubeHTML(false) + '</button><i class="lx-sh"></i></div>') +
@@ -3438,7 +3489,14 @@
     }
     return s;
   }
-  function saveStudio() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { } }
+  var LOOK_KEYS = ["style", "board", "piece", "palette", "dice", "trail", "center"], savedLook = null, lookCb = null;
+  function saveStudio() {
+    try {
+      var o = {}, k; for (k in S) o[k] = S[k];
+      if (savedLook) LOOK_KEYS.forEach(function (kk) { o[kk] = savedLook[kk]; }); /* never persist a room's borrowed look */
+      localStorage.setItem(LS_KEY, JSON.stringify(o));
+    } catch (e) { }
+  }
 
   var S = loadStudio();
   var origSetPref = api.setPref, origSubscribe = api.subscribe;
@@ -4083,7 +4141,27 @@
     syncStudio();
     drawThumbs();
     notifyGames(key || "studio");
+    if (lookCb && !savedLook && key !== "open" && key !== "mute") { try { lookCb(api.getLook()); } catch (e) { } }
   }
+
+  /* ---------- Shared look for online rooms: host's theme is shown on every phone ---------- */
+  api.getLook = function () { var o = {}; LOOK_KEYS.forEach(function (k) { o[k] = S[k]; }); return o; };
+  api.applyLook = function (l) {
+    if (!l || typeof l !== "object") return;
+    var ok = (has(STYLES, l.style) && BOARD_IDS.indexOf(l.board) >= 0 && has(PIECES, l.piece) && PALETTE_IDS.indexOf(l.palette) >= 0 &&
+      has(DICE_SKINS, l.dice) && has(TRAILS, l.trail) && has(CENTERS, l.center));
+    if (!ok) return;
+    if (!savedLook) savedLook = api.getLook();
+    LOOK_KEYS.forEach(function (k) { S[k] = l[k]; });
+    commit("all");
+  };
+  api.restoreLook = function () {
+    if (!savedLook) return;
+    var l = savedLook; savedLook = null;
+    LOOK_KEYS.forEach(function (k) { S[k] = l[k]; });
+    commit("all");
+  };
+  api.watchLook = function (fn) { lookCb = typeof fn === "function" ? fn : null; };
 
   function toggleInGameStudio() {
     if (!root) return;

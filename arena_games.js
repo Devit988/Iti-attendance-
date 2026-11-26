@@ -1032,6 +1032,28 @@
       "#quiz-arena-root:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) > #ag-pane-ludo > .lx{display:contents}",
       "#quiz-arena-root:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) > #ag-pane-ludo > .lx > *{order:3}",
       "#quiz-arena-root:has(#ag-pane-ludo:not(.ag-off) > .lx > .lx-hero) > #ag-pane-ludo > .lx > .lx-hero{order:1}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero){display:flex;flex-direction:column;gap:10px}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > *{order:3}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > .ag-wrap{display:contents}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > .ag-wrap > *{order:3;margin-bottom:0}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > .ag-wrap > .ag-bar{order:0}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > .ag-wrap > .ag-cz{order:2}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > #ag-pane-snakes{display:contents}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > #ag-pane-snakes > *{order:3}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > #ag-pane-snakes > .sl-hero{order:1}",
+      "#quiz-arena-root:has(#ag-pane-snakes:not(.ag-off) > .sl-hero) > #ag-pane-snakes > .bg-box{width:100%}",
+      R + ".sl-hero{position:relative;overflow:hidden;width:100%;max-width:30rem;margin:0 auto;border-radius:22px;padding:18px 16px;color:#fff;border:1px solid rgba(255,255,255,.14);background:radial-gradient(120% 100% at 90% -10%,rgba(251,191,36,.36),transparent 55%),radial-gradient(90% 90% at -10% 110%,rgba(34,197,94,.34),transparent 55%),radial-gradient(70% 70% at 50% 125%,rgba(239,68,68,.22),transparent 60%),linear-gradient(160deg,#14301f,#0b1020);box-shadow:0 18px 40px -18px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.18);animation:slEnter .55s cubic-bezier(.2,.9,.3,1.1) both}",
+      R + ".sl-hero-in{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px}",
+      R + ".sl-title{font-size:38px;line-height:.95;font-weight:900;letter-spacing:.03em;margin-top:4px;background:linear-gradient(180deg,#fff,#fde68a 55%,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}",
+      R + ".sl-title span{display:block;font-size:14px;letter-spacing:.34em;margin-top:7px;background:linear-gradient(90deg,#22c55e,#facc15,#ef4444,#38bdf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}",
+      R + ".sl-sub{font-size:12px;font-weight:600;color:#cbd5e1;margin-top:9px}",
+      R + ".sl-orb{position:absolute;z-index:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,currentColor 58%);box-shadow:0 0 16px currentColor;animation:slDrift 6s ease-in-out infinite}",
+      R + ".sl-art{flex:none;width:84px;height:84px;margin-right:6px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.45));animation:slBob 3.2s ease-in-out infinite}",
+      R + ".sl-art svg{display:block;width:100%;height:100%}",
+      "@keyframes slEnter{0%{opacity:0;transform:translateY(14px) scale(.94)}100%{opacity:1;transform:none}}",
+      "@keyframes slDrift{0%,100%{transform:translate(0,0)}50%{transform:translate(8px,-12px)}}",
+      "@keyframes slBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}",
+      "@media(prefers-reduced-motion:reduce){#quiz-arena-root .sl-hero,#quiz-arena-root .sl-orb,#quiz-arena-root .sl-art{animation:none!important}}",
       R + ".ag-wrap *{box-sizing:border-box}",
       R + ".ag-wrap button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}",
       R + ".ag-i{width:16px;height:16px;flex:none}",
@@ -1805,7 +1827,15 @@
         h += '</div><button type="button" class="bg-cta" data-sl="start">' + ico("play") + 'Start Game</button>';
       }
       h += '</div></div>';
-      host.innerHTML = h; icons();
+      var hero = '<div class="sl-hero">' +
+        '<i class="sl-orb" style="color:' + cols[0] + ';width:14px;height:14px;left:54%;top:16%"></i>' +
+        '<i class="sl-orb" style="color:' + cols[1] + ';width:10px;height:10px;right:8%;top:10%;animation-delay:-2s"></i>' +
+        '<i class="sl-orb" style="color:' + (cols[3] || cols[0]) + ';width:12px;height:12px;right:30%;bottom:12%;animation-delay:-4s"></i>' +
+        '<i class="sl-orb" style="color:' + (cols[2] || cols[1]) + ';width:16px;height:16px;left:50%;bottom:14%;animation-delay:-1s"></i>' +
+        '<div class="sl-hero-in"><div><div class="sl-title">SNAKES<span>&amp; LADDERS</span></div>' +
+        '<div class="sl-sub">Climb. Slide. Race to 100.</div></div>' +
+        '<div class="sl-art"><svg viewBox="0 0 90 90" aria-hidden="true"><g stroke="#fbbf24" stroke-linecap="round" fill="none"><path d="M14 84L38 10M30 86L54 12" stroke-width="4"/><path d="M17.6 72.9L33.6 74.9M22.4 58.1L38.4 60.1M27.2 43.3L43.2 45.3M32 28.5L48 30.5" stroke-width="3"/></g><path d="M70 12C90 24 50 36 66 52S84 72 62 84" fill="none" stroke="#15803d" stroke-width="10" stroke-linecap="round"/><path d="M70 12C90 24 50 36 66 52S84 72 62 84" fill="none" stroke="#4ade80" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9"/><circle cx="70" cy="10" r="7" fill="#16a34a"/><circle cx="67.5" cy="8" r="1.8" fill="#fff"/><circle cx="72.5" cy="8" r="1.8" fill="#fff"/><path d="M70 17v6M70 23l-2 3M70 23l2 3" stroke="#ef4444" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg></div></div></div>';
+      host.innerHTML = hero + h; icons();
     }
 
     function renderLobby() {
@@ -2136,7 +2166,7 @@
         R + ".lx-tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(26deg)}",
         R + ".lx-cube{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.12,.75,.2,1)}",
         R + ".lx-cube.spin{transition:none;animation:lxSpin 9s linear infinite}",
-        R + ".lx-f{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:calc(var(--s)*.15);border-radius:calc(var(--s)*.22);backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(145deg,#ffffff,#eef2f7 55%,#c9d3e0);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 0 calc(var(--s)*.2) rgba(255,255,255,.9),inset 0 -3px 8px rgba(100,116,139,.35),inset 0 0 0 calc(var(--s)*.035) var(--dc)}",
+        R + ".lx-f{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:calc(var(--s)*.15);border-radius:calc(var(--s)*.09);backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(145deg,#ffffff,#eef2f7 55%,#c9d3e0);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 0 calc(var(--s)*.2) rgba(255,255,255,.9),inset 0 -3px 8px rgba(100,116,139,.35),inset 0 0 0 calc(var(--s)*.035) var(--dc)}",
         R + ".lx-f i{display:block;margin:auto;width:calc(var(--s)*.19);height:calc(var(--s)*.19);border-radius:50%}",
         R + ".lx-f i.o{background:radial-gradient(circle at 35% 30%,var(--dpl),var(--dp) 70%);box-shadow:inset 0 -2px 3px rgba(0,0,0,.35),0 1px 1px rgba(255,255,255,.9)}",
         /* Dice Skin 2: Obsidian Gold */

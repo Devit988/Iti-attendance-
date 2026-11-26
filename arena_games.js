@@ -1236,7 +1236,7 @@
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
       var c = offCtx; c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintBoardBg(c, 0, 0, size, size, 16);
+      api.paintBoardBg(c, 0, 0, size, size, 16);
 
       var i, n, p, cw = cellCenter(1, size).cw;
       for (n = 1; n <= 100; n++) {
@@ -1329,7 +1329,7 @@
       var cw = (size * 0.92) / 10, baseR = Math.max(9, cw * 0.36);
       for (i = 0; i < st.players.length; i++) {
         pl = st.players[i];
-        if (pl.anim) { drawToken(ctx, pl.anim.x, pl.anim.y, baseR * 1.12, pl.color, P.piece, P.style, cw * 0.14); continue; }
+        if (pl.anim) { api.drawToken(ctx, pl.anim.x, pl.anim.y, baseR * 1.12, pl.color, null, null, cw * 0.14); continue; }
         var c = cellCenter(pl.pos, size), grp = groups[String(pl.pos)] || [i], idx = grp.indexOf(i), len = grp.length;
         var ox = 0, oy = 0, sc = 1;
         if (len > 1) {
@@ -1340,7 +1340,7 @@
           ctx.save(); ctx.strokeStyle = pl.color; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(c.x + ox, c.y + oy + baseR * 0.3, baseR * sc * 0.95, 0, TAU); ctx.stroke(); ctx.restore();
         }
-        drawToken(ctx, c.x + ox, c.y + oy, baseR * sc, pl.color, P.piece, P.style, 0);
+        api.drawToken(ctx, c.x + ox, c.y + oy, baseR * sc, pl.color, null, null, 0);
       }
 
       for (i = particles.length - 1; i >= 0; i--) {
@@ -2139,7 +2139,7 @@
       off.width = size * dpr; off.height = size * dpr;
       var c = offCtx, cw = size / 15, M = b.modern, i, j, x, y, g, sc, pad = cw * 0.14;
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintBoardBg(c, 0, 0, size, size, size * 0.045);
+      api.paintBoardBg(c, 0, 0, size, size, size * 0.045);
 
       // 1. corner yards
       for (i = 0; i < 4; i++) {
@@ -2234,7 +2234,9 @@
       }
     }
     function spawnTrail(x, y, col) {
-      if (REDUCE || P.trail === "none") return;
+      if (REDUCE) return;
+      if (api.spawnTrail) { api.spawnTrail(particles, x, y, col, size || 440); return; }
+      if (P.trail === "none") return;
       var sz = size || 440;
       if (P.trail === "fire") {
         particles.push({ k: "f", x: x + (Math.random() - 0.5) * 4, y: y, vx: (Math.random() - 0.5) * 0.8, vy: -0.9 - Math.random() * 1.1, life: 0.9, col: Math.random() < 0.5 ? "#f97316" : "#fde047", r: sz * 0.02 });
@@ -2353,7 +2355,7 @@
         c.shadowColor = ap.color; c.shadowBlur = cw * (0.4 + 0.7 * slow); c.stroke(); c.restore();
       }
 
-      drawCenterEmblem(c, size / 2, size / 2, cw * 0.62, t);
+      (api.drawCenter || drawCenterEmblem)(c, size / 2, size / 2, cw * 0.62, t);
 
       // destination markers for movable pieces (respecting hints toggle)
       if (P.hints && st.awaitMove && st.validTokens.length && st.players[st.turn]) {
@@ -2396,7 +2398,7 @@
         draws.push({ x: it.screenX, y: it.screenY - cw * 0.12, r: baseR * sc2, c: it.pl.color, lift: lift, z: it.screenY });
       }
       draws.sort(function (p, q3) { return p.z - q3.z; });
-      for (i = 0; i < draws.length; i++) drawToken(c, draws[i].x, draws[i].y, draws[i].r, draws[i].c, P.piece, P.style, draws[i].lift);
+      for (i = 0; i < draws.length; i++) api.drawToken(c, draws[i].x, draws[i].y, draws[i].r, draws[i].c, null, null, draws[i].lift);
       st._rendered = list;
 
       for (i = 0; i < particles.length; i++) {

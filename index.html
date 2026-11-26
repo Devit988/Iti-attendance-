@@ -3548,6 +3548,18 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
           html.bright-mode .ca-tag {
             color: rgb(var(--a8)); background-color: rgb(var(--a1)); border-color: rgb(var(--a4));
           }
+          #ca-news-card.ca-compact .ca-item { padding: 0.4rem 0.6rem; }
+          #ca-news-card.ca-compact .ca-meta { display: none; }
+          #ca-news-card.ca-compact .ca-title { -webkit-line-clamp: 1; font-size: 12px; }
+          #ca-news-card.ca-ticker #ca-news-list { display: flex; gap: 0.5rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
+          #ca-news-card.ca-ticker .ca-item { flex: 0 0 78%; max-width: 280px; scroll-snap-align: start; }
+          #ca-news-card.ca-ticker #ca-news-list > .text-xs { flex: 1 1 100%; }
+          #ca-news-prefs { display: none; border-radius: 0.85rem; padding: 0.7rem; border: 1px solid rgba(148,163,184,.22); background: rgba(255,255,255,.04); }
+          #ca-news-prefs.ca-open { display: block; }
+          #ca-news-prefs label { font-size: 11px; font-weight: 700; color: #cbd5e1; }
+          #ca-news-prefs .ca-in { width: 100%; margin-top: 3px; padding: 0.4rem 0.55rem; border-radius: 0.6rem; font-size: 12px; color: #f1f5f9; background: rgba(15,23,42,.7); border: 1px solid rgba(148,163,184,.3); }
+          html.bright-mode #ca-news-prefs label { color: rgb(var(--c700)); }
+          html.bright-mode #ca-news-prefs .ca-in { color: rgb(var(--c900)); background: rgba(255,255,255,.85); }
           #ca-news-modal {
             position: fixed; inset: 0; z-index: 65; display: none; align-items: center; justify-content: center;
             padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
@@ -3583,6 +3595,10 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
               </div>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" id="ca-news-gear" onclick="caTogglePrefs()" aria-label="News settings" aria-expanded="false"
+                class="w-8 h-8 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex items-center justify-center btn-tap">
+                <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+              </button>
               <button type="button" id="ca-news-refresh" onclick="caRefreshNews()" aria-label="Refresh news"
                 class="w-8 h-8 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 flex items-center justify-center btn-tap">
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
@@ -3594,9 +3610,36 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
             </div>
           </div>
 
+          <div id="ca-news-prefs">
+            <div class="text-[11px] font-bold text-slate-400 mb-1.5">Show categories</div>
+            <div class="flex flex-wrap gap-x-3 gap-y-1.5 mb-2.5">
+              <label><input type="checkbox" data-ca-pc="india" checked> India</label>
+              <label><input type="checkbox" data-ca-pc="wb" checked> West Bengal</label>
+              <label><input type="checkbox" data-ca-pc="pib" checked> Govt / PIB</label>
+              <label><input type="checkbox" data-ca-pc="exams" checked> Exams &amp; Jobs</label>
+              <label><input type="checkbox" data-ca-pc="tech" checked> Sci &amp; Tech</label>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5 mb-2.5">
+              <label>Headlines on Home
+                <select id="ca-pref-count" class="ca-in"><option value="3">3</option><option value="4">4</option><option value="6">6</option><option value="10">10</option></select>
+              </label>
+              <label>Layout
+                <select id="ca-pref-layout" class="ca-in"><option value="list">List</option><option value="compact">Compact</option><option value="ticker">Swipe cards</option></select>
+              </label>
+            </div>
+            <label class="block mb-2.5">Only show headlines with words (comma separated)
+              <input id="ca-pref-kw" class="ca-in" type="text" placeholder="e.g. ITI, NCVT, apprentice">
+            </label>
+            <label class="block mb-2.5">Hide sources (comma separated)
+              <input id="ca-pref-mute" class="ca-in" type="text" placeholder="e.g. Times of India">
+            </label>
+            <button type="button" onclick="caResetPrefs()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 text-[11px] font-semibold btn-tap">Reset to default</button>
+          </div>
+
           <div id="ca-news-cats" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5" role="group" aria-label="News category">
             <button type="button" class="ca-chip ca-on btn-tap" data-ca-cat="all">All</button>
             <button type="button" class="ca-chip btn-tap" data-ca-cat="india">India</button>
+            <button type="button" class="ca-chip btn-tap" data-ca-cat="wb">West Bengal</button>
             <button type="button" class="ca-chip btn-tap" data-ca-cat="pib">Govt / PIB</button>
             <button type="button" class="ca-chip btn-tap" data-ca-cat="exams">Exams &amp; Jobs</button>
             <button type="button" class="ca-chip btn-tap" data-ca-cat="tech">Sci &amp; Tech</button>
@@ -3630,7 +3673,13 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
         <script>
         (function () {
           var CACHE_KEY = "iti_daily_news_v1";
-          var LABELS = { india: "India", pib: "PIB", exams: "Exams", tech: "Tech" };
+          var LABELS = { india: "India", wb: "WB", pib: "PIB", exams: "Exams", tech: "Tech" };
+          var PREF_KEY = "iti_news_prefs_v1";
+          var DEF = { cats: ["india", "wb", "pib", "exams", "tech"], count: 4, layout: "list", kw: "", mute: "" };
+          var prefs = JSON.parse(JSON.stringify(DEF));
+          try { var sp = JSON.parse(localStorage.getItem(PREF_KEY) || "null"); if (sp) for (var k in DEF) if (sp[k] != null) prefs[k] = sp[k]; } catch (_) {}
+          function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (_) {} }
+          function words(s) { return String(s || "").split(",").map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean); }
           var state = { cat: "all", items: [], updatedAt: null };
 
           function esc(s) {
@@ -3650,8 +3699,18 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
           }
 
           function filtered() {
-            if (state.cat === "all") return state.items;
-            return state.items.filter(function (x) { return x.cat === state.cat; });
+            var kw = words(prefs.kw), mute = words(prefs.mute);
+            return state.items.filter(function (x) {
+              if (prefs.cats.indexOf(x.cat) < 0 && LABELS[x.cat]) return false;
+              if (state.cat !== "all" && x.cat !== state.cat) return false;
+              var src = String(x.source || "").toLowerCase();
+              if (mute.some(function (m) { return src.indexOf(m) >= 0; })) return false;
+              if (kw.length) {
+                var t = (String(x.title || "") + " " + src).toLowerCase();
+                if (!kw.some(function (w) { return t.indexOf(w) >= 0; })) return false;
+              }
+              return true;
+            });
           }
 
           function renderItems(listEl, items, limit) {
@@ -3691,7 +3750,7 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
 
           function render() {
             var items = filtered();
-            renderItems(document.getElementById("ca-news-list"), items, 4);
+            renderItems(document.getElementById("ca-news-list"), items, prefs.count);
             renderItems(document.getElementById("ca-modal-list"), items, 0);
             syncPills();
             var stamp = state.updatedAt ? ("Updated " + ago(state.updatedAt)) : "Daily India, PIB & Exam updates";
@@ -3700,6 +3759,41 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
             if (u1) u1.textContent = stamp;
             if (u2) u2.textContent = stamp + " • " + state.items.length + " stories";
           }
+
+          function applyPrefs() {
+            document.querySelectorAll("[data-ca-cat]").forEach(function (b) {
+              var c = b.getAttribute("data-ca-cat");
+              b.style.display = (c === "all" || prefs.cats.indexOf(c) >= 0) ? "" : "none";
+            });
+            if (state.cat !== "all" && prefs.cats.indexOf(state.cat) < 0) state.cat = "all";
+            var card = document.getElementById("ca-news-card");
+            if (card) {
+              card.classList.toggle("ca-compact", prefs.layout === "compact");
+              card.classList.toggle("ca-ticker", prefs.layout === "ticker");
+            }
+            document.querySelectorAll("[data-ca-pc]").forEach(function (i) { i.checked = prefs.cats.indexOf(i.getAttribute("data-ca-pc")) >= 0; });
+            var f = function (id, v) { var e = document.getElementById(id); if (e) e.value = v; };
+            f("ca-pref-count", String(prefs.count)); f("ca-pref-layout", prefs.layout); f("ca-pref-kw", prefs.kw); f("ca-pref-mute", prefs.mute);
+            render();
+          }
+
+          function readPrefs() {
+            prefs.cats = Array.prototype.filter.call(document.querySelectorAll("[data-ca-pc]"), function (i) { return i.checked; })
+              .map(function (i) { return i.getAttribute("data-ca-pc"); });
+            prefs.count = parseInt(document.getElementById("ca-pref-count").value, 10) || 4;
+            prefs.layout = document.getElementById("ca-pref-layout").value;
+            prefs.kw = document.getElementById("ca-pref-kw").value;
+            prefs.mute = document.getElementById("ca-pref-mute").value;
+            savePrefs(); applyPrefs();
+          }
+
+          window.caTogglePrefs = function () {
+            var p = document.getElementById("ca-news-prefs"), g = document.getElementById("ca-news-gear");
+            if (!p) return;
+            var o = p.classList.toggle("ca-open");
+            if (g) g.setAttribute("aria-expanded", o ? "true" : "false");
+          };
+          window.caResetPrefs = function () { prefs = JSON.parse(JSON.stringify(DEF)); savePrefs(); applyPrefs(); };
 
           function setCat(cat) {
             state.cat = cat || "all";
@@ -3773,6 +3867,12 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
               if (e.key === "Escape") window.caCloseNewsModal();
             });
 
+            var pp = document.getElementById("ca-news-prefs");
+            if (pp) {
+              pp.addEventListener("change", readPrefs);
+              pp.addEventListener("input", function (e) { if (e.target && e.target.type === "text") readPrefs(); });
+            }
+            applyPrefs();
             if (window.lucide && lucide.createIcons) lucide.createIcons();
             loadNews(false);
           });
@@ -32451,6 +32551,7 @@ html.bright-mode #lk-bar button.pri{color:#fff}
     { k: "glance", n: "Attendance & Latest Notice cards", el: function () { var a = $("dv-att-card"); return a && a.parentElement; } },
     { k: "quick", n: "Quick-jump shortcuts", el: function () { return $("dv-quick"); } },
     { k: "thought", n: "Thought of the Day", el: function () { return $("msg-card"); } },
+    { k: "news", n: "Current Affairs & News", el: function () { return $("ca-news-card"); } },
     { k: "latest", n: "Latest video", el: function () { return $("dv-latest-video"); } },
     { k: "gallery", n: "Gallery slideshow", el: function () { return $("home-gallery-card"); } },
     { k: "notices", n: "Notices", el: function () { return $("home-notice-card"); } },

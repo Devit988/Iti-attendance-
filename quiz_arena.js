@@ -823,6 +823,21 @@ html.bright-mode #quiz-arena-root .qa-ind { background: linear-gradient(135deg, 
 #quiz-arena-root .qa-cnt .qa-pill { min-height: 40px; font-size: 13.5px; border-radius: .85rem; }
 #quiz-arena-root .qa-cnt .qa-ind { border-radius: .85rem; }
 
+/* fix: active tab/count pill keeps its own gradient until the sliding indicator is positioned */
+#quiz-arena-root .qa-slide:not(.qa-ind-ready) > .qa-seg.on,
+#quiz-arena-root .qa-slide:not(.qa-ind-ready) > .qa-pill.on { background: linear-gradient(135deg, #f97316 0%, #fb923c 55%, #fbbf24 140%) !important; box-shadow: 0 10px 22px -8px rgba(249, 115, 22, .8) !important; }
+html.bright-mode #quiz-arena-root .qa-slide:not(.qa-ind-ready) > .qa-seg.on,
+html.bright-mode #quiz-arena-root .qa-slide:not(.qa-ind-ready) > .qa-pill.on { background: linear-gradient(135deg, #ea580c 0%, #f97316 55%, #fbbf24 140%) !important; }
+
+/* fix: module / test-type chips must wrap inside a 2-col grid, never overflow or overlap */
+#quiz-arena-root .qa-cmp > .qa-pill[data-a=mod] {
+  min-width: 0; min-height: 44px; padding: 6px 8px 6px 11px; gap: 6px; overflow: hidden;
+  justify-content: space-between; text-align: left; white-space: normal; line-height: 1.15;
+  font-size: 12px; font-weight: 800; overflow-wrap: anywhere; hyphens: auto;
+}
+#quiz-arena-root .qa-cmp > .qa-pill[data-a=mod] .qa-n { flex: none; margin-left: auto; }
+#quiz-arena-root .qa-cmp > .qa-pill[data-a=mod]:first-child { grid-column: 1 / -1; }
+
 /* player name = avatar card */
 #quiz-arena-root .qa-name-wrap { padding: 6px 12px 6px 7px; gap: 11px; border-radius: 1.15rem; background: linear-gradient(135deg, rgba(249, 115, 22, .09), transparent 65%), var(--qa-cd2); }
 #quiz-arena-root .qa-name-ic { width: 38px; height: 38px; border-radius: 50%; color: #fff; background: linear-gradient(135deg, #f97316, #fbbf24); box-shadow: 0 6px 14px -6px rgba(249, 115, 22, .85), inset 0 1px 0 rgba(255, 255, 255, .4); }
@@ -880,15 +895,73 @@ html.bright-mode #quiz-arena-root .qa-ind { background: linear-gradient(135deg, 
   var elecOpen = false, lastEp = null, xpState = { elec: false, mods: false };
   var IND = {}, lastDraw = null;
 
-  function slideInd(box, key) {
+  function slideInd(box, key, tries) {
     var ind = box && box.querySelector(".qa-ind"); if (!ind) return;
     var on = box.querySelector(".qa-seg.on,.qa-pill.on");
-    if (!on) { ind.style.opacity = 0; delete IND[key]; return; }
+    if (!on) { ind.style.opacity = 0; box.classList.remove("qa-ind-ready"); delete IND[key]; return; }
     var r = { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight }, p = IND[key];
+    /* layout not ready (hidden / zero size): keep CSS fallback and retry */
+    if (!r.w || !r.h) {
+      box.classList.remove("qa-ind-ready"); ind.style.opacity = 0;
+      if ((tries || 0) < 12) requestAnimationFrame(function () { if (box.isConnected) slideInd(box, key, (tries || 0) + 1); });
+      return;
+    }
     function put(q) { ind.style.width = q.w + "px"; ind.style.height = q.h + "px"; ind.style.transform = "translate(" + q.x + "px," + q.y + "px)"; }
     ind.style.opacity = 1; ind.style.transition = "none";
-    put(p || r); void ind.offsetWidth; ind.style.transition = ""; put(r);
-    IND[key] = r;
+    put(p && p.w ? p : r); void ind.offsetWidth; ind.style.transition = ""; put(r);
+    IND[key] = r; box.classList.add("qa-ind-ready");
+  }
+  /* re-measure on resize / font load so the highlight never drifts or vanishes */
+  function reslide() {
+    var v = document.getElementById("quiz-arena-root"); if (!v) return;
+    Array.prototype.forEach.call(v.querySelectorAll("[data-slide]"), function (b) { slideInd(b, b.getAttribute("data-slide")); });
+  }
+  window.addEventListener("resize", reslide);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reslide);
+
+
+  /* ---------- focus mode: while a quiz / clash is running, hide the app chrome and centre the question ---------- */
+  var FOCUS_SCREENS = { game: 1, tug: 1, countdown: 1 }, focusOn = false;
+  function injectFocusCss() {
+    if (document.getElementById("qa-focus-style")) return;
+    var st = document.createElement("style"); st.id = "qa-focus-style";
+    var F = "html.qa-focus ", R = "html.qa-focus #quiz-arena-root ";
+    st.textContent = [
+      /* hide header, date/clock row, search bar, bottom nav, game-switcher strip and Arena Studio */
+      F + "#top-sticky," + F + "#main-header," + F + "#search-bar-wrap," + F + "#bottom-tab-bar," + F + "nav[aria-label='Primary Sections']{display:none!important}",
+      R + ".ag-bar," + R + ".ag-cz{display:none!important}",
+      F + "body{padding-bottom:0!important}",
+      F + "#main-content{padding-top:0!important;padding-bottom:0!important}",
+      /* centre the quiz in the visible screen */
+      R + "#qa-view{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center}",
+      R + ".qa-wrap{width:100%;padding:max(10px,env(safe-area-inset-top)) 0 max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;justify-content:center}",
+      /* tighter spacing so the question and all four options fit one screen */
+      R + ".qa-prog-meta{margin-top:8px}",
+      R + ".qa-card{margin-top:8px;padding:14px 14px;min-height:0}",
+      R + ".qa-q{margin-top:8px;font-size:15.5px;line-height:1.42}",
+      R + ".qa-opts{gap:7px;margin-top:8px}",
+      R + ".qa-opt{padding:10px 12px}"
+    ].join("\n");
+    (document.head || document.documentElement).appendChild(st);
+  }
+  function syncFocus() {
+    var v = document.getElementById("view-quiz"), vis = !!(v && !v.classList.contains("hidden") && v.offsetParent !== null);
+    var on = !!(vis && FOCUS_SCREENS[screen] && view && view.childNodes.length && !(G && G.done && screen === "game"));
+    if (on === focusOn) return;
+    focusOn = on;
+    document.documentElement.classList.toggle("qa-focus", on);
+    if (on) { try { window.scrollTo(0, 0); } catch (e) { } }
+  }
+  function initFocus() {
+    injectFocusCss();
+    try {
+      var mo = new MutationObserver(syncFocus);
+      mo.observe(view, { childList: true });
+      var v = document.getElementById("view-quiz"); if (v) mo.observe(v, { attributes: true, attributeFilter: ["class", "style"] });
+    } catch (e) { }
+    ["visibilitychange", "pageshow", "resize", "orientationchange"].forEach(function (ev) { (ev === "visibilitychange" ? document : window).addEventListener(ev, syncFocus); });
+    setInterval(syncFocus, 700); /* safety net: never leave the app header hidden outside a running quiz */
+    syncFocus();
   }
 
   function elecPanel(ep, ready, wantM) {
@@ -2507,7 +2580,7 @@ html.bright-mode #quiz-arena-root .qa-ind { background: linear-gradient(135deg, 
     root.innerHTML = '<div id="qa-view"></div><div id="qa-msg" class="qa-msg" role="status" aria-live="polite"></div>';
     view = root.querySelector("#qa-view"); msgEl = root.querySelector("#qa-msg");
     document.addEventListener("keydown", onKey); root.addEventListener("click", onClick); root.addEventListener("input", onInput); root.addEventListener("change", onInput);
-    render(); loadBank();
+    initFocus(); render(); loadBank();
     if (pendingCode) { try { window.dispatchEvent(new CustomEvent("qa:invite", { detail: { code: pendingCode } })); } catch (e) { } }
   }
   function readInvite() {

@@ -845,7 +845,11 @@
   (function agInjectGameCss() {
     if (document.getElementById("ag-game-mode-css-js")) return;
     var st = document.createElement("style"); st.id = "ag-game-mode-css-js";
-    st.textContent = "html.ag-game-on #top-sticky,html.ag-game-on #main-header,html.ag-game-on #search-bar-wrap,html.ag-game-on #bottom-tab-bar,html.ag-game-on nav[aria-label='Primary Sections']{display:none!important}html.ag-game-on body{padding-bottom:0!important}";
+    st.textContent = "html.ag-game-on #top-sticky,html.ag-game-on #main-header,html.ag-game-on #search-bar-wrap,html.ag-game-on #bottom-tab-bar,html.ag-game-on nav[aria-label='Primary Sections']{display:none!important}html.ag-game-on body{padding-bottom:0!important}html.ag-game-on,html.ag-game-on body{overflow:hidden!important;overscroll-behavior:none!important}html.ag-game-on body{touch-action:none}html.ag-game-on button,html.ag-game-on canvas,html.ag-game-on [data-ld],html.ag-game-on [data-sl]{touch-action:manipulation}"+
+      /* in-game Studio = bottom sheet on top of the game (scrollable, board stays visible above it) */
+      "html.ag-game-on #quiz-arena-root .ag-playing.ag-peek-cz .ag-cz{display:block!important;position:fixed!important;left:8px;right:8px;bottom:8px;margin:0!important;max-height:58vh;max-height:58dvh;overflow-y:auto!important;overflow-x:hidden;z-index:2147483000;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y!important;box-shadow:0 -10px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.18)!important;border-radius:20px!important;background:var(--ag-bg2,#fff)!important}"+
+      "html.ag-game-on #quiz-arena-root .ag-playing.ag-peek-cz .ag-cz *{touch-action:pan-y}"+
+      "html.ag-game-on #quiz-arena-root .ag-playing.ag-peek-cz .ag-cz button,html.ag-game-on #quiz-arena-root .ag-playing.ag-peek-cz .ag-cz canvas{touch-action:manipulation}";
     (document.head || document.documentElement).appendChild(st);
   })();
   function agSyncChrome() {
@@ -870,6 +874,9 @@
     if (on && !was) { try { root.scrollIntoView({ block: "start" }); } catch (e) { } }
   }
   function toggleInGameStudio() {
+    /* the Studio plugin owns the real open/close state: delegate to it so the panel actually expands */
+    var ag = window.ArenaGames;
+    if (ag && typeof ag.toggleStudio === "function" && ag.toggleStudio !== toggleInGameStudio) { ag.toggleStudio(); return; }
     var w = root && root.querySelector(".ag-wrap"); if (!w) return;
     var showing = w.classList.toggle("ag-peek-cz");
     P.open = showing;
@@ -2076,9 +2083,14 @@
         R + ".lx-mini::before{width:50px;height:50px;margin:-25px 0 0 -25px}",
         R + ".lx-mini .lx-die:disabled{opacity:.8}",
         R + ".lx-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}",
-        R + ".lx-cell > .lx-pc{width:100%;box-sizing:border-box}",
+        R + ".lx-cell{gap:10px}",
+        R + ".lx-cell > .lx-pc{width:100%;box-sizing:border-box;position:relative;z-index:3}",
+        R + ".lx-big{position:relative;z-index:1}",
+        R + ".lx-big .lx-die.ready{filter:drop-shadow(0 5px 6px rgba(0,0,0,.4)) drop-shadow(0 0 12px var(--dc))}",
+        R + ".lx-big:not(.idle) .lx-die{filter:drop-shadow(0 4px 5px rgba(0,0,0,.35))}",
         R + ".lx-big{transition:opacity .25s,filter .25s}",
         R + ".lx-big.idle{opacity:.45;filter:grayscale(.5)}",
+        R + ".lx-pdl > .lx-top{justify-content:space-between}",
         R + ".lx-pdl{min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}",
         R + ".lx-pdl > .lx-rt{margin-top:auto}",
         R + ".lx-pdl > .lx-rb{margin-bottom:auto}",
@@ -3163,9 +3175,9 @@
       perDie = !rm && st.players.filter(function (p) { return !p.bot; }).length >= 2;
       var cur = st.players[st.turn], h = '<div class="lx lx-gap' + (perDie ? " lx-pdl" : "") + '" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
-        '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
+        (perDie ? '' : '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>') +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
-        '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto</button></div>';
+        (perDie ? '' : '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto</button>') + '</div>';
       h += '<div class="lx-row lx-enter' + (perDie ? " lx-rt" : "") + '" style="animation-delay:.05s">' + (perDie ? ldCell(0, true) + ldCell(1, true) : ldCard(0) + ldCard(1)) + '</div>';
       h += '<div class="lx-bw lx-enter" style="animation-delay:.1s"><canvas id="ld-canvas" class="lx-cv"></canvas><div id="ld-toast" class="lx-toast"></div></div>';
       h += '<div class="lx-row lx-enter' + (perDie ? " lx-rb" : "") + '" style="animation-delay:.15s">' + (perDie ? ldCell(3, false) + ldCell(2, false) : ldCard(3) + ldCard(2)) + '</div>';
@@ -4120,7 +4132,35 @@
     }
   }
 
+  /* ---------- Themed full-screen backdrop while playing (follows the selected board theme) ---------- */
+  function paintBackdrop() {
+    try {
+      var el = document.getElementById("ag-backdrop");
+      if (!el) {
+        if (!document.body) return;
+        el = document.createElement("div"); el.id = "ag-backdrop"; el.setAttribute("aria-hidden", "true");
+        document.body.appendChild(el);
+        if (!document.getElementById("ag-backdrop-css")) {
+          var st = document.createElement("style"); st.id = "ag-backdrop-css";
+          st.textContent = "#ag-backdrop{position:fixed;left:0;top:0;right:0;bottom:0;z-index:-1;pointer-events:none;display:none}" +
+            "html.ag-game-on #ag-backdrop{display:block;animation:agBdIn .45s ease-out}" +
+            "html.ag-game-on body{background:transparent!important}" +
+            "@keyframes agBdIn{from{opacity:0}to{opacity:1}}";
+          document.head.appendChild(st);
+        }
+      }
+      var b = getBoard(), a = api.alpha;
+      el.style.background = [
+        "radial-gradient(90% 50% at 50% 0%," + a(b.glow, 0.42) + "," + a(b.glow, 0) + " 72%)",
+        "radial-gradient(90% 50% at 50% 100%," + a(b.accent, 0.38) + "," + a(b.accent, 0) + " 72%)",
+        "radial-gradient(circle at 2px 2px," + a(b.glow, 0.26) + " 1.6px," + a(b.glow, 0) + " 2.4px) 0 0/24px 24px",
+        "linear-gradient(180deg," + b.base2 + "," + b.base + ")"
+      ].join(",");
+    } catch (e) { }
+  }
+
   function applyRootAttrs() {
+    paintBackdrop();
     if (!root) return;
     var b = getBoard(), rs = root.style;
     rs.setProperty("--agb-base", b.base); rs.setProperty("--agb-base2", b.base2);

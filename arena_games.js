@@ -1167,6 +1167,15 @@
       R + ".sl-shake{animation:slShake .52s cubic-bezier(.36,.07,.19,.97) both}",
       "@keyframes slShake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(4px,-2px)}30%,50%,70%{transform:translate(-7px,3px) rotate(-.5deg)}40%,60%{transform:translate(7px,-3px) rotate(.5deg)}}",
       R + ".bg-dice:disabled{opacity:.55}",
+      R + ".sl-pg{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
+      R + ".sl-pc{padding:.2rem .5rem .2rem .2rem;gap:4px;overflow:visible;min-height:62px}",
+      R + ".sl-pc.turn{box-shadow:0 0 0 2px var(--ag-ac),0 8px 18px -8px rgba(245,158,11,.7)}",
+      R + ".sl-pc .lx-dwrap{flex:none;padding:10px 11px 9px}",
+      R + ".sl-pc .lx-die{--s:36px}",
+      R + ".sl-pc .lx-dwrap::before{width:50px;height:50px;margin:-31px 0 0 -25px}",
+      R + ".sl-pc .lx-sh{width:30px;margin-left:-15px;bottom:1px;height:7px}",
+      R + ".sl-pi{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}",
+      R + ".sl-pn{display:flex;align-items:center;gap:5px;min-width:0}",
       R + ".bg-dice.roll{animation:bgSpin 1s ease-in-out}",
       "@keyframes bgSpin{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-16deg) scale(1.1)}70%{transform:rotate(16deg) scale(1.1)}100%{transform:rotate(0) scale(1)}}",
       R + ".bg-pchip{position:relative;display:flex;align-items:center;gap:6px;padding:.38rem .58rem;border-radius:.8rem;background:var(--ag-bg2);border:1.5px solid var(--ag-bd);font-size:11.5px;font-weight:700;min-width:0;transition:border-color .2s,background .2s}",
@@ -1869,26 +1878,29 @@
       else if (!canRollNow()) return;
       st.busy = true; updateHUD();
       playSfx("dice");
-      var btn = q("#sl-dice-btn", host);
-      if (btn) { btn.classList.remove("roll"); void btn.offsetWidth; btn.classList.add("roll"); }
-      var ticks = 0, finalVal = 1 + Math.floor(Math.random() * 6);
+      var finalVal = 1 + Math.floor(Math.random() * 6), actor = st.turn, ms = Math.round(api.dur(1000));
       clearTimeout(diceT);
-      var SLN = 12;
-      (function slTick() {
-        ticks++;
-        var show = ticks >= SLN ? finalVal : 1 + Math.floor(Math.random() * 6);
-        st.dice = show;
-        if (btn) btn.innerHTML = diceSVG(show);
-        if (ticks < SLN) { diceT = later(slTick, api.dur(70 + ticks * 12)); return; }
+      st.dice = finalVal; st.players[actor].lastDice = finalVal;
+      dieVisual(actor, finalVal, ms);
+      diceT = later(function () {
         st.rollId = (st.rollId || 0) + 1;
         if (rm) {
           rm.F.updateDoc(rm.ref, {
-            "sl.lastMove": { by: st.turn, val: finalVal, id: st.rollId },
+            "sl.lastMove": { by: actor, val: finalVal, id: st.rollId },
             "sl.dice": finalVal
           }).catch(function () { });
         }
-        executeMove(st.turn, finalVal, true);
-      })();
+        executeMove(actor, finalVal, true);
+      }, ms + 80);
+    }
+
+    /* ---------- 3D dice (shared with Ludo) ---------- */
+    var slRots = {};
+    function dkit() { return api.diceKit; }
+    function slRot(i) { return slRots[i] || (slRots[i] = { x: 0, y: 0 }); }
+    function dieVisual(idx, val, ms) {
+      var k = dkit(); if (!k) return;
+      k.roll(q("#sl-die-" + idx, host), q("#sl-dw-" + idx, host), q("#sl-cube-" + idx, host), slRot(idx), val, ms);
     }
 
     function maybeBot() {
@@ -2043,9 +2055,11 @@
             var actorIdx = sl.lastMove.by;
             if (st.players[actorIdx] && st.players[actorIdx].uid !== rm.uid) {
               st.busy = true; st.dice = sl.lastMove.val;
-              var btn = q("#sl-dice-btn", host); if (btn) btn.innerHTML = diceSVG(st.dice);
+              var rms = Math.round(api.dur(1000));
+              st.players[actorIdx].lastDice = sl.lastMove.val;
+              dieVisual(actorIdx, sl.lastMove.val, rms); updateHUD();
               playSfx("dice");
-              executeMove(actorIdx, sl.lastMove.val, false);
+              later(function () { executeMove(actorIdx, sl.lastMove.val, false); }, rms + 80);
             }
           } else if (!st.busy) {
             st.turn = sl.turn;
@@ -2082,8 +2096,13 @@
 
     function updateHUD() {
       if (!st || !host) return;
-      var pl = st.players[st.turn], btn = q("#sl-dice-btn", host), can = canRollNow();
-      if (btn) btn.disabled = !can;
+      var pl = st.players[st.turn], can = canRollNow();
+      st.players.forEach(function (p, i) {
+        var d = q("#sl-die-" + i, host), w = q("#sl-dw-" + i, host); if (!d || !w) return;
+        var mine = i === st.turn, ready = mine && can;
+        d.disabled = !ready;
+        d.classList.toggle("ready", ready); w.classList.toggle("ready", ready); w.classList.toggle("idle", !mine);
+      });
       var hint = q("#sl-roll-hint", host);
       if (hint) {
         if (st.busy) hint.textContent = "Moving…";
@@ -2174,14 +2193,17 @@
         '<div id="sl-msg" class="text-xs font-extrabold text-center truncate flex-1">' + esc(st.msg) + '</div>' +
         '<button type="button" class="bg-sec" style="padding:.45rem .6rem" data-sl="studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
       h += '<div class="bg-cv-wrap ag-glass"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
-      h += '<div class="ag-glass p-2.5 space-y-2"><div class="flex items-center gap-2.5">' +
-        '<button type="button" id="sl-dice-btn" class="bg-dice" data-sl="roll" aria-label="Roll dice">' + diceSVG(st.dice) + '</button>' +
-        '<div class="min-w-0 flex-1 space-y-1.5">' +
-        '<div id="sl-roll-hint" class="text-xs font-extrabold">Tap dice to roll</div>' +
-        '<div class="grid grid-cols-2 gap-1.5">' + st.players.map(function (pl, idx) {
-          return '<div id="sl-chip-' + idx + '" class="bg-pchip' + (idx === st.turn ? " turn" : "") + '"><span class="bg-dot" style="background:' + pl.color + '"></span>' +
-            '<span class="truncate flex-1">' + esc(pl.name) + '</span><span class="sl-pos qa-ac font-extrabold">#' + pl.pos + '</span></div>';
-        }).join("") + '</div></div></div>';
+      var K = dkit(); if (K) K.css();
+      slRots = {};
+      h += '<div class="ag-glass p-2.5 space-y-2">' +
+        '<div id="sl-roll-hint" class="text-xs font-extrabold text-center">Tap dice to roll</div>' +
+        '<div class="sl-pg">' + st.players.map(function (pl, idx) {
+          return '<div id="sl-chip-' + idx + '" class="bg-pchip sl-pc' + (idx === st.turn ? " turn" : "") + '">' +
+            '<div class="lx-dwrap lx-big' + (idx === st.turn ? "" : " idle") + '" id="sl-dw-' + idx + '" style="' + (K ? K.vars(pl.color) : "") + '">' +
+            '<button type="button" id="sl-die-' + idx + '" class="lx-die" data-sl="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + (K ? K.cube("sl-cube-" + idx) : "") + '</button><i class="lx-sh"></i></div>' +
+            '<div class="sl-pi"><div class="sl-pn"><span class="bg-dot" style="background:' + pl.color + '"></span><span class="truncate flex-1">' + esc(pl.name) + '</span></div>' +
+            '<span class="sl-pos qa-ac font-extrabold">#' + pl.pos + '</span></div></div>';
+        }).join("") + '</div></div>';
       h += '<div class="bg-emo-bar">' + ["👏", "😂", "🔥", "😱"].map(function (em) {
         return '<button type="button" class="bg-emo" data-sl="emo" data-k="' + em + '">' + em + '</button>';
       }).join("") + '</div></div></div>';
@@ -2189,6 +2211,7 @@
       cv = q("#sl-canvas", host); ctx = cv.getContext("2d");
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
       offKey = "";
+      st.players.forEach(function (p, i) { var k = dkit(); if (k) k.set(q("#sl-cube-" + i, host), slRot(i), p.lastDice || 1, false); });
       window.requestAnimationFrame(function () { resizeBoard(); updateHUD(); maybeBot(); kickLoop(); });
     }
 
@@ -2325,7 +2348,7 @@
     var host = null, view = "setup";
     var cfg = { mode: "ai", turbo: true, count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "" };
     var st = null, rm = null, busy = false;
-    var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1;
+    var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1, pad = 0;
     var dprCap = 2.5, prevNow = 0, slowN = 0, lastDprT = 0; /* adaptive HD: starts sharp, steps down by itself if frames get slow */
     var raf = 0, lastT = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
     var gen = 0;
@@ -2446,9 +2469,10 @@
         R + ".lx-pd .lx-mini .lx-die{--s:28px;margin:5px}",
         R + ".lx-pd .lx-mini::before{width:40px;height:40px;margin:-20px 0 0 -20px}",
         R + ".lx-bw{position:relative;width:100%;max-width:520px;margin:2px auto;aspect-ratio:1/1}",
+        R + ".lx-bw::before{content:\"\";position:absolute;inset:0;border-radius:4.5%;box-shadow:0 22px 44px -16px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}",
         R + ".ag-playing .lx-bw{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
         R + ".lx-bw.shake{animation:lxShake .45s ease-in-out}",
-        R + ".lx-cv{display:block;width:100%;height:100%;touch-action:manipulation;border-radius:4.5%;box-shadow:0 22px 44px -16px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}",
+        R + ".lx-cv{display:block;position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation;pointer-events:none;z-index:1}",
         R + ".lx-toast{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.5);opacity:0;pointer-events:none;z-index:6;font-weight:900;font-size:clamp(18px,6.2vw,30px);letter-spacing:.03em;color:#fff;white-space:nowrap;padding:.28rem 1rem;border-radius:999px;text-shadow:0 2px 0 rgba(0,0,0,.35);background:linear-gradient(135deg,var(--tc,#f59e0b),rgba(15,23,42,.8));border:2px solid rgba(255,255,255,.8);box-shadow:0 10px 30px -6px var(--tc,#f59e0b)}",
         R + ".lx-toast.go{animation:lxToast 1.25s cubic-bezier(.2,1.2,.4,1) forwards}",
 
@@ -2471,7 +2495,7 @@
         R + ".lx-tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(26deg)}",
         R + ".lx-cube{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.12,.75,.2,1)}",
         R + ".lx-cube.spin{transition:none;animation:lxSpin 9s linear infinite}",
-        R + ".lx-f{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:calc(var(--s)*.15);border-radius:calc(var(--s)*.09);backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(145deg,#ffffff,#eef2f7 55%,#c9d3e0);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 0 calc(var(--s)*.2) rgba(255,255,255,.9),inset 0 -3px 8px rgba(100,116,139,.35),inset 0 0 0 calc(var(--s)*.035) var(--dc)}",
+        R + ".lx-f{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:calc(var(--s)*.15);border-radius:calc(var(--s)*.2);backface-visibility:hidden;-webkit-backface-visibility:hidden;background:linear-gradient(145deg,#ffffff,#eef2f7 55%,#c9d3e0);border:1px solid rgba(255,255,255,.7);box-shadow:inset 0 0 calc(var(--s)*.2) rgba(255,255,255,.9),inset 0 -3px 8px rgba(100,116,139,.35),inset 0 0 0 calc(var(--s)*.035) var(--dc)}",
         R + ".lx-f i{display:block;margin:auto;width:calc(var(--s)*.19);height:calc(var(--s)*.19);border-radius:50%}",
         R + ".lx-f i.o{background:radial-gradient(circle at 35% 30%,var(--dpl),var(--dp) 70%);box-shadow:inset 0 -2px 3px rgba(0,0,0,.35),0 1px 1px rgba(255,255,255,.9)}",
         /* Dice Skin 2: Obsidian Gold */
@@ -2496,6 +2520,36 @@
         R + ".lx-f5{transform:rotateY(-90deg) translateZ(calc(var(--s)/2))}",
         R + ".lx-f3{transform:rotateX(90deg) translateZ(calc(var(--s)/2))}",
         R + ".lx-f4{transform:rotateX(-90deg) translateZ(calc(var(--s)/2))}",
+        R + ".lx-core{backface-visibility:visible;-webkit-backface-visibility:visible;border-radius:calc(var(--s)*.06);pointer-events:none}",
+        R + ".lx-c1{transform:none}",
+        R + ".lx-c2{transform:rotateY(90deg)}",
+        R + ".lx-c3{transform:rotateX(90deg)}",
+        R + ".lx-cube{--core:#e3e9f1;background:var(--core);border-radius:calc(var(--s)*.2)}",
+        R + ".lx-cube::before,.lx-cube::after{content:\"\";position:absolute;inset:0;border-radius:calc(var(--s)*.2);background:var(--core)}",
+        R + ".lx-cube::before{transform:rotateY(90deg)}",
+        R + ".lx-cube::after{transform:rotateX(90deg)}",
+        "#quiz-arena-root[data-ag-dice='obsidian'] .lx-cube{--core:#0f172a}",
+        "#quiz-arena-root[data-as-dice='obsidian'] .lx-cube{--core:#0f172a}",
+        "#quiz-arena-root[data-ag-dice='neon'] .lx-cube{--core:#1b0f3a}",
+        "#quiz-arena-root[data-as-dice='neon'] .lx-cube{--core:#1b0f3a}",
+        "#quiz-arena-root[data-ag-dice='gold'] .lx-cube{--core:#e8a317}",
+        "#quiz-arena-root[data-as-dice='gold'] .lx-cube{--core:#e8a317}",
+        "#quiz-arena-root[data-ag-dice='crystal'] .lx-cube{--core:#bde6fb}",
+        "#quiz-arena-root[data-as-dice='crystal'] .lx-cube{--core:#bde6fb}",
+        "#quiz-arena-root[data-ag-dice='wood'] .lx-cube{--core:#78350f}",
+        "#quiz-arena-root[data-as-dice='wood'] .lx-cube{--core:#78350f}",
+        "#quiz-arena-root[data-ag-dice='jade'] .lx-cube{--core:#2fbf8b}",
+        "#quiz-arena-root[data-as-dice='jade'] .lx-cube{--core:#2fbf8b}",
+        "#quiz-arena-root[data-ag-dice='ruby'] .lx-cube{--core:#d9475f}",
+        "#quiz-arena-root[data-as-dice='ruby'] .lx-cube{--core:#d9475f}",
+        "#quiz-arena-root[data-ag-dice='candy'] .lx-cube{--core:#e08fd0}",
+        "#quiz-arena-root[data-as-dice='candy'] .lx-cube{--core:#e08fd0}",
+        "#quiz-arena-root[data-ag-dice='galaxy'] .lx-cube{--core:#1e1b4b}",
+        "#quiz-arena-root[data-as-dice='galaxy'] .lx-cube{--core:#1e1b4b}",
+        "#quiz-arena-root[data-ag-dice='magma'] .lx-cube{--core:#1c1917}",
+        "#quiz-arena-root[data-as-dice='magma'] .lx-cube{--core:#1c1917}",
+        "#quiz-arena-root[data-ag-dice='meadow'] .lx-cube{--core:#5cc97f}",
+        "#quiz-arena-root[data-as-dice='meadow'] .lx-cube{--core:#5cc97f}",
         R + ".lx-hint{min-height:26px;font-size:10.5px;line-height:1.25;font-weight:800;text-align:center;color:var(--ag-tx);display:flex;align-items:flex-start;justify-content:center}",
 
         /* result */
@@ -2766,8 +2820,9 @@
       if (!ctx || !size) return;
       buildCache();
       var c = ctx, cw = size / 15, t = performance.now(), i, j;
-      c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      c.clearRect(0, 0, size, size);
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.clearRect(0, 0, cv.width, cv.height);
+      c.setTransform(dpr, 0, 0, dpr, pad * dpr, pad * dpr);
       if (off && off.width) c.drawImage(off, 0, 0, size, size);
       if (!st) return;
 
@@ -2888,7 +2943,12 @@
       var w = Math.floor(wrap.clientWidth);
       if (w < 40) return;
       dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), dprCap);
-      if (w !== size || cv.width !== Math.round(w * dpr)) { size = w; cv.width = Math.round(size * dpr); cv.height = Math.round(size * dpr); offKey = ""; }
+      var np = Math.round(w / 15 * 1.1), full = w + np * 2; /* transparent margin so edge pawns are never clipped */
+      if (w !== size || np !== pad || cv.width !== Math.round(full * dpr)) {
+        size = w; pad = np;
+        cv.style.left = cv.style.top = (-pad) + "px"; cv.style.width = cv.style.height = full + "px";
+        cv.width = Math.round(full * dpr); cv.height = Math.round(full * dpr); offKey = "";
+      }
       drawFrame();
     }
     /* ---------------------------------------------------------------
@@ -2900,7 +2960,7 @@
       return h + '</div>';
     }
     function cubeHTML(spin, idx) {
-      return '<div class="lx-tilt"><div class="lx-cube' + (spin ? " spin" : "") + '"' + (spin ? "" : ' id="ld-cube' + (idx == null ? "" : "-" + idx) + '"') + '>' + [1, 2, 3, 4, 5, 6].map(pipFace).join("") + '</div></div>';
+      return '<div class="lx-tilt"><div class="lx-cube' + (spin ? " spin" : "") + '"' + (spin ? "" : ' id="ld-cube' + (idx == null ? "" : "-" + idx) + '"') + '>' + [1, 2, 3, 4, 5, 6].map(pipFace).join("") + '<div class="lx-f lx-core lx-c1"></div><div class="lx-f lx-core lx-c2"></div><div class="lx-f lx-core lx-c3"></div></div></div>';
     }
     function dieVars(color) { return "--dc:" + color + ";--dp:" + shade(color, -0.42) + ";--dpl:" + shade(color, 0.12) + ";"; }
 
@@ -3172,8 +3232,8 @@
     function handleBoardTap(e) {
       if (!st || !st.awaitMove || !canActNow() || !cv || !st._rendered) return;
       var rect = cv.getBoundingClientRect();
-      var x = (e.clientX - rect.left) * (size / rect.width);
-      var y = (e.clientY - rect.top) * (size / rect.height);
+      var x = (e.clientX - rect.left) * ((size + pad * 2) / rect.width) - pad;
+      var y = (e.clientY - rect.top) * ((size + pad * 2) / rect.height) - pad;
       var hitR = Math.max(18, (size / 15) * 0.65), best = -1, bestD = hitR;
       for (var i = 0; i < st._rendered.length; i++) {
         var it = st._rendered[i];
@@ -3539,7 +3599,7 @@
       h += '</div>';
       host.innerHTML = h; icons();
       cv = q("#ld-canvas", host); ctx = cv.getContext("2d");
-      cv.addEventListener("click", handleBoardTap);
+      q(".lx-bw", host).addEventListener("click", handleBoardTap);
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
       offKey = ""; dieRots = {}; lastTurnShown = -1;
       if (perDie) st.players.forEach(function (p, i) { setCube(p.lastDice || 1, false, 0, i); });
@@ -3591,6 +3651,35 @@
       else if (view === "result" && st) renderResult();
       else { view = "setup"; renderSetup(); }
     }
+
+    /* shared 3D dice kit (Snakes & Ladders reuses Ludo's cube + skins) */
+    api.diceKit = {
+      css: lxCss,
+      vars: dieVars,
+      cube: function (id) { return cubeHTML(false, 0).replace('id="ld-cube-0"', 'id="' + id + '"'); },
+      set: function (cube, rot, v, anim, ms) {
+        if (!cube || !rot) return;
+        var t = FACE_ROT[v] || FACE_ROT[1], nx, ny;
+        if (anim && !REDUCE) {
+          nx = Math.ceil(rot.x / 360) * 360 + 360 * (1 + Math.floor(Math.random() * 2)) + t[0];
+          ny = Math.ceil(rot.y / 360) * 360 + 360 * (2 + Math.floor(Math.random() * 2)) + t[1];
+          cube.style.transition = "transform " + ms + "ms cubic-bezier(.12,.75,.2,1)";
+        } else {
+          nx = Math.round(rot.x / 360) * 360 + t[0]; ny = Math.round(rot.y / 360) * 360 + t[1];
+          cube.style.transition = "none";
+        }
+        rot.x = nx; rot.y = ny;
+        cube.style.transform = "rotateX(" + nx + "deg) rotateY(" + ny + "deg)";
+      },
+      roll: function (die, dw, cube, rot, v, ms) {
+        if (!die || !dw) return;
+        api.diceKit.set(cube, rot, v, true, ms);
+        die.style.setProperty("--jd", ms + "ms"); dw.style.setProperty("--jd", ms + "ms");
+        die.classList.remove("jump", "land"); dw.classList.remove("rolling"); void die.offsetWidth;
+        die.classList.add("jump"); dw.classList.add("rolling");
+        setTimeout(function () { die.classList.remove("jump"); dw.classList.remove("rolling"); }, ms + 60);
+      }
+    };
 
     registerGame("ludo", {
       mount: function (el) {

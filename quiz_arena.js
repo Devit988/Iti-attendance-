@@ -902,7 +902,7 @@ html.bright-mode .qa-chip.combo { color: #b45309; background: #fef3c7; }
         '</div></div>';
 
       /* Room size */
-      h += '<div class="flex items-center gap-2"><span class="qa-lbl shrink-0">Room Size</span><div class="grid grid-cols-3 gap-1.5 flex-1' + (tug ? " qa-lock" : "") + '">' +
+      h += '<div style="display:flex;flex-direction:column;gap:6px"><span class="qa-lbl">Room Size</span><div class="grid grid-cols-3 gap-1.5' + (tug ? " qa-lock" : "") + '">' +
         [2, 3, 4].map(function (n) {
           var on = tug ? n === 2 : S.players === n;
           return '<button type="button" class="qa-pill btn-tap text-center' + (on ? " on" : "") + '" style="padding:5px 0" data-a="players" data-k="' + n + '" aria-pressed="' + on + '"' + (tug && n !== 2 ? " disabled" : "") + '>' + n + " Players</button>";

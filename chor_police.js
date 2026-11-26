@@ -1785,7 +1785,6 @@
     if (document.getElementById("cp-style")) return;
     var R = "#ag-pane-chorpolice ";
     var css = [
-      "@media(max-width:480px){#quiz-arena-root .ag-tab{font-size:10px;padding:.45rem .15rem}}",
       R + "{--cp-ac:#f97316;--cp-ac2:#fbbf24;--cp-tx:var(--ag-tx,#e2e8f0);--cp-t2:var(--ag-t2,#94a3b8);--cp-bg:var(--ag-bg,rgba(15,23,42,.64));--cp-bg2:var(--ag-bg2,rgba(30,41,59,.56));--cp-bd:var(--ag-bd,rgba(148,163,184,.24));color:var(--cp-tx)}",
       "html.bright-mode " + R + "{--cp-ac:#ea580c;--cp-ac2:#d97706}",
       R + "*{box-sizing:border-box}",

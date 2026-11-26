@@ -3217,7 +3217,8 @@ html.bright-mode .tr-go{background-color:rgba(209,250,229,.85);color:#065f46;bor
 #tr-img{position:absolute;left:50%;top:50%;max-width:92%;max-height:78%;transform-origin:50% 50%;will-change:transform;pointer-events:none;-webkit-user-drag:none}
 #trace-overlay.tr-f-hc #tr-img{filter:grayscale(1) contrast(1.9) brightness(1.08);mix-blend-mode:multiply}
 #trace-overlay.tr-f-inv #tr-img{filter:grayscale(1) invert(1) contrast(1.7);mix-blend-mode:screen}
-#tr-grid{position:absolute;inset:0;pointer-events:none;display:none;background-image:linear-gradient(rgb(var(--a5) / .4) 1px,transparent 1px),linear-gradient(90deg,rgb(var(--a5) / .4) 1px,transparent 1px);background-size:32px 32px;background-position:center}
+#tr-grid{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
+#tr-grid path{fill:none;stroke:rgb(var(--a5) / .55);stroke-width:1}
 #trace-overlay.tr-grid-on #tr-grid{display:block}
 
 #tr-topbar{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:.5rem;padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 0;z-index:5}
@@ -3227,6 +3228,7 @@ html.bright-mode .tr-go{background-color:rgba(209,250,229,.85);color:#065f46;bor
 #trace-overlay.tr-locked #tr-panel,#trace-overlay.tr-locked #tr-topbar{display:none}
 #trace-overlay.tr-locked #tr-stage{cursor:default}
 #trace-overlay.tr-screen #tr-torch,#trace-overlay.tr-screen [data-tr-filter="inv"]{display:none}
+#trace-overlay.tr-screen .tr-grid3{grid-template-columns:repeat(3,1fr)}
 #trace-overlay.tr-screen .lb-caption-card,#trace-overlay.tr-screen .lb-ctrl-btn{box-shadow:0 6px 22px -6px rgb(var(--c900) / .45)}
 #tr-torch[aria-pressed="true"]{background-color:rgb(var(--a4) / .95);color:#1f1300;border-color:rgb(var(--a4))}
 .lb-ctrl-btn.tr-close{color:#fda4af;background-color:rgba(244,63,94,.28);border-color:rgba(251,113,133,.55)}
@@ -3240,7 +3242,7 @@ html.bright-mode .lb-ctrl-btn.tr-close{color:#be123c;background-color:rgba(255,2
 html.bright-mode .tr-chip,html.bright-mode .tr-act{color:rgb(var(--c700));background-color:rgba(255,255,255,.75);border-color:rgba(148,163,184,.4)}
 html.bright-mode .tr-chip.tr-on,html.bright-mode .tr-act.tr-on{color:rgb(var(--a8));background-color:rgb(var(--a5) / .2);border-color:rgb(var(--a6))}
 html.bright-mode .tr-act.tr-amber{color:rgb(var(--a8))}
-.tr-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:.5rem}
+.tr-grid3{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:.5rem}
 .tr-grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:.5rem}
 .tr-row{display:flex;align-items:center;gap:.6rem;color:rgb(var(--a2))}
 .tr-row+.tr-row{margin-top:.35rem}
@@ -3269,6 +3271,16 @@ html.bright-mode #tr-unlock{color:rgb(var(--a8));background-color:rgba(255,255,2
 #tr-unlock svg.tr-ring{width:30px;height:30px;transform:rotate(-90deg)}
 #tr-ring-c{fill:none;stroke:rgb(var(--a5));stroke-width:3;stroke-linecap:round;stroke-dasharray:69.1;stroke-dashoffset:69.1}
 html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
+#tr-panel .tr-row[hidden],#tr-nudge[hidden],#tr-guide[hidden],#tr-recent[hidden]{display:none}
+#tr-fine{width:100%;margin-top:.5rem;min-height:2rem}
+#tr-nudge{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:.5rem}
+#tr-guide{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100% - 32px);max-width:21rem;padding:1rem;border-radius:1rem;z-index:8;color:#e2e8f0;font-size:12px;font-weight:600;line-height:1.5}
+#tr-guide ol{list-style:decimal;padding-left:1.2rem;margin:.5rem 0 .75rem}
+#tr-guide button{width:100%}
+html.bright-mode #tr-guide{color:rgb(var(--c700))}
+#tr-recent-list{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.25rem}
+#tr-recent-list button{flex:0 0 4.5rem;height:4.5rem;background:#fff;border:1px solid rgba(148,163,184,.4);border-radius:.6rem;padding:.2rem}
+#tr-recent-list img{width:100%;height:100%;object-fit:contain}
 </style>
 
 </head>
@@ -4261,6 +4273,10 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                 <button type="button" data-tr-l="clear" class="tl-chip btn-tap"><i data-lucide="x" class="w-3.5 h-3.5"></i><span>Clear</span></button>
               </div>
               <p class="text-[10px] text-slate-400 leading-relaxed">Tip: in any gallery photo tap <b>Trace</b>, or open a symbol and tap <b>Trace Symbol</b>.</p>
+              <div id="tr-recent" class="space-y-1.5" hidden>
+                <div class="flex items-center justify-between"><span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Recent diagrams</span><button type="button" data-tr-l="forget" class="text-[10px] font-bold text-slate-400 underline">Delete all</button></div>
+                <div id="tr-recent-list"></div>
+              </div>
               <input type="file" id="tr-file" accept="image/*" class="hidden">
             </div>
             <div class="space-y-2">
@@ -5555,7 +5571,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
   <div id="trace-overlay" role="dialog" aria-modal="true" aria-label="Trace drawing" aria-hidden="true">
     <video id="tr-video" playsinline muted autoplay></video>
     <div id="tr-stage"><img id="tr-img" alt="Diagram to trace" draggable="false"></div>
-    <div id="tr-grid"></div>
+    <svg id="tr-grid" aria-hidden="true"><defs><pattern id="tr-pat" patternUnits="userSpaceOnUse" width="32" height="32"><path/></pattern></defs><rect width="100%" height="100%" fill="url(#tr-pat)"/></svg>
     <div id="tr-cam-err" class="lb-caption-card">
       <div class="mx-auto mb-2 w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/35 flex items-center justify-center text-amber-400"><i data-lucide="camera-off" class="w-4 h-4"></i></div>
       <p id="tr-cam-msg"></p>
@@ -5581,6 +5597,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
         <button type="button" data-tr-act="filter" data-f="normal" class="tr-chip"><i data-lucide="image" class="w-3.5 h-3.5"></i><span>Normal</span></button>
         <button type="button" data-tr-act="filter" data-f="hc" data-tr-filter="hc" class="tr-chip"><i data-lucide="pen-tool" class="w-3.5 h-3.5"></i><span>Black lines</span></button>
         <button type="button" data-tr-act="filter" data-f="inv" data-tr-filter="inv" class="tr-chip"><i data-lucide="moon" class="w-3.5 h-3.5"></i><span>White lines</span></button>
+        <button type="button" data-tr-act="filter" data-f="cut" class="tr-chip"><i data-lucide="scissors" class="w-3.5 h-3.5"></i><span>Lines only</span></button>
       </div>
       <div class="tr-grid5">
         <button type="button" data-tr-act="grid" class="tr-act"><i data-lucide="grid-3x3" class="w-4 h-4"></i><span>Grid</span></button>
@@ -5589,11 +5606,25 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
         <button type="button" data-tr-act="upload" class="tr-act"><i data-lucide="image-plus" class="w-4 h-4"></i><span>Photo</span></button>
         <button type="button" data-tr-act="lock" class="tr-act tr-amber"><i data-lucide="lock" class="w-4 h-4"></i><span>Lock</span></button>
       </div>
+      <div id="tr-zoom-row" class="tr-row" style="margin-top:.5rem" hidden><i data-lucide="zoom-in" class="w-4 h-4 shrink-0"></i><input id="tr-zoom" class="tr-range" type="range" aria-label="Camera zoom"><span id="tr-zoom-v" class="tr-val">1x</span></div>
+      <div id="tr-gsize-row" class="tr-row" style="margin-top:.5rem" hidden><i data-lucide="grid-3x3" class="w-4 h-4 shrink-0"></i><input id="tr-gsize" class="tr-range" type="range" min="16" max="96" step="4" value="32" aria-label="Grid size"><span id="tr-gsize-v" class="tr-val">32</span></div>
+      <div id="tr-nudge" hidden>
+        <button type="button" data-tr-act="nudge" data-x="-1" data-y="0" aria-label="Move left" class="tr-chip">&larr;</button>
+        <button type="button" data-tr-act="nudge" data-x="0" data-y="-1" aria-label="Move up" class="tr-chip">&uarr;</button>
+        <button type="button" data-tr-act="nudge" data-x="0" data-y="1" aria-label="Move down" class="tr-chip">&darr;</button>
+        <button type="button" data-tr-act="nudge" data-x="1" data-y="0" aria-label="Move right" class="tr-chip">&rarr;</button>
+      </div>
+      <button type="button" id="tr-fine" data-tr-act="fine" aria-expanded="false" class="tr-chip">Nudge</button>
     </div>
     <button type="button" id="tr-unlock" aria-label="Hold for 1.5 seconds to unlock">
       <span class="relative inline-flex items-center justify-center" style="width:30px;height:30px"><svg class="tr-ring absolute inset-0" viewBox="0 0 30 30"><circle id="tr-ring-c" cx="15" cy="15" r="11"/></svg><i data-lucide="lock" class="w-3 h-3"></i></span>
       <span>Hold to unlock</span>
     </button>
+    <div id="tr-guide" class="lb-caption-card" hidden>
+      <div>How to trace with the camera</div>
+      <ol><li>Fix the phone on a stand, or rest it on a glass above your sheet.</li><li>Move and zoom the diagram to fit the sheet.</li><li>Tap Lock, then draw. Do not move the phone or paper.</li></ol>
+      <button type="button" data-tr-act="guide" class="tr-go rounded-xl px-3 py-2.5 text-xs font-extrabold">Got it</button>
+    </div>
     <input type="file" id="tr-file2" accept="image/*" class="hidden">
   </div>
 
@@ -26652,8 +26683,10 @@ document.addEventListener("keydown", function (e) {
   var img = $("tr-img"), video = $("tr-video"), stage = $("tr-stage"), MK = "iti_trace_mode";
   function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
   var S = { open: false, mode: ls(MK) === "screen" ? "screen" : "camera", url: null, owned: false, x: 0, y: 0, s: 1, r: 0, flip: false, op: 0.6,
-            filter: "normal", grid: false, locked: false, ui: true, stream: null, track: null, torch: false, wake: null, req: 0 };
-  var P = { blob: null, name: "", prev: null }, lm = S.mode, lastFocus = null, prevOv = "", tT = 0;
+            filter: "normal", grid: false, locked: false, ui: true, stream: null, track: null, torch: false, wake: null, req: 0,
+            ops: { camera: 0.6, screen: 1 }, key: "", loaded: false, hist: false, shown: "", cut: "", cutting: "", zoom: null };
+  var GK = "iti_trace_grid", HK = "iti_trace_guide", R = [], RMAX = 6;
+  var P = { blob: null, name: "", key: "", prev: null, gen: 0 }, lm = S.mode, lastFocus = null, prevOv = "", tT = 0;
   function icons() { try { window.lucide && lucide.createIcons(); } catch (e) {} }
   function mainToast(m, t) { try { window.showToast && window.showToast(m, t || "info"); } catch (e) {} }
   function toast(m, ms) {
@@ -26669,20 +26702,117 @@ document.addEventListener("keydown", function (e) {
     $("tr-op").value = Math.round(S.op * 100); $("tr-op-v").textContent = Math.round(S.op * 100) + "%";
     $("tr-rot").value = Math.round(S.r); $("tr-rot-v").textContent = Math.round(S.r) + "\u00B0";
     ov.classList.toggle("tr-f-hc", S.filter === "hc"); ov.classList.toggle("tr-f-inv", S.filter === "inv");
-    ov.classList.toggle("tr-grid-on", S.grid);
+    ov.classList.toggle("tr-grid-on", S.grid); $("tr-gsize-row").hidden = !S.grid; drawGrid(); syncImg();
     ov.querySelectorAll("[data-tr-act=filter]").forEach(function (b) { b.classList.toggle("tr-on", b.dataset.f === S.filter); });
     ov.querySelectorAll("[data-tr-act=mode]").forEach(function (b) { b.classList.toggle("tr-on", b.dataset.m === S.mode); });
     ov.querySelector("[data-tr-act=grid]").classList.toggle("tr-on", S.grid);
     ov.querySelector("[data-tr-act=flip]").classList.toggle("tr-on", S.flip);
   }
+  function gridSize() { var n = +ls(GK); return n >= 16 && n <= 96 ? n : 32; }
+  function drawGrid() {
+    var g = gridSize(), px = g * S.s, p = $("tr-pat"); while (px < 10) px *= 2;
+    $("tr-gsize").value = g; $("tr-gsize-v").textContent = g;
+    p.setAttribute("width", px); p.setAttribute("height", px); p.firstChild.setAttribute("d", "M" + px + " 0H0V" + px);
+    p.setAttribute("patternTransform", "translate(" + (ov.clientWidth / 2 + S.x) + " " + (ov.clientHeight / 2 + S.y) + ") rotate(" + S.r + ")");
+  }
+  window.addEventListener("resize", function () { if (S.open) drawGrid(); });
+
+  /* ---------- "Lines only": keep pixels darker than their surroundings, so paper and shadows vanish ---------- */
+  function makeCut(url) {
+    return new Promise(function (res, rej) {
+      var im = new Image(); if (!/^(blob|data):/.test(url)) im.crossOrigin = "anonymous";
+      im.onerror = rej;
+      im.onload = function () {
+        try {
+          var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.round(im.naturalWidth * k) || 1, h = Math.round(im.naturalHeight * k) || 1;
+          var cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+          var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, w, h); cx.drawImage(im, 0, 0, w, h);
+          var d = cx.getImageData(0, 0, w, h), a = d.data, g = new Uint8Array(w * h), W = w + 1, sum = new Float64Array(W * (h + 1)), x, y, i, row;
+          for (y = 0; y < h; y++) for (x = 0, row = 0; x < w; x++) { i = y * w + x; g[i] = (a[i * 4] * 77 + a[i * 4 + 1] * 150 + a[i * 4 + 2] * 29) >> 8; row += g[i]; sum[(y + 1) * W + x + 1] = sum[y * W + x + 1] + row; }
+          var r = Math.max(8, Math.round(Math.max(w, h) / 40));
+          for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+            var x0 = Math.max(0, x - r), x1 = Math.min(w, x + r + 1), y0 = Math.max(0, y - r), y1 = Math.min(h, y + r + 1);
+            var mean = (sum[y1 * W + x1] - sum[y0 * W + x1] - sum[y1 * W + x0] + sum[y0 * W + x0]) / ((x1 - x0) * (y1 - y0));
+            i = y * w + x; var al = Math.max((mean - g[i] - 12) * 12, (90 - g[i]) * 8);
+            a[i * 4] = a[i * 4 + 1] = a[i * 4 + 2] = 0; a[i * 4 + 3] = Math.max(0, Math.min(255, al));
+          }
+          cx.putImageData(d, 0, 0);
+          cv.toBlob(function (b) { b ? res(URL.createObjectURL(b)) : rej(new Error("toBlob")); }, "image/png");
+        } catch (e) { rej(e); }
+      };
+      im.src = url;
+    });
+  }
+  function show(u) { if (S.shown !== u) { S.shown = u; img.src = u; } }
+  function syncImg() {
+    if (!S.url) return;
+    if (S.filter !== "cut") { show(S.url); return; }
+    if (S.cut) { show(S.cut); return; }
+    var src = S.url; if (S.cutting === src) return; S.cutting = src;
+    makeCut(src).then(function (u) {
+      if (S.url !== src || S.cut) { URL.revokeObjectURL(u); return; }
+      S.cut = u; S.cutting = ""; if (S.filter === "cut") show(u);
+    }).catch(function () { if (S.url !== src) return; S.cutting = ""; S.filter = "normal"; apply(); toast("Lines only isn\u2019t available for this picture."); });
+  }
+
+  /* ---------- camera zoom + torch share one constraint call ---------- */
+  function caps() { try { return S.track && S.track.getCapabilities ? S.track.getCapabilities() : {}; } catch (e) { return {}; } }
+  function zoomUi() {
+    var z = caps().zoom, row = $("tr-zoom-row"), r = $("tr-zoom");
+    if (S.mode !== "camera" || !z || !(z.max > z.min)) { row.hidden = true; return; }
+    var max = Math.min(z.max, Math.max(8, z.min)), cur = S.zoom;
+    if (cur === null) { try { cur = S.track.getSettings().zoom; } catch (e) {} }
+    cur = Math.min(max, Math.max(z.min, cur || z.min));
+    r.min = z.min; r.max = max; r.step = z.step || 0.1; r.value = cur; $("tr-zoom-v").textContent = (+cur).toFixed(1) + "x"; row.hidden = false;
+    if (S.zoom !== null) constrain(S.torch).catch(function () {});
+  }
+  function constrain(torchOn) {
+    var c = {}, k = caps(); if (k.torch) c.torch = torchOn; if (k.zoom && S.zoom !== null) c.zoom = S.zoom;
+    return S.track.applyConstraints({ advanced: [c] });
+  }
+
   function resetPos() { S.x = 0; S.y = 0; S.s = 1; S.r = 0; }
   function wrap(a) { a = ((a + 180) % 360 + 360) % 360 - 180; return a; }
+
+  /* ---------- saved view per diagram (last 20) ---------- */
+  var VK = "iti_trace_views";
+  function hash(t) { var h = 5381, i = t.length; while (i) h = (h * 33) ^ t.charCodeAt(--i); return (h >>> 0).toString(36) + "." + t.length; }
+  function fileKey(f) { return "f:" + hash([f.name, f.size, f.lastModified].join("|")); }
+  function views() { try { var a = JSON.parse(ls(VK) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function saveView() {
+    if (!S.open || !S.key || !S.loaded) return;
+    var a = views().filter(function (v) { return v && v.k !== S.key; });
+    a.unshift({ k: S.key, x: S.x, y: S.y, s: S.s, r: S.r, flip: S.flip, filter: S.filter, grid: S.grid, ops: { camera: S.ops.camera, screen: S.ops.screen } });
+    ls(VK, JSON.stringify(a.slice(0, 20)));
+  }
+  function loadView(key) {
+    var v = views().filter(function (x) { return x && x.k === key; })[0] || {};
+    var n = function (x, d) { return typeof x === "number" && isFinite(x) ? x : d; }, o = v.ops || {};
+    S.key = key; S.x = n(v.x, 0); S.y = n(v.y, 0); S.s = n(v.s, 1); S.r = n(v.r, 0); S.flip = !!v.flip;
+    S.filter = ["hc", "inv", "cut"].indexOf(v.filter) >= 0 ? v.filter : "normal"; S.grid = !!v.grid;
+    S.ops = { camera: n(o.camera, 0.6), screen: n(o.screen, 1) };
+  }
+
+  /* ---------- last diagram (IndexedDB, stays on this phone) ---------- */
+  function idb(mode, run) {
+    return new Promise(function (res, rej) {
+      var q = indexedDB.open("iti_trace", 1);
+      q.onupgradeneeded = function () { q.result.createObjectStore("kv"); };
+      q.onerror = function () { rej(q.error); };
+      q.onsuccess = function () {
+        var db = q.result, tx = db.transaction("kv", mode), r = run(tx.objectStore("kv"));
+        tx.oncomplete = function () { db.close(); res(r.result); };
+        tx.onerror = tx.onabort = function () { db.close(); rej(tx.error); };
+      };
+    });
+  }
+  function lastSave(rec) { idb("readwrite", function (st) { return rec ? st.put(rec, "last") : st.delete("last"); }).catch(function () {}); }
 
   /* ---------- camera / torch / wake lock ---------- */
   function stopCamera() {
     S.req++;
     try { if (S.stream) S.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
-    S.stream = null; S.track = null; S.torch = false;
+    S.stream = null; S.track = null; S.torch = false; $("tr-zoom-row").hidden = true;
     try { video.pause(); } catch (e) {} video.srcObject = null;
     $("tr-torch").setAttribute("aria-pressed", "false");
   }
@@ -26696,17 +26826,18 @@ document.addEventListener("keydown", function (e) {
   function startCamera() {
     stopCamera(); var id = S.req; ov.classList.remove("tr-cam-failed");
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { camFail(); return; }
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false }).then(function (st) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }).then(function (st) {
       if (id !== S.req || !S.open || S.mode !== "camera") { st.getTracks().forEach(function (t) { t.stop(); }); return; }
       S.stream = st; S.track = st.getVideoTracks()[0]; video.srcObject = st;
       var p = video.play(); if (p && p.catch) p.catch(function () {});
+      video.onloadedmetadata = zoomUi; zoomUi();
     }).catch(function (e) { if (id === S.req) camFail(e); });
   }
   function torch() {
     var t = S.track, c = {};
     try { c = t && t.getCapabilities ? t.getCapabilities() : {}; } catch (e) {}
     if (!t || !c.torch) { toast("Torch isn\u2019t supported on this device or browser."); return; }
-    t.applyConstraints({ advanced: [{ torch: !S.torch }] }).then(function () {
+    constrain(!S.torch).then(function () {
       S.torch = !S.torch; $("tr-torch").setAttribute("aria-pressed", S.torch ? "true" : "false");
     }).catch(function () { toast("Couldn\u2019t switch the torch."); });
   }
@@ -26715,6 +26846,7 @@ document.addEventListener("keydown", function (e) {
   }
   function wakeOff() { try { if (S.wake) S.wake.release(); } catch (e) {} S.wake = null; }
   document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") { saveView(); if (S.open) { holdEnd(); stopCamera(); } }
     if (document.visibilityState !== "visible" || !S.open) return;
     wakeOn(); if (S.mode === "camera" && !ov.classList.contains("tr-cam-failed") && (!S.track || S.track.readyState === "ended")) startCamera();
   });
@@ -26723,33 +26855,54 @@ document.addEventListener("keydown", function (e) {
   function setMode(m) {
     S.mode = m; ls(MK, m); lm = m;
     ov.classList.toggle("tr-cam", m === "camera"); ov.classList.toggle("tr-screen", m === "screen");
-    ov.classList.remove("tr-cam-failed"); S.op = m === "camera" ? 0.6 : 1;
+    ov.classList.remove("tr-cam-failed"); S.op = S.ops[m];
     if (m === "screen") { stopCamera(); if (S.filter === "inv") S.filter = "normal"; toast("Tip: raise screen brightness to 100%, then rest your sheet on the screen.", 6000); }
     else startCamera();
+    $("tr-guide").hidden = m !== "camera" || ls(HK) === "1";
     apply(); launcher();
   }
 
   /* ---------- open / close ---------- */
-  function release() { if (S.owned && S.url) { try { URL.revokeObjectURL(S.url); } catch (e) {} } S.url = null; S.owned = false; }
+  function release() { if (S.owned && S.url) { try { URL.revokeObjectURL(S.url); } catch (e) {} } S.url = null; S.owned = false; if (S.cut) URL.revokeObjectURL(S.cut); S.cut = ""; S.cutting = ""; S.shown = ""; }
+  function showImage(url, owned, key) {
+    release(); S.url = url; S.owned = owned; S.loaded = false; loadView(key);
+    img.onload = function () { S.loaded = true; };
+    img.onerror = function () { toast("Couldn’t load this image."); if (P.key === key) { forget(key); clearPending(); } };
+    S.shown = url; img.src = url;
+  }
   function openTrace(o) {
     if (!o || !o.url) return;
-    release(); S.url = o.url; S.owned = !!o.owned; resetPos(); S.flip = false; S.filter = "normal"; S.grid = false; S.locked = false; S.ui = true;
+    saveView(); showImage(o.url, !!o.owned, o.key || "u:" + hash(o.url)); S.locked = false; S.ui = true; S.zoom = null; $("tr-nudge").hidden = true; $("tr-fine").setAttribute("aria-expanded", "false");
     ov.classList.remove("tr-locked", "tr-ui-off"); setIcon($("tr-ui-toggle"), "eye-off");
-    img.onerror = function () { toast("Couldn\u2019t load this image."); }; img.src = S.url;
     if (!S.open) {
       S.open = true; lastFocus = document.activeElement; prevOv = document.body.style.overflow; document.body.style.overflow = "hidden";
-      ov.classList.add("tr-open"); ov.setAttribute("aria-hidden", "false");
+      ov.classList.add("tr-open"); ov.setAttribute("aria-hidden", "false"); histPush();
     }
     wakeOn(); setMode(o.mode || S.mode); icons();
     try { $("tr-close").focus({ preventScroll: true }); } catch (e) {}
   }
-  function close() {
+  function close(fromPop) {
     if (!S.open) return;
-    S.open = false; stopCamera(); wakeOff(); release(); holdEnd(); ptrs.clear();
-    img.removeAttribute("src"); ov.classList.remove("tr-open", "tr-locked", "tr-cam", "tr-screen", "tr-cam-failed");
+    saveView(); S.open = false; stopCamera(); wakeOff(); release(); holdEnd(); ptrs.clear();
+    img.onload = img.onerror = null; img.removeAttribute("src"); ov.classList.remove("tr-open", "tr-locked", "tr-cam", "tr-screen", "tr-cam-failed");
     ov.setAttribute("aria-hidden", "true"); document.body.style.overflow = prevOv;
     try { lastFocus && lastFocus.focus && lastFocus.focus({ preventScroll: true }); } catch (e) {}
+    if (S.hist) {
+      S.hist = false;
+      if (fromPop !== true) { try { if (history.state && history.state.tr) { skipPop = true; history.back(); } } catch (e) {} }
+    }
   }
+
+  /* ---------- phone Back button: closes tracing only (stays open while locked) ---------- */
+  var skipPop = false;
+  function histPush() { try { history.pushState(Object.assign({}, history.state, { tr: 1 }), ""); S.hist = true; } catch (e) {} }
+  window.addEventListener("popstate", function (e) {
+    if (skipPop) { skipPop = false; if (S.open) histPush(); return; }
+    if (!S.open || (e.state && e.state.tr)) return;
+    if (S.locked) { histPush(); toast("Screen is locked. Hold the corner pill to unlock."); return; }
+    close(true);
+  });
+  window.addEventListener("pagehide", saveView);
 
   /* ---------- gestures: drag, pinch-zoom, twist ---------- */
   var ptrs = new Map();
@@ -26800,13 +26953,13 @@ document.addEventListener("keydown", function (e) {
   /* ---------- panel actions ---------- */
   function newFile(f) {
     if (!f || !/^image\//.test(f.type)) { toast("Please choose an image file."); return; }
-    var u = URL.createObjectURL(f); release(); S.url = u; S.owned = true; img.src = u; resetPos(); apply();
+    saveView(); var key = fileKey(f); setPending(f, f.name, key); showImage(URL.createObjectURL(f), true, key); S.op = S.ops[S.mode]; if (S.mode === "screen" && S.filter === "inv") S.filter = "normal"; apply();
   }
   ov.addEventListener("click", function (e) {
     var b = e.target.closest("[data-tr-act]"); if (!b || S.locked) return;
     switch (b.dataset.trAct) {
       case "close": close(); break;
-      case "mode": setMode(b.dataset.m); break;
+      case "mode": if (b.dataset.m !== S.mode) setMode(b.dataset.m); break;
       case "screen": setMode("screen"); break;
       case "retry": startCamera(); break;
       case "torch": torch(); break;
@@ -26817,11 +26970,18 @@ document.addEventListener("keydown", function (e) {
       case "reset": resetPos(); apply(); toast("Position reset"); break;
       case "filter": S.filter = b.dataset.f; apply(); break;
       case "upload": $("tr-file2").click(); break;
+      case "nudge": S.x += +b.dataset.x; S.y += +b.dataset.y; apply(); break;
+      case "fine": $("tr-nudge").hidden = !$("tr-nudge").hidden; b.setAttribute("aria-expanded", String(!$("tr-nudge").hidden)); break;
+      case "guide": ls(HK, "1"); $("tr-guide").hidden = true; break;
       case "lock": S.locked = true; ptrs.clear(); ov.classList.add("tr-locked"); toast("Locked. Hold the corner pill for 1.5 s to unlock.", 2200); break;
     }
   });
-  $("tr-op").addEventListener("input", function () { S.op = this.value / 100; apply(); });
+  $("tr-op").addEventListener("input", function () { S.op = S.ops[S.mode] = this.value / 100; apply(); });
   $("tr-rot").addEventListener("input", function () { S.r = +this.value; apply(); });
+  $("tr-gsize").addEventListener("input", function () { ls(GK, this.value); drawGrid(); });
+  $("tr-zoom").addEventListener("input", function () {
+    S.zoom = +this.value; $("tr-zoom-v").textContent = S.zoom.toFixed(1) + "x"; if (S.track) constrain(S.torch).catch(function () {});
+  });
   $("tr-file2").addEventListener("change", function () { newFile(this.files[0]); this.value = ""; });
   document.addEventListener("keydown", function (e) {
     if (!S.open) return;
@@ -26837,8 +26997,29 @@ document.addEventListener("keydown", function (e) {
     if (P.prev) { var im = document.createElement("img"); im.src = P.prev; im.alt = "Selected diagram"; pv.appendChild(im); }
     document.querySelectorAll('#tl-pane-trace [data-tr-l="mode"]').forEach(function (b) { b.classList.toggle("tl-on", b.dataset.m === lm); });
     $("tr-mode-desc").textContent = DESC[lm];
+    var go = document.querySelector("#tr-l-start span"); if (go) go.textContent = P.blob ? "Continue last diagram" : "Start tracing";
   }
-  function clearPending() { if (P.prev) { try { URL.revokeObjectURL(P.prev); } catch (e) {} } P.blob = null; P.prev = null; launcher(); }
+  function usePending(blob, name, key) {
+    if (P.prev) { try { URL.revokeObjectURL(P.prev); } catch (e) {} }
+    P.gen++; P.blob = blob; P.name = name; P.key = key; P.prev = blob ? URL.createObjectURL(blob) : null; launcher();
+  }
+  function setPending(blob, name, key) { usePending(blob, name, key); lastSave({ blob: blob, name: name, key: key }); remember({ blob: blob, name: name, key: key }); }
+  /* ---------- recent diagrams (newest first) ---------- */
+  function drawRecent() {
+    var box = $("tr-recent-list"); if (!box) return;
+    box.querySelectorAll("img").forEach(function (i) { URL.revokeObjectURL(i.src); }); box.innerHTML = "";
+    R.forEach(function (r, n) {
+      var b = document.createElement("button"), im = document.createElement("img");
+      b.type = "button"; b.dataset.trL = "recent"; b.dataset.n = n; im.src = URL.createObjectURL(r.blob); im.alt = r.name || "Diagram"; b.appendChild(im); box.appendChild(b);
+    });
+    $("tr-recent").hidden = !R.length;
+  }
+  function storeRecent() { drawRecent(); var a = R.slice(); idb("readwrite", function (st) { return st.put(a, "recent"); }).catch(function () {}); }
+  function without(key) { return R.filter(function (r) { return r.key !== key; }); }
+  function remember(rec) { R = [rec].concat(without(rec.key)).slice(0, RMAX); storeRecent(); }
+  function forget(key) { R = without(key); storeRecent(); }
+  function clearPending() { usePending(null, "", ""); lastSave(null); }
+  function startPending() { openTrace({ url: URL.createObjectURL(P.blob), owned: true, mode: lm, key: P.key }); }
   var pane = $("tl-pane-trace");
   if (pane) {
     pane.addEventListener("click", function (e) {
@@ -26847,18 +27028,29 @@ document.addEventListener("keydown", function (e) {
         case "pick": $("tr-file").click(); break;
         case "symbols": var t = $("tl-tab-symbols"); if (t) { t.click(); mainToast("Open a symbol, then tap \u201CTrace Symbol\u201D"); } break;
         case "clear": clearPending(); break;
+        case "forget": R = []; storeRecent(); clearPending(); break;
+        case "recent": var rc = R[+b.dataset.n]; if (rc) { setPending(rc.blob, rc.name, rc.key); startPending(); } break;
         case "mode": lm = b.dataset.m; launcher(); break;
         case "start":
           if (!P.blob) { $("tr-file").click(); break; }
-          openTrace({ url: URL.createObjectURL(P.blob), owned: true, mode: lm }); break;
+          startPending(); break;
       }
     });
     $("tr-file").addEventListener("change", function () {
       var f = this.files[0]; this.value = ""; if (!f) return;
       if (!/^image\//.test(f.type)) { mainToast("Please choose an image file", "error"); return; }
-      clearPending(); P.blob = f; P.name = f.name; P.prev = URL.createObjectURL(f); launcher();
+      setPending(f, f.name, fileKey(f)); startPending();
     });
     launcher();
+    var g = P.gen;
+    idb("readonly", function (st) { return st.get("last"); }).then(function (r) {
+      if (r && r.blob && P.gen === g) usePending(r.blob, r.name, r.key);
+    }).catch(function () {});
+    idb("readonly", function (st) { return st.get("recent"); }).then(function (a) {
+      if (!Array.isArray(a)) return;
+      a.forEach(function (r) { if (R.length < RMAX && r && r.blob && !R.some(function (x) { return x.key === r.key; })) R.push(r); });
+      drawRecent();
+    }).catch(function () {});
   }
 
   /* ---------- SVG symbol -> transparent PNG (strokes forced black) ---------- */
@@ -26889,11 +27081,12 @@ document.addEventListener("keydown", function (e) {
     },
     fromSymbol: function () {
       var svg = document.querySelector("#tl-m-svg svg"); if (!svg) { mainToast("No symbol to trace", "error"); return; }
-      svgToPng(svg).then(function (b) { openTrace({ url: URL.createObjectURL(b), owned: true }); })
+      var key = "s:" + hash(svg.getAttribute("viewBox") + svg.innerHTML);
+      svgToPng(svg).then(function (b) { setPending(b, "symbol.png", key); openTrace({ url: URL.createObjectURL(b), owned: true, key: key }); })
         .catch(function () { mainToast("Couldn\u2019t prepare this symbol", "error"); });
     },
     openUrl: function (url, mode) { openTrace({ url: url, owned: false, mode: mode }); },
-    close: close
+    close: function () { close(); }
   };
   icons();
 })();

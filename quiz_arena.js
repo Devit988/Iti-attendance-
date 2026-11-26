@@ -33,6 +33,8 @@
     ["gs", "pol", "Polity & GK"],
     ["gs", "eco", "Economy"],
     ["gs", "comp", "Computer"],
+    ["gs", "sgk", "Static GK"],
+    ["gs", "ca", "Current Affairs"],
     ["apt", "math", "Maths"],
     ["apt", "eng", "English"],
     ["apt", "reason", "Reasoning"],
@@ -41,7 +43,7 @@
   var SUBS = {
     iti: [["all", "All ITI (all subjects)"], ["y1", "1st Year Only"], ["y2", "2nd Year Only"], ["wcs", "Workshop Calc & Science"], ["draw", "Engineering Drawing"], ["safe", "Safety & Tools"]],
     sci: [["all", "All Science"], ["phy", "Physics"], ["chem", "Chemistry"], ["bio", "Biology"]],
-    gs: [["all", "All GS (Sci + GK)"], ["his", "History"], ["geo", "Geography"], ["pol", "Polity & Static"], ["eco", "Indian Economy"], ["comp", "Computer Basics"]],
+    gs: [["all", "All GS (Sci + GK)"], ["his", "History"], ["geo", "Geography"], ["pol", "Polity & Static"], ["eco", "Indian Economy"], ["comp", "Computer Basics"], ["sgk", "Static GK"], ["ca", "Current Affairs"]],
     apt: [["math", "Math Only"], ["eng", "English Only"], ["reason", "Reasoning Only"]],
     mix: [["mix", "GS + ITI Combined"]]
   };
@@ -66,7 +68,7 @@
     return TOPICS.some(function (t) { return t[0] === main && t[1] === sub; }) || !!elecParts(main, sub);
   }
   var MAIN_NAMES = { iti: "ITI Trade", sci: "Science", gs: "GS / GK", apt: "Aptitude", mix: "Exam Mix" };
-  var TAGS = { y1: "ITI 1st Year", y2: "ITI 2nd Year", phy: "Physics", chem: "Chemistry", bio: "Biology", his: "History", geo: "Geography", pol: "Polity & GK", math: "Maths", eng: "English", wcs: "Workshop Calc & Science", draw: "Engineering Drawing", safe: "Safety & Tools", eco: "Indian Economy", comp: "Computer Basics", reason: "Reasoning" };
+  var TAGS = { y1: "ITI 1st Year", y2: "ITI 2nd Year", phy: "Physics", chem: "Chemistry", bio: "Biology", his: "History", geo: "Geography", pol: "Polity & GK", math: "Maths", eng: "English", wcs: "Workshop Calc & Science", draw: "Engineering Drawing", safe: "Safety & Tools", eco: "Indian Economy", comp: "Computer Basics", sgk: "Static GK", ca: "Current Affairs", reason: "Reasoning" };
 
   var root = null, view = null, msgEl = null, msgT = 0;
   var bank = [], bankState = "loading";
@@ -337,6 +339,7 @@ html.no-glass.bright-mode .qa-glass { background: #ffffff; }
   transition: background .2s ease;
 }
 .qa-admin-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.qa-admin-btn.hidden { display: none !important; }
 .qa-hero-meta {
   position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px;
   margin-top: 10px; padding-top: 9px; border-top: 1px solid rgba(255, 255, 255, 0.11);
@@ -2143,10 +2146,10 @@ html.bright-mode #quiz-arena-root .qa-slide:not(.qa-ind-ready) > .qa-pill.on { b
     ["iti", "y1", "ITI Trade · 1st Year"], ["iti", "y2", "ITI Trade · 2nd Year"],
     ["iti", "wcs", "ITI · Workshop Calc & Science"], ["iti", "draw", "ITI · Engineering Drawing"], ["iti", "safe", "ITI · Safety & Tools"],
     ["sci", "phy", "Science · Physics"], ["sci", "chem", "Science · Chemistry"], ["sci", "bio", "Science · Biology"],
-    ["gs", "his", "GS · History"], ["gs", "geo", "GS · Geography"], ["gs", "pol", "GS · Polity & Static"], ["gs", "eco", "GS · Indian Economy"], ["gs", "comp", "GS · Computer Basics"],
+    ["gs", "his", "GS · History"], ["gs", "geo", "GS · Geography"], ["gs", "pol", "GS · Polity & Static"], ["gs", "eco", "GS · Indian Economy"], ["gs", "comp", "GS · Computer Basics"], ["gs", "sgk", "GS · Static GK"], ["gs", "ca", "GS · Current Affairs"],
     ["apt", "math", "Aptitude · Maths"], ["apt", "eng", "Aptitude · English"], ["apt", "reason", "Aptitude · Reasoning"]
   ];
-  var GROUPS = { iti: ["y1", "y2", "wcs", "draw", "safe"], sci: ["phy", "chem", "bio"], gs: ["his", "geo", "pol", "eco", "comp"], apt: ["math", "eng", "reason"] };
+  var GROUPS = { iti: ["y1", "y2", "wcs", "draw", "safe"], sci: ["phy", "chem", "bio"], gs: ["his", "geo", "pol", "eco", "comp", "sgk", "ca"], apt: ["math", "eng", "reason"] };
   var CQ_MAX_BYTES = 900000;
 
   function checkQ(q) {

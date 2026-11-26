@@ -4683,7 +4683,13 @@
   }
 
   /* ---------- Mid-Game Quick Studio Button Auto-Injector ---------- */
+  var midBusy = false;
   function injectMidGameBtn() {
+    if (!root || midBusy) return;
+    midBusy = true;
+    try { injectMidGameBtnInner(); } finally { setTimeout(function () { midBusy = false; }, 0); }
+  }
+  function injectMidGameBtnInner() {
     if (!root) return;
     /* Ludo & Snakes already render their own Studio (sparkles) button, so only add the full-screen button
        (and fall back to a Studio button only if the game has none) -> no duplicate sparkles icons. */
@@ -4696,9 +4702,8 @@
         b1.type = "button"; b1.className = "as-midbtn"; b1.setAttribute("data-as", "mid"); b1.title = "Arena Studio";
         b1.innerHTML = ico("sparkles");
         ldTop.insertBefore(b1, ldTop.lastElementChild);
-        
+        icons();
       }
-      icons();
     }
     var slTop = root.querySelector("#ag-pane-snakes .bg-box > .ag-glass");
     if (slTop && slTop.querySelector("#sl-msg") && !slTop.querySelector("[data-as]")) {
@@ -4709,9 +4714,8 @@
         b2.type = "button"; b2.className = "as-midbtn"; b2.setAttribute("data-as", "mid"); b2.title = "Arena Studio";
         b2.innerHTML = ico("sparkles");
         slTop.appendChild(b2);
-        
+        icons();
       }
-      icons();
     }
   }
 

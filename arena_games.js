@@ -841,10 +841,30 @@
       try { GAMES[id].mount(pane, api); } catch (e) { pane.innerHTML = '<div class="ag-card ag-glass ag-ph"><p class="ag-ph-d">This game failed to start. Please refresh the page.</p></div>'; }
     }
   }
+  (function agInjectGameCss() {
+    if (document.getElementById("ag-game-mode-css-js")) return;
+    var st = document.createElement("style"); st.id = "ag-game-mode-css-js";
+    st.textContent = "html.ag-game-on #top-sticky,html.ag-game-on #main-header,html.ag-game-on #search-bar-wrap,html.ag-game-on #bottom-tab-bar,html.ag-game-on nav[aria-label='Primary Sections']{display:none!important}html.ag-game-on body{padding-bottom:0!important}";
+    (document.head || document.documentElement).appendChild(st);
+  })();
+  function agSyncChrome() {
+    try {
+      var w = root && root.querySelector(".ag-wrap");
+      var v = document.getElementById("view-quiz");
+      var on = !!(w && w.classList.contains("ag-playing") && v && !v.classList.contains("hidden"));
+      document.documentElement.classList.toggle("ag-game-on", on);
+    } catch (e) { }
+  }
+  ["visibilitychange", "pageshow", "focus", "resize", "orientationchange"].forEach(function (ev) {
+    (ev === "visibilitychange" ? document : window).addEventListener(ev, function () { agSyncChrome(); setTimeout(agSyncChrome, 300); });
+  });
+  setInterval(agSyncChrome, 1000);
   function setPlaying(on) {
     var w = root && root.querySelector(".ag-wrap"); if (!w) return;
     var was = w.classList.contains("ag-playing");
     w.classList.toggle("ag-playing", !!on);
+    /* game mode: hide app header, date/clock row & bottom nav while playing */
+    document.documentElement.classList.toggle("ag-game-on", !!on);
     if (!on) w.classList.remove("ag-peek-cz");
     if (on && !was) { try { root.scrollIntoView({ block: "start" }); } catch (e) { } }
   }
@@ -1355,6 +1375,8 @@
       } else { raf = 0; }
     }
     function kickLoop() { if (!raf && cv) raf = window.requestAnimationFrame(drawFrame); }
+    function sgResume() { if (document.hidden || !cv) return; offKey = ""; resizeBoard(); kickLoop(); setTimeout(function () { offKey = ""; resizeBoard(); kickLoop(); }, 250); }
+    document.addEventListener("visibilitychange", sgResume); window.addEventListener("pageshow", sgResume);
 
     function resizeBoard() {
       if (!cv || !host) return;
@@ -1931,7 +1953,10 @@
     var raf = 0, lastT = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
     var gen = 0;
     function later(fn, ms) { var g = gen; return setTimeout(function () { if (g !== gen) return; fn(); }, ms); }
-    var dieRot = { x: 0, y: 0 }, lastTurnShown = -1, resizeBound = false;
+    var dieRots = {}, lastTurnShown = -1, resizeBound = false, perDie = false;
+    function rotOf(i) { i = i || 0; return dieRots[i] || (dieRots[i] = { x: 0, y: 0 }); }
+    function dieEl(i) { return q(perDie ? "#ld-die-" + i : "#ld-die", host); }
+    function dwEl(i) { return q(perDie ? "#ld-dw-" + i : ".lx-dwrap", host); }
 
     if (pendingInvite && pendingInvite.game === "ludo") {
       cfg.mode = "online"; cfg.code = pendingInvite.code;
@@ -2018,6 +2043,11 @@
         R + ".lx-tk.done{background:#fde047;border-color:#fff;box-shadow:0 0 8px #fde047}",
         R + ".lx-last{width:26px;height:26px;border-radius:9px;flex:none;display:grid;place-items:center;font-weight:900;font-size:14px;background:rgba(255,255,255,.92);color:var(--cd);box-shadow:0 2px 0 rgba(0,0,0,.25)}",
         R + ".lx-last.pop{animation:lxLand .45s ease-out}",
+        R + ".lx-mini{position:relative;flex:none;width:46px;height:46px;padding:0;display:block}",
+        R + ".lx-mini .lx-die{--s:36px;margin:5px}",
+        R + ".lx-mini .lx-sh{display:none}",
+        R + ".lx-mini::before{width:50px;height:50px;margin:-25px 0 0 -25px}",
+        R + ".lx-mini .lx-die:disabled{opacity:.8}",
         R + ".lx-bw{position:relative;width:100%;max-width:520px;margin:2px auto;aspect-ratio:1/1}",
         R + ".ag-playing .lx-bw{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
         R + ".lx-bw.shake{animation:lxShake .45s ease-in-out}",
@@ -2465,13 +2495,14 @@
       for (i = 0; i < 9; i++) h += '<i' + (on.indexOf(i) >= 0 ? ' class="o"' : '') + '></i>';
       return h + '</div>';
     }
-    function cubeHTML(spin) {
-      return '<div class="lx-tilt"><div class="lx-cube' + (spin ? " spin" : "") + '"' + (spin ? "" : ' id="ld-cube"') + '>' + [1, 2, 3, 4, 5, 6].map(pipFace).join("") + '</div></div>';
+    function cubeHTML(spin, idx) {
+      return '<div class="lx-tilt"><div class="lx-cube' + (spin ? " spin" : "") + '"' + (spin ? "" : ' id="ld-cube' + (idx == null ? "" : "-" + idx) + '"') + '>' + [1, 2, 3, 4, 5, 6].map(pipFace).join("") + '</div></div>';
     }
     function dieVars(color) { return "--dc:" + color + ";--dp:" + shade(color, -0.42) + ";--dpl:" + shade(color, 0.12) + ";"; }
 
-    function setCube(v, anim, ms) {
-      var cube = q("#ld-cube", host); if (!cube) return;
+    function setCube(v, anim, ms, idx) {
+      var cube = q(perDie ? "#ld-cube-" + idx : "#ld-cube", host); if (!cube) return;
+      var dieRot = rotOf(idx);
       var t = FACE_ROT[v] || FACE_ROT[1], nx, ny;
       if (anim && !REDUCE) {
         nx = Math.ceil(dieRot.x / 360) * 360 + 360 * (1 + Math.floor(Math.random() * 2)) + t[0];
@@ -2492,8 +2523,8 @@
     }
     function dieVisual(idx, val, ms) {
       paintDie(idx);
-      var d = q("#ld-die", host), dw = q(".lx-dwrap", host); if (!d || !dw) return;
-      setCube(val, true, ms);
+      var d = dieEl(idx), dw = dwEl(idx); if (!d || !dw) return;
+      setCube(val, true, ms, idx);
       d.style.setProperty("--jd", ms + "ms"); dw.style.setProperty("--jd", ms + "ms");
       d.classList.remove("jump", "land"); dw.classList.remove("rolling"); void d.offsetWidth;
       d.classList.add("jump"); dw.classList.add("rolling");
@@ -2729,7 +2760,7 @@
       diceT = later(function () {
         if (!st || !st.players[turn]) return;
         st.dice = finalVal; st.players[turn].lastDice = finalVal; refreshLast(turn);
-        var d = q("#ld-die", host); if (d) { d.classList.remove("land"); void d.offsetWidth; d.classList.add("land"); }
+        var d = dieEl(turn); if (d) { d.classList.remove("land"); void d.offsetWidth; d.classList.add("land"); }
         afterDice(finalVal);
       }, ms + 60);
     }
@@ -2944,9 +2975,17 @@
           qa(".lx-tk", el).forEach(function (tk, k) { tk.classList.toggle("done", p.tokens[k] === 56); });
         }
       });
-      var die = q("#ld-die", host), dw = q(".lx-dwrap", host);
-      if (die) { die.disabled = !rdy; die.classList.toggle("ready", rdy); }
-      if (dw) dw.classList.toggle("ready", rdy);
+      var die = dieEl(st.turn), dw = dwEl(st.turn);
+      if (perDie) {
+        st.players.forEach(function (p, i) {
+          var di = dieEl(i), wi = dwEl(i), on = rdy && i === st.turn;
+          if (di) { di.disabled = !on; di.classList.toggle("ready", on); }
+          if (wi) wi.classList.toggle("ready", on);
+        });
+      } else {
+        if (die) { die.disabled = !rdy; die.classList.toggle("ready", rdy); }
+        if (dw) dw.classList.toggle("ready", rdy);
+      }
       if (lastTurnShown !== st.turn) {
         lastTurnShown = st.turn; paintDie(st.turn);
         if (die && !st.busy) { die.classList.remove("land"); void die.offsetWidth; die.classList.add("land"); }
@@ -3047,11 +3086,14 @@
       return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
         '<div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
         '<div class="lx-nfo"><div class="lx-nm">' + esc(pl.name) + '</div><div class="lx-tks">' + dots + '</div></div>' +
-        '<div class="lx-last" id="ld-last-' + idx + '">' + (pl.lastDice || "–") + '</div></div>';
+(perDie
+          ? '<div class="lx-dwrap lx-mini" id="ld-dw-' + idx + '" style="' + dieVars("#f59e0b") + '"><button type="button" id="ld-die-' + idx + '" class="lx-die" data-ld="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + cubeHTML(false, idx) + '</button></div>'
+          : '<div class="lx-last" id="ld-last-' + idx + '">' + (pl.lastDice || "–") + '</div>') + '</div>';
     }
 
     function renderGame() {
       var cur = st.players[st.turn], h = '<div class="lx lx-gap" style="gap:8px">';
+      perDie = !rm && st.players.filter(function (p) { return !p.bot; }).length >= 2;
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
@@ -3061,7 +3103,7 @@
       h += '<div class="lx-row lx-enter" style="animation-delay:.15s">' + ldCard(3) + ldCard(2) + '</div>';
       h += '<div class="lx-dock lx-enter" style="animation-delay:.2s;' + dieVars(cur.color) + '">' +
         '<div class="lx-side">' + ["👏", "😂"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>' +
-        '<div class="lx-ctr"><div class="lx-dwrap"><button type="button" id="ld-die" class="lx-die" data-ld="roll" aria-label="Roll dice">' + cubeHTML(false) + '</button><i class="lx-sh"></i></div>' +
+        '<div class="lx-ctr">' + (perDie ? "" : '<div class="lx-dwrap"><button type="button" id="ld-die" class="lx-die" data-ld="roll" aria-label="Roll dice">' + cubeHTML(false) + '</button><i class="lx-sh"></i></div>') +
         '<div id="ld-roll-hint" class="lx-hint"></div></div>' +
         '<div class="lx-side">' + ["🔥", "😱"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div></div>';
       h += '</div>';
@@ -3069,8 +3111,9 @@
       cv = q("#ld-canvas", host); ctx = cv.getContext("2d");
       cv.addEventListener("click", handleBoardTap);
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
-      offKey = ""; dieRot = { x: 0, y: 0 }; lastTurnShown = -1;
-      setCube(cur.lastDice || 1, false);
+      offKey = ""; dieRots = {}; lastTurnShown = -1;
+      if (perDie) st.players.forEach(function (p, i) { setCube(p.lastDice || 1, false, 0, i); });
+      else setCube(cur.lastDice || 1, false);
       window.requestAnimationFrame(function () { resizeBoard(); updateHUD(); maybeBot(); kickLoop(); });
     }
 
@@ -3188,7 +3231,10 @@
           resizeBound = true;
           var rt = 0;
           window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(function () { if (view === "game") resizeBoard(); }, 120); });
-          document.addEventListener("visibilitychange", function () { if (!document.hidden) kickLoop(); });
+          function onResume() { if (document.hidden) return; offKey = ""; resizeBoard(); kickLoop(); setTimeout(function () { offKey = ""; resizeBoard(); kickLoop(); }, 250); }
+          document.addEventListener("visibilitychange", onResume);
+          window.addEventListener("pageshow", onResume);
+          window.addEventListener("focus", onResume);
         }
         render();
       },
@@ -4285,22 +4331,32 @@
   /* ---------- Mid-Game Quick Studio Button Auto-Injector ---------- */
   function injectMidGameBtn() {
     if (!root) return;
+    /* Ludo & Snakes already render their own Studio (sparkles) button, so only add the full-screen button
+       (and fall back to a Studio button only if the game has none) -> no duplicate sparkles icons. */
     var ldTop = root.querySelector("#ag-pane-ludo .lx-top");
-    if (ldTop && !ldTop.querySelector("[data-as='mid']")) {
-      var b1 = document.createElement("button");
-      b1.type = "button"; b1.className = "as-midbtn"; b1.setAttribute("data-as", "mid"); b1.title = "Arena Studio";
-      b1.innerHTML = ico("sparkles");
-      ldTop.insertBefore(b1, ldTop.lastElementChild);
-      ldTop.insertBefore(mkFsBtn(), b1);
+    if (ldTop && !ldTop.querySelector("[data-as]")) {
+      var ldNative = ldTop.querySelector("[data-ld='studio']");
+      if (ldNative) { ldTop.insertBefore(mkFsBtn(), ldNative); }
+      else {
+        var b1 = document.createElement("button");
+        b1.type = "button"; b1.className = "as-midbtn"; b1.setAttribute("data-as", "mid"); b1.title = "Arena Studio";
+        b1.innerHTML = ico("sparkles");
+        ldTop.insertBefore(b1, ldTop.lastElementChild);
+        ldTop.insertBefore(mkFsBtn(), b1);
+      }
       icons();
     }
     var slTop = root.querySelector("#ag-pane-snakes .bg-box > .ag-glass");
-    if (slTop && slTop.querySelector("#sl-msg") && !slTop.querySelector("[data-as='mid']")) {
-      var b2 = document.createElement("button");
-      b2.type = "button"; b2.className = "as-midbtn"; b2.setAttribute("data-as", "mid"); b2.title = "Arena Studio";
-      b2.innerHTML = ico("sparkles");
-      slTop.appendChild(b2);
-      slTop.appendChild(mkFsBtn());
+    if (slTop && slTop.querySelector("#sl-msg") && !slTop.querySelector("[data-as]")) {
+      var slNative = slTop.querySelector("[data-sl='studio']");
+      if (slNative) { slTop.insertBefore(mkFsBtn(), slNative); }
+      else {
+        var b2 = document.createElement("button");
+        b2.type = "button"; b2.className = "as-midbtn"; b2.setAttribute("data-as", "mid"); b2.title = "Arena Studio";
+        b2.innerHTML = ico("sparkles");
+        slTop.appendChild(b2);
+        slTop.appendChild(mkFsBtn());
+      }
       icons();
     }
   }

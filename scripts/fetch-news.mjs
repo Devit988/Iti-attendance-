@@ -8,6 +8,12 @@ const FEEDS = [
     limit: 8
   },
   {
+    cat: "wb",
+    label: "West Bengal",
+    url: "https://news.google.com/rss/search?q=(%22West+Bengal%22+OR+Kolkata)+when:3d&hl=en-IN&gl=IN&ceid=IN:en",
+    limit: 7
+  },
+  {
     cat: "pib",
     label: "Govt / PIB",
     url: "https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=1",
@@ -44,7 +50,7 @@ function decodeEntities(str) {
 }
 
 function getTag(block, tag) {
-  const m = block.match(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, "i"));
+  const m = block.match(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</\\s*${tag}>`, "i"));
   return m ? decodeEntities(m[1]) : "";
 }
 
@@ -115,7 +121,7 @@ async function main() {
 
   const payload = {
     updatedAt: new Date().toISOString(),
-    items: unique.slice(0, 30)
+    items: unique.slice(0, 40)
   };
 
   writeFileSync("news.json", JSON.stringify(payload, null, 2) + "\n", "utf8");

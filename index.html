@@ -31380,8 +31380,22 @@ document.addEventListener("keydown", function (e) {
 </script>
 <!-- ===== CAL PART 2 JS: END ===== -->
 
+<script>
+/* Chor Police invite (?battle=1234&game=chorpolice): stash the code and strip the params so Quiz Arena doesn't grab it */
+(function () {
+  try {
+    var u = new URL(location.href), p = u.searchParams;
+    if (p.get("game") === "chorpolice" && /^\d{4}$/.test(p.get("battle") || "")) {
+      window.__cpInvite = p.get("battle");
+      p.delete("battle"); p.delete("game");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+  } catch (e) {}
+})();
+</script>
 <script src="./quiz_arena.js"></script>
 <script src="./arena_games.js"></script>
+<script src="./chor_police.js" defer></script>
 <script>
 /* ?battle=XXXX invite link -> open Quiz Arena with the Join Room screen pre-filled */
 (function () {

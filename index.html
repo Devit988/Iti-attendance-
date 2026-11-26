@@ -123,7 +123,7 @@
   </script>
 
   <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@0.468.0" onerror="var f=document.createElement('script');f.src='https://unpkg.com/lucide@latest';document.head.appendChild(f);"></script>
+  <script src="https://unpkg.com/lucide@0.468.0" onerror="var f=document.createElement('script');f.src='https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js';document.head.appendChild(f);"></script>
 
   <script>
 /* Look & feel: colour theme, accent, corners, font, translucent (glass) effects. Applied before first paint. */
@@ -2706,6 +2706,34 @@ html.bright-mode #view-docs .doc-ic.doc-rose { color: #9f1239; background-color:
 html.bright-mode #view-docs .doc-thumb { background-color: rgba(100, 116, 139, 0.12); border-color: rgba(148, 163, 184, 0.4); }
 html.bright-mode #view-docs .doc-empty { border-color: rgba(100, 116, 139, 0.4); }
 
+/* ===== DOC TOOLS · UI polish (phone usability) ===== */
+#view-docs #doc-rs-presets { flex-wrap: wrap; overflow: visible; padding-bottom: 0; }   /* 10 presets: show them all, no hidden scrolling */
+@media (pointer: coarse) {
+  #view-docs .doc-input { font-size: 16px; }                    /* stops iOS Safari zooming the page when a box is focused */
+  #view-docs .doc-pill { padding: 0.6rem 0.9rem; }               /* bigger tap targets */
+  #view-docs [class*="text-[10.5px]"] { font-size: 11.5px; }     /* small hints a bit easier to read */
+}
+#view-docs .doc-sum { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; cursor: pointer; list-style: none; min-height: 1.75rem; }
+#view-docs .doc-sum::-webkit-details-marker { display: none; }
+#view-docs details[open] > .doc-sum { margin-bottom: 0.6rem; }
+#view-docs details[open] > .doc-sum .doc-chev { transform: rotate(180deg); }
+#view-docs .doc-chev { transition: transform 0.2s ease; flex: 0 0 auto; }
+#doc-rs-sticky {
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 45; width: min(28rem, calc(100% - 1.5rem));
+  bottom: calc(var(--nav-h, 4.6rem) + var(--nav-offset, 0px) + 0.5rem);
+  display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.5rem 0.45rem 0.9rem; border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.94); border: 1px solid rgba(148, 163, 184, 0.3);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+}
+#doc-rs-sticky.hidden { display: none; }
+#doc-rs-sticky .t { flex: 1 1 auto; min-width: 0; font-size: 12px; font-weight: 800; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#doc-rs-sticky button {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 0.4rem; padding: 0.6rem 0.9rem; border-radius: 0.75rem; font-size: 13px; font-weight: 800; color: #fff;
+  background: linear-gradient(180deg, #10b981, #059669); border: 1px solid rgba(52, 211, 153, 0.6);
+}
+html.bright-mode #doc-rs-sticky { background: rgba(255, 255, 255, 0.95); border-color: rgba(148, 163, 184, 0.5); }
+html.bright-mode #doc-rs-sticky .t { color: #0f172a; }
+#view-docs.doc-drop-on { outline: 2px dashed rgb(var(--a5)); outline-offset: 4px; border-radius: 1rem; }
 /* ===== DOC TOOLS · PHOTO → PDF · Part 1 add-ons (Camera / Rotate All / Share / Target KB) ===== */
 #view-docs .doc-tool, #view-docs .doc-share {
   display: flex; align-items: center; justify-content: center; gap: 0.4rem; border: 1px solid transparent;
@@ -4293,10 +4321,11 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
               <p class="text-[11px] text-slate-400 truncate mt-0.5 pl-3">Offline PDF maker, PDF compressor &amp; form image resizer &bull; ITI CONNECT</p>
             </div>
           </div>
-          <div id="doc-tablist" class="doc-inner rounded-xl p-1 grid grid-cols-3 gap-1" role="tablist" aria-label="Doc tools">
+          <div id="doc-tablist" class="doc-inner rounded-xl p-1 grid grid-cols-2 sm:grid-cols-4 gap-1" role="tablist" aria-label="Doc tools">
             <button type="button" id="doc-tab-pdf" role="tab" aria-selected="true" aria-controls="doc-pane-pdf" data-doc-pane="pdf" class="doc-seg doc-on btn-tap min-w-0"><i data-lucide="file-image" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Photo &rarr; PDF</span></button>
             <button type="button" id="doc-tab-compress" role="tab" aria-selected="false" aria-controls="doc-pane-compress" data-doc-pane="compress" class="doc-seg btn-tap min-w-0"><i data-lucide="file-archive" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Compress PDF</span></button>
             <button type="button" id="doc-tab-resize" role="tab" aria-selected="false" aria-controls="doc-pane-resize" data-doc-pane="resize" class="doc-seg btn-tap min-w-0"><i data-lucide="scaling" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Image Resize</span></button>
+            <button type="button" id="doc-tab-pdftools" role="tab" aria-selected="false" aria-controls="doc-pane-pdftools" data-doc-pane="pdftools" class="doc-seg btn-tap min-w-0"><i data-lucide="merge" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Merge / Split</span></button>
           </div>
         </div>
 
@@ -4306,7 +4335,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
           <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
             <div class="flex items-center justify-between gap-2">
               <span class="doc-lbl">Photos</span>
-              <span id="doc-count-badge" class="text-[11px] font-extrabold text-amber-400">0 pages</span>
+              <span id="doc-count-badge" aria-live="polite" class="text-[11px] font-extrabold text-amber-400">0 pages</span>
             </div>
             <input type="file" id="doc-file" accept="image/*" multiple class="hidden">
             <input type="file" id="doc-cam-file" accept="image/*" capture="environment" class="hidden">
@@ -4399,7 +4428,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
             </div>
             <div class="doc-inner rounded-xl px-3 py-2 flex items-center gap-2">
               <i data-lucide="files" class="w-4 h-4 text-amber-400 shrink-0"></i>
-              <span id="doc-summary" class="text-[11.5px] font-bold text-slate-300 min-w-0">0 pages &bull; A4 Portrait &bull; Balanced</span>
+              <span id="doc-summary" aria-live="polite" class="text-[11.5px] font-bold text-slate-300 min-w-0">0 pages &bull; A4 Portrait &bull; Balanced</span>
             </div>
             <div class="doc-act-row">
               <button type="button" id="doc-create-btn" class="doc-go btn-tap" disabled>
@@ -4407,6 +4436,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                 <i id="doc-create-icon" data-lucide="download" class="w-4 h-4"></i>
                 <span id="doc-create-label">Create &amp; Download PDF</span>
               </button>
+              <button type="button" id="doc-cancel-btn" class="doc-clear btn-tap hidden" aria-label="Cancel PDF creation"><i data-lucide="x" class="w-4 h-4"></i><span>Cancel</span></button>
               <button type="button" id="doc-share-btn" class="doc-share btn-tap hidden" disabled aria-label="Share PDF"><i data-lucide="share-2" class="w-4 h-4"></i><span>Share PDF</span></button>
             </div>
             <p class="text-[10.5px] text-slate-400 flex items-start gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-px"></i><span>Everything is made on your phone. Photos are never uploaded or saved &mdash; works offline.</span></p>
@@ -4515,7 +4545,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
           <div id="doc-cp-result" class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3 hidden">
             <div class="flex items-center justify-between gap-2">
               <span class="doc-lbl">Before &rarr; After</span>
-              <span id="doc-cp-made" class="text-[10.5px] text-slate-400 truncate min-w-0"></span>
+              <span id="doc-cp-made" aria-live="polite" class="text-[10.5px] text-slate-400 truncate min-w-0"></span>
             </div>
             <div class="doc-inner rounded-xl p-2.5 flex items-stretch gap-2">
               <div class="min-w-0 flex-1 space-y-0.5">
@@ -4557,7 +4587,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
             <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
               <div class="flex items-center justify-between gap-2">
                 <span class="doc-lbl">Image</span>
-                <span id="doc-rs-badge" class="text-[11px] font-extrabold text-amber-400">No image</span>
+                <span id="doc-rs-badge" aria-live="polite" class="text-[11px] font-extrabold text-amber-400">No image</span>
               </div>
               <input type="file" id="doc-rs-file" accept="image/*" class="hidden">
               <div class="grid grid-cols-2 gap-2">
@@ -4589,10 +4619,24 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                   <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="passport" aria-pressed="false"><i data-lucide="user-round" class="w-3.5 h-3.5"></i>Passport Photo</button>
                   <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="sigssc" aria-pressed="false"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i>Signature (SSC)</button>
                   <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="sigrrb" aria-pressed="false"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i>Signature (RRB)</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="photo100" aria-pressed="false"><i data-lucide="user-round" class="w-3.5 h-3.5"></i>Photo (100 KB)</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="photo200" aria-pressed="false"><i data-lucide="user-round" class="w-3.5 h-3.5"></i>Photo (200 KB)</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="sig50" aria-pressed="false"><i data-lucide="pen-line" class="w-3.5 h-3.5"></i>Signature (50 KB)</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="thumb" aria-pressed="false"><i data-lucide="fingerprint" class="w-3.5 h-3.5"></i>Thumb Impression</button>
+                  <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="idcard" aria-pressed="false"><i data-lucide="id-card" class="w-3.5 h-3.5"></i>ID / Aadhaar</button>
                   <button type="button" class="doc-pill btn-tap inline-flex items-center gap-1.5" data-rs-preset="doc" aria-pressed="false"><i data-lucide="file-text" class="w-3.5 h-3.5"></i>Marksheet / Doc</button>
                   <button type="button" class="doc-pill doc-on btn-tap inline-flex items-center gap-1.5" data-rs-preset="custom" aria-pressed="true"><i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>Custom</button>
                 </div>
                 <p id="doc-rs-preset-hint" class="text-[10.5px] text-slate-400"></p>
+                <div class="space-y-2 pt-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="doc-lbl">My Presets</span>
+                    <button type="button" id="doc-rs-mysave" class="doc-pill btn-tap inline-flex items-center gap-1.5"><i data-lucide="bookmark-plus" class="w-3.5 h-3.5"></i>Save current</button>
+                  </div>
+                  <div id="doc-rs-my" class="doc-scroll"></div>
+                  <input type="file" id="doc-rs-batch-file" accept="image/*" multiple class="hidden">
+                  <button type="button" id="doc-rs-batch" class="doc-tool btn-tap w-full inline-flex items-center justify-center gap-1.5"><i data-lucide="layers" class="w-4 h-4"></i><span id="doc-rs-batch-label">Batch: apply to many images &rarr; ZIP</span></button>
+                </div>
               </div>
 
               <!-- 3. Dimensions -->
@@ -4628,8 +4672,8 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
               </div>
 
               <!-- 3b. Photo extras: Name & Date strip + Clean Signature -->
-              <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-2.5">
-                <div class="doc-lbl">Photo Extras</div>
+              <details id="doc-rs-extras" class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-2.5">
+                <summary class="doc-lbl doc-sum"><span>Photo Extras <span class="normal-case font-semibold text-slate-400">&middot; name strip, clean signature</span></span><i data-lucide="chevron-down" class="w-4 h-4 doc-chev"></i></summary>
                 <div class="flex flex-wrap gap-1.5">
                   <button type="button" id="doc-rs-strip-btn" class="doc-pill btn-tap inline-flex items-center gap-1.5" aria-pressed="false" aria-controls="doc-rs-strip-panel"><i data-lucide="calendar-days" class="w-3.5 h-3.5"></i>Name &amp; Date Strip</button>
                   <button type="button" id="doc-rs-clean-btn" class="doc-pill btn-tap inline-flex items-center gap-1.5" aria-pressed="false"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i>Clean Signature (White BG)<span id="doc-rs-clean-rec" class="hidden text-[9.5px] font-extrabold text-emerald-400">Recommended</span></button>
@@ -4642,7 +4686,7 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                   <p class="text-[10.5px] text-slate-400">A white strip (bottom 16%) is drawn on the photo: NAME, then DOP: DD/MM/YYYY. Keep the face above it.</p>
                 </div>
                 <p class="text-[10.5px] text-slate-400">Clean Signature turns the paper pure white and darkens the ink &mdash; best on a signature photographed on plain paper.</p>
-              </div>
+              </details>
 
               <!-- 4. Compression -->
               <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
@@ -4710,10 +4754,10 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                     <div id="doc-rs-s-save" class="text-[11px] doc-save"></div>
                   </div>
                 </div>
-                <div id="doc-rs-band"></div>
+                <div id="doc-rs-band" role="status" aria-live="polite"></div>
                 <div class="doc-prev" id="doc-rs-prev"><img id="doc-rs-out-img" alt="Resized image preview" class="hidden" draggable="false"><span id="doc-rs-out-ph" class="text-[11px] font-bold text-slate-400">Preview appears here</span><span id="doc-rs-cmp-badge" class="doc-cmp-badge hidden">Original</span></div>
                 <p id="doc-rs-cmp-hint" class="text-[10.5px] text-slate-400 flex items-center gap-1.5 hidden"><i data-lucide="eye" class="w-3.5 h-3.5 shrink-0"></i><span>Press &amp; hold the preview to compare with the original.</span></p>
-                <div id="doc-rs-notes" class="space-y-1.5"></div>
+                <div id="doc-rs-notes" class="space-y-1.5" aria-live="polite"></div>
                 <div class="space-y-1.5">
                   <label for="doc-rs-name" class="doc-lbl">File name</label>
                   <div class="flex items-center gap-2">
@@ -4822,6 +4866,68 @@ html.bright-mode #tr-ring-c{stroke:rgb(var(--a6))}
                 </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ PANE 4: MERGE / SPLIT PDF ============ -->
+        <div id="doc-pane-pdftools" role="tabpanel" aria-labelledby="doc-tab-pdftools" class="hidden space-y-4">
+          <div class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+            <div class="doc-inner rounded-xl p-1 grid grid-cols-2 gap-1" role="group" aria-label="Merge or split">
+              <button type="button" data-pt-mode="merge" class="doc-seg doc-on btn-tap min-w-0"><i data-lucide="merge" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Merge PDFs</span></button>
+              <button type="button" data-pt-mode="split" class="doc-seg btn-tap min-w-0"><i data-lucide="scissors" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">Split / Extract</span></button>
+            </div>
+            <p class="text-[10.5px] text-slate-400">Works on your phone only &mdash; files are never uploaded. Text and quality stay exactly as they are. Needs internet the first time to load a small helper.</p>
+          </div>
+
+          <!-- MERGE -->
+          <div id="doc-pt-merge" class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="doc-lbl">PDF files (in this order)</span>
+              <span id="doc-mg-sum" aria-live="polite" class="text-[11px] font-extrabold text-amber-400">0 files</span>
+            </div>
+            <input type="file" id="doc-mg-file" accept="application/pdf,.pdf" multiple class="hidden">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="doc-mg-add" class="doc-add btn-tap"><i data-lucide="file-plus" class="w-4 h-4"></i><span>Add PDFs</span></button>
+              <button type="button" id="doc-mg-clear" class="doc-clear btn-tap" disabled><i data-lucide="trash-2" class="w-4 h-4"></i><span>Clear All</span></button>
+            </div>
+            <div id="doc-mg-empty" class="doc-empty px-4 py-6 text-center"><p class="text-xs font-bold text-slate-300">No PDFs yet</p><p class="text-[11px] text-slate-400 mt-0.5">Add two or more PDFs, then use the arrows to set the order.</p></div>
+            <div id="doc-mg-list" class="grid grid-cols-1 gap-2"></div>
+            <div class="space-y-1.5">
+              <label for="doc-mg-name" class="doc-lbl">File name</label>
+              <input type="text" id="doc-mg-name" class="doc-input" value="merged" maxlength="60" autocomplete="off" spellcheck="false">
+            </div>
+            <button type="button" id="doc-mg-go" class="doc-go btn-tap" disabled>
+              <span id="doc-mg-spin" class="doc-spin hidden"></span>
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span id="doc-mg-label">Merge &amp; Download</span>
+            </button>
+          </div>
+
+          <!-- SPLIT -->
+          <div id="doc-pt-split" class="doc-card rounded-2xl p-3.5 sm:p-4 space-y-3 hidden">
+            <div class="flex items-center justify-between gap-2">
+              <span class="doc-lbl">PDF file</span>
+              <span id="doc-sp-badge" aria-live="polite" class="text-[11px] font-extrabold text-amber-400">No file</span>
+            </div>
+            <input type="file" id="doc-sp-file" accept="application/pdf,.pdf" class="hidden">
+            <button type="button" id="doc-sp-pick" class="doc-add btn-tap w-full"><i data-lucide="file-up" class="w-4 h-4"></i><span id="doc-sp-pick-label">Choose PDF</span></button>
+            <p id="doc-sp-info" class="text-[11px] text-slate-400 hidden"></p>
+            <div id="doc-sp-opts" class="space-y-3 hidden">
+              <div class="doc-inner rounded-xl p-1 grid grid-cols-2 gap-1" role="group" aria-label="Split type">
+                <button type="button" data-sp-mode="extract" class="doc-seg doc-on btn-tap min-w-0"><span class="truncate">Pick pages</span></button>
+                <button type="button" data-sp-mode="each" class="doc-seg btn-tap min-w-0"><span class="truncate">Every page &rarr; ZIP</span></button>
+              </div>
+              <div id="doc-sp-range-box" class="space-y-1.5">
+                <label for="doc-sp-range" class="doc-lbl">Pages to keep</label>
+                <input type="text" id="doc-sp-range" class="doc-input" placeholder="e.g. 1-3, 5, 8-" inputmode="text" autocomplete="off" spellcheck="false">
+                <p class="text-[10.5px] text-slate-400">Use commas and dashes. &ldquo;8-&rdquo; means page 8 to the end. Pages come out in the order you type them.</p>
+              </div>
+              <button type="button" id="doc-sp-go" class="doc-go btn-tap" disabled>
+                <span id="doc-sp-spin" class="doc-spin hidden"></span>
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span id="doc-sp-label">Extract &amp; Download</span>
+              </button>
             </div>
           </div>
         </div>
@@ -6694,7 +6800,11 @@ service cloud.firestore {
   <!-- ===================================================================== -->
   <!-- TOAST NOTIFICATION BANNER                                             -->
   <!-- ===================================================================== -->
-  <div id="toast-container" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-3"></div>
+  <div id="doc-rs-sticky" class="hidden" role="region" aria-label="Resized image ready">
+    <span id="doc-rs-sticky-info" class="t" aria-live="polite"></span>
+    <button type="button" id="doc-rs-sticky-dl"><i data-lucide="download" class="w-4 h-4"></i><span>Download</span></button>
+  </div>
+  <div id="toast-container" role="status" aria-live="polite" aria-atomic="false" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-3"></div>
 
   <!-- ===================================================================== -->
   <!-- APPLICATION LOGIC + FIREBASE MODULAR V10 SDK                          -->
@@ -26817,13 +26927,26 @@ document.addEventListener("keydown", function (e) {
   };
   var S = { items: [], filter: "orig", size: "p", margin: "small", quality: "bal", busy: false, seq: 0, pnum: false, kb: 400, last: null };
 
+  /* ---------------- tab strip keyboard support (arrow keys / Home / End) ---------------- */
+  (function tabKeys() {
+    var list = $("doc-tablist"); if (!list) return;
+    list.addEventListener("keydown", function (e) {
+      var k = e.key; if (k !== "ArrowRight" && k !== "ArrowLeft" && k !== "Home" && k !== "End") return;
+      var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]')), i = tabs.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      var n = k === "Home" ? 0 : k === "End" ? tabs.length - 1 : (i + (k === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+      tabs[n].focus(); tabs[n].click();
+    });
+  })();
+
   /* ---------------- tab switcher ---------------- */
   function setPane(name) {
-    var names = ["pdf", "compress", "resize"];
+    var names = ["pdf", "compress", "resize", "pdftools"];
     if (names.indexOf(name) < 0) name = "pdf";
     names.forEach(function (k) {
       var t = $("doc-tab-" + k), p = $("doc-pane-" + k), on = k === name;
-      if (t) { t.classList.toggle("doc-on", on); t.setAttribute("aria-selected", String(on)); }
+      if (t) { t.classList.toggle("doc-on", on); t.setAttribute("aria-selected", String(on)); t.setAttribute("tabindex", on ? "0" : "-1"); }
       if (p) p.classList.toggle("hidden", !on);
     });
     if (name !== "pdf") icons($("doc-pane-" + name));
@@ -26960,6 +27083,7 @@ document.addEventListener("keydown", function (e) {
     $("doc-name").disabled = S.busy;
     root.querySelectorAll("[data-doc-act]").forEach(function (b) { if (S.busy) b.disabled = true; });
     $("doc-spin").classList.toggle("hidden", !S.busy);
+    $("doc-cancel-btn").classList.toggle("hidden", !S.busy);
     $("doc-create-icon").classList.toggle("hidden", S.busy);
     if (!S.busy) $("doc-create-label").textContent = "Create & Download PDF";
   }
@@ -27145,13 +27269,22 @@ document.addEventListener("keydown", function (e) {
     return JSON.stringify([S.items.map(function (i) { return [i.id, i.rot, docEdSig(i)]; }), S.filter, S.size, S.margin, S.quality,
       S.quality === "target" ? S.kb : 0, S.pnum, fileBase()]);
   }
+  /* Low-memory phones (<= 3 GB reported) get a lower pixel cap so big PDFs don't crash the tab. */
+  function safePx(px) {
+    var mem = +navigator.deviceMemory || 0, cap = px;
+    if (mem && mem <= 2) cap = Math.min(cap, 1600);
+    else if (mem && mem <= 4) cap = Math.min(cap, 2200);
+    if (S.items.length > 30) cap = Math.min(cap, 1800);
+    return cap;
+  }
   async function makePdf() {
     var sheets = groupSheets(), N = sheets.length, pages = [], tgt = S.quality === "target", missed = false, i;
     var remaining = tgt ? Math.max(2048, (S.kb * 1024 - (1000 + 700 * N)) * 0.985) : 0;
     for (i = 0; i < N; i++) {
+      if (S.cancel) throw new Error("doc-cancelled");
       $("doc-create-label").textContent = "Processing page " + (i + 1) + " of " + N + "\u2026";
       await tick();
-      var m = await composeSheet(sheets[i], Q[S.quality].px), text = S.pnum ? (i + 1) + " / " + N : "", r;
+      var m = await composeSheet(sheets[i], safePx(Q[S.quality].px)), text = S.pnum ? (i + 1) + " / " + N : "", r;
       try {
         if (tgt) {
           r = await encodeToBudget(m, remaining / (N - i), text);   /* leftover bytes roll forward to later pages */
@@ -27160,6 +27293,7 @@ document.addEventListener("keydown", function (e) {
       } finally { m.cv.width = m.cv.height = 0; }
       pages.push({ bytes: r.bytes, w: r.w, h: r.h, W: m.W, H: m.H });
     }
+    if (S.cancel) throw new Error("doc-cancelled");
     $("doc-create-label").textContent = "Building PDF\u2026";
     await tick();
     var base = fileBase(), blob = buildPdf(pages, base);
@@ -27179,7 +27313,7 @@ document.addEventListener("keydown", function (e) {
   async function generate() {
     if (S.busy) return;
     if (!S.items.length) { toast("Add at least one photo first", "error"); return; }
-    S.busy = true; refresh();
+    S.cancel = false; S.busy = true; refresh();
     try {
       var r = await ensurePdf();
       var url = URL.createObjectURL(r.blob), a = document.createElement("a");
@@ -27188,10 +27322,13 @@ document.addEventListener("keydown", function (e) {
       setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 60000);
       toast("Saved " + r.base + ".pdf (" + fmtSize(r.blob.size) + ")" + missedNote(r), r.missed ? "info" : "success");
     } catch (e) {
-      try { console.error("Doc Tools PDF error", e); } catch (_) {}
-      toast("Could not create the PDF. Try Compact quality or fewer photos.", "error");
+      if (e && e.message === "doc-cancelled") toast("Cancelled \u2014 no PDF was made");
+      else {
+        try { console.error("Doc Tools PDF error", e); } catch (_) {}
+        toast("Could not create the PDF. Try Compact quality or fewer photos.", "error");
+      }
     } finally {
-      S.busy = false; refresh();
+      S.cancel = false; S.busy = false; refresh();
     }
   }
   function canShareFiles() {
@@ -27203,13 +27340,16 @@ document.addEventListener("keydown", function (e) {
   async function sharePdf() {
     if (S.busy) return;
     if (!S.items.length) { toast("Add at least one photo first", "error"); return; }
-    S.busy = true; refresh();
+    S.cancel = false; S.busy = true; refresh();
     var r = null;
     try { r = await ensurePdf(); }
     catch (e) {
-      try { console.error("Doc Tools PDF error", e); } catch (_) {}
-      toast("Could not create the PDF. Try Compact quality or fewer photos.", "error");
-    } finally { S.busy = false; refresh(); }
+      if (e && e.message === "doc-cancelled") toast("Cancelled \u2014 no PDF was made");
+      else {
+        try { console.error("Doc Tools PDF error", e); } catch (_) {}
+        toast("Could not create the PDF. Try Compact quality or fewer photos.", "error");
+      }
+    } finally { S.cancel = false; S.busy = false; refresh(); }
     if (!r) return;
     var file = new File([r.blob], r.base + ".pdf", { type: "application/pdf" });
     try {
@@ -27236,6 +27376,23 @@ document.addEventListener("keydown", function (e) {
     });
   };
 
+  /* ---------------- remember last Photo -> PDF settings (this browser only) ---------------- */
+  var PREF_KEY_PDF = "iti_doc_pdf_prefs_v1";
+  function savePdfPrefs() {
+    try { localStorage.setItem(PREF_KEY_PDF, JSON.stringify({ filter: S.filter, size: S.size, margin: S.margin, quality: S.quality, pnum: !!S.pnum, kb: S.kb })); } catch (e) {}
+  }
+  (function loadPdfPrefs() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PREF_KEY_PDF) || "null"); if (!p || typeof p !== "object") return;
+      if (["orig", "enh", "bw"].indexOf(p.filter) >= 0) S.filter = p.filter;
+      if (SIZES[p.size]) S.size = p.size;
+      if (p.margin === "none" || p.margin === "small") S.margin = p.margin;
+      if (Q[p.quality]) S.quality = p.quality;
+      if (typeof p.pnum === "boolean") S.pnum = p.pnum;
+      var kb = Math.round(+p.kb); if (kb >= 20 && kb <= 20480) { S.kb = kb; var ki = $("doc-kb-input"); if (ki) ki.value = kb; }
+    } catch (e) {}
+  })();
+
   /* ---------------- events ---------------- */
   root.addEventListener("click", function (e) {
     var b;
@@ -27243,15 +27400,15 @@ document.addEventListener("keydown", function (e) {
     if ((b = e.target.closest("[data-doc-set]"))) {
       if (S.busy) return;
       S[b.getAttribute("data-doc-set")] = b.getAttribute("data-val");
-      refresh(); refreshThumbs(); return;
+      savePdfPrefs(); refresh(); refreshThumbs(); return;
     }
     if ((b = e.target.closest("[data-doc-toggle]"))) {
       if (S.busy) return;
-      var tk = b.getAttribute("data-doc-toggle"); S[tk] = !S[tk]; refresh(); return;
+      var tk = b.getAttribute("data-doc-toggle"); S[tk] = !S[tk]; savePdfPrefs(); refresh(); return;
     }
     if ((b = e.target.closest("[data-doc-kb]"))) {
       if (S.busy) return;
-      S.kb = clampKb(b.getAttribute("data-doc-kb")); $("doc-kb-input").value = S.kb; refresh(); return;
+      S.kb = clampKb(b.getAttribute("data-doc-kb")); $("doc-kb-input").value = S.kb; savePdfPrefs(); refresh(); return;
     }
     if ((b = e.target.closest("[data-doc-ed-open]"))) { docEdOpen(+b.getAttribute("data-doc-ed-open")); return; }
     if ((b = e.target.closest("[data-doc-act]"))) {
@@ -27265,6 +27422,7 @@ document.addEventListener("keydown", function (e) {
     if (e.target.closest("#doc-cam-btn")) { if (!S.busy) $("doc-cam-file").click(); return; }
     if (e.target.closest("#doc-rotall-btn")) { rotateAll(); return; }
     if (e.target.closest("#doc-clear-btn")) { clearAll(); return; }
+    if (e.target.closest("#doc-cancel-btn")) { if (S.busy) { S.cancel = true; $("doc-create-label").textContent = "Cancelling\u2026"; } return; }
     if (e.target.closest("#doc-create-btn")) { generate(); return; }
     if (e.target.closest("#doc-share-btn")) { sharePdf(); return; }
   });
@@ -27276,9 +27434,9 @@ document.addEventListener("keydown", function (e) {
     });
   });
   $("doc-kb-input").addEventListener("input", function () {
-    var v = Math.round(+this.value); if (!isNaN(v) && v > 0) { S.kb = Math.min(20480, v); refresh(); }
+    var v = Math.round(+this.value); if (!isNaN(v) && v > 0) { S.kb = Math.min(20480, v); savePdfPrefs(); refresh(); }
   });
-  $("doc-kb-input").addEventListener("blur", function () { S.kb = clampKb(this.value); this.value = S.kb; refresh(); });
+  $("doc-kb-input").addEventListener("blur", function () { S.kb = clampKb(this.value); this.value = S.kb; savePdfPrefs(); refresh(); });
   $("doc-kb-input").addEventListener("keydown", function (e) { if (e.key === "Enter") this.blur(); });
   $("doc-file").addEventListener("change", function () {
     var files = this.files; addFiles(files).then(function () { try { $("doc-file").value = ""; } catch (e) {} });
@@ -27855,6 +28013,16 @@ document.addEventListener("keydown", function (e) {
       hint: "200 \u00D7 80 px \u2022 JPG \u2022 form limit 10\u201320 KB (aims just under 20)." },
     sigrrb:   { fixed: true, w: 200, h: 80, kb: 49, min: 30, max: 49, slug: "signature_rrb",
       hint: "200 \u00D7 80 px \u2022 JPG \u2022 form limit 30\u201349 KB (never below 30 KB)." },
+    photo100: { fixed: true, w: 413, h: 531, kb: 100, min: 20, max: 100, slug: "photo_100kb",
+      hint: "413 \u00D7 531 px (3.5 \u00D7 4.5 cm) \u2022 JPG \u2022 20\u2013100 KB. Always check your form\u2019s notification for exact limits." },
+    photo200: { fixed: true, w: 413, h: 531, kb: 200, min: 50, max: 200, slug: "photo_200kb",
+      hint: "413 \u00D7 531 px (3.5 \u00D7 4.5 cm) \u2022 JPG \u2022 50\u2013200 KB. Always check your form\u2019s notification for exact limits." },
+    sig50:    { fixed: true, w: 140, h: 60, kb: 50, min: 10, max: 50, slug: "signature_50kb",
+      hint: "140 \u00D7 60 px \u2022 JPG \u2022 10\u201350 KB. Always check your form\u2019s notification for exact limits." },
+    thumb:    { fixed: true, w: 240, h: 240, kb: 50, min: 10, max: 50, slug: "thumb_impression",
+      hint: "240 \u00D7 240 px \u2022 JPG \u2022 10\u201350 KB. Always check your form\u2019s notification for exact limits." },
+    idcard:   { fixed: false, maxW: 1600, kb: 200, slug: "id_proof",
+      hint: "Max width 1600 px, aspect ratio kept \u2022 JPG \u2022 target 200 KB (Aadhaar / ID proof)." },
     doc:      { fixed: false, maxW: 1200, kb: 140, slug: "marksheet",
       hint: "Max width 1200 px, aspect ratio kept \u2022 JPG \u2022 target 140 KB." },
     custom:   { fixed: false, slug: "resized", hint: "Free control \u2014 set size, format and quality yourself." }
@@ -27983,11 +28151,11 @@ document.addEventListener("keydown", function (e) {
     var p = DOC_RS_PRESETS[key]; if (!p || !RS.img) return;
     RS.preset = key;
     if (p.fixed) { RS.w = p.w; RS.h = p.h; RS.lock = false; RS.fmt = "jpg"; RS.mode = "target"; RS.kb = p.max; RS.kbMin = p.min; }
-    else if (key === "doc") {
+    else if (key === "doc" || key === "idcard") {
       RS.lock = true; RS.w = Math.max(1, Math.min(RS.sw, p.maxW)); RS.h = Math.max(1, Math.round(RS.w * RS.sh / RS.sw));
       RS.fmt = "jpg"; RS.mode = "target"; RS.kb = p.kb; RS.kbMin = 0;
     } else if (fresh) { RS.lock = true; RS.w = RS.sw; RS.h = RS.sh; RS.mode = "manual"; RS.kbMin = 0; }
-    if (!RS.stripTouched) RS.strip = key === "passport";
+    if (!RS.stripTouched) RS.strip = key === "passport" || key === "photo100" || key === "photo200";
     if (!RS.nameDirty) rs$("doc-rs-name").value = RS.base + "_" + p.slug;
     docResizeSyncUI(); docResizeSchedule(0);
   }
@@ -28015,6 +28183,7 @@ document.addEventListener("keydown", function (e) {
     rs$("doc-rs-q").value = RS.q; rs$("doc-rs-qv").textContent = RS.q + "%";
     var png = RS.fmt === "png";
     rs$("doc-rs-moderow").classList.toggle("hidden", png);
+    var xd = rs$("doc-rs-extras"); if (xd && (RS.strip || RS.clean)) xd.open = true;   /* never hide an active option */
     rs$("doc-rs-target-row").classList.toggle("hidden", png || RS.mode !== "target");
     rs$("doc-rs-q-row").classList.toggle("hidden", png || RS.mode !== "manual");
     rs$("doc-rs-png-note").classList.toggle("hidden", !png);
@@ -28038,6 +28207,7 @@ document.addEventListener("keydown", function (e) {
     rs$("doc-rs-share").disabled = b || !RS.res;
     rs$("doc-rs-topdf").disabled = b || !RS.res;
     rs$("doc-rs-out-img").style.opacity = b ? "0.55" : "";
+    if (typeof docRsStickyUpdate === "function") docRsStickyUpdate();
   }
   function docResizeSchedule(delay) {
     if (!RS.img) return;
@@ -28171,7 +28341,7 @@ document.addEventListener("keydown", function (e) {
       if (!RS.lock && RS.fit === "stretch" && ratioDiff > 0.03) docResizeNote("warn", "The photo is stretched to fit \u2014 faces may look distorted.");
       if (RS.file && !out.padded && out.blob.size > RS.file.size) docResizeNote("warn", "The result is larger than the original. Lower the quality, KB target or dimensions.");
       RS.res = { blob: out.blob, w: out.w, h: out.h, q: out.q, padded: !!out.padded };
-      docResizeShowResult();
+      docResizeShowResult(); docRsStickyUpdate();
     } catch (e) {
       try { console.error("Doc Tools resize error", e); } catch (_) {}
       if (tok === RS.tok) { RS.res = null; docResizeToast("Couldn\u2019t process this image. Try a smaller size.", "error"); docResizeSetBusy(false); }
@@ -28236,7 +28406,7 @@ document.addEventListener("keydown", function (e) {
     wi.max = hi.max = u === "px" ? "8000" : u === "cm" ? "203.2" : "2032";
     if (u === "px") eq.classList.add("hidden");
     else { eq.textContent = "= " + (RS.w || 0) + " \u00D7 " + (RS.h || 0) + " px at " + DOC_RS_DPI + " DPI"; eq.classList.remove("hidden"); }
-    var sb = rs$("doc-rs-strip-btn"), cb = rs$("doc-rs-clean-btn"), sig = RS.preset === "sigssc" || RS.preset === "sigrrb";
+    var sb = rs$("doc-rs-strip-btn"), cb = rs$("doc-rs-clean-btn"), sig = RS.preset === "sigssc" || RS.preset === "sigrrb" || RS.preset === "sig50";
     sb.classList.toggle("doc-on", RS.strip); sb.setAttribute("aria-pressed", String(RS.strip));
     cb.classList.toggle("doc-on", RS.clean); cb.setAttribute("aria-pressed", String(RS.clean));
     rs$("doc-rs-strip-panel").classList.toggle("hidden", !RS.strip);
@@ -28717,6 +28887,151 @@ document.addEventListener("keydown", function (e) {
     window.addEventListener("orientationchange", function () { setTimeout(relayout, 250); });
   })();
 
+
+  /* ---------------- sticky "Download" bar: shows while the real button is off-screen ---------------- */
+  function docRsStickyUpdate() {
+    var bar = rs$("doc-rs-sticky"), pane = rs$("doc-pane-resize"); if (!bar || !pane) return;
+    var show = !!RS.res && !RS.busy && !RS.batching && pane.offsetParent !== null && !RS.dlVisible;
+    bar.classList.toggle("hidden", !show);
+    if (show) rs$("doc-rs-sticky-info").textContent = docResizeBytes(RS.res.blob.size) + " \u2022 " + RS.res.w + " \u00D7 " + RS.res.h + " px";
+  }
+  (function docRsStickyInit() {
+    var dl = rs$("doc-rs-download"), btn = rs$("doc-rs-sticky-dl"), t = 0; if (!dl || !btn) return;
+    RS.dlVisible = false;
+    if (window.IntersectionObserver) new IntersectionObserver(function (en) { RS.dlVisible = en[0].isIntersecting; docRsStickyUpdate(); }, { threshold: 0.1 }).observe(dl);
+    else RS.dlVisible = true;                                  /* no observer support: keep the bar hidden */
+    btn.addEventListener("click", function () { docResizeDownload(); });
+    document.addEventListener("click", function () { clearTimeout(t); t = setTimeout(docRsStickyUpdate, 160); });   /* tab / pane switches */
+  })();
+
+  /* ---------------- remember last Image Resize settings (format, unit, fit, quality) ---------------- */
+  var DOC_RS_PREF_KEY = "iti_doc_rs_prefs_v1";
+  function docRsPrefSave() {
+    try { localStorage.setItem(DOC_RS_PREF_KEY, JSON.stringify({ fmt: RS.fmt, unit: RS.unit, fit: RS.fit, q: RS.q })); } catch (e) {}
+  }
+  (function docRsPrefLoad() {
+    try {
+      var p = JSON.parse(localStorage.getItem(DOC_RS_PREF_KEY) || "null"); if (!p || typeof p !== "object") return;
+      var webpOk = false; try { webpOk = document.createElement("canvas").toDataURL("image/webp").indexOf("data:image/webp") === 0; } catch (_) {}
+      if (p.fmt === "jpg" || p.fmt === "png" || (p.fmt === "webp" && webpOk)) RS.fmt = p.fmt;
+      if (p.unit === "px" || p.unit === "cm" || p.unit === "mm") RS.unit = p.unit;
+      if (p.fit === "cover" || p.fit === "stretch") RS.fit = p.fit;
+      var q = Math.round(+p.q); if (q >= 10 && q <= 100) RS.q = q;
+    } catch (e) {}
+  })();
+
+  /* ---------------- My Presets (saved in this browser only) ---------------- */
+  var DOC_RS_MY_KEY = "iti_doc_rs_mypresets_v1", DOC_RS_MY_MAX = 8;
+  function docRsMyLoad() {
+    try {
+      var a = JSON.parse(localStorage.getItem(DOC_RS_MY_KEY) || "[]");
+      if (!Array.isArray(a)) return [];
+      return a.filter(function (p) { return p && typeof p.name === "string" && p.w > 0 && p.h > 0 && /^(jpg|webp|png)$/.test(p.fmt); }).slice(0, DOC_RS_MY_MAX);
+    } catch (e) { return []; }
+  }
+  function docRsMyStore(a) { try { localStorage.setItem(DOC_RS_MY_KEY, JSON.stringify(a)); return true; } catch (e) { docResizeToast("Couldn\u2019t save \u2014 browser storage is blocked", "error"); return false; } }
+  function docRsMyRender() {
+    var box = rs$("doc-rs-my"), a = docRsMyLoad();
+    if (!a.length) { box.innerHTML = '<span class="text-[10.5px] text-slate-400">Nothing saved yet \u2014 set size, KB and format, then tap Save current.</span>'; return; }
+    box.innerHTML = a.map(function (p, i) {
+      return '<span class="inline-flex items-center gap-1"><button type="button" class="doc-pill btn-tap" data-rs-my="' + i + '">' + docResizeEsc(p.name) + '</button>' +
+        '<button type="button" class="doc-ic btn-tap" data-rs-mydel="' + i + '" aria-label="Delete preset ' + docResizeEsc(p.name) + '" style="width:2.4rem;height:2.4rem"><i data-lucide="x" class="w-3 h-3"></i></button></span>';
+    }).join("");
+    docResizeIcons(box);
+  }
+  function docRsMySave() {
+    if (!RS.img) { docResizeToast("Choose an image first", "error"); return; }
+    var a = docRsMyLoad();
+    if (a.length >= DOC_RS_MY_MAX) { docResizeToast("Up to " + DOC_RS_MY_MAX + " saved presets \u2014 delete one first", "error"); return; }
+    var nm = window.prompt("Name this preset (e.g. My form photo)", ""); nm = (nm || "").trim().slice(0, 24);
+    if (!nm) return;
+    a.push({ name: nm, w: Math.round(RS.w), h: Math.round(RS.h), lock: !!RS.lock, fit: RS.fit, fmt: RS.fmt, mode: RS.mode, kb: RS.kb, kbMin: RS.kbMin || 0, q: RS.q });
+    if (docRsMyStore(a)) { docRsMyRender(); docResizeToast("Saved preset \u201C" + nm + "\u201D", "success"); }
+  }
+  function docRsMyDel(i) { var a = docRsMyLoad(); if (!a[i]) return; a.splice(i, 1); if (docRsMyStore(a)) docRsMyRender(); }
+  function docRsMyApplyTo(p) {
+    RS.preset = "custom"; RS.fit = p.fit; RS.fmt = p.fmt; RS.mode = p.mode; RS.kb = p.kb; RS.kbMin = p.kbMin || 0; RS.q = p.q; RS.lock = !!p.lock;
+    RS.w = p.lock ? Math.max(1, Math.min(p.w, RS.sw)) : p.w;
+    RS.h = p.lock ? Math.max(1, Math.round(RS.w * RS.sh / RS.sw)) : p.h;
+  }
+  function docRsMyApply(i) {
+    var p = docRsMyLoad()[i]; if (!p || !RS.img) return;
+    docRsMyApplyTo(p);
+    if (!RS.nameDirty) rs$("doc-rs-name").value = RS.base + "_" + p.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    docResizeSyncUI(); docResizeSchedule(0);
+  }
+
+  /* ---------------- Batch: same settings for many images -> one ZIP (store-only, no library) ---------------- */
+  var DOC_RS_CRC = null;
+  function docRsCrc(u8) {
+    if (!DOC_RS_CRC) { DOC_RS_CRC = new Uint32Array(256); for (var n = 0, c, k; n < 256; n++) { c = n; for (k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; DOC_RS_CRC[n] = c >>> 0; } }
+    var crc = 0xFFFFFFFF; for (var i = 0; i < u8.length; i++) crc = DOC_RS_CRC[(crc ^ u8[i]) & 255] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+  async function docRsZip(entries) {
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, d = new Date();
+    var dt = ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF, dd = (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+    for (var i = 0; i < entries.length; i++) {
+      var nb = enc.encode(entries[i].name), data = new Uint8Array(await entries[i].blob.arrayBuffer()), crc = docRsCrc(data);
+      var lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true); lh.setUint16(10, dt, true); lh.setUint16(12, dd, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true); lh.setUint16(28, 0, true);
+      var ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true); ch.setUint16(12, dt, true); ch.setUint16(14, dd, true);
+      ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true); ch.setUint32(42, off, true);
+      parts.push(lh.buffer, nb, data); central.push(ch.buffer, nb);
+      off += 30 + nb.length + data.length;
+    }
+    var csz = 0; central.forEach(function (p) { csz += p.byteLength || p.length; });
+    var end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true); end.setUint32(12, csz, true); end.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [end.buffer]), { type: "application/zip" });
+  }
+  window.docRsZip = docRsZip;
+  function docRsSnap() { return { preset: RS.preset, w: RS.w, h: RS.h, lock: RS.lock, fit: RS.fit, fmt: RS.fmt, mode: RS.mode, kb: RS.kb, kbMin: RS.kbMin, q: RS.q, strip: RS.strip, stripTouched: RS.stripTouched, clean: RS.clean, sName: RS.sName, sDate: RS.sDate }; }
+  function docRsRestore(sn) {
+    RS.strip = sn.strip; RS.stripTouched = sn.stripTouched; RS.clean = sn.clean; RS.sName = sn.sName; RS.sDate = sn.sDate;
+    if (sn.preset === "custom") {              /* custom settings survive the per-image reload */
+      RS.preset = "custom"; RS.fit = sn.fit; RS.fmt = sn.fmt; RS.mode = sn.mode; RS.kb = sn.kb; RS.kbMin = sn.kbMin; RS.q = sn.q; RS.lock = sn.lock;
+      if (sn.lock) { RS.w = Math.max(1, Math.min(sn.w, RS.sw)); RS.h = Math.max(1, Math.round(RS.w * RS.sh / RS.sw)); } else { RS.w = sn.w; RS.h = sn.h; }
+    }
+  }
+  async function docRsBatch(fl) {
+    var files = Array.prototype.slice.call(fl || []).filter(function (f) { return /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i.test(f.name || ""); }).slice(0, 20);
+    if (!files.length || RS.batching || !RS.img) return;
+    var snap = docRsSnap(), first = RS.file, out = [], used = {}, lbl = rs$("doc-rs-batch-label"), old = lbl.textContent;
+    RS.batching = true; rs$("doc-rs-batch").disabled = true;
+    try {
+      for (var i = 0; i < files.length; i++) {
+        lbl.textContent = "Processing " + (i + 1) + " of " + files.length + "\u2026";
+        await docResizeLoad(files[i]);
+        if (RS.file !== files[i]) continue;            /* unreadable image: skipped */
+        docRsRestore(snap); docResizeSyncUI(); clearTimeout(RS.timer);
+        await docResizeRun();
+        if (!RS.res) continue;
+        var nm = docResizeFileName(), n = used[nm] = (used[nm] || 0) + 1;
+        if (n > 1) nm = nm.replace(/(\.[a-z]+)$/i, "_" + n + "$1");
+        out.push({ name: nm, blob: RS.res.blob });
+      }
+      if (!out.length) { docResizeToast("No images could be processed", "error"); }
+      else {
+        var zb = await docRsZip(out), url = URL.createObjectURL(zb), a = document.createElement("a");
+        a.href = url; a.download = "iti_resized_images.zip"; a.rel = "noopener"; a.style.display = "none";
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 60000);
+        docResizeToast("Saved ZIP with " + out.length + " image" + (out.length > 1 ? "s" : "") + (out.length < files.length ? " (" + (files.length - out.length) + " skipped)" : ""), "success");
+      }
+    } catch (e) {
+      try { console.error("Doc Tools batch error", e); } catch (_) {}
+      docResizeToast("Batch stopped \u2014 try fewer or smaller images", "error");
+    } finally {
+      RS.batching = false; rs$("doc-rs-batch").disabled = false; lbl.textContent = old;
+      if (first) { try { await docResizeLoad(first); docRsRestore(snap); docResizeSyncUI(); docResizeSchedule(0); } catch (_) {} }
+    }
+  }
+  rs$("doc-rs-batch-file").addEventListener("change", function (e) { var f = e.target.files; docRsBatch(f).then(function () { e.target.value = ""; }); });
+  docRsMyRender();
+
   /* ---------------- events ---------------- */
   var root = rs$("doc-pane-resize");
   root.addEventListener("click", function (e) {
@@ -28727,15 +29042,19 @@ document.addEventListener("keydown", function (e) {
     if (e.target.closest("#doc-rs-share")) { docResizeShare(); return; }
     if (e.target.closest("#doc-rs-topdf")) { docResizeToPdf(); return; }
     if (e.target.closest("#doc-rs-edit-btn")) { docRsEdOpen(); return; }
+    if (e.target.closest("#doc-rs-mysave")) { docRsMySave(); return; }
+    if (e.target.closest("#doc-rs-batch")) { if (!RS.img) { docResizeToast("Choose an image and a preset first", "error"); return; } if (!RS.batching) rs$("doc-rs-batch-file").click(); return; }
+    if ((b = e.target.closest("[data-rs-mydel]"))) { docRsMyDel(+b.getAttribute("data-rs-mydel")); return; }
+    if ((b = e.target.closest("[data-rs-my]"))) { docRsMyApply(+b.getAttribute("data-rs-my")); return; }
     if (e.target.closest("#doc-rs-orig-img, #doc-rs-out-img")) { if (Date.now() - CMP.just < 350) return; docRsEdOpen(); return; }   /* a hold = compare, a tap = editor */
     if (!RS.img) return;
     if ((b = e.target.closest("[data-rs-preset]"))) { docResizeApplyPreset(b.getAttribute("data-rs-preset"), false); return; }
-    if ((b = e.target.closest("[data-rs-unit]"))) { RS.unit = b.getAttribute("data-rs-unit"); docResizeSyncUI(); return; }
+    if ((b = e.target.closest("[data-rs-unit]"))) { RS.unit = b.getAttribute("data-rs-unit"); docRsPrefSave(); docResizeSyncUI(); return; }
     if (e.target.closest("#doc-rs-strip-btn")) { RS.strip = !RS.strip; RS.stripTouched = true; docResizeSyncUI(); docResizeSchedule(); return; }
     if (e.target.closest("#doc-rs-clean-btn")) { RS.clean = !RS.clean; docResizeSyncUI(); docResizeSchedule(); return; }
-    if ((b = e.target.closest("[data-rs-fmt]"))) { RS.fmt = b.getAttribute("data-rs-fmt"); docResizeSyncUI(); docResizeSchedule(); return; }
+    if ((b = e.target.closest("[data-rs-fmt]"))) { RS.fmt = b.getAttribute("data-rs-fmt"); docRsPrefSave(); docResizeSyncUI(); docResizeSchedule(); return; }
     if ((b = e.target.closest("[data-rs-mode]"))) { RS.mode = b.getAttribute("data-rs-mode"); docResizeSyncUI(); docResizeSchedule(); return; }
-    if ((b = e.target.closest("[data-rs-fit]"))) { RS.fit = b.getAttribute("data-rs-fit"); docResizeSyncUI(); docResizeSchedule(); return; }
+    if ((b = e.target.closest("[data-rs-fit]"))) { RS.fit = b.getAttribute("data-rs-fit"); docRsPrefSave(); docResizeSyncUI(); docResizeSchedule(); return; }
     if ((b = e.target.closest("[data-rs-scale]"))) {
       var pc = +b.getAttribute("data-rs-scale") / 100;
       RS.w = Math.max(1, Math.round(RS.sw * pc)); RS.h = Math.max(1, Math.round(RS.sh * pc));
@@ -28762,7 +29081,7 @@ document.addEventListener("keydown", function (e) {
       v = parseFloat(e.target.value); if (!(v > 0)) return;
       RS.kb = Math.min(20000, v); docResizeSchedule(350);
     } else if (id === "doc-rs-q") {
-      RS.q = parseInt(e.target.value, 10) || 85; rs$("doc-rs-qv").textContent = RS.q + "%"; docResizeSchedule(200);
+      RS.q = parseInt(e.target.value, 10) || 85; rs$("doc-rs-qv").textContent = RS.q + "%"; docRsPrefSave(); docResizeSchedule(200);
     } else if (id === "doc-rs-name") { RS.nameDirty = true; }
     else if (id === "doc-rs-strip-name") { RS.sName = e.target.value; if (RS.strip) docResizeSchedule(300); }
     else if (id === "doc-rs-strip-date") { RS.sDate = e.target.value; if (RS.strip) docResizeSchedule(300); }
@@ -28790,6 +29109,302 @@ document.addEventListener("keydown", function (e) {
 })();
 </script>
 
+
+<script id="doc-dropin-script">
+/* ===== DOC TOOLS · paste (Ctrl/Cmd+V) and drag-and-drop files into the active tool ===== */
+(function () {
+  "use strict";
+  var view = document.getElementById("view-docs");
+  if (!view) return;
+  function $(id) { return document.getElementById(id); }
+  function toast(m, t) { try { if (typeof showToast === "function") showToast(m, t || "info"); } catch (e) {} }
+  function isImg(f) { return f && (/^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i.test(f.name || "")); }
+  function isPdf(f) { return f && (f.type === "application/pdf" || /\.pdf$/i.test(f.name || "")); }
+  function visible() { return !view.classList.contains("hidden"); }
+  function activePane() {
+    var names = ["pdf", "compress", "resize", "pdftools"];
+    for (var i = 0; i < names.length; i++) { var p = $("doc-pane-" + names[i]); if (p && !p.classList.contains("hidden")) return names[i]; }
+    return "pdf";
+  }
+  function give(inputId, files) {
+    var inp = $(inputId); if (!inp || inp.disabled) return false;
+    try {
+      var dt = new DataTransfer(); files.forEach(function (f) { dt.items.add(f); });
+      inp.files = dt.files;
+      inp.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    } catch (e) { toast("Paste or drop isn\u2019t supported on this browser \u2014 use the buttons", "error"); return false; }
+  }
+  function route(files) {
+    files = Array.prototype.slice.call(files || []); if (!files.length) return;
+    var pane = activePane(), imgs = files.filter(isImg), pdfs = files.filter(isPdf);
+    if (pane === "pdf") { if (!imgs.length) { toast("Drop photos here to add pages", "error"); return; } give("doc-file", imgs); }
+    else if (pane === "resize") { if (!imgs.length) { toast("Drop an image here to resize", "error"); return; } give("doc-rs-file", [imgs[0]]); if (imgs.length > 1) toast("Using the first image \u2014 use Batch for many"); }
+    else if (pane === "compress") { if (!pdfs.length) { toast("Drop a PDF here to compress", "error"); return; } give("doc-cp-file", [pdfs[0]]); if (pdfs.length > 1) toast("Using the first PDF"); }
+    else {
+      var split = !!document.querySelector('#doc-pane-pdftools [data-pt-mode="split"].doc-on');
+      if (!pdfs.length) { toast("Drop PDF files here", "error"); return; }
+      if (split) { give("doc-sp-file", [pdfs[0]]); if (pdfs.length > 1) toast("Using the first PDF"); } else give("doc-mg-file", pdfs);
+    }
+  }
+  var depth = 0;
+  function hasFiles(e) { var t = e.dataTransfer && e.dataTransfer.types; return !!t && Array.prototype.indexOf.call(t, "Files") >= 0; }
+  view.addEventListener("dragenter", function (e) { if (!visible() || !hasFiles(e)) return; e.preventDefault(); depth++; view.classList.add("doc-drop-on"); });
+  view.addEventListener("dragover", function (e) { if (!visible() || !hasFiles(e)) return; e.preventDefault(); try { e.dataTransfer.dropEffect = "copy"; } catch (_) {} });
+  view.addEventListener("dragleave", function (e) { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) view.classList.remove("doc-drop-on"); });
+  view.addEventListener("drop", function (e) {
+    if (!visible() || !hasFiles(e)) return;
+    e.preventDefault(); depth = 0; view.classList.remove("doc-drop-on");
+    route(e.dataTransfer.files);
+  });
+  window.addEventListener("dragend", function () { depth = 0; view.classList.remove("doc-drop-on"); });
+  document.addEventListener("paste", function (e) {
+    if (!visible()) return;
+    var files = e.clipboardData && e.clipboardData.files;
+    if (!files || !files.length) return;           /* plain text paste: leave it alone */
+    e.preventDefault(); route(files);
+  });
+})();
+</script>
+
+<script id="doc-pdftools-script">
+/* ===== DOC TOOLS · PART 4 — Merge / Split PDF (100% client-side; pdf-lib is lazy-loaded only when needed) ===== */
+(function () {
+  "use strict";
+  var pane = document.getElementById("doc-pane-pdftools");
+  if (!pane) return;
+  function $(id) { return document.getElementById(id); }
+  function ptToast(m, t) { try { if (typeof showToast === "function") showToast(m, t || "info"); } catch (e) {} }
+  function ptEsc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ptIcons(el) {
+    if (!window.lucide || !el) return;
+    try { var n = Array.prototype.slice.call(el.querySelectorAll("[data-lucide]")); if (n.length) lucide.createIcons({ nodes: n }); } catch (e) {}
+  }
+  function ptSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(2) + " MB" : Math.max(1, Math.round(b / 1024)) + " KB"; }
+  function ptTick() { return new Promise(function (r) { setTimeout(r, 0); }); }
+  function ptIsPdf(f) { return f && (f.type === "application/pdf" || /\.pdf$/i.test(f.name || "")); }
+  function ptBase(n) { return String(n || "document").replace(/\.pdf$/i, "").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "_").slice(0, 40) || "document"; }
+  function ptName(v, fb) { return (String(v || "").replace(/\.pdf$/i, "").replace(/[\\/:*?"<>|]+/g, "").trim().slice(0, 60) || fb); }
+  function ptDownload(blob, name) {
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = name; a.rel = "noopener"; a.style.display = "none";
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 60000);
+  }
+
+  var LIB_URL = "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js";   /* keep in sync with PDFJS_FILES in sw.js */
+  var MAX_BYTES = 100 * 1048576, MAX_FILES = 15, MAX_PAGES = 500, MAX_ZIP_PAGES = 100;
+  var libP = null;
+  function loadLib() {
+    if (window.PDFLib) return Promise.resolve(window.PDFLib);
+    if (libP) return libP;
+    libP = new Promise(function (res, rej) {
+      var s = document.createElement("script");
+      s.src = LIB_URL; s.async = true; s.crossOrigin = "anonymous";
+      s.onload = function () { window.PDFLib ? res(window.PDFLib) : rej(new Error("pt-lib")); };
+      s.onerror = function () { try { s.remove(); } catch (e) {} rej(new Error("pt-lib")); };
+      document.head.appendChild(s);
+    }).catch(function (e) { libP = null; throw e; });
+    return libP;
+  }
+  function loadDoc(lib, bytes) { return lib.PDFDocument.load(bytes, { ignoreEncryption: false, updateMetadata: false }); }
+  function errText(e) {
+    var m = String(e && e.message || e || "");
+    if (m === "pt-lib") return "Couldn\u2019t load the PDF helper \u2014 connect to the internet once and try again.";
+    if (/encrypt|password/i.test(m)) return "This PDF is password-protected. Remove the password first.";
+    return "Couldn\u2019t read this PDF. It may be damaged or unsupported.";
+  }
+
+  var M = { mode: "merge", files: [], seq: 0, busy: false, spMode: "extract", sp: null };
+
+  /* ---------------- mode switch ---------------- */
+  function setMode(m) {
+    M.mode = m;
+    pane.querySelectorAll("[data-pt-mode]").forEach(function (b) { b.classList.toggle("doc-on", b.getAttribute("data-pt-mode") === m); });
+    $("doc-pt-merge").classList.toggle("hidden", m !== "merge");
+    $("doc-pt-split").classList.toggle("hidden", m !== "split");
+    ptIcons(pane);
+  }
+  function setSpMode(m) {
+    M.spMode = m;
+    pane.querySelectorAll("[data-sp-mode]").forEach(function (b) { b.classList.toggle("doc-on", b.getAttribute("data-sp-mode") === m); });
+    $("doc-sp-range-box").classList.toggle("hidden", m !== "extract");
+    $("doc-sp-label").textContent = m === "extract" ? "Extract & Download" : "Split & Download ZIP";
+    syncSplit();
+  }
+
+  /* ---------------- MERGE ---------------- */
+  function totalPages() { return M.files.reduce(function (a, f) { return a + f.pages; }, 0); }
+  function renderMerge() {
+    var n = M.files.length, tp = totalPages(), list = $("doc-mg-list");
+    $("doc-mg-sum").textContent = n + (n === 1 ? " file" : " files") + " \u2022 " + tp + (tp === 1 ? " page" : " pages");
+    $("doc-mg-empty").classList.toggle("hidden", n > 0);
+    list.innerHTML = M.files.map(function (f, i) {
+      return '<div class="doc-inner doc-page flex items-center gap-2" data-id="' + f.id + '">' +
+        '<div class="min-w-0 flex-1"><div class="text-xs font-extrabold text-white truncate">' + (i + 1) + ". " + ptEsc(f.name) + '</div>' +
+        '<div class="text-[10.5px] text-slate-400">' + f.pages + (f.pages === 1 ? " page" : " pages") + " \u2022 " + ptSize(f.size) + '</div></div>' +
+        '<button type="button" class="doc-ic btn-tap" data-mg-act="up" data-id="' + f.id + '" aria-label="Move up"' + (i === 0 ? " disabled" : "") + '><i data-lucide="arrow-up" class="w-4 h-4"></i></button>' +
+        '<button type="button" class="doc-ic btn-tap" data-mg-act="down" data-id="' + f.id + '" aria-label="Move down"' + (i === n - 1 ? " disabled" : "") + '><i data-lucide="arrow-down" class="w-4 h-4"></i></button>' +
+        '<button type="button" class="doc-ic doc-rose btn-tap" data-mg-act="del" data-id="' + f.id + '" aria-label="Remove"><i data-lucide="x" class="w-4 h-4"></i></button></div>';
+    }).join("");
+    ptIcons(list);
+    $("doc-mg-add").disabled = M.busy || n >= MAX_FILES;
+    $("doc-mg-clear").disabled = M.busy || !n;
+    $("doc-mg-go").disabled = M.busy || n < 2;
+    $("doc-mg-file").disabled = M.busy;
+  }
+  function busyMerge(b, label) {
+    M.busy = b; $("doc-mg-spin").classList.toggle("hidden", !b);
+    $("doc-mg-label").textContent = label || "Merge & Download"; renderMerge();
+  }
+  async function addMerge(fl) {
+    if (M.busy) return;
+    var arr = Array.prototype.slice.call(fl || []).filter(ptIsPdf);
+    if (!arr.length) { ptToast("Please choose PDF files", "error"); return; }
+    if (M.files.length + arr.length > MAX_FILES) { arr = arr.slice(0, Math.max(0, MAX_FILES - M.files.length)); ptToast("Up to " + MAX_FILES + " PDFs at a time"); }
+    if (!arr.length) return;
+    busyMerge(true, "Reading PDFs\u2026");
+    try {
+      var lib = await loadLib();
+      for (var i = 0; i < arr.length; i++) {
+        var f = arr[i];
+        if (f.size > MAX_BYTES) { ptToast(f.name + " is over " + ptSize(MAX_BYTES), "error"); continue; }
+        try {
+          var d = await loadDoc(lib, new Uint8Array(await f.arrayBuffer())), pc = d.getPageCount();
+          if (totalPages() + pc > MAX_PAGES) { ptToast("Limit is " + MAX_PAGES + " pages in total \u2014 " + f.name + " skipped", "error"); continue; }
+          M.files.push({ id: ++M.seq, file: f, name: f.name || "document.pdf", size: f.size, pages: pc });
+        } catch (e) { ptToast(f.name + ": " + errText(e), "error"); if (String(e && e.message) === "pt-lib") break; }
+        await ptTick();
+      }
+    } catch (e) { ptToast(errText(e), "error"); }
+    busyMerge(false);
+  }
+  function mgIdx(id) { for (var i = 0; i < M.files.length; i++) if (M.files[i].id === id) return i; return -1; }
+  async function doMerge() {
+    if (M.busy || M.files.length < 2) return;
+    busyMerge(true, "Merging\u2026");
+    try {
+      var lib = await loadLib(), out = await lib.PDFDocument.create();
+      for (var i = 0; i < M.files.length; i++) {
+        $("doc-mg-label").textContent = "Merging " + (i + 1) + " of " + M.files.length + "\u2026";
+        await ptTick();
+        var src = await loadDoc(lib, new Uint8Array(await M.files[i].file.arrayBuffer()));
+        var pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(function (p) { out.addPage(p); });
+      }
+      $("doc-mg-label").textContent = "Saving\u2026"; await ptTick();
+      var bytes = await out.save(), name = ptName($("doc-mg-name").value, "merged") + ".pdf";
+      ptDownload(new Blob([bytes], { type: "application/pdf" }), name);
+      ptToast("Saved " + name + " \u2022 " + ptSize(bytes.length), "success");
+    } catch (e) {
+      try { console.error("Merge error", e); } catch (_) {}
+      ptToast(errText(e), "error");
+    }
+    busyMerge(false);
+  }
+
+  /* ---------------- SPLIT / EXTRACT ---------------- */
+  function parseRange(str, N) {
+    var idx = [], seen = {}, parts = String(str || "").split(","), i, p, m, a, b, k;
+    for (i = 0; i < parts.length; i++) {
+      p = parts[i].replace(/\s+/g, ""); if (!p) continue;
+      if ((m = /^(\d+)$/.exec(p))) a = b = +m[1];
+      else if ((m = /^(\d*)-(\d*)$/.exec(p)) && (m[1] || m[2])) { a = m[1] ? +m[1] : 1; b = m[2] ? +m[2] : N; }
+      else return { err: "\u201C" + p + "\u201D isn\u2019t a valid page range." };
+      if (a < 1 || b > N || a > b) return { err: "Pages must be between 1 and " + N + " (\u201C" + p + "\u201D is outside)." };
+      for (k = a; k <= b; k++) if (!seen[k]) { seen[k] = 1; idx.push(k - 1); }
+    }
+    if (!idx.length) return { err: "Type the pages you want, e.g. 1-3, 5." };
+    return { idx: idx };
+  }
+  function syncSplit() {
+    var has = !!M.sp;
+    $("doc-sp-opts").classList.toggle("hidden", !has);
+    $("doc-sp-info").classList.toggle("hidden", !has);
+    $("doc-sp-badge").textContent = has ? M.sp.pages + (M.sp.pages === 1 ? " page" : " pages") : "No file";
+    $("doc-sp-pick-label").textContent = has ? "Change PDF" : "Choose PDF";
+    if (has) $("doc-sp-info").textContent = M.sp.name + " \u2022 " + ptSize(M.sp.size);
+    var ok = has && !M.busy && (M.spMode === "each" ? M.sp.pages > 1 && M.sp.pages <= MAX_ZIP_PAGES : true);
+    $("doc-sp-go").disabled = !ok; $("doc-sp-pick").disabled = M.busy;
+    var ib = $("doc-sp-range"); if (ib) ib.disabled = M.busy;
+  }
+  function busySplit(b, label) {
+    M.busy = b; $("doc-sp-spin").classList.toggle("hidden", !b);
+    $("doc-sp-label").textContent = label || (M.spMode === "extract" ? "Extract & Download" : "Split & Download ZIP");
+    syncSplit(); renderMerge();
+  }
+  async function pickSplit(f) {
+    if (M.busy || !f) return;
+    if (!ptIsPdf(f)) { ptToast("Please choose a PDF file", "error"); return; }
+    if (f.size > MAX_BYTES) { ptToast("This PDF is over " + ptSize(MAX_BYTES), "error"); return; }
+    busySplit(true, "Reading PDF\u2026");
+    try {
+      var lib = await loadLib(), d = await loadDoc(lib, new Uint8Array(await f.arrayBuffer()));
+      M.sp = { file: f, name: f.name || "document.pdf", size: f.size, pages: d.getPageCount() };
+      $("doc-sp-range").value = "";
+    } catch (e) { ptToast(errText(e), "error"); }
+    busySplit(false);
+  }
+  async function doSplit() {
+    if (M.busy || !M.sp) return;
+    var N = M.sp.pages, idx = null, r;
+    if (M.spMode === "extract") {
+      r = parseRange($("doc-sp-range").value, N);
+      if (r.err) { ptToast(r.err, "error"); return; }
+      idx = r.idx;
+    } else if (typeof window.docRsZip !== "function") { ptToast("ZIP maker isn\u2019t ready \u2014 reload the app", "error"); return; }
+    busySplit(true, "Working\u2026");
+    try {
+      var lib = await loadLib(), src = await loadDoc(lib, new Uint8Array(await M.sp.file.arrayBuffer())), base = ptBase(M.sp.name);
+      if (idx) {
+        var out = await lib.PDFDocument.create(), pages = await out.copyPages(src, idx);
+        pages.forEach(function (p) { out.addPage(p); });
+        var bytes = await out.save(), nm = base + "_pages_" + (idx.length === 1 ? idx[0] + 1 : (idx[0] + 1) + "-etc") + ".pdf";
+        ptDownload(new Blob([bytes], { type: "application/pdf" }), nm);
+        ptToast("Saved " + nm + " \u2022 " + idx.length + (idx.length === 1 ? " page" : " pages"), "success");
+      } else {
+        var entries = [], pad = String(N).length;
+        for (var i = 0; i < N; i++) {
+          $("doc-sp-label").textContent = "Page " + (i + 1) + " of " + N + "\u2026"; await ptTick();
+          var one = await lib.PDFDocument.create(), cp = await one.copyPages(src, [i]);
+          one.addPage(cp[0]);
+          entries.push({ name: base + "_page_" + String(i + 1).padStart(pad, "0") + ".pdf", blob: new Blob([await one.save()], { type: "application/pdf" }) });
+        }
+        $("doc-sp-label").textContent = "Zipping\u2026"; await ptTick();
+        ptDownload(await window.docRsZip(entries), base + "_pages.zip");
+        ptToast("Saved ZIP with " + N + " PDFs", "success");
+      }
+    } catch (e) {
+      try { console.error("Split error", e); } catch (_) {}
+      ptToast(errText(e), "error");
+    }
+    busySplit(false);
+  }
+
+  /* ---------------- events ---------------- */
+  pane.addEventListener("click", function (e) {
+    var b;
+    if ((b = e.target.closest("[data-pt-mode]"))) { setMode(b.getAttribute("data-pt-mode")); return; }
+    if ((b = e.target.closest("[data-sp-mode]"))) { if (!M.busy) setSpMode(b.getAttribute("data-sp-mode")); return; }
+    if (e.target.closest("#doc-mg-add")) { if (!M.busy) $("doc-mg-file").click(); return; }
+    if (e.target.closest("#doc-mg-clear")) { if (!M.busy) { M.files = []; renderMerge(); ptToast("Cleared \u2014 nothing was saved"); } return; }
+    if (e.target.closest("#doc-mg-go")) { doMerge(); return; }
+    if ((b = e.target.closest("[data-mg-act]"))) {
+      if (M.busy || b.disabled) return;
+      var id = +b.getAttribute("data-id"), act = b.getAttribute("data-mg-act"), i = mgIdx(id), t;
+      if (i < 0) return;
+      if (act === "del") M.files.splice(i, 1);
+      else { t = act === "up" ? i - 1 : i + 1; if (t < 0 || t >= M.files.length) return; var x = M.files[i]; M.files[i] = M.files[t]; M.files[t] = x; }
+      renderMerge(); return;
+    }
+    if (e.target.closest("#doc-sp-pick")) { if (!M.busy) $("doc-sp-file").click(); return; }
+    if (e.target.closest("#doc-sp-go")) { doSplit(); return; }
+  });
+  $("doc-mg-file").addEventListener("change", function () { var f = this.files, el = this; addMerge(f).then(function () { try { el.value = ""; } catch (e) {} }); });
+  $("doc-sp-file").addEventListener("change", function () { var f = this.files && this.files[0], el = this; pickSplit(f).then(function () { try { el.value = ""; } catch (e) {} }); });
+  renderMerge(); syncSplit();
+})();
+</script>
 
 <script id="doc-compress-script">
 /* ===== DOC TOOLS · PART 3 — Compress PDF (100% client-side; pdf.js is lazy-loaded only when a PDF is picked) =====

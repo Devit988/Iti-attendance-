@@ -1137,11 +1137,17 @@
 
     /* Hero banner */
     h += '<div class="cp-hero">' +
+      '<i class="cp-orb" style="color:#f97316;width:11px;height:11px;left:52%;top:14%"></i>' +
+      '<i class="cp-orb" style="color:#fbbf24;width:8px;height:8px;left:40%;bottom:30%;animation-delay:-2s"></i>' +
+      '<i class="cp-orb" style="color:#38bdf8;width:9px;height:9px;right:30%;top:10%;animation-delay:-4s"></i>' +
+      '<span class="cp-chit" style="left:60%;top:42%">\uD83D\uDCC4</span>' +
+      '<span class="cp-chit" style="left:46%;top:10%;animation-delay:-2.4s">\uD83D\uDCDC</span>' +
       '<div class="cp-hero-top">' +
       '<div><div class="cp-kick">PAPER CHIT CLASSIC</div>' +
       '<div class="cp-title">CHOR <span>POLICE</span></div>' +
       '<div class="cp-sub">' + (lang === "bn" ? "রাজা · মন্ত্রী · পুলিশ · চোর — ব্লাফ, আন্দাজ আর স্কোর!" : "Raja · Mantri · Police · Chor — Peek, Bluff & Catch!") + '</div></div>' +
       '<div class="cp-hero-badge" aria-hidden="true">👑<span>🥷</span></div></div>' +
+      '<div class="cp-roles" aria-hidden="true"><b>\uD83D\uDC51</b><b>\uD83D\uDCDC</b><b>\uD83D\uDC6E</b><b>\uD83E\uDD77</b></div>' +
       '<div class="cp-hero-bar"><span class="cp-hero-tag">' + (lang === "bn" ? "চিরকুটের ভাষা" : "Card Language") + '</span>' + langSwitcherHTML() + '</div></div>';
 
     /* Main setup glass card */
@@ -1804,6 +1810,24 @@
       R + ".cp-hero-badge span{position:absolute;right:-6px;bottom:-6px;font-size:22px;background:#0f172a;border-radius:50%;padding:2px;border:1px solid rgba(255,255,255,.25)}",
       R + ".cp-hero-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;padding-top:9px;border-top:1px solid rgba(255,255,255,.12)}",
       R + ".cp-hero-tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fed7aa}",
+      R + ".cp-title span{background:linear-gradient(95deg,#fb923c,#fde68a 45%,#f97316 70%,#fb923c);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:cpShimmer 4.5s linear infinite}",
+      R + ".cp-hero-top,"+R+".cp-hero-bar,"+R+".cp-roles{position:relative;z-index:2}",
+      R + ".cp-orb{position:absolute;z-index:1;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 35% 30%,#fff,currentColor 58%);box-shadow:0 0 16px currentColor;animation:cpDrift 6s ease-in-out infinite}",
+      R + ".cp-chit{position:absolute;z-index:1;pointer-events:none;font-size:20px;line-height:1;opacity:.28;animation:cpChit 5s ease-in-out infinite}",
+      R + ".cp-hero-badge{animation:cpBadge 3.6s ease-in-out infinite;box-shadow:0 0 26px -6px rgba(249,115,22,.75)}",
+      R + ".cp-hero-badge span{animation:cpNinja 2.8s ease-in-out infinite}",
+      R + ".cp-roles{display:flex;gap:6px;margin-top:12px}",
+      R + ".cp-roles b{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px 2px;border-radius:12px;font-size:11px;font-weight:800;color:#fed7aa;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);animation:cpRole 4s ease-in-out infinite}",
+      R + ".cp-roles b:nth-child(2){animation-delay:1s}",
+      R + ".cp-roles b:nth-child(3){animation-delay:2s}",
+      R + ".cp-roles b:nth-child(4){animation-delay:3s}",
+      "@keyframes cpShimmer{0%{background-position:0% 50%}100%{background-position:220% 50%}}",
+      "@keyframes cpDrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}",
+      "@keyframes cpChit{0%,100%{transform:translateY(0) rotate(-12deg)}50%{transform:translateY(-10px) rotate(10deg)}}",
+      "@keyframes cpBadge{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(4deg) scale(1.06)}}",
+      "@keyframes cpNinja{0%,100%{transform:translate(0,0)}50%{transform:translate(-4px,-4px)}}",
+      "@keyframes cpRole{0%,70%,100%{transform:none;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);box-shadow:none}15%,30%{transform:translateY(-3px) scale(1.06);background:rgba(249,115,22,.32);border-color:rgba(251,146,60,.85);box-shadow:0 8px 16px -8px rgba(249,115,22,.9)}}",
+      "@media(prefers-reduced-motion:reduce){"+R+".cp-title span,"+R+".cp-orb,"+R+".cp-chit,"+R+".cp-hero-badge,"+R+".cp-hero-badge span,"+R+".cp-roles b{animation:none}}",
 
       /* Language pill switcher */
       R + ".cp-lang{display:inline-flex;gap:3px;padding:3px;border-radius:999px;background:rgba(15,23,42,.65);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}",

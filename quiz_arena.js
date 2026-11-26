@@ -318,7 +318,7 @@ html.no-glass.bright-mode .qa-glass { background: #ffffff; }
   margin-top: 3px; font-size: 26px; line-height: 1.02; font-weight: 900; letter-spacing: .02em; color: #fff;
 }
 .qa-hero-title span {
-  background: linear-gradient(95deg, #fde68a, #fb923c 55%, #f97316);
+  background: linear-gradient(95deg, #fde68a, #fb923c 40%, #f97316 60%, #fde68a); background-size: 220% 100%; animation: qaShimmer 4.5s linear infinite;
   -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
 }
 .qa-hero-sub { margin-top: 4px; font-size: 11px; font-weight: 600; color: #cbd5e1; }
@@ -343,6 +343,15 @@ html.no-glass.bright-mode .qa-glass { background: #ffffff; }
   font-size: 10.5px; font-weight: 700; color: #cbd5e1;
 }
 .qa-hero-meta b { color: #fbbf24; font-weight: 800; }
+@keyframes qaShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 220% 50%; } }
+@keyframes qaDrift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes qaFloat { 0%,100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-9px) rotate(8deg); } }
+@keyframes qaRace { 0% { width: 6%; } 60% { width: 96%; } 100% { width: 6%; } }
+.qa-orb { position: absolute; z-index: 1; border-radius: 50%; pointer-events: none; background: radial-gradient(circle at 35% 30%, #fff, currentColor 58%); box-shadow: 0 0 16px currentColor; animation: qaDrift 6s ease-in-out infinite; }
+.qa-glyph { position: absolute; z-index: 1; pointer-events: none; font-size: 20px; font-weight: 900; line-height: 1; opacity: .3; color: #fdba74; text-shadow: 0 0 12px rgba(249, 115, 22, .8); animation: qaFloat 5s ease-in-out infinite; }
+.qa-race { position: relative; z-index: 2; display: flex; align-items: center; gap: 8px; margin-top: 11px; font-size: 10px; font-weight: 800; color: #fdba74; }
+.qa-race i { position: relative; flex: 1; height: 6px; border-radius: 99px; background: rgba(255, 255, 255, 0.14); overflow: hidden; font-style: normal; }
+.qa-race u { position: absolute; left: 0; top: 0; bottom: 0; width: 30%; border-radius: 99px; background: linear-gradient(90deg, #fbbf24, #f97316); box-shadow: 0 0 10px rgba(249, 115, 22, .8); animation: qaRace 3.4s ease-in-out infinite; }
 
 /* ===== Labels & Inputs ===== */
 .qa-lbl-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
@@ -784,7 +793,7 @@ html.bright-mode .qa-chip.combo { color: #b45309; background: #fef3c7; }
 .qa-msg.on { opacity: 1; transform: translate(-50%, 0); }
 
 @media (prefers-reduced-motion: reduce) {
-  .qa-cta::after, .qa-hero-dot, .qa-pop.go, .qa-bump, .qa-card-in, .qa-pcol,
+  .qa-cta::after, .qa-hero-dot, .qa-orb, .qa-glyph, .qa-race u, .qa-hero-title span, .qa-pop.go, .qa-bump, .qa-card-in, .qa-pcol,
   .qa-core, .qa-core::before, .qa-core::after, .qa-bl::after, .qa-br::after,
   .qa-tug.crit-l .qa-te.l, .qa-tug.crit-r .qa-te.r, .qa-shake, .qa-fl, .qa-enter { animation: none !important; }
   .qa-ind, .qa-xp, .qa-fill, .qa-bl, .qa-br, .qa-core, .qa-tt > i, .qa-gauge-fg { transition: none !important; }
@@ -859,6 +868,12 @@ html.bright-mode .qa-chip.combo { color: #b45309; background: #fef3c7; }
 
     /* Hero Banner */
     h += '<div class="qa-hero">';
+    h += '<i class="qa-orb" style="color:#fbbf24;width:11px;height:11px;left:58%;top:16%"></i>' +
+      '<i class="qa-orb" style="color:#f97316;width:8px;height:8px;left:44%;bottom:34%;animation-delay:-2s"></i>' +
+      '<i class="qa-orb" style="color:#38bdf8;width:9px;height:9px;right:6%;bottom:26%;animation-delay:-4s"></i>' +
+      '<span class="qa-glyph" style="left:50%;top:44%">?</span>' +
+      '<span class="qa-glyph" style="right:30%;bottom:30%;animation-delay:-1.6s">\u26A1</span>' +
+      '<span class="qa-glyph" style="left:66%;top:8%;animation-delay:-3.2s">\uD83C\uDFC6</span>';
     h += '<div class="qa-hero-row">';
     h += '<div class="min-w-0"><div class="qa-hero-kick"><i class="qa-hero-dot"></i>ITI CONNECT ARENA</div>' +
       '<div class="qa-hero-title">QUIZ <span>&amp; CLASH</span></div>' +
@@ -867,6 +882,7 @@ html.bright-mode .qa-chip.combo { color: #b45309; background: #fef3c7; }
       '<div class="qa-streak-pill' + (st ? "" : " cold") + '" title="Daily streak">' + ico("flame") + "<span>" + st + "d</span></div>" +
       '<button type="button" class="admin-only' + (adminOn() ? "" : " hidden") + ' qa-admin-btn btn-tap" data-a="adopen" title="Manage questions">' + ico("settings-2") + "<span>Edit</span></button>" +
       "</div></div>";
+    h += '<div class="qa-race" aria-hidden="true"><span>Q1</span><i><u></u></i><span>\u26A1</span></div>';
     h += '<div class="qa-hero-meta">' +
       '<span>' + (ready ? ('<b>' + bank.length + '</b> verified questions ready') : (bankState === "error" ? 'Bank offline' : 'Loading question bank…')) + '</span>' +
       '<span>' + esc(catLabel()) + '</span></div>';

@@ -216,6 +216,49 @@
     o.modern = P.style === "modern";
     return o;
   }
+  /* ---------- custom colour picker (shared by Ludo & Snakes & Ladders setup) ---------- */
+  var COLOR_CHOICES = ["#ef4444", "#f97316", "#f59e0b", "#facc15", "#a3e635", "#22c55e", "#10b981",
+    "#14b8a6", "#06b6d4", "#38bdf8", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef",
+    "#ec4899", "#f43f5e", "#92400e", "#64748b", "#1f2937"];
+  var cpCssDone = false;
+  function cpCss() {
+    if (cpCssDone) return; cpCssDone = true;
+    var st = document.createElement("style"), R = "#quiz-arena-root ";
+    st.textContent = [
+      R + ".cp-wrap{margin-top:10px;padding:10px;border-radius:16px;background:var(--ag-bg2);border:1.5px solid var(--ag-bd)}",
+      R + ".cp-head{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ag-t2);margin-bottom:10px}",
+      R + ".cp-head i{width:14px;height:14px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px rgba(255,255,255,.8)}",
+      R + ".cp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:9px}",
+      R + ".cp-sw{position:relative;display:block;aspect-ratio:1;width:100%;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.9);background:var(--c);box-shadow:inset 0 -4px 6px rgba(0,0,0,.22),inset 0 3px 4px rgba(255,255,255,.35),0 3px 6px -3px rgba(0,0,0,.55);transition:transform .15s}",
+      R + ".cp-sw:active:not(:disabled){transform:scale(.88)}",
+      R + ".cp-sw.on{outline:3px solid var(--ag-ac,#f59e0b);outline-offset:2px;transform:scale(1.08)}",
+      R + ".cp-sw.used{opacity:.22}",
+      R + ".cp-custom{display:grid;place-items:center;overflow:hidden;background:conic-gradient(#f43f5e,#f59e0b,#facc15,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)}",
+      R + ".cp-custom span{font-weight:900;font-size:18px;line-height:1;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none}",
+      R + ".cp-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}",
+      R + ".cp-reset{margin-top:10px;font-size:11px;font-weight:800;padding:.4rem .8rem;border-radius:999px;background:var(--ag-bg);border:1px solid var(--ag-bd)}",
+      R + ".cp-pawn{border:0;padding:0;cursor:pointer;transition:transform .15s}",
+      R + ".cp-pawn:active{transform:scale(.85)}",
+      R + ".cp-pawn.sel{outline:3px solid var(--ag-ac,#f59e0b);outline-offset:2px}",
+      R + ".cp-hint{text-transform:none;letter-spacing:0;font-weight:600;opacity:.7}"
+    ].join("\n");
+    document.head.appendChild(st);
+  }
+  function hex6(c) { var r = parseColor(c); if (!r) return "#888888"; return "#" + r.map(function (v) { var x = v.toString(16); return x.length < 2 ? "0" + x : x; }).join(""); }
+  function colorPickerHTML(ns, cur, taken, title) {
+    cpCss();
+    cur = hex6(cur);
+    taken = (taken || []).map(hex6);
+    var h = '<div class="cp-wrap" style="--c:' + cur + '"><div class="cp-head"><i></i>' + title + ' · colour</div><div class="cp-grid">';
+    COLOR_CHOICES.forEach(function (c) {
+      var used = taken.indexOf(c) >= 0 && c !== cur;
+      h += '<button type="button" class="cp-sw' + (c === cur ? " on" : "") + (used ? " used" : "") + '" data-' + ns + '="color" data-k="' + c + '" style="--c:' + c + '" aria-label="Colour ' + c + '"' + (used ? " disabled" : "") + '></button>';
+    });
+    h += '<label class="cp-sw cp-custom" title="Pick any colour"><input type="color" data-' + ns + '-cc="1" value="' + cur + '"><span>+</span></label></div>' +
+      '<button type="button" class="cp-reset" data-' + ns + '="colorreset">Reset to default</button></div>';
+    return h;
+  }
+
   function getPalette(id) {
     var p = PALETTES[id || P.palette] || PALETTES.classic;
     return p.colors.slice();
@@ -1156,7 +1199,7 @@
       R + ".ag-playing.ag-peek-cz .ag-cz{display:block!important;margin-bottom:.55rem}",
       R + ".ag-playing .bg-box{max-width:none}",
       R + "#ag-pane-snakes .bg-cv-wrap," + R + "#ag-pane-ludo .bg-cv-wrap{width:100%}",
-      R + ".ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 330px));width:min(100%,calc(100dvh - 330px));min-width:240px}",
+      R + ".ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
       R + ".ag-playing #ag-pane-ludo .bg-cv-wrap{width:min(100%,calc(100vh - 400px));width:min(100%,calc(100dvh - 400px));min-width:240px}",
       R + ".ag-playing .bg-emo{padding:.15rem 0;font-size:15px}",
       R + ".bg-cv{display:block;width:100%;height:100%;touch-action:manipulation}",
@@ -1167,7 +1210,9 @@
       R + ".sl-shake{animation:slShake .52s cubic-bezier(.36,.07,.19,.97) both}",
       "@keyframes slShake{10%,90%{transform:translate(-2px,1px)}20%,80%{transform:translate(4px,-2px)}30%,50%,70%{transform:translate(-7px,3px) rotate(-.5deg)}40%,60%{transform:translate(7px,-3px) rotate(.5deg)}}",
       R + ".bg-dice:disabled{opacity:.55}",
-      R + ".sl-pg{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
+      R + ".sl-sq{font-size:10.5px;font-weight:800;opacity:.92;margin-top:2px}",
+      R + ".sl-sq b{font-weight:900}",
+      R + "#ag-pane-snakes .bg-cv-wrap{margin:2px auto}",
       R + ".sl-pc{padding:.2rem .5rem .2rem .2rem;gap:4px;overflow:visible;min-height:62px}",
       R + ".sl-pc.turn{box-shadow:0 0 0 2px var(--ag-ac),0 8px 18px -8px rgba(245,158,11,.7)}",
       R + ".sl-pc .lx-dwrap{flex:none;padding:10px 11px 9px}",
@@ -1291,7 +1336,7 @@
     var SNAKES = { 17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78 };
 
     var host = null, view = "setup";
-    var cfg = { mode: "ai", count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "" };
+    var cfg = { mode: "ai", count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "", custom: {}, pick: null };
     var st = null, rm = null, busy = false;
     var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1;
     var raf = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
@@ -1302,7 +1347,7 @@
       cfg.mode = "online"; cfg.code = pendingInvite.code;
     }
 
-    function slColors() { return getPalette(); }
+    function slColors() { var c = getPalette(), k; if (!rm && cfg.mode !== "online") for (k in cfg.custom) c[+k] = cfg.custom[k]; return c; }
 
     function cellCenter(n, s) {
       n = Math.max(1, Math.min(100, n));
@@ -2111,45 +2156,51 @@
         else if (rm) hint.textContent = can ? "Your turn — Tap dice!" : "Waiting for " + pl.name + "…";
         else hint.textContent = pl.bot ? pl.name + " is rolling…" : "Tap dice to roll";
       }
-      qa(".bg-pchip", host).forEach(function (el, idx) {
+      qa(".sl-card", host).forEach(function (el, idx) {
         el.classList.toggle("turn", idx === st.turn);
-        var dot = el.querySelector(".bg-dot");
-        if (dot && st.players[idx]) dot.style.background = st.players[idx].color;
+        var p = st.players[idx]; if (!p) return;
+        el.style.setProperty("--c", p.color); el.style.setProperty("--cd", shade(p.color, -0.4));
         var posEl = el.querySelector(".sl-pos");
-        if (posEl && st.players[idx]) posEl.textContent = "#" + st.players[idx].pos;
+        if (posEl) posEl.textContent = p.pos;
       });
     }
 
     function renderSetup() {
-      var m = cfg.mode, cols = slColors(), i, h = '<div class="bg-box"><div class="ag-glass p-3.5 space-y-3">';
-      h += '<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2">' + ico("route", "qa-ac") + '<span class="text-base font-extrabold">Snakes &amp; Ladders</span></div><span class="text-xs qa-t2 font-bold">1 → 100</span></div>';
-      h += '<div class="ag-seg">' +
-        '<button type="button" data-sl="mode" data-k="ai" class="' + (m === "ai" ? "on" : "") + '">' + ico("bot") + 'AI Bot</button>' +
-        '<button type="button" data-sl="mode" data-k="local" class="' + (m === "local" ? "on" : "") + '">' + ico("users") + 'Pass &amp; Play</button>' +
-        '<button type="button" data-sl="mode" data-k="online" class="' + (m === "online" ? "on" : "") + '">' + ico("wifi") + 'Online</button></div>';
+      var K0 = dkit(); if (K0) K0.css();
+      var m = cfg.mode, cols = slColors(), i, h = '<div class="bg-box lx"><div class="ag-glass lx-card lx-enter" style="animation-delay:.08s">';
+      h += '<div class="lx-lbl">Game mode</div><div class="lx-g3">' + [
+        ["ai", "bot", "vs Bots", "Play solo"], ["local", "users", "Pass & Play", "Same phone"], ["online", "wifi", "Online", "With friends"]
+      ].map(function (t) {
+        return '<button type="button" data-sl="mode" data-k="' + t[0] + '" class="lx-tile' + (m === t[0] ? " on" : "") + '"><span class="ic">' + ico(t[1]) + '</span><span class="t">' + t[2] + '</span><span class="s">' + t[3] + '</span></button>';
+      }).join("") + '</div>';
+
+      h += '<div class="lx-lbl" style="margin-top:12px">' + (m === "online" ? "Room size" : "Players") + '</div><div class="lx-g3">' +
+        [2, 3, 4].map(function (n) {
+          return '<button type="button" data-sl="count" data-k="' + n + '" class="lx-tile' + (cfg.count === n ? " on" : "") + '"><span class="t" style="font-size:15px">' + n + 'P</span><span class="dots">' +
+            cols.slice(0, n).map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("") + '</span></button>';
+        }).join("") + '</div>';
 
       if (m === "online") {
-        h += '<div><div class="ag-lbl" style="margin-top:0">Your Name</div><input class="bg-in" type="text" maxlength="14" data-sl-myname="1" value="' + esc(cfg.myName) + '" placeholder="Player"></div>';
-        h += '<div><div class="ag-lbl" style="margin-top:0">Room Size</div><div class="ag-seg">' +
-          [2, 3, 4].map(function (n) { return '<button type="button" data-sl="count" data-k="' + n + '" class="' + (cfg.count === n ? "on" : "") + '">' + n + 'P</button>'; }).join("") +
-          '</div></div>';
-        h += '<button type="button" class="bg-cta" data-sl="create">' + ico("plus") + 'Create Online Room</button>';
-        h += '<div class="flex gap-1.5"><input id="sl-code-in" class="bg-in" style="width:6.2rem;text-align:center;letter-spacing:.22em;font-weight:800" type="text" inputmode="numeric" maxlength="4" placeholder="0000" value="' + esc(cfg.code) + '">' +
-          '<button type="button" class="bg-sec flex-1 font-extrabold" data-sl="join">' + ico("log-in") + 'Join Room</button></div>';
-        h += '<div id="sl-net-msg" class="text-xs qa-t2 text-center"></div>';
+        h += '<div class="lx-lbl" style="margin-top:12px">Your name</div><input class="lx-in" type="text" maxlength="14" data-sl-myname="1" value="' + esc(cfg.myName) + '" placeholder="Player">';
+        h += '<div style="margin-top:12px"><button type="button" class="lx-cta" data-sl="create">' + ico("plus") + 'Create Online Room</button></div>';
+        h += '<div style="display:flex;gap:8px;margin-top:10px"><input id="sl-code-in" class="lx-in" style="width:6.4rem;text-align:center;letter-spacing:.22em;font-weight:900" type="text" inputmode="numeric" maxlength="4" placeholder="0000" value="' + esc(cfg.code) + '">' +
+          '<button type="button" class="bg-sec" style="flex:1;font-weight:800;border-radius:14px" data-sl="join">' + ico("log-in") + 'Join Room</button></div>';
+        h += '<div id="sl-net-msg" style="font-size:12px;text-align:center;color:var(--ag-t2);margin-top:8px;min-height:1rem"></div>';
       } else {
-        h += '<div><div class="ag-lbl" style="margin-top:0">Players</div><div class="ag-seg">' +
-          [2, 3, 4].map(function (n) { return '<button type="button" data-sl="count" data-k="' + n + '" class="' + (cfg.count === n ? "on" : "") + '">' + n + ' Players</button>'; }).join("") +
-          '</div></div>';
-        h += '<div class="grid grid-cols-2 gap-2">';
+        h += '<div class="lx-lbl" style="margin-top:12px">Names <span class="cp-hint">· tap a ball to change colour</span></div><div class="lx-g2">';
         for (i = 0; i < cfg.count; i++) {
           var def = m === "ai" ? (i === 0 ? "You" : "Bot " + i) : "Player " + (i + 1);
           var val = cfg.names[i] && cfg.names[i].indexOf("Player ") !== 0 && cfg.names[i].indexOf("Bot ") !== 0 && cfg.names[i] !== "You" ? cfg.names[i] : def;
           cfg.names[i] = val;
-          h += '<div class="flex items-center gap-1.5"><span class="bg-dot" style="background:' + cols[i] + '"></span>' +
-            '<input class="bg-in" type="text" maxlength="14" data-sl-name="' + i + '" value="' + esc(val) + '"' + (m === "ai" && i > 0 ? " readonly" : "") + '></div>';
+          h += '<div class="lx-nr"><button type="button" class="lx-pawn cp-pawn' + (cfg.pick === i ? " sel" : "") + '" data-sl="pick" data-k="' + i + '" aria-label="Change colour" style="--c:' + cols[i] + ';--cd:' + shade(cols[i], -0.35) + '"></button>' +
+            '<input type="text" maxlength="14" data-sl-name="' + i + '" value="' + esc(val) + '"' + (m === "ai" && i > 0 ? " readonly" : "") + '></div>';
         }
-        h += '</div><button type="button" class="bg-cta" data-sl="start">' + ico("play") + 'Start Game</button>';
+        h += '</div>';
+        if (cfg.pick != null && cfg.pick < cfg.count) {
+          var tk = [], j; for (j = 0; j < cfg.count; j++) if (j !== cfg.pick) tk.push(cols[j]);
+          h += colorPickerHTML("sl", cols[cfg.pick], tk, esc(cfg.names[cfg.pick] || "Player"));
+        }
+        h += '<div style="margin-top:14px"><button type="button" class="lx-cta" data-sl="start">' + ico("play") + 'START GAME</button></div>';
       }
       h += '</div></div>';
       var hero = '<div class="sl-hero">' +
@@ -2187,28 +2238,35 @@
       host.innerHTML = h; icons();
     }
 
+    function slCard(idx) {
+      var pl = st.players[idx];
+      return '<div id="sl-chip-' + idx + '" class="lx-pc sl-card' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
+        '<div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
+        '<div class="lx-nfo"><div class="lx-nm">' + esc(pl.name) + '</div><div class="sl-sq">Square <b class="sl-pos">' + pl.pos + '</b></div></div></div>';
+    }
+    function slDie(idx) {
+      var pl = st.players[idx], K = dkit();
+      return '<div class="lx-dwrap lx-big' + (idx === st.turn ? "" : " idle") + '" id="sl-dw-' + idx + '" style="' + (K ? K.vars(pl.color) : "") + '">' +
+        '<button type="button" id="sl-die-' + idx + '" class="lx-die" data-sl="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + (K ? K.cube("sl-cube-" + idx) : "") + '</button><i class="lx-sh"></i></div>';
+    }
+    function slCell(idx, top) {
+      if (idx < 0 || idx >= st.players.length) return '<div></div>';
+      return '<div class="lx-cell">' + (top ? slDie(idx) + slCard(idx) : slCard(idx) + slDie(idx)) + '</div>';
+    }
     function renderGame() {
       resetFx();
-      var h = '<div class="bg-box space-y-2.5">';
-      h += '<div class="ag-glass p-2.5 flex items-center justify-between gap-2">' +
-        '<button type="button" class="bg-sec" style="padding:.45rem .6rem" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
-        '<div id="sl-msg" class="text-xs font-extrabold text-center truncate flex-1">' + esc(st.msg) + '</div>' +
-        '<button type="button" class="bg-sec" style="padding:.45rem .6rem" data-sl="studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
-      h += '<div class="bg-cv-wrap ag-glass"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
-      var K = dkit(); if (K) K.css();
+      var n = st.players.length, K = dkit(); if (K) K.css();
       slRots = {};
-      h += '<div class="ag-glass p-2.5 space-y-2">' +
-        '<div id="sl-roll-hint" class="text-xs font-extrabold text-center">Tap dice to roll</div>' +
-        '<div class="sl-pg">' + st.players.map(function (pl, idx) {
-          return '<div id="sl-chip-' + idx + '" class="bg-pchip sl-pc' + (idx === st.turn ? " turn" : "") + '">' +
-            '<div class="lx-dwrap lx-big' + (idx === st.turn ? "" : " idle") + '" id="sl-dw-' + idx + '" style="' + (K ? K.vars(pl.color) : "") + '">' +
-            '<button type="button" id="sl-die-' + idx + '" class="lx-die" data-sl="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + (K ? K.cube("sl-cube-" + idx) : "") + '</button><i class="lx-sh"></i></div>' +
-            '<div class="sl-pi"><div class="sl-pn"><span class="bg-dot" style="background:' + pl.color + '"></span><span class="truncate flex-1">' + esc(pl.name) + '</span></div>' +
-            '<span class="sl-pos qa-ac font-extrabold">#' + pl.pos + '</span></div></div>';
-        }).join("") + '</div></div>';
-      h += '<div class="bg-emo-bar">' + ["👏", "😂", "🔥", "😱"].map(function (em) {
-        return '<button type="button" class="bg-emo" data-sl="emo" data-k="' + em + '">' + em + '</button>';
-      }).join("") + '</div></div></div>';
+      /* Ludo-style layout: 2 dice on top, board in the centre, 2 dice at the bottom (clockwise seats) */
+      var topRow = n === 2 ? [0, -1] : [0, 1], botRow = n === 2 ? [-1, 1] : (n === 3 ? [-1, 2] : [3, 2]);
+      var h = '<div class="bg-box lx lx-gap lx-pdl" style="gap:8px">';
+      h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
+        '<div id="sl-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
+        '<button type="button" class="lx-ib studio" data-sl="studio" aria-label="Arena Studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
+      h += '<div class="lx-row lx-rt lx-enter" style="animation-delay:.05s">' + slCell(topRow[0], true) + slCell(topRow[1], true) + '</div>';
+      h += '<div class="bg-cv-wrap ag-glass lx-enter" style="animation-delay:.1s"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
+      h += '<div class="lx-row lx-rb lx-enter" style="animation-delay:.15s">' + slCell(botRow[0], false) + slCell(botRow[1], false) + '</div>';
+      h += '</div>';
       host.innerHTML = h; icons();
       cv = q("#sl-canvas", host); ctx = cv.getContext("2d");
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
@@ -2259,6 +2317,9 @@
             else if (k === "local") cfg.names = ["Player 1", "Player 2", "Player 3", "Player 4"];
             playSfx("click"); renderSetup();
           } else if (a === "count") { cfg.count = +k; playSfx("click"); renderSetup(); }
+          else if (a === "pick") { cfg.pick = cfg.pick === +k ? null : +k; playSfx("click"); renderSetup(); }
+          else if (a === "color" && cfg.pick != null) { cfg.custom[cfg.pick] = k; playSfx("click"); renderSetup(); }
+          else if (a === "colorreset" && cfg.pick != null) { delete cfg.custom[cfg.pick]; playSfx("click"); renderSetup(); }
           else if (a === "start") { playSfx("click"); startOfflineMatch(); }
           else if (a === "create") { playSfx("click"); createOnlineRoom(); }
           else if (a === "join") { playSfx("click"); joinOnlineRoom((q("#sl-code-in", host) || {}).value); }
@@ -2277,6 +2338,13 @@
             } else { quitT = now; setMsg("Tap ✕ again to quit"); }
           }
         });
+        host.addEventListener("change", function (e) {
+          if (!(e.target.getAttribute && e.target.getAttribute("data-sl-cc")) || cfg.pick == null) return;
+          var v = String(e.target.value).toLowerCase(), cl = slColors(), j, dup = false;
+          for (j = 0; j < cfg.count; j++) if (j !== cfg.pick && String(cl[j]).toLowerCase() === v) dup = true;
+          if (!dup) cfg.custom[cfg.pick] = v;
+          renderSetup();
+        });
         host.addEventListener("input", function (e) {
           var idx = e.target.getAttribute && e.target.getAttribute("data-sl-name");
           if (idx != null) cfg.names[+idx] = e.target.value.slice(0, 14);
@@ -2285,6 +2353,7 @@
         });
         api.subscribe(function (_, key) {
           if (key === "palette" || key === "all") {
+            if (key === "palette") cfg.custom = {};
             var cols = slColors();
             if (st) { st.players.forEach(function (p, i) { p.color = cols[i]; }); updateHUD(); }
             else if (view === "setup") renderSetup();
@@ -2348,7 +2417,7 @@
     try { REDUCE = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) { }
 
     var host = null, view = "setup";
-    var cfg = { mode: "ai", turbo: true, count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "" };
+    var cfg = { mode: "ai", turbo: true, count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "", custom: {}, pick: null };
     var st = null, rm = null, busy = false;
     var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1, pad = 0;
     var dprCap = 2.5, prevNow = 0, slowN = 0, lastDprT = 0; /* adaptive HD: starts sharp, steps down by itself if frames get slow */
@@ -2364,7 +2433,7 @@
       cfg.mode = "online"; cfg.code = pendingInvite.code;
     }
 
-    function seatColors() { return getPalette(); }
+    function seatColors() { var c = getPalette(), k; if (!rm && cfg.mode !== "online") for (k in cfg.custom) c[+k] = cfg.custom[k]; return c; }
 
     /* ---------------------------------------------------------------
      * Styles (scoped under #quiz-arena-root, prefix lx- + 6 Dice Skins)
@@ -3525,15 +3594,20 @@
           '<button type="button" class="bg-sec" style="flex:1;font-weight:800;border-radius:14px" data-ld="join">' + ico("log-in") + 'Join Room</button></div>';
         h += '<div id="ld-net-msg" style="font-size:12px;text-align:center;color:var(--ag-t2);margin-top:8px;min-height:1rem"></div>';
       } else {
-        h += '<div class="lx-lbl" style="margin-top:12px">Names</div><div class="lx-g2">';
+        h += '<div class="lx-lbl" style="margin-top:12px">Names <span class="cp-hint">· tap a ball to change colour</span></div><div class="lx-g2">';
         for (i = 0; i < cfg.count; i++) {
           var seat = seats[i], def = m === "ai" ? (i === 0 ? "You" : "Bot " + i) : SEAT_NAMES[seat];
           var val = cfg.names[i] && cfg.names[i].indexOf("Bot ") !== 0 && SEAT_NAMES.indexOf(cfg.names[i]) < 0 && cfg.names[i] !== "You" ? cfg.names[i] : def;
           cfg.names[i] = val;
-          h += '<div class="lx-nr"><span class="lx-pawn" style="--c:' + cols[seat] + ';--cd:' + shade(cols[seat], -0.35) + '"></span>' +
+          h += '<div class="lx-nr"><button type="button" class="lx-pawn cp-pawn' + (cfg.pick === i ? " sel" : "") + '" data-ld="pick" data-k="' + i + '" aria-label="Change colour" style="--c:' + cols[seat] + ';--cd:' + shade(cols[seat], -0.35) + '"></button>' +
             '<input type="text" maxlength="14" data-ld-name="' + i + '" value="' + esc(val) + '"' + (m === "ai" && i > 0 ? " readonly" : "") + '></div>';
         }
-        h += '</div><div style="margin-top:14px"><button type="button" class="lx-cta" data-ld="start">' + ico("play") + 'START GAME</button></div>';
+        h += '</div>';
+        if (cfg.pick != null && cfg.pick < cfg.count) {
+          var tk = [], j; for (j = 0; j < cfg.count; j++) if (j !== cfg.pick) tk.push(cols[seats[j]]);
+          h += colorPickerHTML("ld", cols[seats[cfg.pick]], tk, esc(cfg.names[cfg.pick] || "Player"));
+        }
+        h += '<div style="margin-top:14px"><button type="button" class="lx-cta" data-ld="start">' + ico("play") + 'START GAME</button></div>';
       }
       h += '</div></div>';
       host.innerHTML = h; icons();
@@ -3697,6 +3771,9 @@
             playSfx("click"); renderSetup();
           } else if (a === "turbo") { cfg.turbo = k === "1"; playSfx("click"); renderSetup(); }
           else if (a === "count") { cfg.count = +k; playSfx("click"); renderSetup(); }
+          else if (a === "pick") { cfg.pick = cfg.pick === +k ? null : +k; playSfx("click"); renderSetup(); }
+          else if (a === "color" && cfg.pick != null) { cfg.custom[seatMap(cfg.count)[cfg.pick]] = k; playSfx("click"); renderSetup(); }
+          else if (a === "colorreset" && cfg.pick != null) { delete cfg.custom[seatMap(cfg.count)[cfg.pick]]; playSfx("click"); renderSetup(); }
           else if (a === "start") { playSfx("click"); startOfflineMatch(); }
           else if (a === "create") { playSfx("click"); createOnlineRoom(); }
           else if (a === "join") { playSfx("click"); joinOnlineRoom((q("#ld-code-in", host) || {}).value); }
@@ -3721,6 +3798,13 @@
             } else { quitT = now; setMsg("Tap ✕ again to quit"); }
           }
         });
+        host.addEventListener("change", function (e) {
+          if (!(e.target.getAttribute && e.target.getAttribute("data-ld-cc")) || cfg.pick == null) return;
+          var v = String(e.target.value).toLowerCase(), sm = seatMap(cfg.count), cl = seatColors(), j, dup = false;
+          for (j = 0; j < cfg.count; j++) if (j !== cfg.pick && String(cl[sm[j]]).toLowerCase() === v) dup = true;
+          if (!dup) cfg.custom[sm[cfg.pick]] = v;
+          renderSetup();
+        });
         host.addEventListener("input", function (e) {
           var idx = e.target.getAttribute && e.target.getAttribute("data-ld-name");
           if (idx != null) cfg.names[+idx] = e.target.value.slice(0, 14);
@@ -3729,6 +3813,7 @@
         });
         api.subscribe(function (_, key) {
           if (key === "palette" || key === "all") {
+            if (key === "palette") cfg.custom = {};
             var cols = seatColors();
             if (st) {
               st.players.forEach(function (p) { p.color = cols[p.seat]; });

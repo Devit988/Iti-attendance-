@@ -13,7 +13,7 @@
   var EXPIRE_MS = 24 * 3600 * 1000;
   var INVITE_BASE = "https://devit988.github.io/Iti-attendance-/?battle=";
 
-  var TABS = [["quiz", "Quiz & Clash", "swords"], ["ludo", "Ludo", "dices"], ["snakes", "Snakes", "route"]];
+  var TABS = [["quiz", "Quiz & Clash", "swords"], ["ludo", "Ludo", "dices"], ["snakes", "Snakes & Ladders", "route"]];
   var CZ_TABS = [["presets", "Presets", "sparkles"], ["board", "Themes", "layout-grid"], ["pieces", "Pieces", "crown"], ["fx", "Dice & FX", "dices"], ["ctrl", "Controls", "sliders-horizontal"]];
   var STYLES = [["classic", "Classic Tactile"], ["modern", "Modern Glow"]];
 
@@ -999,8 +999,8 @@
       "html.no-glass " + R + ".ag-glass{background:#0f172a;-webkit-backdrop-filter:none;backdrop-filter:none}",
       "html.no-glass.bright-mode " + R + ".ag-glass{background:#fff}",
       R + ".ag-bar{display:flex;gap:5px;padding:5px;margin-bottom:.7rem;position:relative;overflow:hidden}",
-      R + ".ag-tab{--tc-rgb:245,158,11;flex:1 1 0;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:.5rem .1rem .6rem;border-radius:.9rem;border:1px solid transparent;background:transparent;color:var(--ag-t2);font-weight:800;font-size:10.5px;letter-spacing:.01em;line-height:1.1;text-align:center;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:background .25s,color .2s,border-color .25s,box-shadow .25s,transform .12s}",
-      R + ".ag-tab>span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}",
+      R + ".ag-tab{--tc-rgb:245,158,11;flex:1 1 0;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding:.5rem .1rem .65rem;border-radius:.9rem;border:1px solid transparent;background:transparent;color:var(--ag-t2);font-weight:800;font-size:10.5px;letter-spacing:.01em;line-height:1.1;text-align:center;white-space:normal;-webkit-tap-highlight-color:transparent;transition:background .25s,color .2s,border-color .25s,box-shadow .25s,transform .12s}",
+      R + ".ag-tab>span{display:block;max-width:100%;white-space:normal;line-height:1.15}",
       R + ".ag-tab[data-k='ludo']{--tc-rgb:56,189,248}",
       R + ".ag-tab[data-k='snakes']{--tc-rgb:34,197,94}",
       R + ".ag-tab[data-cp-tab]{--tc-rgb:249,115,22}",
@@ -1719,36 +1719,104 @@
       });
     }
 
+    function sxCss() {
+      if (document.getElementById("sx-style")) return;
+      var R = "#quiz-arena-root ", c = [
+        R + ".sx{max-width:30rem;margin:0 auto;color:var(--ag-tx)}",
+        R + ".sx *{box-sizing:border-box}",
+        R + ".sx button," + R + ".sx input{font:inherit;color:inherit}",
+        R + ".sx button{cursor:pointer;-webkit-tap-highlight-color:transparent}",
+        R + ".sx-gap{display:flex;flex-direction:column;gap:10px}",
+        R + ".sx-enter{animation:sxEnter .55s cubic-bezier(.2,.9,.3,1.1) both}",
+        R + ".sx-hero{position:relative;overflow:hidden;border-radius:22px;padding:18px 16px 14px;color:#fff;border:1px solid rgba(255,255,255,.14);background:radial-gradient(120% 100% at 90% -10%,rgba(34,197,94,.42),transparent 55%),radial-gradient(90% 90% at -10% 110%,rgba(56,189,248,.28),transparent 55%),radial-gradient(70% 70% at 50% 125%,rgba(250,204,21,.22),transparent 60%),linear-gradient(160deg,#06281f,#0b1020);box-shadow:0 18px 40px -18px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.18)}",
+        R + ".sx-hero-in{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px}",
+        R + ".sx-kick{font-size:10.5px;font-weight:800;letter-spacing:.3em;color:#bbf7d0;opacity:.9}",
+        R + ".sx-title{font-size:38px;line-height:.95;font-weight:900;letter-spacing:.03em;margin-top:4px;background:linear-gradient(180deg,#fff,#bbf7d0 55%,#22c55e);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}",
+        R + ".sx-title span{display:block;font-size:15px;letter-spacing:.4em;margin-top:7px;background:linear-gradient(90deg,#facc15,#4ade80,#38bdf8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}",
+        R + ".sx-sub{font-size:12px;font-weight:600;color:#cbd5e1;margin-top:9px}",
+        R + ".sx-art{position:relative;width:74px;height:74px;flex:none;border-radius:22px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(74,222,128,.45);box-shadow:0 0 28px -8px rgba(34,197,94,.7)}",
+        R + ".sx-art b{font-size:40px;line-height:1;font-weight:400;animation:sxSlither 3.2s ease-in-out infinite}",
+        R + ".sx-art i{position:absolute;right:-8px;bottom:-8px;font-size:24px;font-style:normal;background:#0f172a;border-radius:50%;padding:3px;border:1px solid rgba(255,255,255,.25);animation:sxBob 2.6s ease-in-out infinite}",
+        R + ".sx-track{position:relative;z-index:2;display:flex;align-items:center;gap:8px;margin-top:14px;font-size:10px;font-weight:800;color:#bbf7d0}",
+        R + ".sx-track span{position:relative;flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}",
+        R + ".sx-track u{position:absolute;left:0;top:0;bottom:0;width:38%;border-radius:99px;background:linear-gradient(90deg,#4ade80,#facc15);animation:sxClimb 3.6s ease-in-out infinite}",
+        R + ".sx-orb{position:absolute;z-index:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,currentColor 58%);box-shadow:0 0 16px currentColor;animation:sxDrift 6s ease-in-out infinite}",
+        R + ".sx-card{padding:14px}",
+        R + ".sx-lbl{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ag-t2);margin:0 0 6px}",
+        R + ".sx-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
+        R + ".sx-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}",
+        R + ".sx-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 9px;border-radius:16px;background:var(--ag-bg2);border:1.5px solid var(--ag-bd);text-align:center;transition:transform .15s,border-color .2s,background .2s,box-shadow .2s}",
+        R + ".sx-tile:active{transform:scale(.96)}",
+        R + ".sx-tile .ic{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(34,197,94,.16);color:#22c55e;font-size:18px;line-height:1}",
+        R + ".sx-tile .ic .ag-i{width:18px;height:18px}",
+        R + ".sx-tile .t{font-size:12px;font-weight:800}",
+        R + ".sx-tile .s{font-size:10px;font-weight:600;color:var(--ag-t2)}",
+        R + ".sx-tile .dots{display:flex;gap:3px;height:10px;align-items:center}",
+        R + ".sx-tile .dots i{width:9px;height:9px;border-radius:50%;box-shadow:inset -1px -1px 2px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.5)}",
+        R + ".sx-tile.on{border-color:rgba(34,197,94,.75);background:rgba(34,197,94,.14);box-shadow:0 0 0 1px rgba(34,197,94,.6),0 10px 22px -10px rgba(34,197,94,.7)}",
+        R + ".sx-nr{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 8px;border-radius:14px;background:var(--ag-bg2);border:1.5px solid var(--ag-bd);min-width:0}",
+        R + ".sx-nr input{flex:1;min-width:0;background:transparent;border:0;outline:none;font-size:13px;font-weight:700;padding:.3rem 0}",
+        R + ".sx-pawn{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:inset -2px -2px 4px rgba(0,0,0,.3),0 3px 8px -3px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.5)}",
+        R + ".sx-in{width:100%;padding:.6rem .8rem;border-radius:14px;font-size:13px;font-weight:700;background:var(--ag-bg2);border:1.5px solid var(--ag-bd);outline:none}",
+        R + ".sx-in:focus{border-color:rgba(34,197,94,.75)}",
+        R + ".sx-cta{position:relative;overflow:hidden;width:100%;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 1rem;border-radius:16px;font-weight:900;font-size:15px;letter-spacing:.03em;color:#052e16!important;background:linear-gradient(135deg,#bbf7d0,#4ade80 40%,#22c55e 75%,#16a34a);border:1px solid rgba(255,255,255,.45);box-shadow:0 12px 26px -10px rgba(34,197,94,.85),0 1px 0 rgba(255,255,255,.6) inset,0 -3px 0 rgba(21,128,61,.45) inset;transition:transform .12s}",
+        R + ".sx-cta::after{content:'';position:absolute;top:0;bottom:0;width:38%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-20deg);animation:sxShine 2.8s ease-in-out infinite}",
+        R + ".sx-cta:active:not(:disabled){transform:translateY(2px) scale(.99)}",
+        R + ".sx-cta:disabled{opacity:.45;box-shadow:none}",
+        R + ".sx-join{display:flex;gap:8px;margin-top:10px}",
+        "@keyframes sxEnter{0%{opacity:0;transform:translateY(14px) scale(.97)}100%{opacity:1;transform:none}}",
+        "@keyframes sxDrift{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}",
+        "@keyframes sxSlither{0%,100%{transform:rotate(-6deg) scale(1)}50%{transform:rotate(6deg) scale(1.08)}}",
+        "@keyframes sxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}",
+        "@keyframes sxClimb{0%{width:6%}60%{width:92%}100%{width:6%}}",
+        "@keyframes sxShine{0%{left:-60%}55%,100%{left:130%}}",
+        "@media(prefers-reduced-motion:reduce){" + R + ".sx-enter," + R + ".sx-art b," + R + ".sx-art i," + R + ".sx-orb," + R + ".sx-track u," + R + ".sx-cta::after{animation:none}}"
+      ];
+      var st = document.createElement("style"); st.id = "sx-style"; st.textContent = c.join("\n"); document.head.appendChild(st);
+    }
+
     function renderSetup() {
-      var m = cfg.mode, cols = slColors(), i, h = '<div class="bg-box"><div class="ag-glass p-3.5 space-y-3">';
-      h += '<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2">' + ico("route", "qa-ac") + '<span class="text-base font-extrabold">Snakes &amp; Ladders</span></div><span class="text-xs qa-t2 font-bold">1 → 100</span></div>';
-      h += '<div class="ag-seg">' +
-        '<button type="button" data-sl="mode" data-k="ai" class="' + (m === "ai" ? "on" : "") + '">' + ico("bot") + 'AI Bot</button>' +
-        '<button type="button" data-sl="mode" data-k="local" class="' + (m === "local" ? "on" : "") + '">' + ico("users") + 'Pass &amp; Play</button>' +
-        '<button type="button" data-sl="mode" data-k="online" class="' + (m === "online" ? "on" : "") + '">' + ico("wifi") + 'Online</button></div>';
+      sxCss();
+      var m = cfg.mode, cols = slColors(), i;
+      var h = '<div class="sx sx-gap">';
+      h += '<div class="sx-hero sx-enter">' +
+        '<i class="sx-orb" style="color:' + cols[0] + ';width:12px;height:12px;left:52%;top:14%"></i>' +
+        '<i class="sx-orb" style="color:' + cols[1] + ';width:9px;height:9px;right:30%;top:8%;animation-delay:-2s"></i>' +
+        '<i class="sx-orb" style="color:' + cols[2] + ';width:11px;height:11px;left:46%;bottom:30%;animation-delay:-4s"></i>' +
+        '<div class="sx-hero-in"><div><div class="sx-kick">ITI CONNECT</div><div class="sx-title">SNAKES<span>&amp; LADDERS</span></div>' +
+        '<div class="sx-sub">Climb ladders. Dodge snakes. Reach 100!</div></div>' +
+        '<div class="sx-art" aria-hidden="true"><b>\uD83D\uDC0D</b><i>\uD83E\uDE9C</i></div></div>' +
+        '<div class="sx-track" aria-hidden="true"><em style="font-style:normal">1</em><span><u></u></span><em style="font-style:normal">100</em></div></div>';
+
+      h += '<div class="ag-glass sx-card sx-enter" style="animation-delay:.08s">';
+      h += '<div class="sx-lbl">Game mode</div><div class="sx-g3">' + [
+        ["ai", "bot", "AI Bot", "Play solo"], ["local", "users", "Pass &amp; Play", "Same phone"], ["online", "wifi", "Online", "With friends"]
+      ].map(function (t) {
+        return '<button type="button" data-sl="mode" data-k="' + t[0] + '" class="sx-tile' + (m === t[0] ? " on" : "") + '"><span class="ic">' + ico(t[1]) + '</span><span class="t">' + t[2] + '</span><span class="s">' + t[3] + '</span></button>';
+      }).join("") + '</div>';
+
+      h += '<div class="sx-lbl" style="margin-top:12px">' + (m === "online" ? "Room size" : "Players") + '</div><div class="sx-g3">' +
+        [2, 3, 4].map(function (n) {
+          return '<button type="button" data-sl="count" data-k="' + n + '" class="sx-tile' + (cfg.count === n ? " on" : "") + '"><span class="t" style="font-size:15px">' + n + 'P</span><span class="dots">' +
+            cols.slice(0, n).map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("") + '</span></button>';
+        }).join("") + '</div>';
 
       if (m === "online") {
-        h += '<div><div class="ag-lbl" style="margin-top:0">Your Name</div><input class="bg-in" type="text" maxlength="14" data-sl-myname="1" value="' + esc(cfg.myName) + '" placeholder="Player"></div>';
-        h += '<div><div class="ag-lbl" style="margin-top:0">Room Size</div><div class="ag-seg">' +
-          [2, 3, 4].map(function (n) { return '<button type="button" data-sl="count" data-k="' + n + '" class="' + (cfg.count === n ? "on" : "") + '">' + n + 'P</button>'; }).join("") +
-          '</div></div>';
-        h += '<button type="button" class="bg-cta" data-sl="create">' + ico("plus") + 'Create Online Room</button>';
-        h += '<div class="flex gap-1.5"><input id="sl-code-in" class="bg-in" style="width:6.2rem;text-align:center;letter-spacing:.22em;font-weight:800" type="text" inputmode="numeric" maxlength="4" placeholder="0000" value="' + esc(cfg.code) + '">' +
-          '<button type="button" class="bg-sec flex-1 font-extrabold" data-sl="join">' + ico("log-in") + 'Join Room</button></div>';
-        h += '<div id="sl-net-msg" class="text-xs qa-t2 text-center"></div>';
+        h += '<div class="sx-lbl" style="margin-top:12px">Your name</div><input class="sx-in" type="text" maxlength="14" data-sl-myname="1" value="' + esc(cfg.myName) + '" placeholder="Player">';
+        h += '<div style="margin-top:12px"><button type="button" class="sx-cta" data-sl="create">' + ico("plus") + 'Create Online Room</button></div>';
+        h += '<div class="sx-join"><input id="sl-code-in" class="sx-in" style="width:6.2rem;text-align:center;letter-spacing:.22em;font-weight:800" type="text" inputmode="numeric" maxlength="4" placeholder="0000" value="' + esc(cfg.code) + '">' +
+          '<button type="button" class="bg-sec flex-1 font-extrabold" style="border-radius:14px" data-sl="join">' + ico("log-in") + 'Join Room</button></div>';
+        h += '<div id="sl-net-msg" class="text-xs qa-t2 text-center" style="margin-top:8px"></div>';
       } else {
-        h += '<div><div class="ag-lbl" style="margin-top:0">Players</div><div class="ag-seg">' +
-          [2, 3, 4].map(function (n) { return '<button type="button" data-sl="count" data-k="' + n + '" class="' + (cfg.count === n ? "on" : "") + '">' + n + ' Players</button>'; }).join("") +
-          '</div></div>';
-        h += '<div class="grid grid-cols-2 gap-2">';
+        h += '<div class="sx-lbl" style="margin-top:12px">Player names</div><div class="sx-g2">';
         for (i = 0; i < cfg.count; i++) {
           var def = m === "ai" ? (i === 0 ? "You" : "Bot " + i) : "Player " + (i + 1);
           var val = cfg.names[i] && cfg.names[i].indexOf("Player ") !== 0 && cfg.names[i].indexOf("Bot ") !== 0 && cfg.names[i] !== "You" ? cfg.names[i] : def;
           cfg.names[i] = val;
-          h += '<div class="flex items-center gap-1.5"><span class="bg-dot" style="background:' + cols[i] + '"></span>' +
-            '<input class="bg-in" type="text" maxlength="14" data-sl-name="' + i + '" value="' + esc(val) + '"' + (m === "ai" && i > 0 ? " readonly" : "") + '></div>';
+          h += '<div class="sx-nr"><span class="sx-pawn" style="background:' + cols[i] + '"></span>' +
+            '<input type="text" maxlength="14" data-sl-name="' + i + '" value="' + esc(val) + '"' + (m === "ai" && i > 0 ? " readonly" : "") + '></div>';
         }
-        h += '</div><button type="button" class="bg-cta" data-sl="start">' + ico("play") + 'Start Game</button>';
+        h += '</div><div style="margin-top:14px"><button type="button" class="sx-cta" data-sl="start">' + ico("play") + 'Start Game</button></div>';
       }
       h += '</div></div>';
       host.innerHTML = h; icons();

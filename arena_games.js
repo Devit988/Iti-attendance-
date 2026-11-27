@@ -2707,6 +2707,35 @@
     var raf = 0, lastT = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
     var gen = 0;
     function later(fn, ms) { var g = gen; return setTimeout(function () { if (g !== gen) return; fn(); }, ms); }
+    /* ---- v4.0 ACTION CAMERA: the board stays still for ordinary hops, then eases in on deploys, captures and home runs and eases back out.
+     *      Only the canvas moves (the frame, dice and HUD never do). Follows the Studio camera toggle (P.cam) and reduced-motion. ---- */
+    var cam = { on: false, k: 1, x: 0, y: 0, tx: 0, ty: 0, tk: 1, fx: 0, fy: 0, fol: null, until: 0 };
+    function camReset() { cam.on = false; cam.k = 1; cam.tx = cam.ty = 0; cam.tk = 1; cam.fol = null; cam.until = 0; if (cv) { cv.style.transform = ""; cv.style.clipPath = ""; } }
+    /* zoom to k on a board point (or follow a hopping piece: fol = {pl, t}) and hold for `hold` ms; the camera then eases back out by itself */
+    function camFocus(x, y, k, hold, fol) {
+      if (P.cam === false || REDUCE || !cv || !size) return;
+      if (!cam.on) { cam.on = true; cam.k = 1; cam.x = cam.y = size / 2; cv.style.transformOrigin = "0 0"; }
+      cam.tk = k; cam.fx = x; cam.fy = y; cam.fol = fol || null; cam.until = performance.now() + hold; kickLoop();
+    }
+    function camEnd(ms) { if (cam.on) { cam.fol = null; cam.until = performance.now() + ms; } }
+    function camTick(now) {
+      if (!cam.on || !cv || !size) return;
+      var hold = P.cam !== false && !REDUCE && now < cam.until;   /* camera switched off mid-zoom: just ease back to normal */
+      if (hold && cam.fol) { var fa = cam.fol.pl.anims && cam.fol.pl.anims[cam.fol.t]; if (fa) { cam.fx = fa.x; cam.fy = fa.y; } }
+      var ez = hold ? (cam.fol ? 0.22 : 0.14) : 0.1;
+      cam.k += ((hold ? cam.tk : 1) - cam.k) * (hold ? 0.13 : 0.1);
+      cam.x += ((hold ? cam.fx : size / 2) - cam.x) * ez; cam.y += ((hold ? cam.fy : size / 2) - cam.y) * ez;
+      if (!hold && cam.k < 1.004) { camReset(); return; }
+      var k = cam.k, S = size, full = S + pad * 2;
+      var tb = Math.max(S * (1 - k), Math.min(0, S / 2 - cam.x * k)), tc = Math.max(S * (1 - k), Math.min(0, S / 2 - cam.y * k));   /* translate in board space, kept inside the board */
+      cam.tx = tb; cam.ty = tc;
+      var Tx = tb + pad * (1 - k), Ty = tc + pad * (1 - k);   /* same thing in canvas space (the canvas has a transparent margin of `pad`) */
+      cv.style.transform = "translate(" + Tx.toFixed(1) + "px," + Ty.toFixed(1) + "px) scale(" + k.toFixed(3) + ")";
+      /* while zoomed, clip the canvas to the board so it never spills over the dice / HUD; the clip margin closes smoothly so edge pawns don't pop */
+      var m = pad * (1 - Math.min(1, (k - 1) / 0.2));
+      var cl = (pad - m - Tx) / k, ct = (pad - m - Ty) / k, cr = full - (pad + S + m - Tx) / k, cb = full - (pad + S + m - Ty) / k;
+      cv.style.clipPath = "inset(" + ct.toFixed(1) + "px " + cr.toFixed(1) + "px " + cb.toFixed(1) + "px " + cl.toFixed(1) + "px round " + (S * 0.045 / k).toFixed(1) + "px)";
+    }
     var dieRots = {}, lastTurnShown = -1, resizeBound = false, perDie = false;
     function rotOf(i) { i = i || 0; return dieRots[i] || (dieRots[i] = { x: 0, y: 0 }); }
     function dieEl(i) { return q(perDie ? "#ld-die-" + i : "#ld-die", host); }
@@ -3405,7 +3434,7 @@
     function loop(now) {
       raf = 0;
       if (!st || view !== "game" || !cv || document.hidden) { prevNow = 0; return; }
-      adaptHd(now);
+      adaptHd(now); camTick(now);
       var fast = particles.length > 0 || st.awaitMove || st.busy;
       if (fast || now - lastT >= 33) { lastT = now; if (particles.length) stepParticles(); drawFrame(); }
       raf = window.requestAnimationFrame(loop);
@@ -3578,15 +3607,20 @@
       if (cur < 0) path = [0];
       else { for (var s = cur + 1; s <= cur + dice; s++) path.push(s); }
 
-      var entering = cur < 0;
+      var entering = cur < 0, homeRun = path.length > 0 && path[path.length - 1] === 56;
+      if (entering || homeRun) {   /* action camera: follow the piece out of the yard, or along the home lane */
+        var cp0 = tokenCoords(pl.seat, tIdx, cur, size);
+        camFocus(cp0.x, cp0.y, entering ? 1.5 : 1.55, api.dur(entering ? 330 : 190 * path.length) + 400, { pl: pl, t: tIdx });
+      }
       animateHop(pl, tIdx, path, function () {
         var dest = pl.tokens[tIdx], bonus = dice === 6, lp = tokenCoords(pl.seat, tIdx, dest, size), caps = [];
         spawnRing(lp.x, lp.y, pl.color, size * 0.07);
-        if (entering) { feed("🚀 " + pl.name + " deploys a piece"); spawnSparks(lp.x, lp.y, pl.color, 16); spawnRing(lp.x, lp.y, "#ffffff", size * 0.1); playSfx("six"); if (!pl.bot) vibrate("deploy"); }
+        if (entering) { feed("🚀 " + pl.name + " deploys a piece"); spawnSparks(lp.x, lp.y, pl.color, 16); spawnRing(lp.x, lp.y, "#ffffff", size * 0.1); playSfx("six"); if (!pl.bot) vibrate("deploy"); camFocus(lp.x, lp.y, 1.55, api.dur(700)); }
         if (dest === 56) {
           bonus = true; stat(pIdx).home++; giveCard(pl); playSfx("home"); feed("🏠 " + pl.name + " gets a piece home (" + pl.tokens.filter(function (v) { return v === 56; }).length + "/" + pl.tokens.length + ")");
           spawnSparks(lp.x, lp.y, pl.color, 20); spawnConfetti(lp.x, lp.y, 26);
           toast("🏠 HOME!", pl.color);
+          var allHome = pl.tokens.every(function (v) { return v === 56; }); camFocus(lp.x, lp.y, allHome ? 1.6 : 1.75, api.dur(allHome ? 800 : 1000));
           vibrate([40, 40, 70, 40, 120]);
         } else if (dest >= 0 && dest <= 50) {
           var tSq = trackIdx(pl.seat, dest);
@@ -3599,7 +3633,7 @@
                 if (!(op.shield > 0) && op.tokens[ot] >= 0 && op.tokens[ot] <= 50 && trackIdx(op.seat, op.tokens[ot]) === tSq) {
                   var hitPos = tokenCoords(op.seat, ot, op.tokens[ot], size);
                   caps.push({ op: op, ot: ot, from: op.tokens[ot] }); bonus = true; stat(pIdx).cap++; stat(o).lost++; giveCard(pl);   /* piece stays put until it runs home below */
-                  playSfx("capture");
+                  playSfx("capture"); camFocus(hitPos.x, hitPos.y, 1.7, api.dur(720));   /* punch in on the impact */
                   spawnSparks(hitPos.x, hitPos.y, op.color, 26); spawnRing(hitPos.x, hitPos.y, "#ffffff", size * 0.12); spawnRing(hitPos.x, hitPos.y, op.color, size * 0.09);
                   toast(stat(pIdx).cap > 1 ? "💥 CAPTURE x" + stat(pIdx).cap + "!" : "💥 CAPTURED!", "#ef4444"); shake(); flash(op.color);
                   if (!pl.bot || !op.bot) vibrate("capture");   /* heavy thud for a capture */
@@ -3614,6 +3648,9 @@
           /* captured pieces retrace their own path, back to the start square, then fly into their yard */
           var left = caps.length;
           later(function () {
+            var cd = 0; caps.forEach(function (c) { var n = c.from + 1; cd = Math.max(cd, Math.max(24, Math.min(75, 1300 / n)) * n + 380); });   /* how long the retreat takes */
+            if (caps.length === 1) camFocus(lp.x, lp.y, 1.4, api.dur(cd) + 500, { pl: caps[0].op, t: caps[0].ot });   /* ride along with the sent-home piece */
+            else camFocus(lp.x, lp.y, 1.2, api.dur(cd) + 500);
             caps.forEach(function (c) {
               var back = [], k; for (k = c.from - 1; k >= 0; k--) back.push(k); back.push(-1);
               var per = Math.max(24, Math.min(75, 1300 / back.length));
@@ -3621,7 +3658,7 @@
               animateHop(c.op, c.ot, back, function () {
                 var yp = tokenCoords(c.op.seat, c.ot, -1, size);
                 spawnRing(yp.x, yp.y, c.op.color, size * 0.08); spawnSparks(yp.x, yp.y, c.op.color, 12);
-                if (--left === 0) { updateHUD(); endTurn(bonus, isActor); }
+                if (--left === 0) { updateHUD(); camEnd(api.dur(450)); endTurn(bonus, isActor); }
               }, { ms: per, quiet: true, trail: 1, arc: 0.012, lastMs: 380, lastArc: 0.14 });
             });
           }, api.dur(320));
@@ -4003,9 +4040,10 @@ function pickBestBotTokenOld(pl, valid, dice) {
 
     function handleBoardTap(e) {
       if (!st || !st.awaitMove || !canActNow() || !cv || !st._rendered) return;
-      var rect = cv.getBoundingClientRect();
-      var x = (e.clientX - rect.left) * ((size + pad * 2) / rect.width) - pad;
-      var y = (e.clientY - rect.top) * ((size + pad * 2) / rect.height) - pad;
+      var bw = q(".lx-bw", host); if (!bw) return;
+      var rect = bw.getBoundingClientRect();   /* the board frame never moves (the camera only moves the canvas inside it) */
+      var x = (e.clientX - rect.left) * (size / rect.width), y = (e.clientY - rect.top) * (size / rect.height);
+      if (cam.on && cam.k > 1.001) { x = (x - cam.tx) / cam.k; y = (y - cam.ty) / cam.k; }   /* undo the camera so taps still land on the right pawn mid-zoom */
       var hitR = Math.max(18, (size / 15) * 0.65), best = -1, bestD = hitR;
       for (var i = 0; i < st._rendered.length; i++) {
         var it = st._rendered[i];
@@ -4378,7 +4416,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
         '<div class="lx-side">' + ["🔥", "😱"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div></div>';
       h += '</div>';
       host.innerHTML = h; icons();
-      cv = q("#ld-canvas", host); ctx = cv.getContext("2d");
+      cv = q("#ld-canvas", host); ctx = cv.getContext("2d"); camReset();
       q(".lx-bw", host).addEventListener("click", handleBoardTap);
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
       offKey = ""; dieRots = {}; lastTurnShown = -1;
@@ -6039,7 +6077,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       '<div class="ag-lbl">Haptic buzz</div><div class="ag-seg">' + seg("haptic", "true", "On") + seg("haptic", "false", "Off") + '</div>' +
       '<div class="ag-lbl">Haptic strength</div><div class="ag-seg">' + seg("hpow", "soft", "Soft") + seg("hpow", "normal", "Normal") + seg("hpow", "strong", "Strong") + '</div>' +
       '<div class="ag-lbl">Dice position</div><div class="ag-seg">' + seg("dpos", "left", "Left") + seg("dpos", "center", "Centre") + seg("dpos", "right", "Right") + seg("dpos", "split", "Corners") + '</div>' +
-      '<div class="ag-lbl">Snakes &amp; Ladders camera zoom</div><div class="ag-seg">' + seg("cam", "true", "On") + seg("cam", "false", "Off") + '</div>' +
+      '<div class="ag-lbl">Action camera zoom (Ludo &amp; Snakes &amp; Ladders)</div><div class="ag-seg">' + seg("cam", "true", "On") + seg("cam", "false", "Off") + '</div>' +
       '<button type="button" class="ag-reset" data-as="reset">' + ico("rotate-ccw") + 'Reset Studio</button></div>';
 
     h += '</div></div></div>';

@@ -106,6 +106,7 @@
   var isPeeking = false;
   var passPeeked = false;
   var hasPeeked = false;
+  var chitPicked = false, pickedFresh = false; /* pick-a-chit step before peeking */
   var toastMsg = "", toastUntil = 0;
   var fxKey = "";
   var lastFxKey = "";
@@ -478,9 +479,12 @@
     st.revealedIds = [];
     st.lastCalc = null;
     st.players.forEach(function (p) { p.ready = false; });
-    isPeeking = false; passPeeked = false; hasPeeked = false;
+    isPeeking = false; passPeeked = false; hasPeeked = false; chitPicked = false; pickedFresh = false;
     render();
     sfx("dice");
+    later(function () { if (st && st.phase === "SHUFFLE") { sfx("click"); vib(10); } }, 1000);
+    later(function () { if (st && st.phase === "SHUFFLE") { sfx("click"); vib(10); } }, 1900);
+    later(function () { if (st && st.phase === "SHUFFLE") { sfx("move"); vib(16); } }, 2600);
 
     later(function () {
       if (!st) return;
@@ -497,7 +501,7 @@
           }, 600 + idx * 320);
         });
       }
-    }, 850);
+    }, shufMs());
   }
 
   function updatePeekChips() {
@@ -1076,7 +1080,7 @@
         view = "game";
         if (curKey !== prevKey) {
           rm.lastPhaseKey = curKey;
-          isPeeking = false; hasPeeked = false;
+          isPeeking = false; hasPeeked = false; chitPicked = false; pickedFresh = false;
           clearInterval(timerInt); timerInt = 0;
           if (st.phase === "GUESS") {
             sfx("move");
@@ -1267,8 +1271,74 @@
     }
 
     h += '</div></div>';
-    pane.innerHTML = h + '<div id="cp-toast" class="cp-toast" role="status" aria-live="polite"></div>';
-    icons();
+    patchSetup(h + '<div id="cp-toast" class="cp-toast" role="status" aria-live="polite"></div>');
+  }
+
+  /* ---------- Smooth in-place updates for the setup panel ----------
+     Instead of rebuilding the whole panel on every tap (which flashes, restarts the hero
+     animation and drops focus), the new markup is merged into the existing DOM. Only what
+     changed is touched, so CSS transitions can run and selected tiles get a soft pulse. */
+  var lastSetupPreset = null;
+  function reduceMo() { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } }
+  function popIn(el) {
+    if (el.nodeType !== 1 || el.nodeName === "I" || !el.animate || reduceMo()) return;
+    try { el.animate([{ opacity: 0, transform: "translateY(8px) scale(.97)" }, { opacity: 1, transform: "none" }], { duration: 280, easing: "cubic-bezier(.2,.9,.3,1)" }); } catch (e) { }
+  }
+  function selPulse(el) {
+    if (!el.animate || reduceMo()) return;
+    try { el.animate([{ transform: "scale(.93)" }, { transform: "scale(1.05)", offset: .55 }, { transform: "scale(1)" }], { duration: 380, easing: "cubic-bezier(.2,1.2,.4,1)" }); } catch (e) { }
+  }
+  function isLucideSvg(n) { return n.nodeType === 1 && n.nodeName.toLowerCase() === "svg" && n.hasAttribute("data-lucide"); }
+  function morphEl(a, b) {
+    if (a.nodeType !== b.nodeType) return false;
+    if (a.nodeType === 3 || a.nodeType === 8) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return true; }
+    if (a.nodeType !== 1) return false;
+    if (isLucideSvg(a)) return b.nodeName === "I" && a.getAttribute("data-lucide") === b.getAttribute("data-lucide");
+    if (a.nodeName !== b.nodeName) return false;
+    var i, nm, isIn = a.nodeName === "INPUT", hadOn = a.classList.contains("on");
+    for (i = 0; i < b.attributes.length; i++) {
+      nm = b.attributes[i].name;
+      if (isIn && nm === "value") continue;
+      if (a.getAttribute(nm) !== b.attributes[i].value) a.setAttribute(nm, b.attributes[i].value);
+    }
+    for (i = a.attributes.length - 1; i >= 0; i--) {
+      nm = a.attributes[i].name;
+      if (!b.hasAttribute(nm) && !(isIn && nm === "value")) a.removeAttribute(nm);
+    }
+    if (isIn) {
+      if (document.activeElement !== a && a.value !== (b.getAttribute("value") || "")) a.value = b.getAttribute("value") || "";
+      return true;
+    }
+    if (!hadOn && a.classList.contains("on") && /(^| )(cp-tile|cp-preset|cp-pill)( |$)/.test(a.className)) selPulse(a);
+    morphKids(a, b);
+    return true;
+  }
+  function morphKids(o, n) {
+    var i, a, b, c;
+    for (i = 0; i < n.childNodes.length; i++) {
+      b = n.childNodes[i]; a = o.childNodes[i];
+      if (!a) { c = b.cloneNode(true); o.appendChild(c); popIn(c); }
+      else if (!morphEl(a, b)) { c = b.cloneNode(true); o.replaceChild(c, a); popIn(c); }
+    }
+    while (o.childNodes.length > n.childNodes.length) o.removeChild(o.lastChild);
+  }
+  function patchSetup(html) {
+    var first = pane.firstElementChild;
+    if (first && first.classList.contains("cp-box") && pane.querySelector(".cp-hero")) {
+      var tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      morphKids(pane, tmp);
+      icons();
+      if (lastSetupPreset !== null && lastSetupPreset !== cfg.preset && pane.querySelectorAll && !reduceMo()) {
+        Array.prototype.forEach.call(pane.querySelectorAll(".cp-rchip"), function (c, i) {
+          try { c.animate([{ transform: "scale(.4)", opacity: 0 }, { transform: "scale(1.12)", opacity: 1, offset: .7 }, { transform: "scale(1)", opacity: 1 }], { duration: 380, delay: i * 50, easing: "cubic-bezier(.2,1.2,.4,1)", fill: "backwards" }); } catch (e) { }
+        });
+      }
+    } else {
+      pane.innerHTML = html;
+      icons();
+    }
+    lastSetupPreset = cfg.preset;
   }
 
   function renderLobby() {
@@ -1333,6 +1403,45 @@
     icons();
   }
 
+  /* ---------- Chit shuffle + pick helpers ---------- */
+  function shufMs() {
+    try { if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return 900; } catch (e) { }
+    return 3500;
+  }
+  function fanPose(n, i) {
+    var mid = (n - 1) / 2, d = i - mid, t = mid ? d / mid : 0;
+    var gap = Math.min(46, 250 / n), sp = Math.min(13, 62 / n);
+    return { x: Math.round(d * gap), y: Math.round(t * t * 20), r: +(d * sp).toFixed(1) };
+  }
+  function shuffleHTML(rc) {
+    var n = rc.roles.length, bn = lang === "bn", i, p, out = '<div class="cp-table"><div class="cp-felt"></div>';
+    for (i = 0; i < n; i++) {
+      p = fanPose(n, i);
+      out += '<div class="cp-ch" style="--i:' + i + ';--side:' + (i % 2 ? 1 : -1) + ';--sx:' + (((i * 97 + 41) % 280) - 140) + 'px;--sy:' + (-110 - ((i * 53) % 60)) + 'px;--sr:' + (((i * 71) % 90) - 45) + 'deg;--fx:' + p.x + 'px;--fy:' + p.y + 'px;--fr:' + p.r + 'deg"><span class="cp-ch-f"><i>?</i></span></div>';
+    }
+    for (i = 0; i < 12; i++) out += '<b class="cp-spk" style="--a:' + (i * 30) + 'deg;--r:' + (58 + (i % 3) * 16) + 'px"></b>';
+    out += '</div><div class="cp-sh-msg">' +
+      '<span style="--d:0s">' + (bn ? "চিরকুট জড়ো হচ্ছে…" : "Gathering the chits…") + '</span>' +
+      '<span style="--d:1.05s">' + (bn ? "ফেটে মেশানো হচ্ছে…" : "Riffle shuffling…") + '</span>' +
+      '<span class="last" style="--d:2.1s">' + (bn ? "চিরকুট সাজানো হচ্ছে…" : "Fanning them out…") + '</span></div>';
+    return out;
+  }
+  function pickFanHTML(rc) {
+    var n = rc.roles.length, bn = lang === "bn", i, p;
+    var out = '<div class="cp-st-t" style="margin-top:8px">' + (bn ? "একটি চিরকুট বেছে নিন" : "Pick your chit") + '</div>' +
+      '<div class="cp-st-s">' + (bn ? "যেকোনো একটিতে ট্যাপ করুন" : "Tap any folded chit from the fan") + '</div><div class="cp-pickfan" id="cp-pickfan">';
+    for (i = 0; i < n; i++) {
+      p = fanPose(n, i);
+      out += '<button type="button" class="cp-pk" data-cp="pickchit" data-i="' + i + '" aria-label="Chit ' + (i + 1) + '" style="--i:' + i + ';--fx:' + p.x + 'px;--fy:' + p.y + 'px;--fr:' + p.r + 'deg"><span class="cp-pk-w"><span class="cp-pk-c cp-ch-f"><i>?</i></span></span></button>';
+    }
+    return out + '</div>';
+  }
+  function burstHTML() {
+    var out = '<div class="cp-burst">', i;
+    for (i = 0; i < 12; i++) out += '<b style="--a:' + (i * 30) + 'deg"></b>';
+    return out + '</div>';
+  }
+
   function renderGame() {
     renderGameRaw();
     fxGate("g|" + (rm ? rm.code : "l") + "|" + st.round + "|" + st.phase + "|" + (st.stageIdx || 0) + "|" + (st.peekIdx || 0));
@@ -1358,17 +1467,13 @@
 
     /* PHASE 1: SHUFFLE */
     if (st.phase === "SHUFFLE") {
-      h += '<div class="ag-glass cp-stage cp-center">' +
-        '<div class="cp-chits-anim">' +
-        rc.roles.map(function (_, idx) {
-          return '<div class="cp-chit-fold" style="--i:' + idx + '"><span>?</span></div>';
-        }).join("") + '</div>' +
-        '<div class="cp-st-t">' + (lang === "bn" ? "চিরকুট মেশানো হচ্ছে…" : "Tossing & Shuffling Paper Chits…") + '</div>' +
-        '<div class="cp-st-s">' + rc.maxPlayers + ' folded chits dropped on the desk</div></div>';
+      h += '<div class="ag-glass cp-stage cp-center">' + shuffleHTML(rc) +
+        '<div class="cp-st-s">' + rc.maxPlayers + (lang === "bn" ? " টি ভাঁজ করা চিরকুট টেবিলে" : " folded chits on the desk") + '</div></div>';
     }
 
     /* PHASE 2: PEEK */
     else if (st.phase === "PEEK") {
+      var landCls = pickedFresh ? " cp-land" : ""; pickedFresh = false;
       if (st.mode === "local") {
         /* Pass & Play: Hold to Peek curtain */
         var curP = st.players[st.peekIdx];
@@ -1378,33 +1483,36 @@
           '<div class="cp-st-t" style="margin-top:8px">Pass phone to <span class="cp-ac">' + esc(curP.name) + '</span></div>' +
           '<div class="cp-st-s">Make sure no one else is looking at the screen!</div>';
 
-        h += '<div class="cp-peek-card' + (isPeeking ? " open" : "") + '" id="cp-peek-card" style="--rc:' + (curRole ? curRole.color : "#f59e0b") + '">' +
+        if (!chitPicked) { h += pickFanHTML(rc); } else {
+        h += '<div class="cp-lw' + landCls + '"><div class="cp-peek-card' + (isPeeking ? " open" : "") + '" id="cp-peek-card" style="--rc:' + (curRole ? curRole.color : "#f59e0b") + '">' +
           '<div class="cp-pc-front"><div class="cp-fold-mark">📄</div><div class="cp-fold-txt">' +
           (lang === "bn" ? "চিরকুট দেখতে চেপে ধরে রাখুন" : "Hold button below to peek") + '</div></div>' +
           '<div class="cp-pc-back">' +
           '<div class="cp-r-emoji">' + (curRole ? curRole.emoji : "") + '</div>' +
           '<div class="cp-r-title">' + roleTitleHTML(curRole) + '</div>' +
-          '<div class="cp-r-pts">' + (curRole ? curRole.points : 0) + ' PTS</div></div></div>';
+          '<div class="cp-r-pts">' + (curRole ? curRole.points : 0) + ' PTS</div></div></div></div>';
 
         h += '<button type="button" class="cp-hold-btn" id="cp-hold-btn">' + ico("eye") +
           '<span>' + (lang === "bn" ? "চেপে ধরে চিরকুট দেখুন" : "HOLD TO PEEK CHIT") + '</span></button>';
 
         h += '<button type="button" class="cp-cta" style="margin-top:10px" data-cp="passnext"' + (passPeeked ? "" : " disabled") + '>' +
           ico("check") + (st.peekIdx + 1 < st.players.length ? ('Hide & Pass to ' + esc(st.players[st.peekIdx + 1].name)) : 'Everyone Ready · Reveal!') + '</button>';
+        }
         h += '</div>';
       } else {
         /* Solo or Online: Private chit card */
         var meObj = st.players.find(function (p) { return p.id === myId; });
         var iAmReady = !!(meObj && meObj.ready);
         h += '<div class="ag-glass cp-stage cp-center">' +
-          '<div class="cp-badge-pill">' + (lang === "bn" ? "আপনার গোপন চিরকুট" : "Your Secret Chit") + '</div>' +
-          '<div class="cp-peek-card' + (isPeeking ? " open" : "") + '" id="cp-peek-card" data-cp="toggletap" style="margin-top:10px;--rc:' + (myRole ? myRole.color : "#f59e0b") + '">' +
+          '<div class="cp-badge-pill">' + (lang === "bn" ? "আপনার গোপন চিরকুট" : "Your Secret Chit") + '</div>';
+        if (!chitPicked) { h += pickFanHTML(rc); } else {
+        h += '<div class="cp-lw' + landCls + '"><div class="cp-peek-card' + (isPeeking ? " open" : "") + '" id="cp-peek-card" data-cp="toggletap" style="margin-top:10px;--rc:' + (myRole ? myRole.color : "#f59e0b") + '">' +
           '<div class="cp-pc-front"><div class="cp-fold-mark">📄</div><div class="cp-fold-txt">' +
           (lang === "bn" ? "চিরকুট খুলতে ট্যাপ করুন" : "Tap chit to open") + '</div></div>' +
           '<div class="cp-pc-back">' +
           '<div class="cp-r-emoji">' + (myRole ? myRole.emoji : "") + '</div>' +
           '<div class="cp-r-title">' + roleTitleHTML(myRole) + '</div>' +
-          '<div class="cp-r-pts">' + (myRole ? myRole.points : 0) + ' PTS</div></div></div>';
+          '<div class="cp-r-pts">' + (myRole ? myRole.points : 0) + ' PTS</div></div></div></div>';
 
         h += '<div class="cp-ready-grid">' + st.players.map(function (p) {
           return '<div class="cp-rstat"><span class="cp-rs-n">' + esc(p.name) + '</span>' +
@@ -1413,6 +1521,7 @@
 
         h += '<button type="button" class="cp-cta" style="margin-top:12px" data-cp="ready"' + (((!isPeeking && !hasPeeked) || iAmReady) ? " disabled" : "") + '>' +
           ico("check") + (iAmReady ? "Waiting for others…" : ((isPeeking || hasPeeked) ? "I'm Ready · Start Hunt" : "Open your chit first")) + '</button>';
+        }
         h += '</div>';
       }
     }
@@ -1795,6 +1904,14 @@
     }
 
     /* In-game actions */
+    if (a === "pickchit" && st && st.phase === "PEEK" && !chitPicked) {
+      chitPicked = true; pickedFresh = true;
+      var fan = q("#cp-pickfan");
+      if (fan) { fan.classList.add("picked"); b.classList.add("sel"); fan.insertAdjacentHTML("beforeend", burstHTML()); }
+      sfx("dice"); vib(18);
+      later(function () { if (st && st.phase === "PEEK") render(); }, 760);
+      return;
+    }
     if (a === "toggletap" && st && st.phase === "PEEK" && st.mode !== "local") {
       isPeeking = !isPeeking;
       if (isPeeking) hasPeeked = true;
@@ -1821,7 +1938,7 @@
       return;
     }
     if (a === "passnext" && st && st.phase === "PEEK" && st.mode === "local") {
-      isPeeking = false; passPeeked = false;
+      isPeeking = false; passPeeked = false; chitPicked = false; pickedFresh = false;
       sfx("click");
       if (st.peekIdx + 1 < st.players.length) {
         st.peekIdx++;
@@ -1964,6 +2081,28 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
 @keyframes cpRays{to{transform:rotate(360deg)}}
 @keyframes cpTrophy{0%,100%{transform:translateY(0) rotate(-4deg) scale(1)}50%{transform:translateY(-8px) rotate(4deg) scale(1.08)}}
 @keyframes cpGrow{from{width:0}}
+@keyframes cpShufTL{
+0%{opacity:0;transform:translate(var(--sx),var(--sy)) rotate(var(--sr)) scale(.85)}
+7%{opacity:1}
+20%{opacity:1;transform:translate(0,calc(var(--i)*-1.5px)) rotate(0) scale(1)}
+32%{transform:translate(calc(var(--side)*58px),calc(var(--i)*-1px)) rotate(calc(var(--side)*-7deg))}
+42%{transform:translate(calc(var(--side)*22px),calc(var(--i)*-2px - 18px)) rotate(calc(var(--side)*-3deg))}
+50%{transform:translate(0,calc(var(--i)*-1.5px)) rotate(0)}
+58%{transform:translate(calc(var(--side)*-52px),calc(var(--i)*-1px)) rotate(calc(var(--side)*6deg))}
+66%{transform:translate(0,calc(var(--i)*-1.5px)) rotate(0)}
+72%{transform:translate(0,calc(var(--i)*-1.5px - 10px)) scale(1.1)}
+77%{transform:translate(0,calc(var(--i)*-1.5px)) scale(1)}
+100%{opacity:1;transform:translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(1)}}
+@keyframes cpFelt{0%{opacity:.2;transform:scale(.6)}30%,70%{opacity:1;transform:scale(1.2)}100%{opacity:.55;transform:scale(1)}}
+@keyframes cpSpk{0%,30%{opacity:0;transform:rotate(var(--a)) translateX(0) scale(.3)}38%{opacity:1;transform:rotate(var(--a)) translateX(calc(var(--r)*.6)) scale(1)}50%{opacity:0;transform:rotate(var(--a)) translateX(var(--r)) scale(.2)}56%{opacity:0;transform:rotate(var(--a)) translateX(0) scale(.3)}64%{opacity:1;transform:rotate(var(--a)) translateX(calc(var(--r)*.6)) scale(1.1)}80%,100%{opacity:0;transform:rotate(var(--a)) translateX(var(--r)) scale(.2)}}
+@keyframes cpTxt{0%{opacity:0;transform:translateY(8px)}12%,78%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-8px)}}
+@keyframes cpTxtKeep{0%{opacity:0;transform:translateY(8px)}15%,100%{opacity:1;transform:none}}
+@keyframes cpPkIn{from{opacity:0}to{opacity:1}}
+@keyframes cpPkBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes cpPkOut{to{opacity:0;transform:translate(var(--fx),calc(var(--fy) + 46px)) rotate(var(--fr)) scale(.55)}}
+@keyframes cpPkSel{0%{transform:translate(var(--fx),var(--fy)) rotate(var(--fr))}45%{transform:translate(0,-52px) rotate(0) scale(1.9)}70%{opacity:1;transform:translate(0,-52px) rotate(0) scale(1.9) rotateY(90deg)}100%{opacity:0;transform:translate(0,-52px) rotate(0) scale(2.1) rotateY(90deg)}}
+@keyframes cpBurst{from{opacity:1;transform:rotate(var(--a)) translateX(0) scale(1)}to{opacity:0;transform:rotate(var(--a)) translateX(84px) scale(.2)}}
+@keyframes cpLand{0%{opacity:0;transform:translateY(-44px) scale(.35) rotateX(60deg);filter:brightness(2.2)}60%{opacity:1;transform:translateY(4px) scale(1.07) rotateX(0)}100%{opacity:1;transform:none;filter:none}}
 
 /* ambient hero */
 @@.cp-ember{position:absolute;z-index:1;bottom:-8px;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;background:radial-gradient(circle,#fff,#fb923c 55%,transparent 72%);opacity:0;pointer-events:none;animation:cpEmber var(--d) linear infinite;animation-delay:var(--dl)}
@@ -1996,6 +2135,29 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
 @@.cp-slot{animation:cpSlide .45s cubic-bezier(.2,1,.3,1) both}
 @@.cp-slot:nth-child(2){animation-delay:.07s}@@.cp-slot:nth-child(3){animation-delay:.14s}@@.cp-slot:nth-child(4){animation-delay:.21s}@@.cp-slot:nth-child(5){animation-delay:.28s}@@.cp-slot:nth-child(6){animation-delay:.35s}
 @@.bg-code{animation:cpPopIn .6s cubic-bezier(.2,1.4,.4,1) both}
+
+/* chit shuffle + pick */
+@@.cp-table,@@.cp-pickfan{position:relative;width:100%;height:172px;margin-top:4px}
+@@.cp-felt{position:absolute;left:50%;top:78px;width:250px;height:90px;margin-left:-125px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(249,115,22,.42),rgba(251,191,36,.14) 58%,transparent);animation:cpFelt 3.1s ease-in-out both}
+@@.cp-ch,@@.cp-pk{position:absolute;left:50%;top:56px;width:48px;height:64px;margin-left:-24px;z-index:calc(var(--i) + 1);transform:translate(var(--fx),var(--fy)) rotate(var(--fr))}
+@@.cp-ch{opacity:0;animation:cpShufTL 3.1s cubic-bezier(.45,0,.2,1) both;animation-delay:calc(var(--i)*24ms)}
+@@.cp-ch-f{position:relative;overflow:hidden;display:grid;place-items:center;width:100%;height:100%;border-radius:10px;background:linear-gradient(145deg,#fffbeb,#fde68a);border:2px solid #f59e0b;box-shadow:0 8px 16px -6px rgba(0,0,0,.55)}
+@@.cp-ch-f::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,transparent 46%,rgba(180,83,9,.3) 50%,transparent 54%)}
+@@.cp-ch-f i{position:relative;font-style:normal;font-weight:900;font-size:20px;color:#ea580c}
+@@.cp-spk{position:absolute;left:50%;top:88px;width:7px;height:7px;margin:-3px;border-radius:50%;pointer-events:none;opacity:0;background:radial-gradient(circle,#fff,#fbbf24 60%,#f97316);box-shadow:0 0 8px #fbbf24;animation:cpSpk 3.1s ease-out both}
+@@.cp-sh-msg{position:relative;width:100%;height:24px;margin-top:2px}
+@@.cp-sh-msg span{position:absolute;inset:0;font-size:15px;font-weight:900;opacity:0;animation:cpTxt 1.1s ease both;animation-delay:var(--d)}
+@@.cp-sh-msg span.last{animation-name:cpTxtKeep}
+@@.cp-pk{padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;animation:cpPkIn .35s ease both}
+@@.cp-pk-w{display:block;width:100%;height:100%;animation:cpPkBob 2.2s ease-in-out infinite;animation-delay:calc(var(--i)*-260ms)}
+@@.cp-pk-c{transition:transform .22s cubic-bezier(.3,1.4,.5,1),box-shadow .22s}
+@@.cp-pk:hover .cp-pk-c,@@.cp-pk:focus-visible .cp-pk-c{transform:translateY(-16px) scale(1.14);box-shadow:0 0 0 2px #fb923c,0 0 22px 2px rgba(249,115,22,.8)}
+@@.cp-pickfan.picked .cp-pk{pointer-events:none}
+@@.cp-pickfan.picked .cp-pk:not(.sel){animation:cpPkOut .5s ease forwards}
+@@.cp-pickfan.picked .cp-pk.sel{animation:cpPkSel .76s cubic-bezier(.3,1.2,.4,1) forwards;z-index:20}
+@@.cp-burst{position:absolute;left:50%;top:38px;width:0;height:0;pointer-events:none;z-index:25}
+@@.cp-burst b{position:absolute;width:8px;height:8px;margin:-4px;border-radius:50%;background:radial-gradient(circle,#fff,#fbbf24 60%,#f97316);box-shadow:0 0 8px #fbbf24;animation:cpBurst .75s ease-out .3s both}
+@@.cp-land{animation:cpLand .7s cubic-bezier(.2,1.2,.3,1) both;perspective:700px}
 
 /* shuffle + chit */
 @@.cp-chit-fold{animation:cpToss .7s cubic-bezier(.2,1.2,.4,1) both,cpShuf 1.1s ease-in-out infinite;animation-delay:calc(var(--i)*70ms),calc(.9s + var(--i)*90ms)}
@@ -2061,6 +2223,10 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
 #ag-pane-chorpolice.cp-still .cp-pod-w{animation:cpShimmer 3.5s linear infinite}
 #ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-pc-back,#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-r-emoji,#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-r-title,#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-r-pts{animation:none}
 
+#ag-pane-chorpolice.cp-still .cp-ch,#ag-pane-chorpolice.cp-still .cp-felt,#ag-pane-chorpolice.cp-still .cp-spk,#ag-pane-chorpolice.cp-still .cp-pk,#ag-pane-chorpolice.cp-still .cp-sh-msg span{animation:none}
+#ag-pane-chorpolice.cp-still .cp-ch{opacity:1}
+#ag-pane-chorpolice.cp-still .cp-sh-msg span.last{opacity:1}
+
 @media(prefers-reduced-motion:reduce){@@*,@@*::before,@@*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 `;
     return css.replace(/@@/g, R);
@@ -2121,9 +2287,9 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
       R + ".cp-g2{display:grid;grid-template-columns:1fr 1fr;gap:7px}",
       R + ".cp-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}",
       R + ".cp-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}",
-      R + ".cp-tile," + R + ".cp-preset{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 5px;border-radius:14px;background:var(--cp-bg2);border:1.5px solid var(--cp-bd);text-align:center;transition:border-color .18s,background .18s,transform .12s}",
+      R + ".cp-tile," + R + ".cp-preset{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 5px;border-radius:14px;background:var(--cp-bg2);border:1.5px solid var(--cp-bd);text-align:center;transition:border-color .22s,background .22s,transform .14s,box-shadow .3s}",
       R + ".cp-tile:active," + R + ".cp-preset:active{transform:scale(.97)}",
-      R + ".cp-tile .ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(249,115,22,.16);color:#fb923c}",
+      R + ".cp-tile .ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:rgba(249,115,22,.16);color:#fb923c;transition:background-color .25s,color .25s}",
       "html.bright-mode " + R + ".cp-tile .ic{color:#ea580c}",
       R + ".cp-tile .t," + R + ".cp-preset .t{font-size:11.5px;font-weight:800;line-height:1.2}",
       R + ".cp-tile .s," + R + ".cp-preset .s{font-size:9.8px;font-weight:600;color:var(--cp-t2);line-height:1.2}",

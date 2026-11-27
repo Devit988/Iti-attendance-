@@ -490,6 +490,7 @@
       if (!st) return;
       st.phase = "PEEK";
       render();
+      if (pane) pane.classList.add("cp-still"); /* seamless handover: no fade-in of the new stage */
       if (st.mode === "solo") {
         /* Staggered bot ready indicators */
         st.players.forEach(function (p, idx) {
@@ -1413,23 +1414,34 @@
     var gap = Math.min(54, 270 / n), sp = Math.min(13, 62 / n);
     return { x: Math.round(d * gap), y: Math.round(t * t * 20), r: +(d * sp).toFixed(1) };
   }
+  function peekHeadHTML() {
+    var bn = lang === "bn";
+    if (st.mode === "local") {
+      var cp0 = st.players[st.peekIdx] || st.players[0];
+      return '<div class="cp-badge-pill">Player ' + (st.peekIdx + 1) + ' of ' + st.players.length + '</div>' +
+        '<div class="cp-st-t" style="margin-top:8px">Pass phone to <span class="cp-ac">' + esc(cp0.name) + '</span></div>' +
+        '<div class="cp-st-s">Make sure no one else is looking at the screen!</div>';
+    }
+    return '<div class="cp-badge-pill">' + (bn ? "আপনার গোপন চিরকুট" : "Your Secret Chit") + '</div>';
+  }
   function shuffleHTML(rc) {
-    var n = rc.roles.length, bn = lang === "bn", i, p, out = '<div class="cp-table"><div class="cp-felt"></div>';
+    var n = rc.roles.length, bn = lang === "bn", i, p;
+    var out = peekHeadHTML() + '<div class="cp-hd-slot"><div class="cp-sh-msg">' +
+      '<span style="--d:0s">' + (bn ? "চিরকুট জড়ো হচ্ছে…" : "Gathering the chits…") + '</span>' +
+      '<span style="--d:1.05s">' + (bn ? "ফেটে মেশানো হচ্ছে…" : "Riffle shuffling…") + '</span>' +
+      '<span class="last" style="--d:2.1s">' + (bn ? "চিরকুট সাজানো হচ্ছে…" : "Fanning them out…") + '</span></div></div>' +
+      '<div class="cp-table"><div class="cp-felt"></div>';
     for (i = 0; i < n; i++) {
       p = fanPose(n, i);
       out += '<div class="cp-ch" style="--i:' + i + ';--side:' + (i % 2 ? 1 : -1) + ';--sx:' + (((i * 97 + 41) % 280) - 140) + 'px;--sy:' + (-110 - ((i * 53) % 60)) + 'px;--sr:' + (((i * 71) % 90) - 45) + 'deg;--fx:' + p.x + 'px;--fy:' + p.y + 'px;--fr:' + p.r + 'deg"><span class="cp-ch-f"><i>?</i></span></div>';
     }
     for (i = 0; i < 12; i++) out += '<b class="cp-spk" style="--a:' + (i * 30) + 'deg;--r:' + (58 + (i % 3) * 16) + 'px"></b>';
-    out += '</div><div class="cp-sh-msg">' +
-      '<span style="--d:0s">' + (bn ? "চিরকুট জড়ো হচ্ছে…" : "Gathering the chits…") + '</span>' +
-      '<span style="--d:1.05s">' + (bn ? "ফেটে মেশানো হচ্ছে…" : "Riffle shuffling…") + '</span>' +
-      '<span class="last" style="--d:2.1s">' + (bn ? "চিরকুট সাজানো হচ্ছে…" : "Fanning them out…") + '</span></div>';
-    return out;
+    return out + '</div>';
   }
   function pickFanHTML(rc) {
     var n = rc.roles.length, bn = lang === "bn", i, p;
-    var out = '<div class="cp-st-t" style="margin-top:8px">' + (bn ? "একটি চিরকুট বেছে নিন" : "Pick your chit") + '</div>' +
-      '<div class="cp-st-s">' + (bn ? "যেকোনো একটিতে ট্যাপ করুন" : "Tap any folded chit from the fan") + '</div><div class="cp-pickfan" id="cp-pickfan">';
+    var out = '<div class="cp-hd-slot"><div class="cp-st-t">' + (bn ? "একটি চিরকুট বেছে নিন" : "Pick your chit") + '</div>' +
+      '<div class="cp-st-s">' + (bn ? "যেকোনো একটিতে ট্যাপ করুন" : "Tap any folded chit from the fan") + '</div></div><div class="cp-pickfan" id="cp-pickfan"><div class="cp-felt"></div>';
     for (i = 0; i < n; i++) {
       p = fanPose(n, i);
       out += '<button type="button" class="cp-pk" data-cp="pickchit" data-i="' + i + '" aria-label="Chit ' + (i + 1) + '" style="--i:' + i + ';--fx:' + p.x + 'px;--fy:' + p.y + 'px;--fr:' + p.r + 'deg"><span class="cp-pk-w"><span class="cp-pk-c cp-ch-f"><i>?</i></span></span></button>';
@@ -1467,8 +1479,7 @@
 
     /* PHASE 1: SHUFFLE */
     if (st.phase === "SHUFFLE") {
-      h += '<div class="ag-glass cp-stage cp-center">' + shuffleHTML(rc) +
-        '<div class="cp-st-s">' + rc.maxPlayers + (lang === "bn" ? " টি ভাঁজ করা চিরকুট টেবিলে" : " folded chits on the desk") + '</div></div>';
+      h += '<div class="ag-glass cp-stage cp-center">' + shuffleHTML(rc) + '</div>';
     }
 
     /* PHASE 2: PEEK */
@@ -2146,8 +2157,11 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
 @@.cp-ch-f i{position:relative;font-style:normal;font-weight:900;font-size:30px;color:#ea580c}
 @@.cp-spk{position:absolute;left:50%;top:113px;width:7px;height:7px;margin:-3px;border-radius:50%;pointer-events:none;opacity:0;background:radial-gradient(circle,#fff,#fbbf24 60%,#f97316);box-shadow:0 0 8px #fbbf24;animation:cpSpk 3.1s ease-out both}
 @@.cp-center .cp-st-s{max-width:100%;padding:0 8px;box-sizing:border-box;white-space:normal;text-wrap:balance}
-@@.cp-sh-msg{position:relative;width:100%;height:24px;margin-top:2px}
-@@.cp-sh-msg span{position:absolute;inset:0;font-size:15px;font-weight:900;opacity:0;animation:cpTxt 1.1s ease both;animation-delay:var(--d)}
+@@.cp-hd-slot{position:relative;width:100%;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+@@.cp-hd-slot .cp-st-t{margin-top:0}
+@@.cp-sh-msg{position:absolute;inset:0}
+@@.cp-pickfan .cp-felt{animation:none;opacity:.55}
+@@.cp-sh-msg span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;opacity:0;animation:cpTxt 1.1s ease both;animation-delay:var(--d)}
 @@.cp-sh-msg span.last{animation-name:cpTxtKeep}
 @@.cp-pk{padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;animation:cpPkIn .35s ease both}
 @@.cp-pk-w{display:block;width:100%;height:100%;animation:cpPkBob 2.2s ease-in-out infinite;animation-delay:calc(var(--i)*-260ms)}

@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v4.0 (2.5D Storybook Graphics + Animations + 47 Presets)
+/*! ITI CONNECT — Arena Games v5.0 (Royal Art Edition: Real Painted Assets + Screenshot HUD)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -1363,7 +1363,7 @@
       R + ".ag-playing.ag-peek-cz .ag-cz{display:block!important;margin-bottom:.55rem}",
       R + ".ag-playing .bg-box{max-width:none}",
       R + "#ag-pane-snakes .bg-cv-wrap," + R + "#ag-pane-ludo .bg-cv-wrap{width:100%}",
-      R + ".ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
+      R + ".ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 236px));width:min(100%,calc(100dvh - 236px));min-width:250px;background:transparent!important;border:0!important;box-shadow:none!important}",
       R + ".ag-playing #ag-pane-ludo .bg-cv-wrap{width:min(100%,calc(100vh - 400px));width:min(100%,calc(100dvh - 400px));min-width:240px}",
       R + ".ag-playing .bg-emo{padding:.15rem 0;font-size:15px}",
       R + ".bg-cv{display:block;width:100%;height:100%;touch-action:manipulation}",
@@ -1532,7 +1532,8 @@
       n = Math.max(1, Math.min(100, n));
       var idx = n - 1, row = Math.floor(idx / 10), col = idx % 10;
       if (row % 2 === 1) col = 9 - col;
-      var pad = s * 0.04, inner = s - pad * 2, cw = inner / 10;
+      var hasScroll = !!(api.hasScrollArt && api.hasScrollArt());
+      var pad = s * (hasScroll ? 0.105 : 0.045), inner = s - pad * 2, cw = inner / 10;
       return { x: pad + (col + 0.5) * cw, y: s - pad - (row + 0.5) * cw, cw: cw };
     }
 
@@ -1614,7 +1615,7 @@
     /* ---------- static board (cached): 2.5D sculpted tiles + landmarks + lashed ladders ---------- */
     function buildCache() {
       if (!size || !offCtx) return;
-      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl7|" + curDiff + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood");
+      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl8|" + curDiff + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood") + "|" + (api.hasScrollArt && api.hasScrollArt() ? 1 : 0);
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
@@ -2613,21 +2614,21 @@
       host.innerHTML = h; icons();
     }
 
-    function slCard(idx) {
-      var pl = st.players[idx];
-      return '<div id="sl-chip-' + idx + '" class="lx-pc sl-card' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
-        '<div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
-        '<div class="lx-nfo"><div class="lx-nm">' + esc(pl.name) + '</div><div class="sl-sq">Sq <b class="sl-pos">' + pl.pos + '</b>/100</div>' +
-        '<div class="sl-pbar"><i style="width:' + Math.min(100, pl.pos) + '%"></i></div></div></div>';
-    }
     function slDie(idx) {
       var pl = st.players[idx], K = dkit();
-      return '<div class="lx-dwrap lx-big' + (idx === st.turn ? "" : " idle") + '" id="sl-dw-' + idx + '" style="' + (K ? K.vars(pl.color) : "") + '">' +
-        '<button type="button" id="sl-die-' + idx + '" class="lx-die" data-sl="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + (K ? K.cube("sl-cube-" + idx) : "") + '</button><i class="lx-sh"></i></div>';
+      return '<div class="lx-dwrap lx-well' + (idx === st.turn ? "" : " idle") + '" id="sl-dw-' + idx + '" style="' + (K ? K.vars(pl.color) : "") + '">' +
+        '<button type="button" id="sl-die-' + idx + '" class="lx-die" data-sl="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + (K ? K.cube("sl-cube-" + idx) : "") + '</button></div>';
+    }
+    function slCard(idx) {
+      var pl = st.players[idx];
+      return '<div id="sl-chip-' + idx + '" class="lx-pc lx-emb sl-card' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
+        '<div class="lx-avw"><div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div><div class="lx-nm">' + esc(pl.name) + '</div></div>' +
+        '<div class="lx-mid"><div class="sl-sq">Sq <b class="sl-pos">' + pl.pos + '</b></div><div class="sl-pbar"><i style="width:' + Math.min(100, pl.pos) + '%"></i></div></div>' +
+        slDie(idx) + '<span class="lx-tbar" aria-hidden="true"><i></i></span></div>';
     }
     function slCell(idx, top) {
       if (idx < 0 || idx >= st.players.length) return '<div></div>';
-      return '<div class="lx-cell">' + (top ? slDie(idx) + slCard(idx) : slCard(idx) + slDie(idx)) + '</div>';
+      return '<div class="lx-cell lx-ecell">' + slCard(idx) + '</div>';
     }
     function renderGame() {
       resetFx();
@@ -2986,7 +2987,30 @@
         R + ".lx-pd .lx-mini::before{width:40px;height:40px;margin:-20px 0 0 -20px}",
         R + ".lx-bw{position:relative;width:100%;max-width:520px;margin:2px auto;aspect-ratio:1/1}",
         R + ".lx-bw::before{content:\"\";position:absolute;inset:0;border-radius:4.5%;box-shadow:0 22px 44px -16px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}",
-        R + ".ag-playing .lx-bw{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
+        R + ".ag-playing .lx-bw{width:min(94%,calc(100vh - 248px));width:min(94%,calc(100dvh - 248px));min-width:250px}",
+        R + ".lx-bw.has-scroll::before{display:none}",
+        /* Screenshot-accurate glossy pill cards with embedded 3D dice well & vertical green turn-timer bar */
+        R + ".lx-ecell{width:100%}",
+        R + ".lx-pc.lx-emb{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 8px;border-radius:16px;border:2.5px solid rgba(255,255,255,.82);background:linear-gradient(180deg,var(--c),var(--cd));box-shadow:0 8px 18px -8px rgba(0,0,0,.72),inset 0 2px 0 rgba(255,255,255,.45);opacity:.82;transform:scale(.97);margin-right:14px;overflow:visible}",
+        R + ".lx-pc.lx-emb.turn{opacity:1;transform:scale(1.02);border-color:#fff;box-shadow:0 0 0 2px var(--c),0 0 22px 2px var(--c),0 10px 20px -8px rgba(0,0,0,.75)}",
+        R + ".lx-avw{display:flex;flex-direction:column;align-items:center;gap:2px;width:44px;flex:none;min-width:0}",
+        R + ".lx-emb .lx-av{width:36px;height:36px;font-size:15px}",
+        R + ".lx-emb .lx-av::after{border-radius:10px;border:2px solid #fff;background:linear-gradient(160deg,#fff,#f8fafc)}",
+        R + ".lx-emb .lx-nm{width:100%;font-size:9.5px;line-height:1.1;font-weight:800;text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+        R + ".lx-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;flex:1}",
+        R + ".lx-well{position:relative;flex:none;width:48px;height:48px;padding:0;display:grid;place-items:center;border-radius:12px;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.55);box-shadow:inset 0 2px 6px rgba(0,0,0,.22)}",
+        R + ".lx-well::before{width:54px;height:54px;margin:-27px 0 0 -27px}",
+        R + ".lx-well .lx-die{--s:34px}",
+        R + ".lx-well.idle{opacity:.68;filter:saturate(.75)}",
+        R + ".lx-tbar{position:absolute;right:-14px;top:3px;bottom:3px;width:9px;border-radius:6px;background:rgba(15,8,30,.65);border:1.5px solid rgba(255,255,255,.35);overflow:hidden;display:flex;align-items:flex-end}",
+        R + ".lx-tbar i{display:block;width:100%;height:18%;border-radius:4px;background:linear-gradient(180deg,#86efac,#22c55e 45%,#15803d);transition:height .25s}",
+        R + ".lx-pc.lx-emb.turn .lx-tbar i{height:100%;animation:lxTimer 18s linear forwards}",
+        "@keyframes lxTimer{from{height:100%;background:linear-gradient(180deg,#86efac,#22c55e)}70%{background:linear-gradient(180deg,#fde047,#f59e0b)}to{height:12%;background:linear-gradient(180deg,#fca5a5,#ef4444)}}",
+        R + ".lx-util{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:5px 8px;border-radius:14px;background:rgba(15,23,42,.48);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}",
+        "html.bright-mode " + R + ".lx-util{background:rgba(255,255,255,.72);border-color:rgba(148,163,184,.45)}",
+        R + ".lx-uemos{display:flex;gap:4px;flex:none}",
+        R + ".lx-uemo{width:28px;height:26px;border-radius:9px;background:var(--ag-bg2);border:1px solid var(--ag-bd);font-size:14px;line-height:1;display:grid;place-items:center;transition:transform .12s}",
+        R + ".lx-uemo:active{transform:scale(.82)}",
         R + ".lx-bw.shake{animation:lxShake .45s ease-in-out}",
         R + ".lx-cv{display:block;position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation;pointer-events:none;z-index:1}",
         R + ".lx-toast{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.5);opacity:0;pointer-events:none;z-index:6;font-weight:900;font-size:clamp(18px,6.2vw,30px);letter-spacing:.03em;color:#fff;white-space:nowrap;padding:.28rem 1rem;border-radius:999px;text-shadow:0 2px 0 rgba(0,0,0,.35);background:linear-gradient(135deg,var(--tc,#f59e0b),rgba(15,23,42,.8));border:2px solid rgba(255,255,255,.8);box-shadow:0 10px 30px -6px var(--tc,#f59e0b)}",
@@ -3176,30 +3200,37 @@
     function buildCache() {
       if (!size || !offCtx) return;
       var b = api.getBoard(), cols = seatColors();
-      var key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|" + P.palette + "|" + cols.join(",") + "|v4";
+      var hasScr = !!(api.hasScrollArt && api.hasScrollArt());
+      var key = size + "|" + dpr + "|" + pad + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|" + P.palette + "|" + cols.join(",") + "|" + (hasScr ? 1 : 0) + "|v5";
       if (key === offKey) return;
       offKey = key;
-      off.width = size * dpr; off.height = size * dpr;
-      var c = offCtx, cw = size / 15, M = b.modern, K = b.tex === "kingdom", i, j, x, y, g, sc, pad = cw * 0.14;
-      c.setTransform(dpr, 0, 0, dpr, 0, 0); kMode = K;
-      api.paintBoardBg(c, 0, 0, size, size, size * 0.045);
+      var bw0 = q(".lx-bw", host); if (bw0) bw0.classList.toggle("has-scroll", hasScr);
+      var full = size + pad * 2;
+      off.width = Math.round(full * dpr); off.height = Math.round(full * dpr);
+      var c = offCtx, cw = size / 15, M = b.modern, K = b.tex === "kingdom", i, j, x, y, g, sc, ypad = cw * 0.14;
+      c.setTransform(dpr, 0, 0, dpr, pad * dpr, pad * dpr); kMode = K;
+      if (hasScr && api.drawScrollArt) {
+        api.drawScrollArt(c, -pad, -pad, full, full);
+      } else {
+        api.paintBoardBg(c, 0, 0, size, size, size * 0.045);
+      }
 
       // 1. corner yards
       for (i = 0; i < 4; i++) {
         sc = cols[i]; x = YARDS[i][0] * cw; y = YARDS[i][1] * cw;
-        c.save(); rr(c, x + pad, y + pad, cw * 6 - pad * 2, cw * 6 - pad * 2, cw * 0.6);
+        c.save(); rr(c, x + ypad, y + ypad, cw * 6 - ypad * 2, cw * 6 - ypad * 2, cw * 0.45);
         if (M) {
           c.fillStyle = alpha(sc, 0.22); c.fill(); c.shadowColor = sc; c.shadowBlur = cw * 0.45;
           c.strokeStyle = alpha(sc, 0.92); c.lineWidth = 2; c.stroke();
         } else {
           g = c.createLinearGradient(x, y, x + cw * 6, y + cw * 6);
           if (K) { g.addColorStop(0, "#f3dab0"); g.addColorStop(0.5, "#e4bf8c"); g.addColorStop(1, "#c99a66"); } else { g.addColorStop(0, shade(sc, 0.3)); g.addColorStop(0.5, sc); g.addColorStop(1, shade(sc, -0.3)); }
-          c.fillStyle = g; c.fill(); c.strokeStyle = K ? "#a77a50" : b.frame; c.lineWidth = 2; c.stroke();
+          c.fillStyle = g; c.fill(); c.strokeStyle = K ? "#8c5c34" : b.frame; c.lineWidth = 2; c.stroke();
         }
         c.restore();
 
         if (K) {   /* bevel on the tan yard plate */
-          c.save(); rr(c, x + pad, y + pad, cw * 6 - pad * 2, cw * 6 - pad * 2, cw * 0.6); c.clip();
+          c.save(); rr(c, x + ypad, y + ypad, cw * 6 - ypad * 2, cw * 6 - ypad * 2, cw * 0.45); c.clip();
           g = c.createLinearGradient(x, y, x, y + cw * 6); g.addColorStop(0, "rgba(255,255,255,.4)"); g.addColorStop(0.18, "rgba(255,255,255,0)"); g.addColorStop(0.85, "rgba(80,40,10,0)"); g.addColorStop(1, "rgba(80,40,10,.3)");
           c.fillStyle = g; c.fillRect(x, y, cw * 6, cw * 6); c.restore();
         }
@@ -3292,18 +3323,19 @@
       for (i = 0; i < 4; i++) {
         sc = cols[i];
         g = c.createLinearGradient(tris[i][2][0], tris[i][2][1], ctr, ctr);
-        g.addColorStop(0, M ? alpha(shade(sc, 0.2), 0.95) : shade(sc, 0.3)); g.addColorStop(1, M ? alpha(sc, 0.55) : shade(sc, -0.3));
+        g.addColorStop(0, M ? alpha(shade(sc, 0.2), 0.95) : shade(sc, 0.16)); g.addColorStop(1, M ? alpha(sc, 0.55) : shade(sc, -0.18));
         c.beginPath(); c.moveTo(ctr, ctr); c.lineTo(tris[i][0][0], tris[i][0][1]); c.lineTo(tris[i][1][0], tris[i][1][1]); c.closePath();
-        c.fillStyle = g; c.fill(); c.strokeStyle = "rgba(255,255,255,.55)"; c.lineWidth = 1.4; c.stroke();
+        c.fillStyle = g; c.fill(); c.strokeStyle = "rgba(255,255,255,.9)"; c.lineWidth = Math.max(1.8, cw * 0.06); c.stroke();
       }
 
       kMode = false;
-      if (K && api.noisePattern) { var kp = api.noisePattern(c); if (kp) { c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip(); c.globalAlpha = 0.28; c.fillStyle = kp; c.fillRect(0, 0, size, size); c.restore(); } }
-      // 6. glass sheen
-      c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip();
-      g = c.createLinearGradient(0, 0, size, size);
-      g.addColorStop(0, "rgba(255,255,255,.14)"); g.addColorStop(0.35, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(0,0,0,.12)");
-      c.fillStyle = g; c.fillRect(0, 0, size, size); c.restore();
+      if (!hasScr) {
+        if (K && api.noisePattern) { var kp = api.noisePattern(c); if (kp) { c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip(); c.globalAlpha = 0.24; c.fillStyle = kp; c.fillRect(0, 0, size, size); c.restore(); } }
+        c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip();
+        g = c.createLinearGradient(0, 0, size, size);
+        g.addColorStop(0, "rgba(255,255,255,.12)"); g.addColorStop(0.35, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(0,0,0,.1)");
+        c.fillStyle = g; c.fillRect(0, 0, size, size); c.restore();
+      }
     }
 
     /* ---------------------------------------------------------------
@@ -3427,10 +3459,12 @@
       c.setTransform(1, 0, 0, 1, 0, 0);
       c.clearRect(0, 0, cv.width, cv.height);
       c.setTransform(dpr, 0, 0, dpr, pad * dpr, pad * dpr);
-      if (off && off.width) c.drawImage(off, 0, 0, size, size);
+      if (off && off.width) c.drawImage(off, -pad, -pad, size + pad * 2, size + pad * 2);
       if (!st) return;
 
-      ambient(c, t); var pulse = REDUCE ? 0.6 : 0.5 + 0.5 * Math.sin(t / 220), slow = REDUCE ? 0.5 : 0.5 + 0.5 * Math.sin(t / 520);
+      var curB = api.getBoard();
+      if (curB.tex !== "kingdom" && curB.tex !== "classic") ambient(c, t);
+      var pulse = REDUCE ? 0.6 : 0.5 + 0.5 * Math.sin(t / 220), slow = REDUCE ? 0.5 : 0.5 + 0.5 * Math.sin(t / 520);
 
       for (i = 0; i < SAFE_TRACK.length; i++) {
         var sq = TRACK[SAFE_TRACK[i]], tw = REDUCE ? 0.3 : 0.5 + 0.5 * Math.sin(t / 420 + i * 1.7);
@@ -3445,7 +3479,7 @@
         c.shadowColor = ap.color; c.shadowBlur = cw * (0.4 + 0.7 * slow); c.stroke(); c.restore();
       }
 
-      (api.drawCenter || drawCenterEmblem)(c, size / 2, size / 2, cw * 0.62, t);
+      if (curB.tex !== "kingdom") (api.drawCenter || drawCenterEmblem)(c, size / 2, size / 2, cw * 0.62, t);
 
       // destination markers for movable pieces (respecting hints toggle)
       if (P.hints && st.awaitMove && st.validTokens.length && st.players[st.turn]) {
@@ -3556,25 +3590,7 @@
       }
       st._rendered = list; overlays(c, list, cw, t);
 
-      /* dynamic action camera (smooth zoom/pan on moving tokens) */
-      if (cv && !REDUCE) {
-        var camTarget = (P.cam === false) ? null : activeAnim;
-        var tk = camTarget ? 1.2 : 1;
-        ldCam.k += (tk - ldCam.k) * (camTarget ? 0.11 : 0.15);
-        if (camTarget) {
-          if (ldCam.x === 0 && ldCam.y === 0) { ldCam.x = camTarget.x; ldCam.y = camTarget.y; }
-          ldCam.x += (camTarget.x - ldCam.x) * 0.16; ldCam.y += (camTarget.y - ldCam.y) * 0.16;
-        }
-        var bwEl = q(".lx-bw", host);
-        if (bwEl) {
-          if (!camTarget && ldCam.k < 1.003) { ldCam.k = 1; ldCam.x = 0; ldCam.y = 0; bwEl.style.transform = ""; }
-          else {
-            var cx = Math.max(-size * 0.1, Math.min(size * 0.1, (size / 2 - ldCam.x) * (ldCam.k - 1)));
-            var cy = Math.max(-size * 0.1, Math.min(size * 0.1, (size / 2 - ldCam.y) * (ldCam.k - 1)));
-            bwEl.style.transform = "translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px) scale(" + ldCam.k.toFixed(3) + ")";
-          }
-        }
-      }
+      /* keep Ludo board rock-steady for crisp mobile readability */
 
       for (i = 0; i < particles.length; i++) {
         var pt = particles[i], a = Math.max(0, Math.min(1, pt.life));
@@ -3654,7 +3670,7 @@
       var w = Math.floor(wrap.clientWidth);
       if (w < 40) return;
       dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), dprCap);
-      var np = Math.round(w / 15 * 1.1), full = w + np * 2; /* transparent margin so edge pawns are never clipped */
+      var np = Math.round(w * (api.hasScrollArt && api.hasScrollArt() ? 0.115 : 0.075)), full = w + np * 2;
       if (w !== size || np !== pad || cv.width !== Math.round(full * dpr)) {
         size = w; pad = np;
         cv.style.left = cv.style.top = (-pad) + "px"; cv.style.width = cv.style.height = full + "px";
@@ -3825,7 +3841,7 @@
       animateHop(pl, tIdx, path, function () {
         var dest = pl.tokens[tIdx], bonus = dice === 6, lp = tokenCoords(pl.seat, tIdx, dest, size), caps = [];
         spawnRing(lp.x, lp.y, pl.color, size * 0.07);
-        if (entering) { feed("🚀 " + pl.name + " deploys a piece"); spawnSparks(lp.x, lp.y, pl.color, 18); spawnRing(lp.x, lp.y, "#ffffff", size * 0.11); ldPop("DEPLOY!", lp.x, lp.y - size * 0.04, "#ffffff"); playSfx("six"); if (!pl.bot) vibrate("deploy"); }
+        if (entering) { feed("🚀 " + pl.name + " deploys a piece"); spawnSparks(lp.x, lp.y, pl.color, 16); spawnRing(lp.x, lp.y, "#ffffff", size * 0.11); playSfx("six"); if (!pl.bot) vibrate("deploy"); }
         if (dest === 56) {
           bonus = true; stat(pIdx).home++; giveCard(pl, 0, lp); playSfx("home"); feed("🏠 " + pl.name + " gets a piece home (" + pl.tokens.filter(function (v) { return v === 56; }).length + "/" + pl.tokens.length + ")");
           spawnSparks(lp.x, lp.y, pl.color, 24); spawnRing(lp.x, lp.y, "#fde047", size * 0.16); spawnConfetti(lp.x, lp.y, 28);
@@ -3834,7 +3850,7 @@
           vibrate([40, 40, 70, 40, 120]);
         } else if (dest >= 0 && dest <= 50) {
           var tSq = trackIdx(pl.seat, dest);
-          if (SAFE_TRACK.indexOf(tSq) >= 0 && !entering) { spawnSparks(lp.x, lp.y, "#fde047", 14); spawnRing(lp.x, lp.y, "#fde047", size * 0.09); ldPop("SAFE ★", lp.x, lp.y - size * 0.04, "#fde047", 900); if (!pl.bot) vibrate("safe"); }
+          if (SAFE_TRACK.indexOf(tSq) >= 0 && !entering) { spawnSparks(lp.x, lp.y, "#fde047", 12); spawnRing(lp.x, lp.y, "#fde047", size * 0.09); if (!pl.bot) vibrate("safe"); }
           if (SAFE_TRACK.indexOf(tSq) < 0) {
             for (var o = 0; o < st.players.length; o++) {
               if (o === pIdx) continue;
@@ -3996,15 +4012,14 @@ function raceHTML() { return '<div id="ld-race" style="margin-top:6px"></div>'; 
 function paintRace() {
   var el = host && q("#ld-race", host); if (!el || !st) return;
   var w = st.players.map(function (p, i) { var pr = 0; p.tokens.forEach(function (v) { pr += Math.max(0, v + 1); }); pr /= p.tokens.length * 57; return Math.pow(pr + 0.06, 3) * (i === st.turn ? 1.12 : 1); });
-  var tot = w.reduce(function (a, b) { return a + b; }, 0), lead = w.indexOf(Math.max.apply(null, w));
-  if (st.leader != null && st.leader !== lead && !st.winner) feed("👑 " + st.players[lead].name + " takes the lead!");
+  var lead = w.indexOf(Math.max.apply(null, w));
   st.leader = lead;
-  var h = '<div class="lx-race-box"><div class="lx-race-bar" title="Live win chances">' + st.players.map(function (p, i) {
-    var pc = w[i] / tot * 100;
-    return '<div style="width:' + pc.toFixed(1) + '%;background:' + p.color + ';transition:width .7s;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)">' + (pc >= 12 ? Math.round(pc) + '%' : '') + '</div>';
-  }).join("") + '</div><div class="lx-race-row"><div id="ld-feed" class="lx-feed-txt">' + esc(st.feedTxt || "🏁 Race for home — good luck!") + '</div>';
-  if (!rm && cfg.mode === "ai") h += '<button type="button" data-ld="undo" class="lx-undo" style="opacity:' + (st.snap && (st.undos == null || st.undos > 0) ? 1 : 0.45) + '">↩ Rewind · ' + (st.undos == null ? 3 : st.undos) + '</button>';
-  el.innerHTML = h + '</div>' + cardsHTML() + '</div>';
+  var leftTools = "";
+  if (!rm && cfg.mode === "ai") {
+    leftTools += '<button type="button" data-ld="undo" class="lx-undo" title="Rewind last move" style="opacity:' + (st.snap && (st.undos == null || st.undos > 0) ? 1 : 0.45) + '">↩ ' + (st.undos == null ? 3 : st.undos) + '</button>';
+  }
+  var emos = '<div class="lx-uemos">' + ["👏", "😂", "🔥", "😱"].map(function (em) { return '<button type="button" class="lx-uemo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>';
+  el.innerHTML = '<div class="lx-util"><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">' + leftTools + cardsHTML() + '</div>' + emos + '</div>';
 }
 function doUndo() {
   if (!st || rm || cfg.mode !== "ai" || st.winner) return;
@@ -4070,7 +4085,7 @@ function cardsHTML() {
   if (rm) return ""; var cp = st.players[st.turn], ow = cp.bot ? st.players[0] : cp; if (ow.bot) return "";
   var c = ow.cards || { gold: 0, shield: 0 }, live = ow === cp && !st.busy && !st.awaitMove && !st.winner;
   var b = function (k, ic, lab, n, on) { return '<button type="button" data-ld="card" data-k="' + k + '" class="lx-cbtn' + (on ? ' armed' : '') + (n > 0 && live ? ' live' : '') + '" style="opacity:' + (n > 0 && live ? 1 : 0.48) + '">' + ic + ' ' + lab + ' ×' + n + '</button>'; };
-  return '<div class="lx-cards-row"><span class="lx-cards-lbl">🎴 ' + esc(ow.name) + '</span>' + b("gold", "✨", "Golden Dice", c.gold, !!st.force) + b("shield", "🛡️", ow.shield > 0 ? "Shield ON" : "Shield", c.shield, ow.shield > 0) + '</div>';
+  return b("gold", "✨", "6", c.gold, !!st.force) + b("shield", "🛡️", ow.shield > 0 ? "ON" : "Shield", c.shield, ow.shield > 0);
 }
 
 /* ---- v3.4 animations: themed ambient motion, shield bubbles, golden aura, danger rings, shortcuts ---- */
@@ -4245,7 +4260,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       var valid = legalMoves(pl, val);
       if (!valid.length) {
         setMsg("No valid moves for " + pl.name);
-        var yc0 = YARDS[pl.seat]; ldPop("NO MOVE", (yc0[0] + 3) * (size / 15), (yc0[1] + 3) * (size / 15), "#cbd5e1", 850);
+        /* clean no-move transition */
         later(function () { endTurn(val === 6, true); }, api.dur(800));
         return;
       }
@@ -4629,53 +4644,47 @@ function pickBestBotTokenOld(pl, valid, dice) {
       host.innerHTML = h; icons();
     }
 
+    function dieBlock(idx) {
+      var pl = st.players[idx];
+      return '<div class="lx-dwrap lx-well' + (idx === st.turn ? "" : " idle") + '" id="ld-dw-' + idx + '" style="' + dieVars(pl.color) + '">' +
+        '<button type="button" id="ld-die-' + idx + '" class="lx-die" data-ld="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + cubeHTML(false, idx) + '</button></div>';
+    }
     function ldCard(seat) {
       var idx = -1, i;
       for (i = 0; i < st.players.length; i++) if (st.players[i].seat === seat) idx = i;
       if (idx < 0) return '<div></div>';
       var pl = st.players[idx], dots = "", k;
       for (k = 0; k < pl.tokens.length; k++) dots += '<i class="lx-tk' + (pl.tokens[k] === 56 ? " done" : "") + '"></i>';
-      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
-        '<div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
-        '<div class="lx-nfo"><div class="lx-nm">' + esc(pl.name) + '<span class="lx-lead" style="display:none">👑</span></div><div class="lx-tks">' + dots + '</div></div>' +
-(perDie ? "" : '<div class="lx-last" id="ld-last-' + idx + '">' + (pl.lastDice || "–") + '</div>') + '</div>';
+      return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc lx-emb' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
+        '<div class="lx-avw"><div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
+        '<div class="lx-nm">' + esc(pl.name) + '<span class="lx-lead" style="display:none">👑</span></div></div>' +
+        '<div class="lx-mid"><div class="lx-tks">' + dots + '</div></div>' +
+        dieBlock(idx) + '<span class="lx-tbar" aria-hidden="true"><i></i></span></div>';
     }
-
-    function dieBlock(idx) {
-      var pl = st.players[idx];
-      return '<div class="lx-dwrap lx-big' + (idx === st.turn ? "" : " idle") + '" id="ld-dw-' + idx + '" style="' + dieVars(pl.color) + '">' +
-        '<button type="button" id="ld-die-' + idx + '" class="lx-die" data-ld="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + cubeHTML(false, idx) + '</button><i class="lx-sh"></i></div>';
-    }
-    function ldCell(seat, top) {
+    function ldCell(seat) {
       var idx = -1, i;
       for (i = 0; i < st.players.length; i++) if (st.players[i].seat === seat) idx = i;
       if (idx < 0) return '<div></div>';
-      return '<div class="lx-cell">' + (top ? dieBlock(idx) + ldCard(seat) : ldCard(seat) + dieBlock(idx)) + '</div>';
+      return '<div class="lx-cell lx-ecell">' + ldCard(seat) + '</div>';
     }
     function renderGame() {
-      perDie = !rm && st.players.filter(function (p) { return !p.bot; }).length >= 2;   /* same-phone games: a dice in every player's corner; vs bots / online: one dice bottom-right */
-      var cur = st.players[st.turn], h = '<div class="lx lx-gap' + (perDie ? " lx-pdl" : "") + '" style="gap:8px">';
+      perDie = true;   /* screenshot-accurate compact layout: every player's 3D dice lives inside their glossy corner card */
+      var cur = st.players[st.turn], h = '<div class="lx lx-gap lx-pdl" style="gap:10px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
-        (perDie ? '' : '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>') +
+        '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
-        (perDie ? '' : '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto: ' + (P.autoMove ? "On" : "Off") + '</button>') + '</div>';
-      var two = perDie && st.players.length === 2 && P.dpos !== "split", jc = P.dpos === "left" ? "start" : (P.dpos === "right" ? "end" : "center");   /* 2 players: both dice in the chosen column */
-      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rt" : "") + (two ? " sl-one" : "") + '" style="animation-delay:.05s' + (two ? ";justify-content:" + jc : "") + '">' + (perDie ? (two ? ldCell(0, true) : ldCell(0, true) + ldCell(1, true)) : ldCard(0) + ldCard(1)) + '</div>';
-      h += '<div class="lx-bw lx-enter" style="animation-delay:.1s"><canvas id="ld-canvas" class="lx-cv"></canvas><div id="ld-toast" class="lx-toast"></div></div>' + raceHTML();
-      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rb" : "") + (two ? " sl-one" : "") + '" style="animation-delay:.15s' + (two ? ";justify-content:" + jc : "") + '">' + (perDie ? (two ? ldCell(2, false) : ldCell(3, false) + ldCell(2, false)) : ldCard(3) + ldCard(2)) + '</div>';
-      if (!perDie) h += '<div class="lx-dock lx-enter" style="animation-delay:.2s;' + dieVars(cur.color) + '">' +
-        '<div class="lx-side">' + ["👏", "😂"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>' +
-        '<div class="lx-ctr"><div class="lx-dwrap"><button type="button" id="ld-die" class="lx-die" data-ld="roll" aria-label="Roll dice">' + cubeHTML(false) + '</button><i class="lx-sh"></i></div>' +
-        '<div id="ld-roll-hint" class="lx-hint"></div></div>' +
-        '<div class="lx-side">' + ["🔥", "😱"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div></div>';
+        '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto: ' + (P.autoMove ? "On" : "Off") + '</button></div>';
+      h += '<div class="lx-row lx-rt lx-enter" style="animation-delay:.04s">' + ldCell(0) + ldCell(1) + '</div>';
+      h += '<div class="lx-bw lx-enter" style="animation-delay:.08s"><canvas id="ld-canvas" class="lx-cv"></canvas><div id="ld-toast" class="lx-toast"></div></div>';
+      h += '<div class="lx-row lx-rb lx-enter" style="animation-delay:.12s">' + ldCell(3) + ldCell(2) + '</div>';
+      h += raceHTML();
       h += '</div>';
       host.innerHTML = h; icons();
       cv = q("#ld-canvas", host); ctx = cv.getContext("2d");
       q(".lx-bw", host).addEventListener("click", handleBoardTap);
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
       offKey = ""; dieRots = {}; lastTurnShown = -1;
-      if (perDie) st.players.forEach(function (p, i) { setCube(p.lastDice || 1, false, 0, i); });
-      else setCube(cur.lastDice || 1, false);
+      st.players.forEach(function (p, i) { setCube(p.lastDice || 1, false, 0, i); });
       window.requestAnimationFrame(function () { resizeBoard(); updateHUD(); maybeBot(); kickLoop(); });
     }
 
@@ -5092,8 +5101,8 @@ function pickBestBotTokenOld(pl, valid, dice) {
 
   var DEFAULTS = {
     open: false, czTab: "presets",
-    style: "modern", board: "auto", piece: "pawn", palette: "classic",
-    dice: "ivory", trail: "spark", center: "jewel", snake: "jungle", ladder: "wood",
+    style: "classic", board: "kingdom", piece: "doll", palette: "storybook",
+    dice: "ivory", trail: "star", center: "crown", snake: "gold", ladder: "wood",
     speed: 1, mute: false, volume: 80, music: 0, haptic: true, hpow: "normal", dpos: "split", cam: true
   };
 
@@ -5180,6 +5189,119 @@ function pickBestBotTokenOld(pl, valid, dice) {
     return (PALETTES[id || S.palette] || PALETTES.classic).colors.slice();
   }
 
+  /* ---------- Real Painted Art Engine (auto-loads ./assets/ painted art + client-side alpha matting) ---------- */
+  var ART = { bgRoyal: null, bgJungle: null, scroll: null, dolls: null, booted: false };
+  function loadArtFile(stem, onOk) {
+    var exts = [".webp", ".jpg", ".png"], idx = 0;
+    function next() {
+      if (idx >= exts.length) return;
+      var im = new Image();
+      im.onload = function () { if (im.naturalWidth > 32) onOk(im); else { idx++; next(); } };
+      im.onerror = function () { idx++; next(); };
+      im.src = "./assets/" + stem + exts[idx];
+    }
+    next();
+  }
+  function floodClearCorners(cv0, isBgFn) {
+    var w = cv0.width, h = cv0.height, c = cv0.getContext("2d");
+    var imgD = c.getImageData(0, 0, w, h), d = imgD.data, vis = new Uint8Array(w * h);
+    var qx = new Int32Array(w * h), head = 0, tail = 0;
+    function push(x, y) {
+      var p = y * w + x; if (vis[p]) return;
+      var i = p * 4; if (!isBgFn(d[i], d[i + 1], d[i + 2])) return;
+      vis[p] = 1; qx[tail++] = p;
+    }
+    var x, y;
+    for (x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+    for (y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+    while (head < tail) {
+      var p = qx[head++], px = p % w, py = (p - px) / w;
+      d[p * 4 + 3] = 0;
+      if (px > 0) push(px - 1, py);
+      if (px + 1 < w) push(px + 1, py);
+      if (py > 0) push(px, py - 1);
+      if (py + 1 < h) push(px, py + 1);
+    }
+    /* 1-px soft edge feather along cleared perimeter */
+    for (y = 1; y < h - 1; y++) {
+      for (x = 1; x < w - 1; x++) {
+        var p2 = y * w + x; if (d[p2 * 4 + 3] === 0) continue;
+        if (d[(p2 - 1) * 4 + 3] === 0 || d[(p2 + 1) * 4 + 3] === 0 || d[(p2 - w) * 4 + 3] === 0 || d[(p2 + w) * 4 + 3] === 0) {
+          if (isBgFn(d[p2 * 4], d[p2 * 4 + 1], d[p2 * 4 + 2], true)) d[p2 * 4 + 3] = 90;
+        }
+      }
+    }
+    c.putImageData(imgD, 0, 0);
+    return cv0;
+  }
+  function cropAlpha(cv0) {
+    var w = cv0.width, h = cv0.height, d = cv0.getContext("2d").getImageData(0, 0, w, h).data;
+    var x0 = w, y0 = h, x1 = 0, y1 = 0, x, y;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    if (x1 <= x0 || y1 <= y0) return cv0;
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1, out = document.createElement("canvas");
+    out.width = cw; out.height = ch;
+    out.getContext("2d").drawImage(cv0, x0, y0, cw, ch, 0, 0, cw, ch);
+    return out;
+  }
+  function processScrollArt(im) {
+    try {
+      var sz = Math.min(960, Math.max(im.naturalWidth, im.naturalHeight));
+      var cv0 = document.createElement("canvas"); cv0.width = sz; cv0.height = sz;
+      var c = cv0.getContext("2d"); c.drawImage(im, 0, 0, sz, sz);
+      var tl = c.getImageData(2, 2, 1, 1).data, br = tl[0], bg = tl[1], bb = tl[2];
+      floodClearCorners(cv0, function (r, g, b, soft) {
+        var tol = soft ? 68 : 48;
+        return Math.abs(r - br) + Math.abs(g - bg) + Math.abs(b - bb) < tol * 2.2;
+      });
+      ART.scroll = cropAlpha(cv0);
+      notifyGames("all");
+    } catch (e) { }
+  }
+  function processDollArt(im) {
+    try {
+      var hw = Math.floor(im.naturalWidth / 2), hh = Math.floor(im.naturalHeight / 2);
+      var quads = [
+        ["green", 0, 0, [62, 207, 142]],
+        ["yellow", hw, 0, [251, 191, 36]],
+        ["red", 0, hh, [239, 68, 68]],
+        ["blue", hw, hh, [59, 156, 245]]
+      ];
+      var out = [];
+      quads.forEach(function (q0) {
+        var cv0 = document.createElement("canvas"); cv0.width = 240; cv0.height = 240;
+        cv0.getContext("2d").drawImage(im, q0[1], q0[2], hw, hh, 0, 0, 240, 240);
+        floodClearCorners(cv0, function (r, g, b, soft) {
+          var th = soft ? 205 : 228;
+          return r >= th && g >= th && b >= th;
+        });
+        out.push({ key: q0[0], rgb: q0[3], cv: cropAlpha(cv0) });
+      });
+      ART.dolls = out;
+      drawThumbs(); notifyGames("all");
+    } catch (e) { }
+  }
+  function bootArtAssets() {
+    if (ART.booted) return; ART.booted = true;
+    loadArtFile("bg_royal", function (im) { ART.bgRoyal = im; bdKey = ""; paintBackdrop(); });
+    loadArtFile("bg_jungle", function (im) { ART.bgJungle = im; bdKey = ""; paintBackdrop(); });
+    loadArtFile("board_scroll", processScrollArt);
+    loadArtFile("tokens_doll", processDollArt);
+  }
+  function pickDollSprite(color) {
+    if (!ART.dolls || !ART.dolls.length) return null;
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(color || ""));
+    var rgb = m ? [parseInt(m[1].substr(0, 2), 16), parseInt(m[1].substr(2, 2), 16), parseInt(m[1].substr(4, 2), 16)] : [62, 207, 142];
+    var best = ART.dolls[0], bestD = 1e9, i;
+    for (i = 0; i < ART.dolls.length; i++) {
+      var t = ART.dolls[i].rgb, d = (rgb[0] - t[0]) * (rgb[0] - t[0]) + (rgb[1] - t[1]) * (rgb[1] - t[1]) + (rgb[2] - t[2]) * (rgb[2] - t[2]);
+      if (d < bestD) { bestD = d; best = ART.dolls[i]; }
+    }
+    return best.cv;
+  }
+
   var kNoiseCv = null;
 
   function kNoisePat(ctx) {   /* tiny cached grain tile, gives the kingdom board a real material feel */
@@ -5211,6 +5333,14 @@ function pickBestBotTokenOld(pl, valid, dice) {
     g.addColorStop(0, b.base); g.addColorStop(1, b.base2);
     ctx.fillStyle = g; ctx.fill(); ctx.clip();
 
+    if (b.tex === "kingdom" && ART.scroll) {
+      ctx.restore();
+      ctx.save();
+      ctx.shadowColor = "rgba(18,4,30,.55)"; ctx.shadowBlur = w * 0.04; ctx.shadowOffsetY = h * 0.015;
+      ctx.drawImage(ART.scroll, x, y, w, h);
+      ctx.restore();
+      return;
+    }
     if (b.tex === "kingdom") {
       var ksd = 7771, krnd = function () { ksd = (ksd * 1664525 + 1013904223) % 4294967296; return ksd / 4294967296; };
       var np = 9, pw = w / np, px, gx, kx, ky;
@@ -5644,6 +5774,14 @@ function pickBestBotTokenOld(pl, valid, dice) {
     ctx.lineJoin = "round"; ctx.lineCap = "round";
 
     if (shape === "doll") {
+      var spDoll = pickDollSprite(color);
+      if (spDoll) {
+        var dh = r * 2.15, dw = dh * (spDoll.width / spDoll.height);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(spDoll, -dw / 2, -dh * 0.64, dw, dh);
+        ctx.restore();
+        return;
+      }
       var u = r, hg;
       ctx.translate(0, u * 0.14);
       function ring(cy, rx, col) {
@@ -5970,6 +6108,13 @@ function pickBestBotTokenOld(pl, valid, dice) {
   api.getLadderStyle = ladderNow;
   api.paintBoardBg = paintBoardBg;
   api.noisePattern = kNoisePat;
+  api.hasScrollArt = function () { return !!(ART.scroll && getBoard().tex === "kingdom"); };
+  api.drawScrollArt = function (c, x, y, w, h) {
+    if (!ART.scroll) return;
+    c.save(); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    c.shadowColor = "rgba(18,4,30,.55)"; c.shadowBlur = w * 0.035; c.shadowOffsetY = h * 0.014;
+    c.drawImage(ART.scroll, x, y, w, h); c.restore();
+  };
   api.drawToken = drawToken;
   api.drawCenter = drawCenter;
   api.spawnTrail = spawnTrail;
@@ -6261,7 +6406,14 @@ function pickBestBotTokenOld(pl, valid, dice) {
     if (!cv) { cv = document.createElement("canvas"); el.appendChild(cv); }
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
-    var id = String(b.id || "").split("_")[0], fn = BD_SCENES[id] || BD_SCENES.mesh, seed = 0, i; for (i = 0; i < id.length; i++) seed = (seed * 31 + id.charCodeAt(i)) | 0;
+    var id = String(b.id || "").split("_")[0], tabNow = api.getTab ? api.getTab() : "ludo";
+    var bgImg = (tabNow === "snakes" && (id === "kingdom" || id === "jungle" || id === "grass") && ART.bgJungle) ? ART.bgJungle : ((id === "kingdom" && ART.bgRoyal) ? ART.bgRoyal : null);
+    if (bgImg) {
+      var sc = Math.max(W / bgImg.naturalWidth, H / bgImg.naturalHeight), dw = bgImg.naturalWidth * sc, dh = bgImg.naturalHeight * sc;
+      c.drawImage(bgImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      bdVignette(c, W, H, 0.25); bdKey = key + "|art|" + tabNow; return;
+    }
+    var fn = BD_SCENES[id] || BD_SCENES.mesh, seed = 0, i; for (i = 0; i < id.length; i++) seed = (seed * 31 + id.charCodeAt(i)) | 0;
     fn(c, b, W, H, bdRng(seed + 1234567)); bdKey = key;
   }
 
@@ -6440,19 +6592,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
 
       "@keyframes kgT{from{background-size:100% 100%,100% 100%}to{background-size:100% 0%,100% 100%}}",
 
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-pc{margin-right:18px;border-radius:16px;border:3px solid rgba(255,255,255,.75);background:linear-gradient(180deg,var(--c),var(--cd));box-shadow:0 0 0 2px var(--c),0 8px 16px -8px rgba(30,5,50,.8),inset 0 2px 0 rgba(255,255,255,.45)}",
-
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-cell > .lx-pc{width:calc(100% - 18px)}",
-
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-av{width:42px;height:42px}",
-
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-av::after{border-radius:12px;border:2px solid #fff;background:linear-gradient(160deg,#fff,#fde7f3)}",
-
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-nm{color:#fff;font-weight:900;text-shadow:0 1px 2px rgba(0,0,0,.55)}",
-
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-pc::after{content:'';position:absolute;right:-17px;top:2px;bottom:2px;width:11px;border-radius:7px;background:linear-gradient(0deg,#4ade80,#16a34a) bottom/100% 18% no-repeat,rgba(25,8,45,.6);border:2px solid rgba(255,255,255,.18)}",
-
-      "#quiz-arena-root[data-ag-board='kingdom'] .lx-pc.turn::after{animation:kgT 15s linear forwards;background:linear-gradient(0deg,#4ade80,#16a34a) bottom/100% 100% no-repeat,rgba(25,8,45,.6)}",
+      "#quiz-arena-root[data-ag-board='kingdom'] .lx-pc.lx-emb{border-radius:16px;border:2.5px solid rgba(255,255,255,.85);background:linear-gradient(180deg,var(--c),var(--cd));box-shadow:0 0 0 2px var(--c),0 8px 16px -8px rgba(30,5,50,.85),inset 0 2px 0 rgba(255,255,255,.48)}",
 
       "#quiz-arena-root[data-ag-board='kingdom'] .lx-bw{filter:drop-shadow(0 14px 18px rgba(20,4,40,.6))}"
 
@@ -6965,9 +7105,9 @@ function pickBestBotTokenOld(pl, valid, dice) {
       new MutationObserver(injectMidGameBtn).observe(root, { childList: true, subtree: true });
     } catch (e) { }
 
-    applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
+    bootArtAssets(); applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
   }
 
-  window.ArenaStudio = { version: "4.0.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
+  window.ArenaStudio = { version: "5.0.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountStudio); else mountStudio();
 })();

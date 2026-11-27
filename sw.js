@@ -4,13 +4,13 @@
    - Update prompt: new versions wait until the user taps "Refresh"
    - Offline files: the page can ask this worker to save PDFs/notes for offline use
    Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v117";
+var VERSION = "v120";
 var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline
 var MAX_FILES = 40;
 
-var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png", "./quiz_bank.json", "./quiz_bank_extra.json", "./quiz_arena.js", "./arena_games.js", "./chor_police.js", "./assets/bg_royal.jpg", "./assets/board_scroll.jpg", "./assets/tokens_doll.jpg", "./assets/bg_jungle.jpg", "./assets/bg_palace.png", "./assets/bg_cyber.png", "./assets/bg_sakura.png", "./assets/bg_forge.png", "./assets/bg_ocean.png", "./assets/board_palace.png", "./assets/tokens_pawn.png", "./assets/tokens_crown.png"];
+var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png", "./quiz_bank.json", "./quiz_bank_extra.json", "./quiz_arena.js", "./arena_games.js", "./chor_police.js", "./assets/bg_royal.jpg", "./assets/board_scroll.jpg", "./assets/tokens_doll.jpg", "./assets/bg_jungle.jpg", "./assets/bg_palace.png", "./assets/bg_cyber.png", "./assets/bg_sakura.png", "./assets/bg_forge.png", "./assets/bg_ocean.png", "./assets/board_palace.png", "./assets/tokens_pawn.png", "./assets/tokens_crown.png", "./assets/tokens_pack1.png", "./assets/tokens_pack2.png", "./assets/tokens_pack3.png", "./assets/tokens_pack4.png", "./assets/tokens_pack5.png", "./assets/dice_skins.png", "./assets/center_emblems.png", "./assets/board_cyber.png", "./assets/board_sakura.png", "./assets/board_forge.png", "./assets/board_ocean.png"];
 
 var CDN_PRECACHE = [
   "https://cdn.tailwindcss.com/3.4.17",

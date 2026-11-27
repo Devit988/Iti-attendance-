@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v5.1 (All Art Packs Edition: 12 Painted Assets + Screenshot HUD)
+/*! ITI CONNECT — Arena Games v5.4 (All 6 Painted Board Frames + 23 Pieces + 12 Dice Skins + 7 Emblems)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -3479,7 +3479,7 @@
         c.shadowColor = ap.color; c.shadowBlur = cw * (0.4 + 0.7 * slow); c.stroke(); c.restore();
       }
 
-      if (curB.tex !== "kingdom") (api.drawCenter || drawCenterEmblem)(c, size / 2, size / 2, cw * 0.62, t);
+      (api.drawCenter || drawCenterEmblem)(c, size / 2, size / 2, cw * 0.68, t);
 
       // destination markers for movable pieces (respecting hints toggle)
       if (P.hints && st.awaitMove && st.validTokens.length && st.players[st.turn]) {
@@ -5189,13 +5189,19 @@ function pickBestBotTokenOld(pl, valid, dice) {
     return (PALETTES[id || S.palette] || PALETTES.classic).colors.slice();
   }
 
-  /* ---------- Real Painted Art Engine v5.1 (auto-loads ./assets/ Art Packs + client-side alpha matting) ---------- */
+  /* ---------- Real Painted Art Engine v5.4 (6 Board Frames + 23 Pieces + 12 Dice Skins + 7 Emblems + 7 Backdrops) ---------- */
   var ART = {
     bgRoyal: null, bgJungle: null, bgPalace: null, bgCyber: null, bgSakura: null, bgForge: null, bgOcean: null,
-    scroll: null, palace: null,
-    dolls: null, pawns: null, crowns: null,
+    scroll: null, palace: null, cyber: null, sakura: null, forge: null, ocean: null,
+    pieces: {}, diceCv: {}, diceUrl: {}, centers: {},
     booted: false
   };
+  var TEAM_COLS = [
+    ["green",  [62, 207, 142]],
+    ["yellow", [251, 191, 36]],
+    ["red",    [239, 68, 68]],
+    ["blue",   [59, 156, 245]]
+  ];
   function loadArtFile(stem, onOk) {
     var exts = [".webp", ".jpg", ".png", ".jpeg"], idx = 0;
     function next() {
@@ -5250,6 +5256,24 @@ function pickBestBotTokenOld(pl, valid, dice) {
     out.getContext("2d").drawImage(cv0, x0, y0, cw, ch, 0, 0, cw, ch);
     return out;
   }
+  function keepCenterComponent(cv0) {
+    var w = cv0.width, h = cv0.height, c = cv0.getContext("2d");
+    var imgD = c.getImageData(0, 0, w, h), d = imgD.data, keep = new Uint8Array(w * h);
+    var qx = new Int32Array(w * h), head = 0, tail = 0;
+    var sp = (h >> 1) * w + (w >> 1);
+    if (d[sp * 4 + 3] === 0) return cv0;
+    keep[sp] = 1; qx[tail++] = sp;
+    while (head < tail) {
+      var p = qx[head++], px = p % w, py = (p - px) / w, np;
+      if (px > 0)     { np = p - 1; if (!keep[np] && d[np * 4 + 3] > 0) { keep[np] = 1; qx[tail++] = np; } }
+      if (px + 1 < w) { np = p + 1; if (!keep[np] && d[np * 4 + 3] > 0) { keep[np] = 1; qx[tail++] = np; } }
+      if (py > 0)     { np = p - w; if (!keep[np] && d[np * 4 + 3] > 0) { keep[np] = 1; qx[tail++] = np; } }
+      if (py + 1 < h) { np = p + w; if (!keep[np] && d[np * 4 + 3] > 0) { keep[np] = 1; qx[tail++] = np; } }
+    }
+    for (var i = 0; i < w * h; i++) if (!keep[i]) d[i * 4 + 3] = 0;
+    c.putImageData(imgD, 0, 0);
+    return cv0;
+  }
   function processFrameArt(im, targetKey) {
     try {
       var sz = Math.min(960, Math.max(im.naturalWidth, im.naturalHeight));
@@ -5260,30 +5284,134 @@ function pickBestBotTokenOld(pl, valid, dice) {
         var tol = soft ? 68 : 48;
         return Math.abs(r - br) + Math.abs(g - bg) + Math.abs(b - bb) < tol * 2.2;
       });
+      keepCenterComponent(cv0);
       ART[targetKey] = cropAlpha(cv0);
       notifyGames("all");
     } catch (e) { }
   }
-  function processQuadSprites(im, targetKey) {
+  function cutWhiteCell(srcCv, sx, sy, sw, sh, outSz) {
+    var pad = 4, cv0 = document.createElement("canvas"); cv0.width = outSz; cv0.height = outSz;
+    var c = cv0.getContext("2d");
+    c.fillStyle = "#ffffff"; c.fillRect(0, 0, outSz, outSz);
+    c.drawImage(srcCv, sx, sy, sw, sh, pad, pad, outSz - pad * 2, outSz - pad * 2);
+    floodClearCorners(cv0, function (r, g, b, soft) {
+      var th = soft ? 205 : 228;
+      return r >= th && g >= th && b >= th;
+    });
+    return cropAlpha(cv0);
+  }
+  function prepareCleanSheet(im, sz) {
+    var cv0 = document.createElement("canvas"); cv0.width = sz; cv0.height = sz;
+    var c = cv0.getContext("2d");
+    c.fillStyle = "#ffffff"; c.fillRect(0, 0, sz, sz);
+    c.drawImage(im, 0, 0, sz, sz);
+    /* clean tiny bottom-right margin mark so blue corner token stays spotless */
+    c.fillStyle = "#ffffff"; c.fillRect(Math.floor(sz * 0.915), Math.floor(sz * 0.915), Math.ceil(sz * 0.085), Math.ceil(sz * 0.085));
+    return cv0;
+  }
+  function processQuadSprites(im, shapeKey) {
     try {
-      var hw = Math.floor(im.naturalWidth / 2), hh = Math.floor(im.naturalHeight / 2);
-      var quads = [
-        ["green", 0, 0, [62, 207, 142]],
-        ["yellow", hw, 0, [251, 191, 36]],
-        ["red", 0, hh, [239, 68, 68]],
-        ["blue", hw, hh, [59, 156, 245]]
-      ];
-      var out = [];
-      quads.forEach(function (q0) {
-        var cv0 = document.createElement("canvas"); cv0.width = 240; cv0.height = 240;
-        cv0.getContext("2d").drawImage(im, q0[1], q0[2], hw, hh, 0, 0, 240, 240);
-        floodClearCorners(cv0, function (r, g, b, soft) {
-          var th = soft ? 205 : 228;
-          return r >= th && g >= th && b >= th;
-        });
-        out.push({ key: q0[0], rgb: q0[3], cv: cropAlpha(cv0) });
+      var sz = 520, sheet = prepareCleanSheet(im, sz), hw = sz / 2;
+      var pos = [[0, 0], [hw, 0], [0, hw], [hw, hw]], out = [];
+      for (var i = 0; i < 4; i++) {
+        out.push({ key: TEAM_COLS[i][0], rgb: TEAM_COLS[i][1], cv: cutWhiteCell(sheet, pos[i][0], pos[i][1], hw, hw, 220) });
+      }
+      ART.pieces[shapeKey] = out;
+      drawThumbs(); notifyGames("all");
+    } catch (e) { }
+  }
+  function findValleys(ink, sz, count) {
+    count = count || 4;
+    var cuts = [0], k, lo, hi, best, bestV, i, z0, z1;
+    for (k = 1; k < count; k++) {
+      var mid = Math.round(sz * k / count), rad = Math.round(sz * 0.065);
+      lo = Math.max(4, mid - rad); hi = Math.min(sz - 4, mid + rad);
+      best = mid; bestV = 1e9; z0 = -1; z1 = -1;
+      for (i = lo; i <= hi; i++) {
+        if (ink[i] === 0) { if (z0 < 0) z0 = i; z1 = i; }
+        if (ink[i] < bestV) { bestV = ink[i]; best = i; }
+      }
+      cuts.push(z0 >= 0 ? Math.round((z0 + z1) / 2) : best);
+    }
+    cuts.push(sz);
+    return cuts;
+  }
+  function processRectGrid(im, cols, rows, outSz, onCell) {
+    var W = 880, H = Math.max(240, Math.round(W * (im.naturalHeight / Math.max(1, im.naturalWidth))));
+    var sheet = document.createElement("canvas"); sheet.width = W; sheet.height = H;
+    var c0 = sheet.getContext("2d");
+    c0.fillStyle = "#ffffff"; c0.fillRect(0, 0, W, H);
+    c0.drawImage(im, 0, 0, W, H);
+    c0.fillStyle = "#ffffff"; c0.fillRect(Math.floor(W * 0.92), Math.floor(H * 0.89), Math.ceil(W * 0.08), Math.ceil(H * 0.11));
+    var d = c0.getImageData(0, 0, W, H).data;
+    var rowInk = new Int32Array(H), colInk = new Int32Array(W), x, y, idx;
+    for (y = 0; y < H; y++) {
+      for (x = 0; x < W; x++) {
+        idx = (y * W + x) * 4;
+        if (d[idx] < 228 || d[idx + 1] < 228 || d[idx + 2] < 228) { rowInk[y]++; colInk[x]++; }
+      }
+    }
+    var ys = findValleys(rowInk, H, rows), xs = findValleys(colInk, W, cols);
+    for (var r = 0; r < rows; r++) {
+      for (var col = 0; col < cols; col++) {
+        onCell(r, col, cutWhiteCell(sheet, xs[col], ys[r], xs[col + 1] - xs[col], ys[r + 1] - ys[r], outSz));
+      }
+    }
+  }
+  function processGridSprites(im, rowShapes) {
+    try {
+      var sz = 720, sheet = prepareCleanSheet(im, sz);
+      var d = sheet.getContext("2d").getImageData(0, 0, sz, sz).data;
+      var rowInk = new Int32Array(sz), colInk = new Int32Array(sz), x, y, idx;
+      for (y = 0; y < sz; y++) {
+        for (x = 0; x < sz; x++) {
+          idx = (y * sz + x) * 4;
+          if (d[idx] < 228 || d[idx + 1] < 228 || d[idx + 2] < 228) { rowInk[y]++; colInk[x]++; }
+        }
+      }
+      var ys = findValleys(rowInk, sz, 4), xs = findValleys(colInk, sz, 4);
+      for (var r = 0; r < rowShapes.length; r++) {
+        var out = [];
+        for (var c = 0; c < 4; c++) {
+          out.push({ key: TEAM_COLS[c][0], rgb: TEAM_COLS[c][1], cv: cutWhiteCell(sheet, xs[c], ys[r], xs[c + 1] - xs[c], ys[r + 1] - ys[r], 184) });
+        }
+        ART.pieces[rowShapes[r]] = out;
+      }
+      drawThumbs(); notifyGames("all");
+    } catch (e) { }
+  }
+  function applyDiceArtCss() {
+    try {
+      var rules = [], id, url;
+      for (id in ART.diceUrl) {
+        url = ART.diceUrl[id];
+        rules.push("#quiz-arena-root[data-as-dice='" + id + "'] .lx-f,#quiz-arena-root[data-ag-dice='" + id + "'] .lx-f{background-image:url(" + url + ")!important;background-size:100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;border-color:transparent!important}");
+        rules.push("#quiz-arena-root .as-dskin[data-k='" + id + "'] .as-dchip{background-image:url(" + url + ")!important;background-size:100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;border-color:transparent!important;box-shadow:0 5px 12px -4px rgba(0,0,0,.45)!important}");
+      }
+      if (!rules.length) return;
+      var st = document.getElementById("as-dice-art-css");
+      if (!st) { st = document.createElement("style"); st.id = "as-dice-art-css"; document.head.appendChild(st); }
+      st.textContent = rules.join("\n");
+    } catch (e) { }
+  }
+  function processDiceSkins(im) {
+    try {
+      var ids = ["ivory", "obsidian", "neon", "gold", "crystal", "wood", "jade", "ruby", "candy", "galaxy", "magma", "meadow"];
+      processRectGrid(im, 4, 3, 160, function (r, c, cv) {
+        var id = ids[r * 4 + c]; if (!id) return;
+        ART.diceCv[id] = cv;
+        try { ART.diceUrl[id] = cv.toDataURL("image/png"); } catch (e2) { }
       });
-      ART[targetKey] = out;
+      applyDiceArtCss();
+    } catch (e) { }
+  }
+  function processCenterEmblems(im) {
+    try {
+      var ids = ["jewel", "crown", "star", "heart", "flower", "planet", "trophy"];
+      processRectGrid(im, 4, 2, 192, function (r, c, cv) {
+        var id = ids[r * 4 + c]; if (!id) return;
+        ART.centers[id] = cv;
+      });
       drawThumbs(); notifyGames("all");
     } catch (e) { }
   }
@@ -5291,11 +5419,21 @@ function pickBestBotTokenOld(pl, valid, dice) {
     if (ART.booted) return; ART.booted = true;
     var bgs = [["bg_royal", "bgRoyal"], ["bg_jungle", "bgJungle"], ["bg_palace", "bgPalace"], ["bg_cyber", "bgCyber"], ["bg_sakura", "bgSakura"], ["bg_forge", "bgForge"], ["bg_ocean", "bgOcean"]];
     bgs.forEach(function (pair) { loadArtFile(pair[0], function (im) { ART[pair[1]] = im; bdKey = ""; paintBackdrop(); }); });
-    loadArtFile("board_scroll", function (im) { processFrameArt(im, "scroll"); });
-    loadArtFile("board_palace", function (im) { processFrameArt(im, "palace"); });
-    loadArtFile("tokens_doll", function (im) { processQuadSprites(im, "dolls"); });
-    loadArtFile("tokens_pawn", function (im) { processQuadSprites(im, "pawns"); });
-    loadArtFile("tokens_crown", function (im) { processQuadSprites(im, "crowns"); });
+    var frames = [["board_scroll", "scroll"], ["board_palace", "palace"], ["board_cyber", "cyber"], ["board_sakura", "sakura"], ["board_forge", "forge"], ["board_ocean", "ocean"]];
+    frames.forEach(function (pair) { loadArtFile(pair[0], function (im) { processFrameArt(im, pair[1]); }); });
+    loadArtFile("tokens_doll",  function (im) { processQuadSprites(im, "doll"); });
+    loadArtFile("tokens_pawn",  function (im) { processQuadSprites(im, "pawn"); });
+    loadArtFile("tokens_crown", function (im) { processQuadSprites(im, "crown"); });
+    loadArtFile("dice_skins",     processDiceSkins);
+    loadArtFile("center_emblems", processCenterEmblems);
+    var packs = [
+      ["tokens_pack1", ["orb", "rocket", "shield", "bolt"]],
+      ["tokens_pack2", ["hex", "lotus", "cat", "bear"]],
+      ["tokens_pack3", ["bunny", "panda", "penguin", "duck"]],
+      ["tokens_pack4", ["ghost", "robot", "wizard", "ninja"]],
+      ["tokens_pack5", ["dino", "fox", "alien", "dragon"]]
+    ];
+    packs.forEach(function (pk) { loadArtFile(pk[0], function (im) { processGridSprites(im, pk[1]); }); });
   }
   function pickQuadSprite(list, color) {
     if (!list || !list.length) return null;
@@ -5310,9 +5448,16 @@ function pickBestBotTokenOld(pl, valid, dice) {
   }
   function frameArtInfo(b) {
     var id = String((b && b.id) || "").split("_")[0];
-    if ((id === "kingdom" || id === "pirate" || id === "wood" || id === "autumn") && ART.scroll) return { key: "scroll", cv: ART.scroll };
-    if ((id === "gold" || id === "diwali" || id === "marble" || id === "desert" || id === "jade") && ART.palace) return { key: "palace", cv: ART.palace };
-    return null;
+    var MAP = {
+      kingdom: "scroll", pirate: "scroll", wood: "scroll", autumn: "scroll", jungle: "scroll",
+      gold: "palace", diwali: "palace", marble: "palace", desert: "palace", jade: "palace", felt: "palace",
+      cyber: "cyber", disco: "cyber", retro: "cyber", aurora: "cyber", galaxy: "cyber", toxic: "cyber",
+      sakura: "sakura", cloud: "sakura",
+      lava: "forge", steampunk: "forge",
+      ocean: "ocean", glacier: "ocean"
+    };
+    var k = MAP[id];
+    return (k && ART[k]) ? { key: k, cv: ART[k] } : null;
   }
 
   var kNoiseCv = null;
@@ -5787,15 +5932,19 @@ function pickBestBotTokenOld(pl, valid, dice) {
     ctx.translate(x, y);
     ctx.lineJoin = "round"; ctx.lineCap = "round";
 
+    var spArt = ART.pieces && pickQuadSprite(ART.pieces[shape], color);
+    if (spArt) {
+      var isTall = shape === "doll" || shape === "pawn" || shape === "rocket" || shape === "bunny" || shape === "wizard";
+      var maxW = r * 2.02, maxH = r * (isTall ? 2.16 : 1.98);
+      var scl = Math.min(maxW / spArt.width, maxH / spArt.height);
+      var dw = spArt.width * scl, dh = spArt.height * scl;
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(spArt, -dw / 2, -dh * (isTall ? 0.64 : 0.6), dw, dh);
+      ctx.restore();
+      return;
+    }
+
     if (shape === "doll") {
-      var spDoll = pickQuadSprite(ART.dolls, color);
-      if (spDoll) {
-        var dh = r * 2.15, dw = dh * (spDoll.width / spDoll.height);
-        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(spDoll, -dw / 2, -dh * 0.64, dw, dh);
-        ctx.restore();
-        return;
-      }
       var u = r, hg;
       ctx.translate(0, u * 0.14);
       function ring(cy, rx, col) {
@@ -5834,14 +5983,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
     }
 
     if (shape === "pawn") {
-      var spPawn = pickQuadSprite(ART.pawns, color);
-      if (spPawn) {
-        var ph = r * 2.12, pw = ph * (spPawn.width / spPawn.height);
-        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(spPawn, -pw / 2, -ph * 0.64, pw, ph);
-        ctx.restore();
-        return;
-      }
       var u = r;
       function pBody() {
         ctx.beginPath();
@@ -5883,16 +6024,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
       return;
     }
 
-    if (shape === "crown") {
-      var spCrown = pickQuadSprite(ART.crowns, color);
-      if (spCrown) {
-        var ch = r * 1.98, cw0 = ch * (spCrown.width / spCrown.height);
-        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(spCrown, -cw0 / 2, -ch * 0.58, cw0, ch);
-        ctx.restore();
-        return;
-      }
-    }
     var sc = r * 0.88;
     ctx.scale(sc, sc);
     function haloFill(pathFn, fillStyle) {
@@ -5989,10 +6120,23 @@ function pickBestBotTokenOld(pl, valid, dice) {
     ctx.restore();
   }
 
-  function drawCenter(c, cx, cy, r, t) {
-    var cols = getPalette(), g, i;
+  function drawCenter(c, cx, cy, r, t, forceId) {
+    var cid = forceId || S.center, cols = getPalette(), g, i;
     c.save();
-    if (S.center === "crown") {
+    var spCtr = ART.centers && ART.centers[cid];
+    if (spCtr) {
+      var br = t ? 1 + 0.04 * Math.sin(t / 360) : 1;
+      var box = r * 2.15 * br, scl = Math.min(box / spCtr.width, box / spCtr.height);
+      var dw = spCtr.width * scl, dh = spCtr.height * scl;
+      c.translate(cx, cy);
+      if (t && (cid === "star" || cid === "flower")) c.rotate(Math.sin(t / 1200) * 0.12);
+      c.shadowColor = "rgba(15,23,42,.45)"; c.shadowBlur = r * 0.35; c.shadowOffsetY = r * 0.1;
+      c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+      c.drawImage(spCtr, -dw / 2, -dh / 2, dw, dh);
+      c.restore();
+      return;
+    }
+    if (cid === "crown") {
       g = c.createRadialGradient(cx - r * 0.25, cy - r * 0.25, r * 0.1, cx, cy, r);
       g.addColorStop(0, "#fef9c3"); g.addColorStop(0.55, "#f59e0b"); g.addColorStop(1, "#78350f");
       c.shadowColor = "rgba(251,191,36,.8)"; c.shadowBlur = r * 0.85;
@@ -6003,7 +6147,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       c.beginPath(); c.moveTo(-s * 0.72, s * 0.45); c.lineTo(-s * 0.82, -s * 0.35); c.lineTo(-s * 0.3, s * 0.05);
       c.lineTo(0, -s * 0.65); c.lineTo(s * 0.3, s * 0.05); c.lineTo(s * 0.82, -s * 0.35); c.lineTo(s * 0.72, s * 0.45); c.closePath(); c.fill();
       c.fillStyle = "#fef08a"; c.fillRect(-s * 0.68, s * 0.3, s * 1.36, s * 0.2);
-    } else if (S.center === "star") {
+    } else if (cid === "star") {
       c.translate(cx, cy); c.rotate((t / 2800) % TAU);
       c.shadowColor = "#fde047"; c.shadowBlur = r * 0.9;
       c.beginPath();
@@ -6012,7 +6156,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       g = c.createRadialGradient(0, 0, 0, 0, 0, r);
       g.addColorStop(0, "#ffffff"); g.addColorStop(0.5, "#fde047"); g.addColorStop(1, "#f59e0b");
       c.fillStyle = g; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 1.2; c.stroke();
-    } else if (S.center === "heart") {
+    } else if (cid === "heart") {
       var hs = r * (1 + 0.07 * Math.sin(t / 260));
       c.translate(cx, cy);
       for (i = 0; i < 4; i++) {
@@ -6027,7 +6171,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       c.beginPath(); c.moveTo(0, hs * 0.72); c.bezierCurveTo(-hs * 1.15, -hs * 0.05, -hs * 0.62, -hs * 0.92, 0, -hs * 0.4); c.bezierCurveTo(hs * 0.62, -hs * 0.92, hs * 1.15, -hs * 0.05, 0, hs * 0.72);
       c.fillStyle = g; c.fill(); c.shadowBlur = 0; c.strokeStyle = "#fff"; c.lineWidth = Math.max(1.5, r * 0.08); c.stroke();
       c.fillStyle = "rgba(255,255,255,.6)"; c.beginPath(); c.ellipse(-hs * 0.38, -hs * 0.3, hs * 0.14, hs * 0.08, -0.6, 0, TAU); c.fill();
-    } else if (S.center === "flower") {
+    } else if (cid === "flower") {
       var fa = (t / 4000) % TAU;
       c.translate(cx, cy); c.rotate(fa);
       c.shadowColor = "rgba(255,255,255,.6)"; c.shadowBlur = r * 0.35;
@@ -6042,7 +6186,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       c.fillStyle = g; c.beginPath(); c.arc(0, 0, r * 0.4, 0, TAU); c.fill(); c.strokeStyle = "#fff"; c.lineWidth = Math.max(1.2, r * 0.06); c.stroke();
       c.fillStyle = "#451a03"; c.beginPath(); c.arc(-r * 0.14, -r * 0.06, r * 0.05, 0, TAU); c.fill(); c.beginPath(); c.arc(r * 0.14, -r * 0.06, r * 0.05, 0, TAU); c.fill();
       c.strokeStyle = "#451a03"; c.lineWidth = Math.max(1, r * 0.04); c.beginPath(); c.arc(0, r * 0.04, r * 0.14, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
-    } else if (S.center === "planet") {
+    } else if (cid === "planet") {
       var pr = r * 0.62, tilt = -0.42, ma = t / 900;
       c.translate(cx, cy);
       c.shadowColor = "rgba(125,211,252,.8)"; c.shadowBlur = r * 0.7;
@@ -6058,7 +6202,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       c.save(); c.rotate(tilt); c.strokeStyle = "rgba(253,224,71,.95)"; c.lineWidth = Math.max(2, r * 0.13);
       c.beginPath(); c.ellipse(0, 0, r * 1.02, r * 0.3, 0, 0, Math.PI); c.stroke();
       c.fillStyle = "#ffffff"; c.beginPath(); c.arc(Math.cos(ma) * r * 1.02, Math.sin(ma) * r * 0.3, r * 0.1, 0, TAU); c.fill(); c.restore();
-    } else if (S.center === "trophy") {
+    } else if (cid === "trophy") {
       var ts = r * 0.95, bob = Math.sin(t / 380) * r * 0.04;
       c.translate(cx, cy + bob);
       c.shadowColor = "rgba(251,191,36,.9)"; c.shadowBlur = r * 0.8;
@@ -6597,7 +6741,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
       R + ".as-boards button.on," + R + ".as-pieces button.on," + R + ".as-pal.on," + R + ".as-dskin.on{border-color:var(--ag-onb);background:var(--ag-on);box-shadow:0 0 0 1px var(--ag-onb)}",
       R + ".as-pal-d{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:4px}",
       R + ".as-pal-d i{width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 1px rgba(255,255,255,.45)}",
-      R + ".as-dchip{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;border:2px solid;font-size:20px;line-height:1;box-shadow:0 4px 10px -4px rgba(0,0,0,.55)}",
+      R + ".as-dchip{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;border:2px solid;font-size:20px;line-height:1;box-shadow:0 4px 10px -4px rgba(0,0,0,.55)}",
+      R + ".as-dpips{width:28px;height:28px;display:block;fill:currentColor;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}",
+      R + ".as-centers{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}",
+      R + ".as-centers button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 3px 6px;border-radius:.82rem;border:1.5px solid var(--ag-bd);background:var(--ag-bg2);transition:.18s}",
+      R + ".as-centers button.on{border-color:var(--ag-onb);background:var(--ag-on);box-shadow:0 0 0 1px var(--ag-onb)}",
+      R + ".as-cpc{display:grid;place-items:center;width:46px;height:46px;border-radius:.7rem;border:1px solid var(--ag-bd);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.16),rgba(15,23,42,.22))}",
       R + ".ag-playing.ag-peek-cz .ag-cz{display:block!important;margin-bottom:.55rem}",
       R + ".as-midbtn{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--ag-ac)!important;border:1px solid var(--ag-onb)!important;background:var(--ag-on)!important;flex:none}",
       "#quiz-arena-root.as-fs{position:fixed;top:0;left:0;right:0;bottom:0;width:auto;max-width:none;z-index:2147483000;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--as-fsbg,#0b1220);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}",
@@ -6705,15 +6854,18 @@ function pickBestBotTokenOld(pl, valid, dice) {
           '<span class="ag-bn">' + pl.name + '</span></button>';
       }).join("") + '</div></div>';
 
+    var pip5 = '<svg viewBox="0 0 40 40" class="as-dpips" aria-hidden="true"><circle cx="11" cy="11" r="3.4"/><circle cx="29" cy="11" r="3.4"/><circle cx="20" cy="20" r="3.4"/><circle cx="11" cy="29" r="3.4"/><circle cx="29" cy="29" r="3.4"/></svg>';
     h += '<div class="as-pane ag-off" data-asp="fx"><div class="ag-lbl" style="margin-top:.1rem">3D dice skin</div><div class="as-dices">' +
       DICE_SKINS.map(function (d) {
         return '<button type="button" class="as-dskin" data-as="set" data-p="dice" data-k="' + d[0] + '">' +
-          '<span class="as-dchip" style="background:linear-gradient(135deg,' + d[2] + ',' + d[3] + ');color:' + d[4] + ';border-color:' + d[4] + '">⚄</span>' +
+          '<span class="as-dchip" style="background:linear-gradient(135deg,' + d[2] + ',' + d[3] + ');color:' + d[4] + ';border-color:' + d[4] + '">' + pip5 + '</span>' +
           '<span class="ag-bn">' + d[1] + '</span></button>';
       }).join("") + '</div><div class="ag-lbl">Hop trail FX</div><div class="ag-seg as-wrap">' +
       TRAILS.map(function (t) { return seg("trail", t[0], t[1]); }).join("") + '</div>' +
-      '<div data-g="ludo"><div class="ag-lbl">Ludo center emblem</div><div class="ag-seg as-wrap">' +
-      CENTERS.map(function (c) { return seg("center", c[0], c[1]); }).join("") + '</div></div>' +
+      '<div data-g="ludo"><div class="ag-lbl">Ludo center emblem</div><div class="as-centers">' +
+      CENTERS.map(function (c) {
+        return '<button type="button" data-as="set" data-p="center" data-k="' + c[0] + '"><span class="as-cpc"><canvas class="as-cthumb" data-k="' + c[0] + '"></canvas></span><span class="ag-bn">' + c[1] + '</span></button>';
+      }).join("") + '</div></div>' +
       '<div data-g="snakes" class="ag-off"><div class="ag-lbl">Snake skin</div><div class="as-pals">' + SNAKE_SKINS.map(function (sk) {
         var cs = sk[2] || ["#ef4444", "#22c55e", "#facc15", "#38bdf8"];
         return '<button type="button" class="as-pal" data-as="set" data-p="snake" data-k="' + sk[0] + '"><span class="as-pal-d">' +
@@ -6797,6 +6949,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
       if (cv.width !== s * dpr) { cv.width = s * dpr; cv.height = s * dpr; cv.style.width = s + "px"; cv.style.height = s + "px"; }
       c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, s, s);
       drawToken(c, s / 2, s / 2 + 1, 16, pal[idx % 4], cv.getAttribute("data-k"), S.style, 0);
+    });
+    root.querySelectorAll(".as-cthumb").forEach(function (cv) {
+      var s = 44, c = cv.getContext && cv.getContext("2d"); if (!c) return;
+      if (cv.width !== s * dpr) { cv.width = s * dpr; cv.height = s * dpr; cv.style.width = s + "px"; cv.style.height = s + "px"; }
+      c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, s, s);
+      drawCenter(c, s / 2, s / 2, s * 0.4, 0, cv.getAttribute("data-k"));
     });
   }
 
@@ -6947,12 +7105,18 @@ function pickBestBotTokenOld(pl, valid, dice) {
     for (i = 0; i < DICE_SKINS.length; i++) if (DICE_SKINS[i][0] === S.dice) ds = DICE_SKINS[i];
     var dx = w - 64, dy = h / 2 - 25, dsz = 50;
     c.save(); c.translate(dx + dsz / 2, dy + dsz / 2); c.rotate(Math.sin(t * 2.2) * 0.14);
-    rr(c, -dsz / 2, -dsz / 2, dsz, dsz, 12);
-    var dg = c.createLinearGradient(-dsz / 2, -dsz / 2, dsz / 2, dsz / 2);
-    dg.addColorStop(0, ds[2]); dg.addColorStop(1, ds[3]);
-    c.fillStyle = dg; if (S.dice === "neon") { c.shadowColor = ds[4]; c.shadowBlur = 12; }
-    c.fill(); c.shadowBlur = 0;
-    c.strokeStyle = S.dice === "ivory" ? pal[0] : ds[4]; c.lineWidth = 2.2; c.stroke();
+    var spDie = ART.diceCv && ART.diceCv[S.dice];
+    if (spDie) {
+      c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+      c.drawImage(spDie, -dsz / 2, -dsz / 2, dsz, dsz);
+    } else {
+      rr(c, -dsz / 2, -dsz / 2, dsz, dsz, 12);
+      var dg = c.createLinearGradient(-dsz / 2, -dsz / 2, dsz / 2, dsz / 2);
+      dg.addColorStop(0, ds[2]); dg.addColorStop(1, ds[3]);
+      c.fillStyle = dg; if (S.dice === "neon") { c.shadowColor = ds[4]; c.shadowBlur = 12; }
+      c.fill(); c.shadowBlur = 0;
+      c.strokeStyle = S.dice === "ivory" ? pal[0] : ds[4]; c.lineWidth = 2.2; c.stroke();
+    }
     c.fillStyle = S.dice === "ivory" ? pal[0] : ds[4];
     var dp = [[-11, -11], [11, -11], [0, 0], [-11, 11], [11, 11]];
     for (i = 0; i < dp.length; i++) { c.beginPath(); c.arc(dp[i][0], dp[i][1], 4, 0, TAU); c.fill(); }
@@ -7150,6 +7314,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
     bootArtAssets(); applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
   }
 
-  window.ArenaStudio = { version: "5.1.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
+  window.ArenaStudio = { version: "5.4.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountStudio); else mountStudio();
 })();

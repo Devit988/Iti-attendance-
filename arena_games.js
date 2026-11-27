@@ -1334,6 +1334,41 @@
       R + ".lx-row.sl-one .lx-cell{flex:0 1 auto;flex-direction:row;align-items:center;justify-content:center;gap:10px;max-width:100%}",
       R + ".lx-row.sl-one .lx-cell > .lx-pc{width:auto;min-width:0;flex:0 1 200px}",
       R + ".lx-row.sl-one .lx-dwrap{flex:none}",
+      R + ".lx-row.lx-rt," + R + ".lx-row.lx-rb{position:relative;z-index:4}",
+      R + ".lx-bw{z-index:1}",
+      R + ".lx-bw .lx-toast{z-index:6}",
+      R + ".lx-row.sl-three{gap:6px}",
+      R + ".lx-row.sl-three .lx-cell{gap:0}",
+      R + ".lx-row.sl-three .lx-pc.lx-emb{gap:3px;padding:4px 5px;margin-right:11px;border-radius:14px;border-width:2px}",
+      R + ".lx-row.sl-three .lx-avw{width:32px}",
+      R + ".lx-row.sl-three .lx-emb .lx-av{width:28px;height:28px;font-size:13px}",
+      R + ".lx-row.sl-three .lx-emb .lx-nm{font-size:8.5px}",
+      R + ".lx-row.sl-three .lx-mid{flex:1 1 0;min-width:0}",
+      R + ".lx-row.sl-three .sl-sq{font-size:0;line-height:1;white-space:nowrap}",   /* hides the word \"Sq\", keeps the number */
+      R + ".lx-row.sl-three .sl-sq b{font-size:12px}",
+      R + ".lx-row.sl-three .sl-pbar{display:none}",
+      R + ".lx-row.sl-three .lx-well{width:38px;height:38px;border-radius:10px}",
+      R + ".lx-row.sl-three .lx-well .lx-die{--s:27px}",
+      R + ".lx-row.sl-three .lx-well::before{width:42px;height:42px;margin:-21px 0 0 -21px}",
+      R + ".lx-row.sl-three .lx-tbar{right:-10px;width:7px}",
+      /* EASY TAPPING: bigger invisible hit-area around every die; 1-2 players get big dice + a full-width, tap-anywhere card */
+      R + ".lx-well .lx-die::after{content:'';position:absolute;inset:-10px;border-radius:16px}",
+      R + ".lx-few .lx-row > div:empty{display:none}",
+      R + ".lx-few .lx-row:not(.sl-one){grid-template-columns:1fr}",
+      R + ".lx-few .lx-row > .lx-cell{grid-column:1/-1}",
+      R + ".lx-few .lx-row.sl-one .lx-cell > .lx-pc{flex:1 1 280px}",
+      R + ".lx-few .lx-pc.lx-emb{padding:8px 12px;gap:10px;margin-right:16px;border-radius:20px;min-height:78px}",
+      R + ".lx-few .lx-pc.lx-emb.turn{cursor:pointer}",
+      R + ".lx-few .lx-avw{width:54px}",
+      R + ".lx-few .lx-emb .lx-av{width:44px;height:44px;font-size:18px}",
+      R + ".lx-few .lx-emb .lx-nm{font-size:11px}",
+      R + ".lx-few .lx-mid{align-items:flex-start;padding-left:6px}",
+      R + ".lx-few .lx-tk{width:13px;height:13px}",
+      R + ".lx-few .sl-sq{font-size:15px}",
+      R + ".lx-few .lx-well{width:72px;height:72px;border-radius:16px}",
+      R + ".lx-few .lx-well .lx-die{--s:52px}",
+      R + ".lx-few .lx-well::before{width:80px;height:80px;margin:-40px 0 0 -40px}",
+      R + ".lx-few .lx-tbar{right:-14px}",
       ".ag-flash{position:fixed;inset:0;z-index:99998;pointer-events:none;background:var(--fc,#fff);opacity:0;will-change:opacity;animation:agFlash .5s ease-out forwards}",
       "@keyframes agFlash{0%{opacity:0}14%{opacity:.35}100%{opacity:0}}",
       "@keyframes agDiePulse{0%,100%{filter:drop-shadow(0 0 5px var(--dc,#fbbf24))}50%{filter:drop-shadow(0 0 14px var(--dc,#fbbf24)) drop-shadow(0 0 26px var(--dc,#fbbf24))}}",
@@ -2645,9 +2680,9 @@
         if (P.dpos === "center") { var opp = [], oi; for (oi = 1; oi < n; oi++) opp.push((meIdx + oi) % n); topRow = opp; botRow = [meIdx]; }   /* me alone, bottom centre */
       } else if (n === 2 && P.dpos !== "split") { topRow = [0]; botRow = [1]; }   /* same phone, 2 players: both dice in the chosen column */
       var rowH = function (arr, top) {
-        return '<div class="lx-row ' + (top ? "lx-rt" : "lx-rb") + ' lx-enter' + (arr.length === 1 ? " sl-one" : "") + '" style="animation-delay:' + (top ? ".05" : ".15") + 's' + (arr.length === 1 ? ";justify-content:" + (P.dpos === "left" ? "start" : P.dpos === "right" ? "end" : "center") : "") + (arr.length === 3 ? ";grid-template-columns:repeat(3,1fr)" : "") + '">' + arr.map(function (i) { return slCell(i, top); }).join("") + "</div>";
+        return '<div class="lx-row ' + (top ? "lx-rt" : "lx-rb") + ' lx-enter' + (arr.length === 1 ? " sl-one" : arr.length === 3 ? " sl-three" : "") + '" style="animation-delay:' + (top ? ".05" : ".15") + 's' + (arr.length === 1 ? ";justify-content:" + (P.dpos === "left" ? "start" : P.dpos === "right" ? "end" : "center") : "") + (arr.length === 3 ? ";grid-template-columns:repeat(3,1fr)" : "") + '">' + arr.map(function (i) { return slCell(i, top); }).join("") + "</div>";
       };
-      var h = '<div class="bg-box lx lx-gap lx-pdl" style="gap:8px">';
+      var h = '<div class="bg-box lx lx-gap lx-pdl' + (n <= 2 ? " lx-few" : "") + '" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="sl-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<span class="sl-dbadge sl-d-' + curDiff + '">' + DIFFS[curDiff].name.toUpperCase() + '</span>' +
@@ -2730,6 +2765,10 @@
     registerGame("snakes", {
       mount: function (el) {
         host = el; slWowCss();
+        host.addEventListener("click", function (e) {   /* tap anywhere on the active player's card to roll */
+          var cd = e.target.closest && e.target.closest(".lx-pc.turn");
+          if (cd && host.contains(cd) && !e.target.closest("[data-sl]")) { var dd = cd.querySelector(".lx-die"); if (dd && !dd.disabled) dd.click(); }
+        });
         host.addEventListener("click", function (e) {
           var b = e.target.closest && e.target.closest("[data-sl]");
           if (!b || !host.contains(b)) return;
@@ -3673,6 +3712,7 @@
       var np = Math.round(w * (api.hasScrollArt && api.hasScrollArt() ? 0.115 : 0.075)), full = w + np * 2;
       if (w !== size || np !== pad || cv.width !== Math.round(full * dpr)) {
         size = w; pad = np;
+        wrap.style.marginTop = wrap.style.marginBottom = Math.round(np * 0.4) + "px";   /* room for the scroll frame so it never covers the player cards */
         cv.style.left = cv.style.top = (-pad) + "px"; cv.style.width = cv.style.height = full + "px";
         cv.width = Math.round(full * dpr); cv.height = Math.round(full * dpr); offKey = "";
       }
@@ -4669,7 +4709,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     }
     function renderGame() {
       perDie = true;   /* screenshot-accurate compact layout: every player's 3D dice lives inside their glossy corner card */
-      var cur = st.players[st.turn], h = '<div class="lx lx-gap lx-pdl" style="gap:10px">';
+      var cur = st.players[st.turn], h = '<div class="lx lx-gap lx-pdl' + (st.players.length <= 2 ? " lx-few" : "") + '" style="gap:10px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
@@ -4766,6 +4806,10 @@ function pickBestBotTokenOld(pl, valid, dice) {
     registerGame("ludo", {
       mount: function (el) {
         host = el; lxCss(); bindKeys(); try { var dsv = localStorage.getItem("iti_ld_diff"); if (dsv === "easy" || dsv === "normal" || dsv === "hard" || dsv === "insane") cfg.diff = dsv; } catch (e) { }
+        host.addEventListener("click", function (e) {   /* tap anywhere on the active player's card to roll */
+          var cd = e.target.closest && e.target.closest(".lx-pc.turn");
+          if (cd && host.contains(cd) && !e.target.closest("[data-ld]")) { var dd = cd.querySelector(".lx-die"); if (dd && !dd.disabled) dd.click(); }
+        });
         host.addEventListener("click", function (e) {
           var b = e.target.closest && e.target.closest("[data-ld]");
           if (!b || !host.contains(b)) return;

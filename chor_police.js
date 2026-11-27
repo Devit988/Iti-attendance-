@@ -108,6 +108,7 @@
   var hasPeeked = false;
   var toastMsg = "", toastUntil = 0;
   var fxKey = "";
+  var lastFxKey = "";
 
   /* ---------- storage & small helpers ---------- */
   function ls(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -1144,6 +1145,10 @@
   }
 
   function renderSetup() {
+    renderSetupRaw();
+    fxGate("setup");
+  }
+  function renderSetupRaw() {
     var m = cfg.mode;
     var pr = PRESETS[cfg.preset] || PRESETS.classic4;
     var rc = buildRoomConfig();
@@ -1267,6 +1272,10 @@
   }
 
   function renderLobby() {
+    renderLobbyRaw();
+    fxGate("lobby");
+  }
+  function renderLobbyRaw() {
     var d = rm.data;
     var rc = d.config || buildRoomConfig();
     var uids = Object.keys(d.players || {}).sort(function (a, b) {
@@ -1325,6 +1334,10 @@
   }
 
   function renderGame() {
+    renderGameRaw();
+    fxGate("g|" + (rm ? rm.code : "l") + "|" + st.round + "|" + st.phase + "|" + (st.stageIdx || 0) + "|" + (st.peekIdx || 0));
+  }
+  function renderGameRaw() {
     var rc = st.config;
     var myId = st.mode === "online" ? rm.uid : (st.mode === "solo" ? "p0" : (st.players[st.peekIdx] ? st.players[st.peekIdx].id : "p0"));
     var myRole = findRole(rc, st.roles[myId]);
@@ -1582,6 +1595,10 @@
   }
 
   function renderPodium() {
+    renderPodiumRaw();
+    fxGate("pod");
+  }
+  function renderPodiumRaw() {
     var ranked = (st.players || []).slice().sort(function (a, b) { return b.score - a.score; });
     var medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣"];
     var maxScore = Math.max(1, ranked[0] ? ranked[0].score : 1);
@@ -1697,6 +1714,11 @@
         if (k < 1) requestAnimationFrame(step);
       })();
     });
+  }
+  function fxGate(key) {
+    if (!pane) return;
+    pane.classList.toggle("cp-still", key === lastFxKey);
+    lastFxKey = key;
   }
   function fxAfterRender() {
     if (!pane) return;
@@ -1890,6 +1912,7 @@
     if (cz) cz.classList.add("ag-off");
 
     sfx("tab");
+    lastFxKey = "";
     render();
   }
 
@@ -1910,9 +1933,9 @@
   function cpFx(R) {
     var css = `
 @property --cpa{syntax:"<angle>";inherits:false;initial-value:0deg}
-@@.cp-box{position:relative;isolation:isolate}
-@@.cp-box::before{content:"";position:absolute;inset:-40px -24px;z-index:-1;pointer-events:none;background:radial-gradient(40% 30% at 15% 10%,rgba(249,115,22,.34),transparent 70%),radial-gradient(35% 28% at 88% 30%,rgba(139,92,246,.26),transparent 70%),radial-gradient(40% 30% at 30% 95%,rgba(56,189,248,.22),transparent 70%);filter:blur(26px);animation:cpAurora 16s ease-in-out infinite alternate}
-html.bright-mode @@.cp-box::before{opacity:.55}
+#ag-pane-chorpolice{position:relative;isolation:isolate}
+#ag-pane-chorpolice::before{content:"";position:absolute;inset:-40px -24px;z-index:-1;pointer-events:none;background:radial-gradient(40% 30% at 15% 10%,rgba(249,115,22,.34),transparent 70%),radial-gradient(35% 28% at 88% 30%,rgba(139,92,246,.26),transparent 70%),radial-gradient(40% 30% at 30% 95%,rgba(56,189,248,.22),transparent 70%);filter:blur(26px);animation:cpAurora 16s ease-in-out infinite alternate}
+html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
 @keyframes cpAurora{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(14px,-18px,0) scale(1.08)}100%{transform:translate3d(-16px,12px,0) scale(1.03)}}
 @keyframes cpSweep{0%,55%{transform:translateX(-130%)}85%,100%{transform:translateX(130%)}}
 @keyframes cpSpin{to{--cpa:360deg}}
@@ -2026,6 +2049,17 @@ html.bright-mode @@.cp-box::before{opacity:.55}
 @@.cp-rk.first{animation:cpSlide .55s cubic-bezier(.2,1,.3,1) both,cpGold 2.4s ease-in-out infinite;animation-delay:.4s,1s}
 @@.cp-rk-m{display:inline-block;animation:cpPop .6s cubic-bezier(.2,1.5,.4,1) both;animation-delay:calc(var(--i,0)*110ms + .55s)}
 @@.cp-rk-bar i{animation:cpGrow 1s cubic-bezier(.2,1,.3,1) both;animation-delay:calc(var(--i,0)*110ms + .7s)}
+
+/* Re-renders on the same screen (taps, toggles, language) must not replay entrance animations */
+#ag-pane-chorpolice.cp-still .cp-hero,#ag-pane-chorpolice.cp-still .cp-card,#ag-pane-chorpolice.cp-still .cp-stage,#ag-pane-chorpolice.cp-still .cp-top,#ag-pane-chorpolice.cp-still .cp-sb-it,#ag-pane-chorpolice.cp-still .cp-rchip,#ag-pane-chorpolice.cp-still .cp-pill.on,#ag-pane-chorpolice.cp-still .cp-acc-b,#ag-pane-chorpolice.cp-still .cp-slot,#ag-pane-chorpolice.cp-still .bg-code,#ag-pane-chorpolice.cp-still .cp-leader-line,#ag-pane-chorpolice.cp-still .cp-hunt-main,#ag-pane-chorpolice.cp-still .cp-stage-tag,#ag-pane-chorpolice.cp-still .cp-seat,#ag-pane-chorpolice.cp-still .cp-seat.rev .cp-seat-face,#ag-pane-chorpolice.cp-still .cp-bchip,#ag-pane-chorpolice.cp-still .cp-out,#ag-pane-chorpolice.cp-still .cp-out.bad,#ag-pane-chorpolice.cp-still .cp-res-row,#ag-pane-chorpolice.cp-still .cp-rr-em,#ag-pane-chorpolice.cp-still .cp-rr-d.pos,#ag-pane-chorpolice.cp-still .cp-podium,#ag-pane-chorpolice.cp-still .cp-aw,#ag-pane-chorpolice.cp-still .cp-rk,#ag-pane-chorpolice.cp-still .cp-rk-m,#ag-pane-chorpolice.cp-still .cp-rk-bar i,#ag-pane-chorpolice.cp-still .cp-rs-b.ok,#ag-pane-chorpolice.cp-still .cp-chit-fold{animation:none}
+#ag-pane-chorpolice.cp-still .cp-tile.on,#ag-pane-chorpolice.cp-still .cp-preset.on{animation:none}
+#ag-pane-chorpolice.cp-still .cp-tile.on .ic{animation:cpWob 2.4s ease-in-out infinite}
+#ag-pane-chorpolice.cp-still .cp-seat.pick{animation:cpPickPulse 1.8s ease-in-out infinite}
+#ag-pane-chorpolice.cp-still .cp-seat.guesser{animation:cpHalo 2s ease-in-out infinite}
+#ag-pane-chorpolice.cp-still .cp-out.ok{animation:cpOkGlow 2.2s ease-in-out infinite}
+#ag-pane-chorpolice.cp-still .cp-rk.first{animation:cpGold 2.4s ease-in-out infinite}
+#ag-pane-chorpolice.cp-still .cp-pod-w{animation:cpShimmer 3.5s linear infinite}
+#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-pc-back,#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-r-emoji,#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-r-title,#ag-pane-chorpolice.cp-still .cp-peek-card.open .cp-r-pts{animation:none}
 
 @media(prefers-reduced-motion:reduce){@@*,@@*::before,@@*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 `;

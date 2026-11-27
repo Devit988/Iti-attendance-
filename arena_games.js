@@ -94,7 +94,7 @@
     tab: "quiz", open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
     dice: "ivory", trail: "spark", center: "jewel",
-    speed: 1, mute: false, volume: 80, music: 0, dpos: "split", sfx: "arcade", haptic: true, autoMove: true, hints: true
+    speed: 1, mute: false, volume: 80, music: 0, dpos: "split", cam: true, sfx: "arcade", haptic: true, autoMove: true, hints: true
   };
 
   var P = loadPrefs();
@@ -152,6 +152,7 @@
       if (typeof s.volume === "number" && s.volume >= 0 && s.volume <= 100) p.volume = Math.round(s.volume);
       if (typeof s.haptic === "boolean") p.haptic = s.haptic;
       if (s.dpos === "left" || s.dpos === "center" || s.dpos === "right" || s.dpos === "split") p.dpos = s.dpos;
+      if (typeof s.cam === "boolean") p.cam = s.cam;
       if (typeof s.music === "number" && s.music >= 0 && s.music <= 100) p.music = Math.round(s.music);
       if (typeof s.autoMove === "boolean") p.autoMove = s.autoMove;
       if (typeof s.hints === "boolean") p.hints = s.hints;
@@ -891,7 +892,7 @@
     if (key === "center" && !has(CENTERS, val)) return false;
     if (key === "sfx" && !has(SFX_PACKS, val)) return false;
     if (key === "speed") { val = +val; if (val !== 1 && val !== 1.5 && val !== 2) return false; }
-    if (key === "mute" || key === "open" || key === "autoMove" || key === "haptic" || key === "hints") val = !!val;
+    if (key === "mute" || key === "open" || key === "autoMove" || key === "haptic" || key === "hints" || key === "cam") val = !!val;
     if (key === "volume" || key === "music") { val = Math.max(0, Math.min(100, Math.round(+val) || 0)); }
     if (!(key in DEFAULTS) || key === "tab") return false;
     if (P[key] === val) return true;
@@ -1244,7 +1245,10 @@
       R + ".ag-reset:hover{color:var(--ag-tx)}",
       "#quiz-arena-root[data-ag-dpos=\"left\"] .lx-dock .lx-ctr{order:-1}",
       "#quiz-arena-root[data-ag-dpos=\"right\"] .lx-dock .lx-ctr,#quiz-arena-root[data-ag-dpos=\"split\"] .lx-dock .lx-ctr{order:3}",
-      R + ".lx-row.sl-one{grid-template-columns:minmax(0,52%);justify-content:center}",
+      R + ".lx-row.sl-one{display:flex;justify-content:center}",
+      R + ".lx-row.sl-one .lx-cell{flex:0 1 auto;flex-direction:row;align-items:center;justify-content:center;gap:10px;max-width:100%}",
+      R + ".lx-row.sl-one .lx-cell > .lx-pc{width:auto;min-width:0;flex:0 1 200px}",
+      R + ".lx-row.sl-one .lx-dwrap{flex:none}",
       ".ag-flash{position:fixed;inset:0;z-index:99998;pointer-events:none;background:var(--fc,#fff);opacity:0;will-change:opacity;animation:agFlash .5s ease-out forwards}",
       "@keyframes agFlash{0%{opacity:0}14%{opacity:.35}100%{opacity:0}}",
       "@keyframes agDiePulse{0%,100%{filter:drop-shadow(0 0 5px var(--dc,#fbbf24))}50%{filter:drop-shadow(0 0 14px var(--dc,#fbbf24)) drop-shadow(0 0 26px var(--dc,#fbbf24))}}",
@@ -1803,7 +1807,9 @@
     var cam = { k: 1, x: 0, y: 0 };
     function camTick() {
       if (!cv || !st || REDUCE_SL) return;
+      if (P.cam === false && cam.k === 1) return;
       var a = null, i; for (i = 0; i < st.players.length; i++) if (st.players[i].anim) a = st.players[i].anim;
+      if (P.cam === false) a = null;   /* camera off: just ease back to normal */
       var tk = a ? 1.38 : 1;
       cam.k += (tk - cam.k) * (a ? 0.1 : 0.14);
       if (a) { if (cam.x === 0 && cam.y === 0) { cam.x = a.x; cam.y = a.y; } cam.x += (a.x - cam.x) * 0.16; cam.y += (a.y - cam.y) * 0.16; }
@@ -4181,7 +4187,7 @@
     open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
     dice: "ivory", trail: "spark", center: "jewel", snake: "jungle", ladder: "wood",
-    speed: 1, mute: false, volume: 80, music: 0, haptic: true, dpos: "split"
+    speed: 1, mute: false, volume: 80, music: 0, haptic: true, dpos: "split", cam: true
   };
 
   function has(list, id) { for (var i = 0; i < list.length; i++) if ((list[i][0] || list[i]) === id) return true; return false; }
@@ -4201,6 +4207,7 @@
       if (base.speed === 1 || base.speed === 2) s.speed = base.speed;
       if (typeof base.mute === "boolean") s.mute = base.mute;
       if (base.dpos === "left" || base.dpos === "center" || base.dpos === "right" || base.dpos === "split") s.dpos = base.dpos;
+      if (typeof base.cam === "boolean") s.cam = base.cam;
       if (typeof base.music === "number" && base.music >= 0 && base.music <= 100) s.music = base.music;
       if (typeof base.volume === "number" && base.volume >= 0 && base.volume <= 100) s.volume = base.volume;
       if (typeof base.open === "boolean") s.open = base.open;
@@ -4223,6 +4230,7 @@
       if (typeof saved.volume === "number" && saved.volume >= 0 && saved.volume <= 100) s.volume = Math.round(saved.volume);
       if (typeof saved.haptic === "boolean") s.haptic = saved.haptic;
       if (saved.dpos === "left" || saved.dpos === "center" || saved.dpos === "right" || saved.dpos === "split") s.dpos = saved.dpos;
+      if (typeof saved.cam === "boolean") s.cam = saved.cam;
       if (typeof saved.music === "number" && saved.music >= 0 && saved.music <= 100) s.music = Math.round(saved.music);
     }
     return s;
@@ -5106,6 +5114,7 @@
     if (key === "volume" || key === "all") api.setVolume(S.volume);
     if (key === "music" || key === "all") api.setMusic(S.music);
     if (key === "dpos" || key === "all") origSetPref("dpos", S.dpos);
+    if (key === "cam" || key === "all") origSetPref("cam", S.cam);
     if (key === "open") origSetPref("open", S.open);
     applyRootAttrs();
     syncStudio();
@@ -5293,6 +5302,7 @@
       '<div class="ag-vol">' + ico("music") + '<input type="range" id="ag-mus" min="0" max="100" step="5" value="' + S.music + '" aria-label="Music volume">' + ico("music-2") + '</div>' +
       '<div class="ag-lbl">Haptic buzz</div><div class="ag-seg">' + seg("haptic", "true", "On") + seg("haptic", "false", "Off") + '</div>' +
       '<div class="ag-lbl">Dice position</div><div class="ag-seg">' + seg("dpos", "left", "Left") + seg("dpos", "center", "Centre") + seg("dpos", "right", "Right") + seg("dpos", "split", "Corners") + '</div>' +
+      '<div class="ag-lbl">Snakes &amp; Ladders camera zoom</div><div class="ag-seg">' + seg("cam", "true", "On") + seg("cam", "false", "Off") + '</div>' +
       '<button type="button" class="ag-reset" data-as="reset">' + ico("rotate-ccw") + 'Reset Studio</button></div>';
 
     h += '</div></div></div>';

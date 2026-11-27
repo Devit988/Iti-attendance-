@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v5.0 (Royal Art Edition: Real Painted Assets + Screenshot HUD)
+/*! ITI CONNECT — Arena Games v5.1 (All Art Packs Edition: 12 Painted Assets + Screenshot HUD)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -1615,7 +1615,7 @@
     /* ---------- static board (cached): 2.5D sculpted tiles + landmarks + lashed ladders ---------- */
     function buildCache() {
       if (!size || !offCtx) return;
-      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl8|" + curDiff + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood") + "|" + (api.hasScrollArt && api.hasScrollArt() ? 1 : 0);
+      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl9|" + curDiff + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood") + "|" + ((api.hasScrollArt && api.hasScrollArt()) || "");
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
@@ -3200,8 +3200,8 @@
     function buildCache() {
       if (!size || !offCtx) return;
       var b = api.getBoard(), cols = seatColors();
-      var hasScr = !!(api.hasScrollArt && api.hasScrollArt());
-      var key = size + "|" + dpr + "|" + pad + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|" + P.palette + "|" + cols.join(",") + "|" + (hasScr ? 1 : 0) + "|v5";
+      var scrKey = (api.hasScrollArt && api.hasScrollArt()) || "", hasScr = !!scrKey;
+      var key = size + "|" + dpr + "|" + pad + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|" + P.palette + "|" + cols.join(",") + "|" + scrKey + "|v51";
       if (key === offKey) return;
       offKey = key;
       var bw0 = q(".lx-bw", host); if (bw0) bw0.classList.toggle("has-scroll", hasScr);
@@ -5189,10 +5189,15 @@ function pickBestBotTokenOld(pl, valid, dice) {
     return (PALETTES[id || S.palette] || PALETTES.classic).colors.slice();
   }
 
-  /* ---------- Real Painted Art Engine (auto-loads ./assets/ painted art + client-side alpha matting) ---------- */
-  var ART = { bgRoyal: null, bgJungle: null, scroll: null, dolls: null, booted: false };
+  /* ---------- Real Painted Art Engine v5.1 (auto-loads ./assets/ Art Packs + client-side alpha matting) ---------- */
+  var ART = {
+    bgRoyal: null, bgJungle: null, bgPalace: null, bgCyber: null, bgSakura: null, bgForge: null, bgOcean: null,
+    scroll: null, palace: null,
+    dolls: null, pawns: null, crowns: null,
+    booted: false
+  };
   function loadArtFile(stem, onOk) {
-    var exts = [".webp", ".jpg", ".png"], idx = 0;
+    var exts = [".webp", ".jpg", ".png", ".jpeg"], idx = 0;
     function next() {
       if (idx >= exts.length) return;
       var im = new Image();
@@ -5222,7 +5227,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
       if (py > 0) push(px, py - 1);
       if (py + 1 < h) push(px, py + 1);
     }
-    /* 1-px soft edge feather along cleared perimeter */
     for (y = 1; y < h - 1; y++) {
       for (x = 1; x < w - 1; x++) {
         var p2 = y * w + x; if (d[p2 * 4 + 3] === 0) continue;
@@ -5246,7 +5250,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     out.getContext("2d").drawImage(cv0, x0, y0, cw, ch, 0, 0, cw, ch);
     return out;
   }
-  function processScrollArt(im) {
+  function processFrameArt(im, targetKey) {
     try {
       var sz = Math.min(960, Math.max(im.naturalWidth, im.naturalHeight));
       var cv0 = document.createElement("canvas"); cv0.width = sz; cv0.height = sz;
@@ -5256,11 +5260,11 @@ function pickBestBotTokenOld(pl, valid, dice) {
         var tol = soft ? 68 : 48;
         return Math.abs(r - br) + Math.abs(g - bg) + Math.abs(b - bb) < tol * 2.2;
       });
-      ART.scroll = cropAlpha(cv0);
+      ART[targetKey] = cropAlpha(cv0);
       notifyGames("all");
     } catch (e) { }
   }
-  function processDollArt(im) {
+  function processQuadSprites(im, targetKey) {
     try {
       var hw = Math.floor(im.naturalWidth / 2), hh = Math.floor(im.naturalHeight / 2);
       var quads = [
@@ -5279,27 +5283,36 @@ function pickBestBotTokenOld(pl, valid, dice) {
         });
         out.push({ key: q0[0], rgb: q0[3], cv: cropAlpha(cv0) });
       });
-      ART.dolls = out;
+      ART[targetKey] = out;
       drawThumbs(); notifyGames("all");
     } catch (e) { }
   }
   function bootArtAssets() {
     if (ART.booted) return; ART.booted = true;
-    loadArtFile("bg_royal", function (im) { ART.bgRoyal = im; bdKey = ""; paintBackdrop(); });
-    loadArtFile("bg_jungle", function (im) { ART.bgJungle = im; bdKey = ""; paintBackdrop(); });
-    loadArtFile("board_scroll", processScrollArt);
-    loadArtFile("tokens_doll", processDollArt);
+    var bgs = [["bg_royal", "bgRoyal"], ["bg_jungle", "bgJungle"], ["bg_palace", "bgPalace"], ["bg_cyber", "bgCyber"], ["bg_sakura", "bgSakura"], ["bg_forge", "bgForge"], ["bg_ocean", "bgOcean"]];
+    bgs.forEach(function (pair) { loadArtFile(pair[0], function (im) { ART[pair[1]] = im; bdKey = ""; paintBackdrop(); }); });
+    loadArtFile("board_scroll", function (im) { processFrameArt(im, "scroll"); });
+    loadArtFile("board_palace", function (im) { processFrameArt(im, "palace"); });
+    loadArtFile("tokens_doll", function (im) { processQuadSprites(im, "dolls"); });
+    loadArtFile("tokens_pawn", function (im) { processQuadSprites(im, "pawns"); });
+    loadArtFile("tokens_crown", function (im) { processQuadSprites(im, "crowns"); });
   }
-  function pickDollSprite(color) {
-    if (!ART.dolls || !ART.dolls.length) return null;
+  function pickQuadSprite(list, color) {
+    if (!list || !list.length) return null;
     var m = /^#?([0-9a-f]{6})$/i.exec(String(color || ""));
     var rgb = m ? [parseInt(m[1].substr(0, 2), 16), parseInt(m[1].substr(2, 2), 16), parseInt(m[1].substr(4, 2), 16)] : [62, 207, 142];
-    var best = ART.dolls[0], bestD = 1e9, i;
-    for (i = 0; i < ART.dolls.length; i++) {
-      var t = ART.dolls[i].rgb, d = (rgb[0] - t[0]) * (rgb[0] - t[0]) + (rgb[1] - t[1]) * (rgb[1] - t[1]) + (rgb[2] - t[2]) * (rgb[2] - t[2]);
-      if (d < bestD) { bestD = d; best = ART.dolls[i]; }
+    var best = list[0], bestD = 1e9, i;
+    for (i = 0; i < list.length; i++) {
+      var t = list[i].rgb, d = (rgb[0] - t[0]) * (rgb[0] - t[0]) + (rgb[1] - t[1]) * (rgb[1] - t[1]) + (rgb[2] - t[2]) * (rgb[2] - t[2]);
+      if (d < bestD) { bestD = d; best = list[i]; }
     }
     return best.cv;
+  }
+  function frameArtInfo(b) {
+    var id = String((b && b.id) || "").split("_")[0];
+    if ((id === "kingdom" || id === "pirate" || id === "wood" || id === "autumn") && ART.scroll) return { key: "scroll", cv: ART.scroll };
+    if ((id === "gold" || id === "diwali" || id === "marble" || id === "desert" || id === "jade") && ART.palace) return { key: "palace", cv: ART.palace };
+    return null;
   }
 
   var kNoiseCv = null;
@@ -5333,11 +5346,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
     g.addColorStop(0, b.base); g.addColorStop(1, b.base2);
     ctx.fillStyle = g; ctx.fill(); ctx.clip();
 
-    if (b.tex === "kingdom" && ART.scroll) {
+    var fInfo = frameArtInfo(b);
+    if (fInfo) {
       ctx.restore();
       ctx.save();
       ctx.shadowColor = "rgba(18,4,30,.55)"; ctx.shadowBlur = w * 0.04; ctx.shadowOffsetY = h * 0.015;
-      ctx.drawImage(ART.scroll, x, y, w, h);
+      ctx.drawImage(fInfo.cv, x, y, w, h);
       ctx.restore();
       return;
     }
@@ -5774,7 +5788,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     ctx.lineJoin = "round"; ctx.lineCap = "round";
 
     if (shape === "doll") {
-      var spDoll = pickDollSprite(color);
+      var spDoll = pickQuadSprite(ART.dolls, color);
       if (spDoll) {
         var dh = r * 2.15, dw = dh * (spDoll.width / spDoll.height);
         ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
@@ -5820,6 +5834,14 @@ function pickBestBotTokenOld(pl, valid, dice) {
     }
 
     if (shape === "pawn") {
+      var spPawn = pickQuadSprite(ART.pawns, color);
+      if (spPawn) {
+        var ph = r * 2.12, pw = ph * (spPawn.width / spPawn.height);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(spPawn, -pw / 2, -ph * 0.64, pw, ph);
+        ctx.restore();
+        return;
+      }
       var u = r;
       function pBody() {
         ctx.beginPath();
@@ -5861,6 +5883,16 @@ function pickBestBotTokenOld(pl, valid, dice) {
       return;
     }
 
+    if (shape === "crown") {
+      var spCrown = pickQuadSprite(ART.crowns, color);
+      if (spCrown) {
+        var ch = r * 1.98, cw0 = ch * (spCrown.width / spCrown.height);
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(spCrown, -cw0 / 2, -ch * 0.58, cw0, ch);
+        ctx.restore();
+        return;
+      }
+    }
     var sc = r * 0.88;
     ctx.scale(sc, sc);
     function haloFill(pathFn, fillStyle) {
@@ -6108,12 +6140,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
   api.getLadderStyle = ladderNow;
   api.paintBoardBg = paintBoardBg;
   api.noisePattern = kNoisePat;
-  api.hasScrollArt = function () { return !!(ART.scroll && getBoard().tex === "kingdom"); };
+  api.hasScrollArt = function () { var fi = frameArtInfo(getBoard()); return fi ? fi.key : ""; };
   api.drawScrollArt = function (c, x, y, w, h) {
-    if (!ART.scroll) return;
+    var fi = frameArtInfo(getBoard()); if (!fi) return;
     c.save(); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
     c.shadowColor = "rgba(18,4,30,.55)"; c.shadowBlur = w * 0.035; c.shadowOffsetY = h * 0.014;
-    c.drawImage(ART.scroll, x, y, w, h); c.restore();
+    c.drawImage(fi.cv, x, y, w, h); c.restore();
   };
   api.drawToken = drawToken;
   api.drawCenter = drawCenter;
@@ -6407,7 +6439,17 @@ function pickBestBotTokenOld(pl, valid, dice) {
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     var c = cv.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
     var id = String(b.id || "").split("_")[0], tabNow = api.getTab ? api.getTab() : "ludo";
-    var bgImg = (tabNow === "snakes" && (id === "kingdom" || id === "jungle" || id === "grass") && ART.bgJungle) ? ART.bgJungle : ((id === "kingdom" && ART.bgRoyal) ? ART.bgRoyal : null);
+    var BG_PACK = {
+      kingdom: "bgRoyal", wood: "bgRoyal", classic: "bgRoyal",
+      jungle: "bgJungle", grass: "bgJungle",
+      gold: "bgPalace", diwali: "bgPalace", marble: "bgPalace", desert: "bgPalace", jade: "bgPalace", felt: "bgPalace",
+      cyber: "bgCyber", disco: "bgCyber", retro: "bgCyber", aurora: "bgCyber", galaxy: "bgCyber", toxic: "bgCyber",
+      sakura: "bgSakura", cloud: "bgSakura",
+      lava: "bgForge", pirate: "bgForge", steampunk: "bgForge", autumn: "bgForge",
+      ocean: "bgOcean", glacier: "bgOcean"
+    };
+    var bgKey = (tabNow === "snakes" && (id === "kingdom" || id === "jungle" || id === "grass")) ? "bgJungle" : (BG_PACK[id] || "");
+    var bgImg = (bgKey && ART[bgKey]) ? ART[bgKey] : null;
     if (bgImg) {
       var sc = Math.max(W / bgImg.naturalWidth, H / bgImg.naturalHeight), dw = bgImg.naturalWidth * sc, dh = bgImg.naturalHeight * sc;
       c.drawImage(bgImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
@@ -7108,6 +7150,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
     bootArtAssets(); applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
   }
 
-  window.ArenaStudio = { version: "5.0.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
+  window.ArenaStudio = { version: "5.1.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountStudio); else mountStudio();
 })();

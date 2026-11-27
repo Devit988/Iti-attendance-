@@ -94,7 +94,7 @@
     tab: "quiz", open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
     dice: "ivory", trail: "spark", center: "jewel",
-    speed: 1, mute: false, sfx: "arcade", haptic: true, autoMove: true, hints: true
+    speed: 1, mute: false, volume: 80, sfx: "arcade", haptic: true, autoMove: true, hints: true
   };
 
   var P = loadPrefs();
@@ -146,6 +146,7 @@
       if (has(SFX_PACKS, s.sfx)) p.sfx = s.sfx;
       if (s.speed === 1 || s.speed === 1.5 || s.speed === 2) p.speed = s.speed;
       if (typeof s.mute === "boolean") p.mute = s.mute;
+      if (typeof s.volume === "number" && s.volume >= 0 && s.volume <= 100) p.volume = Math.round(s.volume);
       if (typeof s.haptic === "boolean") p.haptic = s.haptic;
       if (typeof s.autoMove === "boolean") p.autoMove = s.autoMove;
       if (typeof s.hints === "boolean") p.hints = s.hints;
@@ -591,11 +592,18 @@
 
   /* ---------- sound (AudioContext synth with 3 sound packs) ---------- */
   var AC = null, MASTER = null;
+  function volGain() { var v = +P.volume; if (!(v >= 0)) v = 80; return 2 * Math.min(100, v) / 100; }
+  function setVolume(v) {
+    v = Math.max(0, Math.min(100, Math.round(+v) || 0));
+    P.volume = v; savePrefs();
+    if (MASTER) { try { MASTER.gain.value = volGain(); } catch (e) { } }
+    return v;
+  }
   function audio() {
     if (AC) return AC;
     var C = window.AudioContext || window.webkitAudioContext;
     if (!C) return null;
-    try { AC = new C(); MASTER = AC.createGain(); MASTER.gain.value = 0.5; MASTER.connect(AC.destination); } catch (e) { AC = null; }
+    try { AC = new C(); MASTER = AC.createGain(); MASTER.gain.value = volGain(); /* 80% = 1.6 (was 0.5); limiter below prevents clipping */ var LIM = AC.createDynamicsCompressor(); LIM.threshold.value = -10; LIM.knee.value = 12; LIM.ratio.value = 8; LIM.attack.value = 0.003; LIM.release.value = 0.15; MASTER.connect(LIM); LIM.connect(AC.destination); } catch (e) { AC = null; }
     return AC;
   }
   function unlockAudio() { var a = audio(); if (a && a.state === "suspended" && a.resume) { try { a.resume(); } catch (e) { } } }
@@ -849,9 +857,10 @@
     if (key === "sfx" && !has(SFX_PACKS, val)) return false;
     if (key === "speed") { val = +val; if (val !== 1 && val !== 1.5 && val !== 2) return false; }
     if (key === "mute" || key === "open" || key === "autoMove" || key === "haptic" || key === "hints") val = !!val;
+    if (key === "volume") { val = Math.max(0, Math.min(100, Math.round(+val) || 0)); }
     if (!(key in DEFAULTS) || key === "tab") return false;
     if (P[key] === val) return true;
-    P[key] = val; commit(key); return true;
+    P[key] = val; if (key === "volume" && MASTER) { try { MASTER.gain.value = volGain(); } catch (e) { } } commit(key); return true;
   }
   function applyPreset(id) {
     for (var i = 0; i < PRESETS.length; i++) {
@@ -878,6 +887,7 @@
   function resetPrefs() {
     var t = P.tab, o = P.open, ct = P.czTab;
     P = loadDefaults(); P.tab = t; P.open = o; P.czTab = ct;
+    if (MASTER) { try { MASTER.gain.value = volGain(); } catch (e) { } }
     commit("all");
   }
 
@@ -1197,6 +1207,11 @@
       R + ".ag-snd-off .ag-i," + R + ".ag-snd-on .ag-i{width:13px;height:13px}",
       R + ".ag-reset{display:flex;align-items:center;justify-content:center;gap:6px;margin:.8rem auto 0;padding:.44rem .9rem;border-radius:999px;border:1px solid var(--ag-bd);background:transparent;color:var(--ag-t2);font-size:11.5px;font-weight:700}",
       R + ".ag-reset:hover{color:var(--ag-tx)}",
+      R + ".ag-vol-l{display:flex;justify-content:space-between;align-items:center}",
+      R + ".ag-vol-l b{color:var(--ag-tx);font-size:11px;letter-spacing:0}",
+      R + ".ag-vol{display:flex;align-items:center;gap:10px;padding:.5rem .7rem;border-radius:.8rem;background:var(--ag-bg2);border:1px solid var(--ag-bd);color:var(--ag-t2)}",
+      R + ".ag-vol .ag-i{width:16px;height:16px;flex:none}",
+      R + ".ag-vol input[type=range]{flex:1;min-width:0;height:28px;margin:0;accent-color:#f59e0b;background:transparent;touch-action:pan-y}",
       R + ".ag-fail{padding:1rem;text-align:center;font-size:13px;color:var(--ag-t2)}",
 
       /* Shared Board Game UI */
@@ -1323,6 +1338,8 @@
     version: "3.0.0-studio",
     getPrefs: copyPrefs,
     setPref: setPref,
+    setVolume: setVolume,
+    getVolume: function () { return P.volume; },
     applyPreset: applyPreset,
     randomizeStudio: randomizeStudio,
     resetPrefs: resetPrefs,
@@ -4049,7 +4066,7 @@
     open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
     dice: "ivory", trail: "spark", center: "jewel", snake: "jungle", ladder: "wood",
-    speed: 1, mute: false, haptic: true
+    speed: 1, mute: false, volume: 80, haptic: true
   };
 
   function has(list, id) { for (var i = 0; i < list.length; i++) if ((list[i][0] || list[i]) === id) return true; return false; }
@@ -4068,6 +4085,7 @@
       if (has(PIECES, base.piece)) s.piece = base.piece;
       if (base.speed === 1 || base.speed === 2) s.speed = base.speed;
       if (typeof base.mute === "boolean") s.mute = base.mute;
+      if (typeof base.volume === "number" && base.volume >= 0 && base.volume <= 100) s.volume = base.volume;
       if (typeof base.open === "boolean") s.open = base.open;
     }
     try { saved = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) { saved = null; }
@@ -4085,6 +4103,7 @@
       if (has(LADDER_STYLES, saved.ladder)) s.ladder = saved.ladder;
       if (saved.speed === 1 || saved.speed === 1.5 || saved.speed === 2) s.speed = saved.speed;
       if (typeof saved.mute === "boolean") s.mute = saved.mute;
+      if (typeof saved.volume === "number" && saved.volume >= 0 && saved.volume <= 100) s.volume = Math.round(saved.volume);
       if (typeof saved.haptic === "boolean") s.haptic = saved.haptic;
     }
     return s;
@@ -4964,6 +4983,7 @@
     saveStudio();
     if (key === "style" || key === "all") origSetPref("style", S.style);
     if (key === "mute" || key === "all") origSetPref("mute", S.mute);
+    if (key === "volume" || key === "all") api.setVolume(S.volume);
     if (key === "open") origSetPref("open", S.open);
     applyRootAttrs();
     syncStudio();
@@ -5145,6 +5165,8 @@
       '<div><div class="ag-lbl" style="margin-top:.1rem">Sound</div><div id="ag-snd" class="ag-seg">' +
       '<button type="button" data-as="snd" data-m="0" class="ag-snd-on">' + ico("volume-2") + 'On</button>' +
       '<button type="button" data-as="snd" data-m="1" class="ag-snd-off">' + ico("volume-x") + 'Mute</button></div></div></div>' +
+      '<div class="ag-lbl ag-vol-l"><span>Volume</span><b id="ag-vol-n">' + S.volume + '%</b></div>' +
+      '<div class="ag-vol">' + ico("volume-1") + '<input type="range" id="ag-vol" data-as-vol="1" min="0" max="100" step="5" value="' + S.volume + '" aria-label="Sound volume">' + ico("volume-2") + '</div>' +
       '<div class="ag-lbl">Haptic buzz</div><div class="ag-seg">' + seg("haptic", "true", "On") + seg("haptic", "false", "Off") + '</div>' +
       '<button type="button" class="ag-reset" data-as="reset">' + ico("rotate-ccw") + 'Reset Studio</button></div>';
 
@@ -5169,6 +5191,8 @@
     var hdr = cz.querySelector("#ag-cz-h"); if (hdr) hdr.setAttribute("aria-expanded", S.open ? "true" : "false");
     var sum = cz.querySelector("#ag-cz-sum"); if (sum) sum.textContent = (S.board === "auto" ? "Auto" : b.name) + " · " + nameOf(PIECES, S.piece) + " · " + nameOf(DICE_SKINS, S.dice);
     var snd = cz.querySelector("#ag-snd"); if (snd) snd.classList.toggle("ag-muted", !!S.mute);
+    var vr = cz.querySelector("#ag-vol"); if (vr && +vr.value !== S.volume) vr.value = S.volume;
+    var vn = cz.querySelector("#ag-vol-n"); if (vn) vn.textContent = S.volume + "%";
     var isSLtab = api.getTab() === "snakes";
     if (isSLtab && sum) sum.textContent += " · " + nameOf(SNAKE_SKINS, S.snake);
     cz.querySelectorAll("[data-g]").forEach(function (el) { el.classList.toggle("ag-off", (el.getAttribute("data-g") === "snakes") !== isSLtab); });
@@ -5476,6 +5500,19 @@
     injectCss();
     cz.innerHTML = studioHTML();
     icons();
+
+    root.addEventListener("input", function (e) {
+      var t = e.target;
+      if (!t || t.id !== "ag-vol") return;
+      S.volume = Math.max(0, Math.min(100, Math.round(+t.value) || 0));
+      api.setVolume(S.volume);
+      var n = root.querySelector("#ag-vol-n"); if (n) n.textContent = S.volume + "%";
+    });
+    root.addEventListener("change", function (e) {
+      var t = e.target;
+      if (!t || t.id !== "ag-vol") return;
+      saveStudio(); api.playSfx("move");   /* preview at the new level */
+    });
 
     root.addEventListener("click", function (e) {
       var b = e.target.closest && e.target.closest("[data-as]");

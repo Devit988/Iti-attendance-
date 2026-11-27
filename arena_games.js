@@ -94,7 +94,7 @@
     tab: "quiz", open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
     dice: "ivory", trail: "spark", center: "jewel",
-    speed: 1, mute: false, volume: 80, music: 0, lefty: false, sfx: "arcade", haptic: true, autoMove: true, hints: true
+    speed: 1, mute: false, volume: 80, music: 0, dpos: "split", sfx: "arcade", haptic: true, autoMove: true, hints: true
   };
 
   var P = loadPrefs();
@@ -151,7 +151,7 @@
       if (typeof s.mute === "boolean") p.mute = s.mute;
       if (typeof s.volume === "number" && s.volume >= 0 && s.volume <= 100) p.volume = Math.round(s.volume);
       if (typeof s.haptic === "boolean") p.haptic = s.haptic;
-      if (typeof s.lefty === "boolean") p.lefty = s.lefty;
+      if (s.dpos === "left" || s.dpos === "center" || s.dpos === "right" || s.dpos === "split") p.dpos = s.dpos;
       if (typeof s.music === "number" && s.music >= 0 && s.music <= 100) p.music = Math.round(s.music);
       if (typeof s.autoMove === "boolean") p.autoMove = s.autoMove;
       if (typeof s.hints === "boolean") p.hints = s.hints;
@@ -696,7 +696,7 @@
     root.setAttribute("data-ag-board", P.board);
     root.setAttribute("data-ag-piece", P.piece);
     root.setAttribute("data-ag-dice", P.dice);
-    root.setAttribute("data-ag-lefty", P.lefty ? "1" : "0");
+    root.setAttribute("data-ag-dpos", P.dpos || "split");
   }
 
   function matchPreset() {
@@ -880,6 +880,7 @@
     applyVars(); syncUI(); drawThumbs(); emit(key);
   }
   function setPref(key, val) {
+    if (key === "dpos" && val !== "left" && val !== "center" && val !== "right" && val !== "split") return false;
     if (key === "style" && !has(STYLES, val)) return false;
     if (key === "czTab" && !has(CZ_TABS, val)) return false;
     if (key === "board" && BOARD_IDS.indexOf(val) < 0) return false;
@@ -890,7 +891,7 @@
     if (key === "center" && !has(CENTERS, val)) return false;
     if (key === "sfx" && !has(SFX_PACKS, val)) return false;
     if (key === "speed") { val = +val; if (val !== 1 && val !== 1.5 && val !== 2) return false; }
-    if (key === "mute" || key === "open" || key === "autoMove" || key === "haptic" || key === "hints" || key === "lefty") val = !!val;
+    if (key === "mute" || key === "open" || key === "autoMove" || key === "haptic" || key === "hints") val = !!val;
     if (key === "volume" || key === "music") { val = Math.max(0, Math.min(100, Math.round(+val) || 0)); }
     if (!(key in DEFAULTS) || key === "tab") return false;
     if (P[key] === val) return true;
@@ -1241,10 +1242,11 @@
       R + ".ag-snd-off .ag-i," + R + ".ag-snd-on .ag-i{width:13px;height:13px}",
       R + ".ag-reset{display:flex;align-items:center;justify-content:center;gap:6px;margin:.8rem auto 0;padding:.44rem .9rem;border-radius:999px;border:1px solid var(--ag-bd);background:transparent;color:var(--ag-t2);font-size:11.5px;font-weight:700}",
       R + ".ag-reset:hover{color:var(--ag-tx)}",
-      "#quiz-arena-root[data-ag-lefty=\"1\"] .lx-dock{flex-direction:row-reverse}",
-      "#quiz-arena-root[data-ag-lefty=\"1\"] .lx-pdl .lx-row{flex-direction:row-reverse}",
-      ".ag-flash{position:fixed;inset:0;z-index:99998;pointer-events:none;background:radial-gradient(circle at 50% 45%,var(--fc,#fff) 0%,transparent 72%);opacity:0;animation:agFlash .6s ease-out forwards}",
-      "@keyframes agFlash{0%{opacity:0}14%{opacity:.8}100%{opacity:0}}",
+      "#quiz-arena-root[data-ag-dpos=\"left\"] .lx-dock .lx-ctr{order:-1}",
+      "#quiz-arena-root[data-ag-dpos=\"right\"] .lx-dock .lx-ctr,#quiz-arena-root[data-ag-dpos=\"split\"] .lx-dock .lx-ctr{order:3}",
+      R + ".lx-row.sl-one{grid-template-columns:minmax(0,52%);justify-content:center}",
+      ".ag-flash{position:fixed;inset:0;z-index:99998;pointer-events:none;background:var(--fc,#fff);opacity:0;will-change:opacity;animation:agFlash .5s ease-out forwards}",
+      "@keyframes agFlash{0%{opacity:0}14%{opacity:.35}100%{opacity:0}}",
       "@keyframes agDiePulse{0%,100%{filter:drop-shadow(0 0 5px var(--dc,#fbbf24))}50%{filter:drop-shadow(0 0 14px var(--dc,#fbbf24)) drop-shadow(0 0 26px var(--dc,#fbbf24))}}",
       R + ".lx-dock .lx-die.ready{animation:agDiePulse 1.1s ease-in-out infinite}",
       R + ".lx-dock .lx-die.ready + .lx-sh{opacity:.9}",
@@ -1991,7 +1993,7 @@
           celebrate(pl);
           vibrate([40, 40, 80]);
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
-          later(function () { view = "result"; render(); }, api.dur(4200));
+          later(function () { view = "result"; render(); }, 5500);
           return;
         }
         if (LADDERS[pl.pos]) {
@@ -2231,7 +2233,7 @@
         nm = (cfg.names[i] || "").trim() || (cfg.mode === "ai" && i > 0 ? "Bot " + i : "Player " + (i + 1));
         pls.push({ name: nm, color: cols[i], pos: 1, bot: cfg.mode === "ai" && i > 0, anim: null });
       }
-      st = { players: pls, turn: 0, dice: 6, rollId: 0, busy: false, winner: null, msg: pls[0].name + "'s turn — Tap dice!" };
+      st = { players: pls, turn: 0, dice: 6, rollId: 0, busy: false, winner: null, msg: turnTxt(pls[0].name) + " — Tap dice!" };
       particles = []; view = "game"; render();
     }
 
@@ -2356,17 +2358,21 @@
       /* Thumb-friendly: with one human (vs bots, or online) rotate the seats clockwise so YOUR dice sits bottom-right. Pass-and-play keeps the default. */
       var meIdx = rm ? st.players.findIndex(function (p) { return p.uid === rm.uid; }) : (cfg.mode === "ai" ? 0 : -1);
       if (meIdx >= 0) {
-        var cyc = function (i) { return n === 2 ? (i ? 2 : 0) : i; }, off = 2 - cyc(meIdx), slots = [-1, -1, -1, -1], pi;   /* cycle: 0 TL, 1 TR, 2 BR, 3 BL */
-        for (pi = 0; pi < n; pi++) slots[(cyc(pi) + off + 4) % 4] = pi;
+        var cyc = function (i) { return n === 2 ? (i ? 2 : 0) : i; }, rot = (P.dpos === "left" ? 3 : 2) - cyc(meIdx), slots = [-1, -1, -1, -1], pi;   /* cycle: 0 TL, 1 TR, 2 BR, 3 BL */
+        for (pi = 0; pi < n; pi++) slots[(cyc(pi) + rot + 4) % 4] = pi;
         topRow = [slots[0], slots[1]]; botRow = [slots[3], slots[2]];
-      }
+        if (P.dpos === "center") { var opp = [], oi; for (oi = 1; oi < n; oi++) opp.push((meIdx + oi) % n); topRow = opp; botRow = [meIdx]; }   /* me alone, bottom centre */
+      } else if (n === 2 && P.dpos !== "split") { topRow = [0]; botRow = [1]; }   /* same phone, 2 players: both dice in the chosen column */
+      var rowH = function (arr, top) {
+        return '<div class="lx-row ' + (top ? "lx-rt" : "lx-rb") + ' lx-enter' + (arr.length === 1 ? " sl-one" : "") + '" style="animation-delay:' + (top ? ".05" : ".15") + 's' + (arr.length === 1 ? ";justify-content:" + (P.dpos === "left" ? "start" : P.dpos === "right" ? "end" : "center") : "") + (arr.length === 3 ? ";grid-template-columns:repeat(3,1fr)" : "") + '">' + arr.map(function (i) { return slCell(i, top); }).join("") + "</div>";
+      };
       var h = '<div class="bg-box lx lx-gap lx-pdl" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="sl-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<button type="button" class="lx-ib studio" data-sl="studio" aria-label="Arena Studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
-      h += '<div class="lx-row lx-rt lx-enter" style="animation-delay:.05s">' + slCell(topRow[0], true) + slCell(topRow[1], true) + '</div>';
+      h += rowH(topRow, true);
       h += '<div class="bg-cv-wrap ag-glass lx-enter" style="animation-delay:.1s"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
-      h += '<div class="lx-row lx-rb lx-enter" style="animation-delay:.15s">' + slCell(botRow[0], false) + slCell(botRow[1], false) + '</div>';
+      h += rowH(botRow, false);
       h += '</div>';
       host.innerHTML = h; icons();
       cv = q("#sl-canvas", host); ctx = cv.getContext("2d");
@@ -2459,6 +2465,7 @@
             if (st) { st.players.forEach(function (p, i) { p.color = cols[i]; }); updateHUD(); }
             else if (view === "setup") renderSetup();
           }
+          if ((key === "dpos" || key === "all") && st && view === "game" && !st.busy && !st.winner) { renderGame(); }
           if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "theme" || key === "snake" || key === "ladder" || key === "all") {
             offKey = ""; drawFrame();
           }
@@ -3323,12 +3330,12 @@
         }
         if (pl.tokens.every(function (v) { return v === 56; })) {
           st.winner = pl; st.busy = false; playSfx("win");
-          spawnConfetti(size / 2, size * 0.6, 70); spawnConfetti(size * 0.2, size * 0.7, 30); spawnConfetti(size * 0.8, size * 0.7, 30);
+          spawnConfetti(size / 2, size * 0.6, 36); spawnConfetti(size * 0.2, size * 0.7, 12); spawnConfetti(size * 0.8, size * 0.7, 12);
           toast("🏆 " + pl.name + " WINS!", pl.color); celebrateWin(pl);
           vibrate([40, 40, 80, 40, 160]);
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
           kickLoop();
-          later(function () { view = "result"; render(); }, api.dur(3600));
+          later(function () { view = "result"; render(); }, 5500);   /* fixed wait so the celebration is always seen */
           return;
         }
         endTurn(bonus, isActor);
@@ -3336,17 +3343,19 @@
     }
 
     function celebrateWin(pl) {
+      /* lighter than before: fewer particles/sounds so low-end phones stay smooth */
       var cols = [pl.color, "#fde047", "#ffffff"], i;
-      flash("#fde047"); shake();
+      flash("#fde047");
       pl.tokens.forEach(function (v, t) {
         var hp = tokenCoords(pl.seat, t, 56, size);
-        for (var r = 0; r < 3; r++) (function (r) { later(function () { spawnRing(hp.x, hp.y, pl.color, size * (0.1 + r * 0.05)); spawnSparks(hp.x, hp.y, cols[r], 18); }, api.dur(r * 260 + t * 120)); })(r);
+        for (var r = 0; r < 2; r++) (function (r) { later(function () { spawnRing(hp.x, hp.y, pl.color, size * (0.1 + r * 0.06)); if (r === 0) spawnSparks(hp.x, hp.y, cols[1], 8); }, r * 320 + t * 160); })(r);
       });
-      for (i = 0; i < 9; i++) (function (i) { later(function () {
-        var x = size * (0.15 + Math.random() * 0.7), y = size * (0.15 + Math.random() * 0.7);
-        spawnSparks(x, y, cols[i % 3], 26); spawnRing(x, y, cols[(i + 1) % 3], size * 0.12); playSfx("home");
-        if (i % 3 === 0) vibrate(25);
-      }, api.dur(200 + i * 230)); })(i);
+      for (i = 0; i < 6; i++) (function (i) { later(function () {
+        var x = size * (0.2 + Math.random() * 0.6), y = size * (0.2 + Math.random() * 0.6);
+        spawnSparks(x, y, cols[i % 3], 14); spawnRing(x, y, cols[(i + 1) % 3], size * 0.11);
+        if (i % 2 === 0) playSfx("move");
+        if (i === 0 || i === 3) vibrate(25);
+      }, 300 + i * 450); })(i);
     }
 
     function pickBestBotToken(pl, valid, dice) {
@@ -3796,19 +3805,21 @@
       return '<div class="lx-cell">' + (top ? dieBlock(idx) + ldCard(seat) : ldCard(seat) + dieBlock(idx)) + '</div>';
     }
     function renderGame() {
-      perDie = false;   /* one shared dice, bottom-right for easy thumb tap (also in pass-and-play; it takes the current player's colour) */
+      perDie = !rm && st.players.filter(function (p) { return !p.bot; }).length >= 2;   /* same-phone games: a dice in every player's corner; vs bots / online: one dice bottom-right */
       var cur = st.players[st.turn], h = '<div class="lx lx-gap' + (perDie ? " lx-pdl" : "") + '" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         (perDie ? '' : '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>') +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
         (perDie ? '' : '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto: ' + (P.autoMove ? "On" : "Off") + '</button>') + '</div>';
-      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rt" : "") + '" style="animation-delay:.05s">' + (perDie ? ldCell(0, true) + ldCell(1, true) : ldCard(0) + ldCard(1)) + '</div>';
+      var two = perDie && st.players.length === 2 && P.dpos !== "split", jc = P.dpos === "left" ? "start" : (P.dpos === "right" ? "end" : "center");   /* 2 players: both dice in the chosen column */
+      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rt" : "") + (two ? " sl-one" : "") + '" style="animation-delay:.05s' + (two ? ";justify-content:" + jc : "") + '">' + (perDie ? (two ? ldCell(0, true) : ldCell(0, true) + ldCell(1, true)) : ldCard(0) + ldCard(1)) + '</div>';
       h += '<div class="lx-bw lx-enter" style="animation-delay:.1s"><canvas id="ld-canvas" class="lx-cv"></canvas><div id="ld-toast" class="lx-toast"></div></div>';
-      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rb" : "") + '" style="animation-delay:.15s">' + (perDie ? ldCell(3, false) + ldCell(2, false) : ldCard(3) + ldCard(2)) + '</div>';
+      h += '<div class="lx-row lx-enter' + (perDie ? " lx-rb" : "") + (two ? " sl-one" : "") + '" style="animation-delay:.15s' + (two ? ";justify-content:" + jc : "") + '">' + (perDie ? (two ? ldCell(2, false) : ldCell(3, false) + ldCell(2, false)) : ldCard(3) + ldCard(2)) + '</div>';
       if (!perDie) h += '<div class="lx-dock lx-enter" style="animation-delay:.2s;' + dieVars(cur.color) + '">' +
-        '<div class="lx-side">' + ["👏", "😂", "🔥", "😱"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>' +
+        '<div class="lx-side">' + ["👏", "😂"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>' +
         '<div class="lx-ctr"><div class="lx-dwrap"><button type="button" id="ld-die" class="lx-die" data-ld="roll" aria-label="Roll dice">' + cubeHTML(false) + '</button><i class="lx-sh"></i></div>' +
-        '<div id="ld-roll-hint" class="lx-hint"></div></div></div>';
+        '<div id="ld-roll-hint" class="lx-hint"></div></div>' +
+        '<div class="lx-side">' + ["🔥", "😱"].map(function (em) { return '<button type="button" class="lx-emo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div></div>';
       h += '</div>';
       host.innerHTML = h; icons();
       cv = q("#ld-canvas", host); ctx = cv.getContext("2d");
@@ -3949,6 +3960,7 @@
           if (e.target.id === "ld-code-in") { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4); cfg.code = e.target.value; }
         });
         api.subscribe(function (_, key) {
+          if ((key === "dpos" || key === "all") && st && view === "game" && perDie && !st.busy && !st.awaitMove && !st.winner) { renderGame(); }
           if (key === "palette" || key === "all") {
             if (key === "palette") cfg.custom = {};
             var cols = seatColors();
@@ -4169,7 +4181,7 @@
     open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
     dice: "ivory", trail: "spark", center: "jewel", snake: "jungle", ladder: "wood",
-    speed: 1, mute: false, volume: 80, music: 0, haptic: true, lefty: false
+    speed: 1, mute: false, volume: 80, music: 0, haptic: true, dpos: "split"
   };
 
   function has(list, id) { for (var i = 0; i < list.length; i++) if ((list[i][0] || list[i]) === id) return true; return false; }
@@ -4188,7 +4200,7 @@
       if (has(PIECES, base.piece)) s.piece = base.piece;
       if (base.speed === 1 || base.speed === 2) s.speed = base.speed;
       if (typeof base.mute === "boolean") s.mute = base.mute;
-      if (typeof base.lefty === "boolean") s.lefty = base.lefty;
+      if (base.dpos === "left" || base.dpos === "center" || base.dpos === "right" || base.dpos === "split") s.dpos = base.dpos;
       if (typeof base.music === "number" && base.music >= 0 && base.music <= 100) s.music = base.music;
       if (typeof base.volume === "number" && base.volume >= 0 && base.volume <= 100) s.volume = base.volume;
       if (typeof base.open === "boolean") s.open = base.open;
@@ -4210,7 +4222,7 @@
       if (typeof saved.mute === "boolean") s.mute = saved.mute;
       if (typeof saved.volume === "number" && saved.volume >= 0 && saved.volume <= 100) s.volume = Math.round(saved.volume);
       if (typeof saved.haptic === "boolean") s.haptic = saved.haptic;
-      if (typeof saved.lefty === "boolean") s.lefty = saved.lefty;
+      if (saved.dpos === "left" || saved.dpos === "center" || saved.dpos === "right" || saved.dpos === "split") s.dpos = saved.dpos;
       if (typeof saved.music === "number" && saved.music >= 0 && saved.music <= 100) s.music = Math.round(saved.music);
     }
     return s;
@@ -5080,7 +5092,7 @@
     rs.setProperty("--agb-base", b.base); rs.setProperty("--agb-base2", b.base2);
     rs.setProperty("--agb-accent", b.accent); rs.setProperty("--agb-glow", b.glow);
     rs.setProperty("--ag-k", String(1 / S.speed));
-    root.setAttribute("data-ag-lefty", S.lefty ? "1" : "0");
+    root.setAttribute("data-ag-dpos", S.dpos || "split");
     root.setAttribute("data-ag-style", S.style);
     root.setAttribute("data-ag-board", S.board);
     root.setAttribute("data-ag-piece", S.piece);
@@ -5093,7 +5105,7 @@
     if (key === "mute" || key === "all") origSetPref("mute", S.mute);
     if (key === "volume" || key === "all") api.setVolume(S.volume);
     if (key === "music" || key === "all") api.setMusic(S.music);
-    if (key === "lefty" || key === "all") origSetPref("lefty", S.lefty);
+    if (key === "dpos" || key === "all") origSetPref("dpos", S.dpos);
     if (key === "open") origSetPref("open", S.open);
     applyRootAttrs();
     syncStudio();
@@ -5280,7 +5292,7 @@
       '<div class="ag-lbl ag-vol-l"><span>Music volume</span><b id="ag-mus-n">' + (S.music ? S.music + '%' : 'Off') + '</b></div>' +
       '<div class="ag-vol">' + ico("music") + '<input type="range" id="ag-mus" min="0" max="100" step="5" value="' + S.music + '" aria-label="Music volume">' + ico("music-2") + '</div>' +
       '<div class="ag-lbl">Haptic buzz</div><div class="ag-seg">' + seg("haptic", "true", "On") + seg("haptic", "false", "Off") + '</div>' +
-      '<div class="ag-lbl">Dice side</div><div class="ag-seg">' + seg("lefty", "false", "Right hand") + seg("lefty", "true", "Left hand") + '</div>' +
+      '<div class="ag-lbl">Dice position</div><div class="ag-seg">' + seg("dpos", "left", "Left") + seg("dpos", "center", "Centre") + seg("dpos", "right", "Right") + seg("dpos", "split", "Corners") + '</div>' +
       '<button type="button" class="ag-reset" data-as="reset">' + ico("rotate-ccw") + 'Reset Studio</button></div>';
 
     h += '</div></div></div>';

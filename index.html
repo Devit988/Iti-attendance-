@@ -3618,6 +3618,7 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
               <label><input type="checkbox" data-ca-pc="pib" checked> Govt / PIB</label>
               <label><input type="checkbox" data-ca-pc="exams" checked> Exams &amp; Jobs</label>
               <label><input type="checkbox" data-ca-pc="tech" checked> Sci &amp; Tech</label>
+              <label><input type="checkbox" data-ca-pc="bn" checked> বাংলা</label>
             </div>
             <div class="grid grid-cols-2 gap-2.5 mb-2.5">
               <label>Headlines on Home
@@ -3643,6 +3644,7 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
             <button type="button" class="ca-chip btn-tap" data-ca-cat="pib">Govt / PIB</button>
             <button type="button" class="ca-chip btn-tap" data-ca-cat="exams">Exams &amp; Jobs</button>
             <button type="button" class="ca-chip btn-tap" data-ca-cat="tech">Sci &amp; Tech</button>
+            <button type="button" class="ca-chip btn-tap" data-ca-cat="bn">বাংলা</button>
           </div>
 
           <div id="ca-news-list" class="space-y-2" aria-live="polite">
@@ -3673,11 +3675,11 @@ html.bright-mode #tr-guide{color:rgb(var(--c700))}
         <script>
         (function () {
           var CACHE_KEY = "iti_daily_news_v1";
-          var LABELS = { india: "India", wb: "WB", pib: "PIB", exams: "Exams", tech: "Tech" };
+          var LABELS = { india: "India", wb: "WB", pib: "PIB", exams: "Exams", tech: "Tech", bn: "বাংলা" };
           var PREF_KEY = "iti_news_prefs_v1";
-          var DEF = { cats: ["india", "wb", "pib", "exams", "tech"], count: 4, layout: "list", kw: "", mute: "" };
+          var DEF = { cats: ["india", "wb", "pib", "exams", "tech", "bn"], count: 4, layout: "list", kw: "", mute: "", bnAdded: true };
           var prefs = JSON.parse(JSON.stringify(DEF));
-          try { var sp = JSON.parse(localStorage.getItem(PREF_KEY) || "null"); if (sp) for (var k in DEF) if (sp[k] != null) prefs[k] = sp[k]; } catch (_) {}
+          try { var sp = JSON.parse(localStorage.getItem(PREF_KEY) || "null"); if (sp) { for (var k in DEF) if (sp[k] != null) prefs[k] = sp[k]; if (!sp.bnAdded) { if (prefs.cats.indexOf("bn") < 0) prefs.cats.push("bn"); prefs.bnAdded = true; } } } catch (_) {}
           function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (_) {} }
           function words(s) { return String(s || "").split(",").map(function (x) { return x.trim().toLowerCase(); }).filter(Boolean); }
           var state = { cat: "all", items: [], updatedAt: null };

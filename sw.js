@@ -4,7 +4,7 @@
    - Update prompt: new versions wait until the user taps "Refresh"
    - Offline files: the page can ask this worker to save PDFs/notes for offline use
    Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v84";
+var VERSION = "v85";
 var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline

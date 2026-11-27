@@ -1414,11 +1414,23 @@
    * GAME 1: SNAKES & LADDERS (Offline + Online Friends + Studio Integration)
    * ===================================================================== */
   (function () {
-    var LADDERS = { 4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91 };
-    var SNAKES = { 17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78 };
+    /* ===== DIFFICULTY: Easy = the classic board, Medium = more snakes, Hard = even more (incl. a MEGA snake 99 -> 41) ===== */
+    var DIFFS = {
+      easy:   { name: "Easy",   icon: "sprout", col: "#4ade80", sub: "8 snakes",   note: "Classic board · 8 snakes · 8 ladders",
+                L: { 4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91 },
+                S: { 17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78 } },
+      medium: { name: "Medium", icon: "flame",  col: "#fbbf24", sub: "10 snakes",  note: "10 snakes · 8 ladders · snake heads glow",
+                L: { 3: 22, 8: 30, 20: 41, 27: 83, 36: 57, 50: 69, 66: 87, 72: 91 },
+                S: { 16: 6, 34: 12, 47: 26, 56: 19, 62: 38, 75: 44, 89: 53, 93: 68, 96: 77, 99: 61 } },
+      hard:   { name: "Hard",   icon: "skull",  col: "#f87171", sub: "12 + MEGA",  note: "12 snakes · MEGA snake 99 → 41 · fiery heads",
+                L: { 2: 22, 10: 31, 15: 36, 26: 46, 39: 59, 52: 72, 66: 85, 78: 94 },
+                S: { 17: 7, 33: 12, 45: 24, 56: 35, 61: 21, 68: 47, 74: 53, 86: 62, 89: 65, 93: 70, 97: 76, 99: 41 } }
+    };
+    var LADDERS = {}, SNAKES = {}, curDiff = "easy";
+    function loadDiff() { try { var v = localStorage.getItem("iti_sl_diff"); if (DIFFS[v]) return v; } catch (e) { } return "easy"; }
 
     var host = null, view = "setup";
-    var cfg = { mode: "ai", count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "", custom: {}, pick: null };
+    var cfg = { mode: "ai", diff: loadDiff(), count: 2, myName: savedName(), names: ["You", "Bot 1", "Bot 2", "Bot 3"], code: "", custom: {}, pick: null };
     var st = null, rm = null, busy = false;
     var cv = null, ctx = null, off = null, offCtx = null, offKey = "", size = 0, dpr = 1;
     var raf = 0, botT = 0, diceT = 0, quitT = 0, particles = [];
@@ -1447,12 +1459,18 @@
     var biteFx = null, climbFx = null, swallowFx = null;
     var SN_COLS = ["#22c55e", "#ef4444", "#a855f7", "#f97316", "#06b6d4", "#eab308", "#ec4899", "#84cc16"];
     function snCol(i) { var a = api.getSnakeCols ? api.getSnakeCols() : SN_COLS; return a[i % a.length]; }
-    var snakeKeys = Object.keys(SNAKES).map(Number);
+    var snakeKeys = [];
     var geoT = -1, geoV = {};
+    function applyLayout(id) {
+      var d = DIFFS[id] || DIFFS.easy; curDiff = DIFFS[id] ? id : "easy";
+      LADDERS = d.L; SNAKES = d.S; snakeKeys = Object.keys(SNAKES).map(Number); geoT = -1; geoV = {}; offKey = "";
+    }
+    applyLayout(cfg.diff);
 
     function resetFx() {
       fx = { texts: [], rings: [], flash: null, celebrate: null };
       biteFx = null; climbFx = null; swallowFx = null; particles = []; geoT = -1; geoV = {};
+      cam.k = 1; cam.x = 0; cam.y = 0; if (cv) cv.style.transform = "";   /* a quit mid-move must not leave the next board zoomed in */
     }
     function rrp(c, x, y, w, h, r) {
       c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
@@ -1511,7 +1529,7 @@
     /* ---------- static board (cached): glossy tiles + wooden ladders ---------- */
     function buildCache() {
       if (!size || !offCtx) return;
-      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl5|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood");
+      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl6|" + curDiff + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood");
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
@@ -1728,6 +1746,19 @@
         ctx.restore();
       }
 
+      /* danger aura: on Medium/Hard every snake head pulses red; on Hard the heads also breathe embers */
+      if (curDiff !== "easy" && !lowFx) {
+        var hardM = curDiff === "hard", ai, hk, hc, haz, hgr;
+        for (ai = 0; ai < snakeKeys.length; ai++) {
+          hk = snakeKeys[ai]; hc = cellCenter(hk, size);
+          haz = (hardM ? 0.2 : 0.11) + (REDUCE_SL ? 0 : (hardM ? 0.1 : 0.05) * Math.sin(now / 380 + ai * 1.3));
+          hgr = ctx.createRadialGradient(hc.x, hc.y, cw * 0.1, hc.x, hc.y, cw * 0.85);
+          hgr.addColorStop(0, "rgba(239,68,68," + haz.toFixed(3) + ")"); hgr.addColorStop(1, "rgba(239,68,68,0)");
+          ctx.fillStyle = hgr; ctx.fillRect(hc.x - cw, hc.y - cw, cw * 2, cw * 2);
+          if (hardM && !REDUCE_SL && particles.length < 90 && Math.random() < 0.02) spawnBurst(hc.x, hc.y, ["#fb923c", "#fde047", "#ef4444"], 1, { sp: 0.1, spr: 0.4, g: -0.012, up: 0.5, sz: 1.1, szr: 1.2, d: 0.018 });
+        }
+      }
+
       /* snakes (living) */
       var sk, biting = biteFx ? biteFx.k : -1;
       for (i = 0; i < snakeKeys.length; i++) { sk = snakeKeys[i]; drawSnake(ctx, sk, now, sk === biting); }
@@ -1922,7 +1953,8 @@
             flashBoard("239,68,68", 0.5, 560); shakeBoard();
             addRing(c0.x, c0.y, "#fecaca", cw * 1.7, 540); addRing(c0.x, c0.y, "#ef4444", cw * 1.0, 420);
             spawnBurst(c0.x, c0.y, ["#ef4444", "#fca5a5", "#4ade80", "#ffffff"], 26, { sp: 1.8, spr: 3.6, g: 0.05 });
-            popText("SNAKE BITE!", c0.x, c0.y - cw * 0.75, "#fecaca", cw * 0.62, 1250);
+            popText(k - dest >= 40 ? "MEGA BITE!!" : "SNAKE BITE!", c0.x, c0.y - cw * 0.75, "#fecaca", cw * 0.62, 1250);
+            if (k - dest >= 40) { flashBoard("239,68,68", 0.75, 900); addRing(c0.x, c0.y, "#fb923c", cw * 2.6, 760); spawnBurst(c0.x, c0.y, ["#fb923c", "#ef4444", "#fde047"], 30, { sp: 2.2, spr: 4, g: 0.05 }); }
             playSfx("chomp"); vibrate([100, 40, 150, 40, 220]);
           }
           pl.anim = { x: c0.x, y: c0.y, s: 1, lift: 0.4, sq: e >= 380 ? 0.24 * Math.sin((e - 380) * 0.07) : 0, tint: e >= 380 ? 1 : 0 };
@@ -1969,6 +2001,16 @@
       rm.F.updateDoc(rm.ref, up).catch(function () { });
     }
 
+    /* a remote player's move: dice roll, then walk. Moves that arrive while one is still playing are queued (rm.pending) */
+    function playRemoteMove(mv) {
+      var a = mv.by, pl = st && st.players[a];
+      if (!pl || !rm || pl.uid === rm.uid) return;
+      st.busy = true; st.dice = mv.val; pl.lastDice = mv.val;
+      var rms = Math.round(api.dur(1000));
+      dieVisual(a, mv.val, rms); updateHUD(); playSfx("dice");
+      later(function () { executeMove(a, mv.val, false); }, rms + 80);
+    }
+
     function finishTurn(rolledSix, isActor) {
       if (!st || st.winner) return;
       st.busy = false;
@@ -1979,11 +2021,12 @@
       if (rm && isActor) pushOnlineState(nextTurn, -1, msg);
       updateHUD();
       if (!rm) maybeBot();
+      else if (rm.pending) { var nmv = rm.pending; rm.pending = null; playRemoteMove(nmv); }
     }
 
     function executeMove(pIdx, val, isActor) {
       var pl = st.players[pIdx], target = pl.pos + val, rolledSix = val === 6;
-      if (rolledSix) playSfx("six");
+      if (rolledSix) { playSfx("six"); var sc6 = cellCenter(pl.pos, size); popText("SIX! 🔥", sc6.x, sc6.y - sc6.cw * 0.7, "#fde047", sc6.cw * 0.5, 900); addRing(sc6.x, sc6.y, "#fde047", sc6.cw * 1.5, 520); }
       if (target > 100) {
         setMsg("Need exact " + (100 - pl.pos) + " to finish!");
         later(function () { finishTurn(rolledSix, isActor); }, api.dur(1000));
@@ -1993,6 +2036,7 @@
       for (s = pl.pos + 1; s <= target; s++) path.push(s);
       animatePath(pl, path, function () {
         updateHUD();
+        if (pl.pos >= 90 && pl.pos < 100 && !pl.near) { pl.near = true; var nc = cellCenter(pl.pos, size); popText("ALMOST THERE!", nc.x, nc.y - nc.cw * 0.7, "#bbf7d0", nc.cw * 0.42, 1100); addRing(nc.x, nc.y, "#4ade80", nc.cw * 1.6, 600); }
         if (pl.pos === 100) {
           st.winner = pl; st.busy = false;
           playSfx("win");
@@ -2139,7 +2183,7 @@
       var pos = uids.map(function () { return 1; });
       rm.F.updateDoc(rm.ref, {
         status: "playing",
-        sl: { order: uids, positions: pos, turn: 0, dice: 6, rollId: 0, msg: d.players[uids[0]].name + "'s turn" }
+        sl: { order: uids, positions: pos, turn: 0, dice: 6, rollId: 0, diff: cfg.diff, msg: d.players[uids[0]].name + "'s turn" }
       }).catch(function () { });
     }
 
@@ -2186,11 +2230,12 @@
           themeSync(d.sl, "sl");
           var sl = d.sl, cols = slColors();
           if (!st || view !== "game") {
+            applyLayout(sl.diff);
             var pls = sl.order.map(function (u, idx) {
               return { uid: u, name: (d.players[u] && d.players[u].name) || "Player " + (idx + 1), color: cols[idx], pos: sl.positions[idx] || 1, bot: false, anim: null };
             });
-            st = { players: pls, turn: sl.turn || 0, dice: sl.dice || 6, rollId: sl.rollId || 0, busy: false, winner: null, msg: sl.msg || "" };
-            gen++; rm.lastRollId = (sl.lastMove && sl.lastMove.id) || 0;
+            st = { players: pls, turn: sl.turn || 0, dice: sl.dice || 6, rollId: Math.max(sl.rollId || 0, (sl.lastMove && sl.lastMove.id) || 0), busy: false, winner: null, msg: sl.msg || "" };
+            gen++; rm.lastRollId = (sl.lastMove && sl.lastMove.id) || 0; rm.pending = null;
             particles = []; view = "game"; render();
           }
           armWatch(sl.turn || 0, JSON.stringify([sl.turn, sl.positions, sl.lastMove && sl.lastMove.id]));
@@ -2201,15 +2246,8 @@
           }
           if (sl.lastMove && sl.lastMove.id && sl.lastMove.id > rm.lastRollId) {
             rm.lastRollId = sl.lastMove.id;
-            var actorIdx = sl.lastMove.by;
-            if (st.players[actorIdx] && st.players[actorIdx].uid !== rm.uid) {
-              st.busy = true; st.dice = sl.lastMove.val;
-              var rms = Math.round(api.dur(1000));
-              st.players[actorIdx].lastDice = sl.lastMove.val;
-              dieVisual(actorIdx, sl.lastMove.val, rms); updateHUD();
-              playSfx("dice");
-              later(function () { executeMove(actorIdx, sl.lastMove.val, false); }, rms + 80);
-            }
+            var mv = sl.lastMove, mine = st.players[mv.by] && st.players[mv.by].uid === rm.uid;
+            if (!mine) { if (st.busy) rm.pending = mv; else playRemoteMove(mv); }
           } else if (!st.busy) {
             st.turn = sl.turn;
             st.players.forEach(function (p, i) { if (sl.positions[i]) p.pos = sl.positions[i]; });
@@ -2218,6 +2256,7 @@
           }
         } else if (d.status === "finished" && d.sl) {
           clearTimeout(rm.wd);
+          if (st && view === "game" && (st.busy || st.winner)) return;   /* final move + celebration still playing: executeMove shows the result when done */
           if (!st) {
             var fcols = slColors();
             st = { players: d.sl.order.map(function (u, idx) {
@@ -2233,7 +2272,7 @@
     }
 
     function startOfflineMatch() {
-      gen++; clearTimeout(diceT); clearTimeout(botT); rm = null; lookEnd();
+      gen++; clearTimeout(diceT); clearTimeout(botT); rm = null; lookEnd(); applyLayout(cfg.diff);
       var cols = slColors(), pls = [], i, nm;
       for (i = 0; i < cfg.count; i++) {
         nm = (cfg.names[i] || "").trim() || (cfg.mode === "ai" && i > 0 ? "Bot " + i : "Player " + (i + 1));
@@ -2248,7 +2287,8 @@
       var pl = st.players[st.turn], can = canRollNow();
       st.players.forEach(function (p, i) {
         var d = q("#sl-die-" + i, host), w = q("#sl-dw-" + i, host); if (!d || !w) return;
-        var mine = i === st.turn, ready = mine && can;
+        var mine = i === st.turn, ready = mine && can, K = dkit();
+        if (K && w.getAttribute("data-c") !== p.color) { w.setAttribute("style", K.vars(p.color)); w.setAttribute("data-c", p.color); }   /* keep the dice tint in step with the player's colour */
         d.disabled = !ready;
         d.classList.toggle("ready", ready); w.classList.toggle("ready", ready); w.classList.toggle("idle", !mine);
       });
@@ -2258,9 +2298,10 @@
         else if (rm) hint.textContent = can ? "Your turn — Tap dice!" : "Waiting for " + pl.name + "…";
         else hint.textContent = pl.bot ? pl.name + " is rolling…" : "Tap dice to roll";
       }
-      qa(".sl-card", host).forEach(function (el, idx) {
+      /* cards are looked up by player index (#sl-chip-N), NOT by DOM order: the seat layout rotates them, so DOM order != player order */
+      st.players.forEach(function (p, idx) {
+        var el = q("#sl-chip-" + idx, host); if (!el) return;
         el.classList.toggle("turn", idx === st.turn);
-        var p = st.players[idx]; if (!p) return;
         el.style.setProperty("--c", p.color); el.style.setProperty("--cd", shade(p.color, -0.4));
         var posEl = el.querySelector(".sl-pos");
         if (posEl) posEl.textContent = p.pos;
@@ -2276,6 +2317,10 @@
         return '<button type="button" data-sl="mode" data-k="' + t[0] + '" class="lx-tile' + (m === t[0] ? " on" : "") + '"><span class="ic">' + ico(t[1]) + '</span><span class="t">' + t[2] + '</span><span class="s">' + t[3] + '</span></button>';
       }).join("") + '</div>';
 
+      h += '<div class="lx-lbl" style="margin-top:12px">' + (m === "online" ? "Difficulty · host picks for the room" : "Difficulty") + '</div><div class="lx-g3">' + ["easy", "medium", "hard"].map(function (k) {
+        var D = DIFFS[k];
+        return '<button type="button" data-sl="diff" data-k="' + k + '" class="lx-tile sl-dt sl-d-' + k + (cfg.diff === k ? " on" : "") + '"><span class="ic">' + ico(D.icon) + '</span><span class="t">' + D.name + '</span><span class="s">' + D.sub + '</span></button>';
+      }).join("") + '</div><div class="sl-dnote">' + DIFFS[cfg.diff].note + '</div>';
       h += '<div class="lx-lbl" style="margin-top:12px">' + (m === "online" ? "Room size" : "Players") + '</div><div class="lx-g3">' +
         [2, 3, 4].map(function (n) {
           return '<button type="button" data-sl="count" data-k="' + n + '" class="lx-tile' + (cfg.count === n ? " on" : "") + '"><span class="t" style="font-size:15px">' + n + 'P</span><span class="dots">' +
@@ -2322,6 +2367,7 @@
       var h = '<div class="bg-box"><div class="ag-glass p-4 text-center space-y-3">';
       h += '<div class="flex items-center justify-between"><span class="text-sm font-extrabold">Snakes &amp; Ladders Room</span><button type="button" class="bg-sec" style="padding:.4rem .6rem" data-sl="leave">' + ico("x") + '</button></div>';
       h += '<div><div class="text-xs qa-t2 font-bold">ROOM CODE</div><div class="bg-code">' + rm.code + '</div></div>';
+      if (rm.isHost) h += '<div class="text-xs qa-t2">Difficulty: <b>' + DIFFS[cfg.diff].name + '</b> · ' + DIFFS[cfg.diff].sub + '</div>';
       h += '<div class="grid grid-cols-2 gap-2"><button type="button" class="bg-sec" data-sl="copy">' + ico("copy") + 'Copy Code</button>' +
         '<a class="bg-sec" style="text-decoration:none" target="_blank" rel="noopener" href="' + wa + '">' + ico("send") + 'WhatsApp</a></div>';
       h += '<div class="space-y-1.5 text-left">';
@@ -2375,6 +2421,7 @@
       var h = '<div class="bg-box lx lx-gap lx-pdl" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="sl-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
+        '<span class="sl-dbadge sl-d-' + curDiff + '">' + DIFFS[curDiff].name.toUpperCase() + '</span>' +
         '<button type="button" class="lx-ib studio" data-sl="studio" aria-label="Arena Studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
       h += rowH(topRow, true);
       h += '<div class="bg-cv-wrap ag-glass lx-enter" style="animation-delay:.1s"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
@@ -2385,7 +2432,14 @@
       if (!off) { off = document.createElement("canvas"); offCtx = off.getContext("2d"); }
       offKey = "";
       st.players.forEach(function (p, i) { var k = dkit(); if (k) k.set(q("#sl-cube-" + i, host), slRot(i), p.lastDice || 1, false); });
-      window.requestAnimationFrame(function () { resizeBoard(); updateHUD(); maybeBot(); kickLoop(); });
+      window.requestAnimationFrame(function () {
+        resizeBoard(); updateHUD(); maybeBot(); kickLoop();
+        if (st && !st.intro && size) {   /* one-time difficulty splash */
+          st.intro = true; var DD = DIFFS[curDiff];
+          popText(DD.name.toUpperCase() + " MODE", size / 2, size * 0.46, DD.col, size * 0.083, 1700);
+          if (curDiff !== "easy") flashBoard(curDiff === "hard" ? "239,68,68" : "251,191,36", 0.35, 700);
+        }
+      });
     }
 
     function renderResult() {
@@ -2417,9 +2471,26 @@
       else { view = "setup"; renderSetup(); }
     }
 
+    function slWowCss() {
+      if (document.getElementById("sl-wow-style")) return;
+      var R = "#quiz-arena-root ", t = document.createElement("style"); t.id = "sl-wow-style";
+      t.textContent = [
+        R + ".sl-dbadge{flex:none;font-size:10px;font-weight:900;letter-spacing:.07em;padding:4px 8px;border-radius:999px;color:#0b1020;white-space:nowrap;align-self:center}",
+        R + ".sl-dbadge.sl-d-easy{background:#4ade80}",
+        R + ".sl-dbadge.sl-d-medium{background:#fbbf24}",
+        R + ".sl-dbadge.sl-d-hard{background:#f87171;animation:slDPulse 1.3s ease-in-out infinite}",
+        "@keyframes slDPulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.65)}50%{box-shadow:0 0 0 7px rgba(248,113,113,0)}}",
+        R + ".sl-dt.sl-d-easy.on{box-shadow:0 0 0 2px #4ade80,0 0 18px -4px #4ade80}",
+        R + ".sl-dt.sl-d-medium.on{box-shadow:0 0 0 2px #fbbf24,0 0 18px -4px #fbbf24}",
+        R + ".sl-dt.sl-d-hard.on{box-shadow:0 0 0 2px #f87171,0 0 20px -3px #ef4444}",
+        R + ".sl-dnote{font-size:11px;text-align:center;opacity:.8;margin-top:6px;font-weight:700}"
+      ].join("");
+      document.head.appendChild(t);
+    }
+
     registerGame("snakes", {
       mount: function (el) {
-        host = el;
+        host = el; slWowCss();
         host.addEventListener("click", function (e) {
           var b = e.target.closest && e.target.closest("[data-sl]");
           if (!b || !host.contains(b)) return;
@@ -2429,7 +2500,8 @@
             if (k === "ai") cfg.names = ["You", "Bot 1", "Bot 2", "Bot 3"];
             else if (k === "local") cfg.names = ["Player 1", "Player 2", "Player 3", "Player 4"];
             playSfx("click"); renderSetup();
-          } else if (a === "count") { cfg.count = +k; playSfx("click"); renderSetup(); }
+          } else if (a === "diff") { cfg.diff = DIFFS[k] ? k : "easy"; try { localStorage.setItem("iti_sl_diff", cfg.diff); } catch (e) { } playSfx("click"); renderSetup(); }
+          else if (a === "count") { cfg.count = +k; playSfx("click"); renderSetup(); }
           else if (a === "pick") { cfg.pick = cfg.pick === +k ? null : +k; playSfx("click"); renderSetup(); }
           else if (a === "color" && cfg.pick != null) { cfg.custom[cfg.pick] = k; playSfx("click"); renderSetup(); }
           else if (a === "colorreset" && cfg.pick != null) { delete cfg.custom[cfg.pick]; playSfx("click"); renderSetup(); }
@@ -2448,7 +2520,10 @@
             if (now - quitT < 2500) {
               gen++; clearTimeout(diceT); clearTimeout(botT);
               if (rm) leaveOnline(); else { st = null; view = "setup"; render(); }
-            } else { quitT = now; setMsg("Tap ✕ again to quit"); }
+            } else {
+              quitT = now; var keepMsg = st && st.msg; setMsg("Tap ✕ again to quit");
+              later(function () { if (st && st.msg === "Tap ✕ again to quit") setMsg(keepMsg || ""); }, 2500);
+            }
           }
         });
         host.addEventListener("change", function (e) {
@@ -4052,7 +4127,11 @@
     ["ghost",  "Boo Ghost"],
     ["robot",  "Robo Buddy"],
     ["wizard", "Mini Wizard"],
-    ["ninja",  "Chibi Ninja"]
+    ["ninja",  "Chibi Ninja"],
+    ["dino",   "Dino Roar"],
+    ["fox",    "Fox Trot"],
+    ["alien",  "Alien Pal"],
+    ["dragon", "Baby Dragon"]
   ];
 
   var PALETTE_IDS = ["classic", "neon", "pastel", "royal", "sunset"];
@@ -4089,6 +4168,8 @@
     ["leaves",  "Leaf Drift"],
     ["snow",    "Snowfall"],
     ["confetti","Party Pop"],
+    ["embers",  "Embers"],
+    ["magic",   "Magic Dust"],
     ["none",    "Clean"]
   ];
 
@@ -4102,7 +4183,7 @@
     ["trophy", "Gold Trophy"]
   ];
 
-  var BOARD_IDS = ["auto", "classic", "grass", "wood", "felt", "cyber", "ocean", "gold", "sakura", "lava", "aurora", "retro"];
+  var BOARD_IDS = ["auto", "classic", "grass", "wood", "felt", "cyber", "ocean", "gold", "sakura", "lava", "aurora", "retro", "jungle", "glacier", "desert", "toxic", "galaxy"];
   var BOARDS = {
     auto_dark:  { name: "Auto",           base: "#0f172a", base2: "#1e293b", cellA: "#1e293b", cellB: "#172033", track: "#334155", line: "#475569", frame: "#0b1220", text: "#e2e8f0", accent: "#fbbf24", glow: "#fbbf24", dark: true,  tex: "grid" },
     auto_light: { name: "Auto",           base: "#f1f5f9", base2: "#e2e8f0", cellA: "#ffffff", cellB: "#e2e8f0", track: "#ffffff", line: "#94a3b8", frame: "#cbd5e1", text: "#1e293b", accent: "#d97706", glow: "#f59e0b", dark: false, tex: "none" },
@@ -4116,7 +4197,12 @@
     sakura:     { name: "Sakura Zen",     base: "#fdf2f8", base2: "#fce7f3", cellA: "#ffffff", cellB: "#fbcfe8", track: "#fff1f2", line: "#f472b6", frame: "#be185d", text: "#831843", accent: "#ec4899", glow: "#f472b6", dark: false, tex: "sakura" },
     lava:       { name: "Lava Forge",     base: "#1c0a0a", base2: "#3b0d0c", cellA: "#2a1215", cellB: "#1f0b0e", track: "#38181b", line: "#f97316", frame: "#7c2d12", text: "#ffedd5", accent: "#fb923c", glow: "#ef4444", dark: true,  tex: "lava" },
     aurora:     { name: "Aurora Sky",     base: "#051923", base2: "#161a42", cellA: "#0f2c3f", cellB: "#172042", track: "#1e293b", line: "#2dd4bf", frame: "#0d9488", text: "#ccfbf1", accent: "#2dd4bf", glow: "#a855f7", dark: true,  tex: "aurora" },
-    retro:      { name: "Arcade 8-Bit",   base: "#111827", base2: "#1f2937", cellA: "#18181b", cellB: "#27272a", track: "#f4f4f5", line: "#22c55e", frame: "#16a34a", text: "#bbf7d0", accent: "#4ade80", glow: "#22c55e", dark: true,  tex: "pixel" }
+    retro:      { name: "Arcade 8-Bit",   base: "#111827", base2: "#1f2937", cellA: "#18181b", cellB: "#27272a", track: "#f4f4f5", line: "#22c55e", frame: "#16a34a", text: "#bbf7d0", accent: "#4ade80", glow: "#22c55e", dark: true,  tex: "pixel" },
+    jungle:     { name: "Jungle Ruins",   base: "#052e16", base2: "#14532d", cellA: "#166534", cellB: "#14532d", track: "#dcfce7", line: "#4ade80", frame: "#064e3b", text: "#dcfce7", accent: "#facc15", glow: "#4ade80", dark: true,  tex: "grass" },
+    glacier:    { name: "Glacier Peak",   base: "#e0f2fe", base2: "#bae6fd", cellA: "#f0f9ff", cellB: "#bae6fd", track: "#ffffff", line: "#38bdf8", frame: "#0369a1", text: "#0c4a6e", accent: "#0ea5e9", glow: "#7dd3fc", dark: false, tex: "waves" },
+    desert:     { name: "Pharaoh Sands",  base: "#78350f", base2: "#b45309", cellA: "#fde68a", cellB: "#fcd34d", track: "#fffbeb", line: "#92400e", frame: "#451a03", text: "#451a03", accent: "#dc2626", glow: "#fbbf24", dark: false, tex: "filigree" },
+    toxic:      { name: "Toxic Swamp",    base: "#1a2e05", base2: "#365314", cellA: "#3f6212", cellB: "#2d4a0e", track: "#ecfccb", line: "#a3e635", frame: "#1a2e05", text: "#ecfccb", accent: "#a3e635", glow: "#bef264", dark: true,  tex: "pixel" },
+    galaxy:     { name: "Galaxy Rift",    base: "#020617", base2: "#1e1b4b", cellA: "#1e1b4b", cellB: "#0f172a", track: "#312e81", line: "#818cf8", frame: "#4c1d95", text: "#e0e7ff", accent: "#e879f9", glow: "#a78bfa", dark: true,  tex: "aurora" }
   };
 
   var PRESETS = [
@@ -4151,7 +4237,13 @@
     { id: "pixelq", name: "Pixel Quest", emoji: "🕹️", sub: "8-bit grid · cyber core · confetti", grad: "linear-gradient(135deg,#09090b,#16a34a,#facc15)", set: { style: "modern", board: "retro", piece: "hex", palette: "neon", dice: "neon", trail: "confetti", center: "trophy" } },
     { id: "dragon", name: "Dragon Forge", emoji: "🐉", sub: "Molten forge · crest · magma", grad: "linear-gradient(135deg,#1c0a0a,#b91c1c,#f59e0b)", set: { style: "classic", board: "lava", piece: "shield", palette: "sunset", dice: "magma", trail: "fire", center: "trophy" } },
     { id: "pearl", name: "Pearl & Gold", emoji: "🏆", sub: "Ivory board · crown · 24K dice", grad: "linear-gradient(135deg,#fffdf7,#f59e0b,#b45309)", set: { style: "classic", board: "classic", piece: "crown", palette: "royal", dice: "gold", trail: "star", center: "trophy" } },
-    { id: "lagoon", name: "Neon Lagoon", emoji: "🐧", sub: "Deep sea glow · penguin · prism", grad: "linear-gradient(135deg,#0c2a4d,#06b6d4,#a855f7)", set: { style: "modern", board: "ocean", piece: "penguin", palette: "neon", dice: "neon", trail: "rainbow", center: "jewel" } }
+    { id: "lagoon", name: "Neon Lagoon", emoji: "🐧", sub: "Deep sea glow · penguin · prism", grad: "linear-gradient(135deg,#0c2a4d,#06b6d4,#a855f7)", set: { style: "modern", board: "ocean", piece: "penguin", palette: "neon", dice: "neon", trail: "rainbow", center: "jewel" } },
+    { id: "jungle",   name: "Jungle King",    emoji: "🦖", sub: "Ancient ruins · dino · vine ladders",    grad: "linear-gradient(135deg,#052e16,#16a34a,#facc15)", set: { style: "classic", board: "jungle",  piece: "dino",   palette: "royal",   dice: "meadow",  trail: "leaves",  center: "crown" } },
+    { id: "inferno",  name: "Inferno Pit",    emoji: "🔥", sub: "Magma board · baby dragon · lava snakes", grad: "linear-gradient(135deg,#1c0a0a,#dc2626,#fb923c)", set: { style: "modern",  board: "lava",    piece: "dragon", palette: "sunset",  dice: "magma",   trail: "embers",  center: "star" } },
+    { id: "glacier",  name: "Glacier Run",    emoji: "🧊", sub: "Frozen peak · arctic fox · ice ladders",  grad: "linear-gradient(135deg,#0c4a6e,#7dd3fc,#f0f9ff)", set: { style: "classic", board: "glacier", piece: "fox",    palette: "pastel",  dice: "crystal", trail: "snow",    center: "jewel" } },
+    { id: "pharaoh",  name: "Pharaoh's Curse", emoji: "🏺", sub: "Desert sands · golden cobras",           grad: "linear-gradient(135deg,#451a03,#d97706,#fde68a)", set: { style: "classic", board: "desert",  piece: "shield", palette: "royal",   dice: "gold",    trail: "star",    center: "trophy" } },
+    { id: "toxic",    name: "Toxic Swamp",    emoji: "☣️", sub: "Glowing sludge · alien · mamba snakes",   grad: "linear-gradient(135deg,#1a2e05,#84cc16,#c026d3)", set: { style: "modern",  board: "toxic",   piece: "alien",  palette: "neon",    dice: "jade",    trail: "bubbles", center: "planet" } },
+    { id: "galaxy",   name: "Galaxy Rift",    emoji: "🌌", sub: "Deep space · rocket · cosmic pythons",    grad: "linear-gradient(135deg,#020617,#6366f1,#e879f9)", set: { style: "modern",  board: "galaxy",  piece: "rocket", palette: "neon",    dice: "galaxy",  trail: "magic",   center: "planet" } }
   ];
 
   /* Snakes & Ladders studio options */
@@ -4162,7 +4254,13 @@
     ["neon",    "Neon Glow",     ["#ff2e93", "#00f59b", "#ffd60a", "#00e5ff", "#a855f7", "#ff6b00", "#22d3ee", "#84ff00"]],
     ["candy",   "Candy Swirl",   ["#fb7185", "#f9a8d4", "#c084fc", "#fcd34d", "#7dd3fc", "#86efac", "#fda4af", "#d8b4fe"]],
     ["shadow",  "Shadow Cobra",  ["#475569", "#b91c1c", "#334155", "#7e22ce", "#52525b", "#166534", "#92400e", "#0f766e"]],
-    ["gold",    "Golden Python", ["#f59e0b", "#d97706", "#eab308", "#b45309", "#fbbf24", "#ca8a04", "#f97316", "#a16207"]]
+    ["gold",    "Golden Python", ["#f59e0b", "#d97706", "#eab308", "#b45309", "#fbbf24", "#ca8a04", "#f97316", "#a16207"]],
+    ["lava",    "Lava Serpent",  ["#ef4444", "#f97316", "#dc2626", "#fb923c", "#b91c1c", "#f59e0b", "#ea580c", "#fca5a5"]],
+    ["frost",   "Frost Wyrm",    ["#7dd3fc", "#38bdf8", "#bae6fd", "#0ea5e9", "#a5f3fc", "#60a5fa", "#67e8f9", "#e0f2fe"]],
+    ["galaxy",  "Galaxy Python", ["#6366f1", "#a855f7", "#ec4899", "#22d3ee", "#8b5cf6", "#3b82f6", "#d946ef", "#14b8a6"]],
+    ["toxic",   "Toxic Mamba",   ["#a3e635", "#84cc16", "#bef264", "#65a30d", "#d9f99d", "#facc15", "#4ade80", "#c026d3"]],
+    ["rainbow", "Rainbow Boa",   ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#ec4899"]],
+    ["bone",    "Bone Viper",    ["#e7e5e4", "#d6d3d1", "#a8a29e", "#f5f5f4", "#78716c", "#fafaf9", "#a1a1aa", "#d4d4d8"]]
   ];
   var LADDER_STYLES = [
     ["wood",   "Carved Wood", { rail: "#92400e", railHi: "#f59e0b", rung: "#78350f", rungHi: "#fbbf24", bolt: "#451a03" }],
@@ -4170,7 +4268,10 @@
     ["bamboo", "Bamboo",      { rail: "#4d7c0f", railHi: "#bef264", rung: "#365314", rungHi: "#a3e635", bolt: "#1a2e05" }],
     ["steel",  "Steel",       { rail: "#475569", railHi: "#e2e8f0", rung: "#334155", rungHi: "#cbd5e1", bolt: "#0f172a" }],
     ["neon",   "Neon Rail",   { rail: "#6d28d9", railHi: "#22d3ee", rung: "#4c1d95", rungHi: "#e879f9", bolt: "#0b0220", glow: "#22d3ee" }],
-    ["candy",  "Candy Cane",  { rail: "#be185d", railHi: "#f9a8d4", rung: "#9d174d", rungHi: "#fbcfe8", bolt: "#500724" }]
+    ["candy",  "Candy Cane",  { rail: "#be185d", railHi: "#f9a8d4", rung: "#9d174d", rungHi: "#fbcfe8", bolt: "#500724" }],
+    ["crystal","Ice Crystal", { rail: "#0891b2", railHi: "#cffafe", rung: "#0e7490", rungHi: "#a5f3fc", bolt: "#083344", glow: "#67e8f9" }],
+    ["lava",   "Magma Rope",  { rail: "#b91c1c", railHi: "#fdba74", rung: "#7f1d1d", rungHi: "#fb923c", bolt: "#450a0a", glow: "#f97316" }],
+    ["vine",   "Jungle Vine", { rail: "#166534", railHi: "#86efac", rung: "#14532d", rungHi: "#4ade80", bolt: "#052e16" }]
   ];
   var PRESET_SL = {
     classic: ["jungle", "wood"], cyber: ["neon", "neon"], maharaja: ["gold", "gold"], casino: ["emerald", "gold"], abyss: ["emerald", "steel"],
@@ -4179,7 +4280,8 @@
     ghostpty: ["shadow", "neon"], pole: ["emerald", "steel"], robolab: ["neon", "steel"], zen: ["emerald", "bamboo"], moonsakura: ["candy", "neon"],
     wizard: ["shadow", "neon"], dojo: ["shadow", "bamboo"], bamboo: ["emerald", "bamboo"], pond: ["emerald", "bamboo"], catcafe: ["candy", "wood"],
     space: ["neon", "neon"], ruby: ["team", "gold"], frozen: ["team", "steel"], pixelq: ["neon", "neon"], dragon: ["shadow", "gold"],
-    pearl: ["gold", "gold"], lagoon: ["neon", "steel"]
+    pearl: ["gold", "gold"], lagoon: ["neon", "steel"],
+    jungle: ["emerald", "vine"], inferno: ["lava", "lava"], glacier: ["frost", "crystal"], pharaoh: ["gold", "gold"], toxic: ["toxic", "vine"], galaxy: ["galaxy", "crystal"]
   };
   PRESETS.forEach(function (pr) { var m = PRESET_SL[pr.id]; if (m) { pr.set.snake = m[0]; pr.set.ladder = m[1]; } });
 
@@ -4385,7 +4487,7 @@
     hearts: ["#fb7185", "#f472b6"], bubbles: ["#bae6fd", "#7dd3fc"], leaves: ["#4ade80", "#86efac", "#22c55e"],
     snow: ["#ffffff", "#e0f2fe"], confetti: ["#f43f5e", "#facc15", "#38bdf8", "#4ade80"]
   };
-  var CUTE_IDS = ["cat", "bear", "bunny", "panda", "penguin", "duck", "ghost", "robot", "wizard", "ninja"];
+  var CUTE_IDS = ["cat", "bear", "bunny", "panda", "penguin", "duck", "ghost", "robot", "wizard", "ninja", "dino", "fox", "alien", "dragon"];
 
   function drawCute(ctx, shape, color, lt, md, dk, haloFill) {
     var g, i;
@@ -4552,6 +4654,44 @@
       rr(ctx, -0.15, -0.4, 0.3, 0.2, 0.05); ctx.fillStyle = "#cbd5e1"; ctx.fill(); star5(0, -0.3, 0.07, "#475569");
       eyes(0.08, 0.17, 0.065); cheeks(0.19, 0.3, 0.06);
       shine(-0.3, -0.12, 0.09, 0.05);
+    } else if (shape === "dino") {
+      pedestal();
+      [[-0.34, -0.36], [-0.12, -0.5], [0.12, -0.5], [0.34, -0.36]].forEach(function (sp) {
+        ctx.beginPath(); ctx.moveTo(sp[0] - 0.1, sp[1] + 0.1); ctx.lineTo(sp[0], sp[1] - 0.16); ctx.lineTo(sp[0] + 0.1, sp[1] + 0.1); ctx.closePath();
+        ctx.fillStyle = "#fde047"; ctx.fill(); ctx.strokeStyle = dk; ctx.lineWidth = 0.035; ctx.stroke();
+      });
+      haloFill(function () { rr(ctx, -0.5, -0.42, 1.0, 0.92, 0.4); }, bodyGrad(0, 0, 0.62));
+      E(0, 0.3, 0.3, 0.16, "rgba(255,255,255,.38)");
+      eyes(-0.08, 0.2, 0.07); C(-0.09, 0.08, 0.025, "#111827"); C(0.09, 0.08, 0.025, "#111827");
+      smile(0.22, 0.2); cheeks(0.12, 0.37, 0.07); shine(-0.3, -0.28, 0.1, 0.055);
+    } else if (shape === "fox") {
+      pedestal();
+      [-1, 1].forEach(function (sd) {
+        ctx.beginPath(); ctx.moveTo(sd * 0.5, -0.12); ctx.lineTo(sd * 0.44, -0.74); ctx.lineTo(sd * 0.08, -0.4); ctx.closePath();
+        ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = dk; ctx.lineWidth = 0.04; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(sd * 0.4, -0.2); ctx.lineTo(sd * 0.38, -0.56); ctx.lineTo(sd * 0.16, -0.38); ctx.closePath(); ctx.fillStyle = "#fde68a"; ctx.fill();
+      });
+      haloFill(function () { ctx.beginPath(); ctx.arc(0, 0.02, 0.52, 0, TAU); }, bodyGrad(0, 0.02, 0.52));
+      ctx.fillStyle = "#fff7ed"; ctx.beginPath(); ctx.moveTo(-0.5, 0.12); ctx.quadraticCurveTo(0, 0.7, 0.5, 0.12); ctx.quadraticCurveTo(0, -0.02, -0.5, 0.12); ctx.fill();
+      eyes(-0.06, 0.2, 0.065); C(0, 0.22, 0.05, "#111827"); smile(0.3, 0.1); cheeks(0.14, 0.38, 0.06); shine(-0.28, -0.26, 0.09, 0.05);
+    } else if (shape === "alien") {
+      pedestal();
+      ctx.strokeStyle = lt; ctx.lineWidth = 0.05;
+      [-1, 1].forEach(function (sd) { ctx.beginPath(); ctx.moveTo(sd * 0.18, -0.46); ctx.lineTo(sd * 0.32, -0.74); ctx.stroke(); C(sd * 0.32, -0.76, 0.075, "#fde047"); });
+      haloFill(function () { ctx.beginPath(); ctx.ellipse(0, 0, 0.5, 0.52, 0, 0, TAU); }, bodyGrad(0, 0, 0.58));
+      E(-0.2, 0.02, 0.15, 0.21, "#0b1020", 0.5); E(0.2, 0.02, 0.15, 0.21, "#0b1020", -0.5);
+      C(-0.15, -0.07, 0.04, "#fff"); C(0.25, -0.07, 0.04, "#fff");
+      smile(0.32, 0.1); shine(-0.3, -0.3, 0.09, 0.05);
+    } else if (shape === "dragon") {
+      pedestal();
+      [-1, 1].forEach(function (sd) {
+        ctx.beginPath(); ctx.moveTo(sd * 0.38, -0.08); ctx.lineTo(sd * 0.88, -0.58); ctx.lineTo(sd * 0.76, 0.0); ctx.lineTo(sd * 0.84, 0.24); ctx.lineTo(sd * 0.5, 0.2); ctx.closePath();
+        ctx.fillStyle = dk; ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 0.03; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(sd * 0.24, -0.5); ctx.lineTo(sd * 0.3, -0.82); ctx.lineTo(sd * 0.08, -0.52); ctx.closePath(); ctx.fillStyle = "#fde68a"; ctx.fill(); ctx.strokeStyle = dk; ctx.lineWidth = 0.03; ctx.stroke();
+      });
+      haloFill(function () { ctx.beginPath(); ctx.arc(0, 0.02, 0.52, 0, TAU); }, bodyGrad(0, 0.02, 0.52));
+      E(0, 0.24, 0.3, 0.2, lt); C(-0.1, 0.22, 0.032, dk); C(0.1, 0.22, 0.032, dk);
+      eyes(-0.1, 0.21, 0.07); smile(0.36, 0.12); shine(-0.3, -0.26, 0.1, 0.055);
     }
   }
   function drawToken(ctx, x, y, r, color, shape, style, lift) {
@@ -4818,6 +4958,10 @@
     sz = sz || 440;
     if (S.trail === "fire") {
       particles.push({ k: "s", x: x, y: y, vx: (Math.random() - 0.5) * 0.9, vy: -1.0 - Math.random() * 1.1, life: 0.95, col: Math.random() < 0.5 ? "#f97316" : "#fde047", r: sz * 0.014 });
+    } else if (S.trail === "embers") {
+      particles.push({ k: "s", x: x, y: y, vx: (Math.random() - 0.5) * 0.6, vy: -1.3 - Math.random() * 1.3, life: 1, col: ["#ef4444", "#fb923c", "#fde047"][Math.floor(Math.random() * 3)], r: sz * 0.011 });
+    } else if (S.trail === "magic") {
+      particles.push({ k: "s", x: x, y: y, vx: (Math.random() - 0.5) * 1.1, vy: (Math.random() - 0.5) * 1.1 - 0.3, life: 1, col: ["#e879f9", "#22d3ee", "#a78bfa", "#ffffff"][Math.floor(Math.random() * 4)], r: sz * 0.012 });
     } else if (S.trail === "star") {
       particles.push({ k: "s", x: x, y: y, vx: (Math.random() - 0.5) * 1.4, vy: (Math.random() - 0.5) * 1.4, life: 0.95, col: Math.random() < 0.4 ? "#ffffff" : "#fde047", r: sz * 0.013 });
     } else if (S.trail === "rainbow") {

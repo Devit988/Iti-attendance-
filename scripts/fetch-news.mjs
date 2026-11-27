@@ -14,9 +14,15 @@ const FEEDS = [
     limit: 7
   },
   {
+    cat: "bn",
+    label: "বাংলা",
+    url: "https://news.google.com/rss?hl=bn&gl=IN&ceid=IN:bn",
+    limit: 8
+  },
+  {
     cat: "pib",
     label: "Govt / PIB",
-    url: "https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=1",
+    url: "https://news.google.com/rss/search?q=site:pib.gov.in+when:7d&hl=en-IN&gl=IN&ceid=IN:en",
     limit: 6
   },
   {
@@ -71,6 +77,8 @@ function parseRss(xml, feed) {
       title = title.slice(0, dashIdx).trim();
     }
 
+    if (feed.cat === "pib") source = "PIB India";
+
     if (!title || !link || !/^https?:\/\//i.test(link)) continue;
 
     const ts = Date.parse(pubDate);
@@ -109,19 +117,19 @@ async function main() {
     process.exit(1);
   }
 
-  // Deduplicate by normalized title and sort newest first
+  // Deduplicate by normalized title (supports Bengali + English) and sort newest first
   const seen = new Set();
   const unique = [];
   for (const item of all.sort((a, b) => Date.parse(b.date) - Date.parse(a.date))) {
-    const key = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 60);
-    if (seen.has(key)) continue;
+    const key = item.title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "").slice(0, 60);
+    if (!key || seen.has(key)) continue;
     seen.add(key);
     unique.push(item);
   }
 
   const payload = {
     updatedAt: new Date().toISOString(),
-    items: unique.slice(0, 40)
+    items: unique.slice(0, 45)
   };
 
   writeFileSync("news.json", JSON.stringify(payload, null, 2) + "\n", "utf8");

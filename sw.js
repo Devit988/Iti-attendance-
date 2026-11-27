@@ -4,7 +4,7 @@
    - Update prompt: new versions wait until the user taps "Refresh"
    - Offline files: the page can ask this worker to save PDFs/notes for offline use
    Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v102";
+var VERSION = "v110";
 var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline
@@ -26,7 +26,7 @@ var CDN_HOSTS = ["cdn.tailwindcss.com", "unpkg.com", "www.gstatic.com", "fonts.g
 self.addEventListener("install", function (e) {
   /* No skipWaiting here: the page shows a "Refresh" banner and sends SKIP_WAITING. */
   e.waitUntil(Promise.all([
-    caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).catch(function () {}),
+    caches.open(CACHE).then(function (c) { return Promise.all(SHELL.map(function (u) { return c.add(u).catch(function () {}); })); }).catch(function () {}),
     caches.open(CDN_CACHE).then(function (c) {
       return Promise.all(CDN_PRECACHE.map(function (u) {
         return fetch(u, { mode: "cors" }).then(function (r) { if (r && r.ok) return c.put(u, r); }).catch(function () {});

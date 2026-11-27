@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v3.8 (Arena Studio + Snakes & Ladders + Ludo + Online Rooms)
+/*! ITI CONNECT — Arena Games v3.9 (Arena Studio + Snakes & Ladders + Ludo + Online Rooms)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -2814,6 +2814,14 @@
         R + ".lx-pdl{min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}",
         R + ".lx-pdl > .lx-rt{margin-top:auto}",
         R + ".lx-pdl > .lx-rb{margin-bottom:auto}",
+        /* v3.9 fix: 4-player same-phone layout (dice in all corners) must fit the screen - compact dice, tighter gaps, board sized to what is left */
+        R + ".lx-pdl{gap:6px!important;padding-bottom:env(safe-area-inset-bottom,0px)}",
+        R + ".lx-pdl .lx-cell{gap:3px}",
+        R + ".lx-pdl .lx-dwrap{padding:3px 8px 2px}",
+        R + ".lx-pdl .lx-big .lx-die{--s:48px}",
+        R + ".lx-pdl .lx-dwrap::before{width:62px;height:62px;margin:-35px 0 0 -31px}",
+        R + ".lx-pdl .lx-sh{width:40px;margin-left:-20px;bottom:0}",
+        R + ".ag-playing .lx-pdl .lx-bw{width:min(100%,calc(100vh - 460px));width:min(100%,calc(100dvh - 460px));min-width:240px}",
         R + ".lx-pc.lx-pd{gap:6px;padding:5px 6px 5px 5px}",
         R + ".lx-pd .lx-av{width:30px;height:30px;font-size:14px}",
         R + ".lx-pd .lx-nm{font-size:11.5px}",
@@ -2824,6 +2832,8 @@
         R + ".lx-pd .lx-mini::before{width:40px;height:40px;margin:-20px 0 0 -20px}",
         R + ".lx-bw{position:relative;width:100%;max-width:520px;margin:2px auto;aspect-ratio:1/1}",
         R + ".lx-bw::before{content:\"\";position:absolute;inset:0;border-radius:4.5%;box-shadow:0 22px 44px -16px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}",
+        R + ".lx-bw::after{content:\"\";position:absolute;inset:0;border-radius:4.5%;pointer-events:none;z-index:2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),inset 0 2px 10px rgba(255,255,255,.1),inset 0 -12px 26px rgba(0,0,0,.2)}",
+        R + ".lx-bw::before{box-shadow:0 30px 56px -18px rgba(0,0,0,.78),0 8px 18px -6px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.08)!important}",
         R + ".ag-playing .lx-bw{width:min(100%,calc(100vh - 372px));width:min(100%,calc(100dvh - 372px));min-width:240px}",
         R + ".lx-bw.shake{animation:lxShake .45s ease-in-out}",
         R + ".lx-cv{display:block;position:absolute;left:0;top:0;width:100%;height:100%;touch-action:manipulation;pointer-events:none;z-index:1}",
@@ -2977,6 +2987,90 @@
     /* ---------------------------------------------------------------
      * Static board layer (cached offscreen with textures & custom palette)
      * --------------------------------------------------------------- */
+    /* ---- v3.9 Ludo graphics upgrade: depth pass (cached), living light, motion ghosts ---- */
+    function ludoDepth(c, cw, cols, b, M, K) {
+      var i, j, g, a, mx, my, ctr = 7.5 * cw, tr = [[6, 6, 6, 9], [6, 9, 9, 9], [9, 9, 9, 6], [9, 6, 6, 6]];
+      // tile edge relief: light top lip + dark bottom lip on every track / lane cell
+      function relief(col, row) {
+        var p = cw * 0.05, x = col * cw + p, y = row * cw + p, w = cw - 2 * p;
+        c.save(); rr(c, x, y, w, w, cw * 0.17); c.clip();
+        g = c.createLinearGradient(0, y, 0, y + w);
+        g.addColorStop(0, "rgba(255,255,255,.28)"); g.addColorStop(0.16, "rgba(255,255,255,0)");
+        g.addColorStop(0.84, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.2)");
+        c.fillStyle = g; c.fillRect(x, y, w, w); c.restore();
+      }
+      for (i = 0; i < 52; i++) relief(TRACK[i][0], TRACK[i][1]);
+      for (i = 0; i < 4; i++) for (j = 0; j < 5; j++) relief(HOME_LANES[i][j][0], HOME_LANES[i][j][1]);
+      // finish triangles: faceted gem look (lit half / shaded half + bright ridge)
+      for (i = 0; i < 4; i++) {
+        a = tr[i]; mx = (a[0] + a[2]) / 2 * cw; my = (a[1] + a[3]) / 2 * cw;
+        c.save();
+        c.beginPath(); c.moveTo(ctr, ctr); c.lineTo(a[0] * cw, a[1] * cw); c.lineTo(mx, my); c.closePath();
+        c.fillStyle = "rgba(255,255,255,.2)"; c.fill();
+        c.beginPath(); c.moveTo(ctr, ctr); c.lineTo(mx, my); c.lineTo(a[2] * cw, a[3] * cw); c.closePath();
+        c.fillStyle = "rgba(0,0,0,.16)"; c.fill();
+        c.beginPath(); c.moveTo(ctr, ctr); c.lineTo(mx, my); c.strokeStyle = "rgba(255,255,255,.65)"; c.lineWidth = Math.max(1, cw * 0.04); c.stroke();
+        c.restore();
+      }
+      // yard parking spots: inner rim light so they read as shallow wells
+      for (i = 0; i < 4; i++) for (j = 0; j < 4; j++) {
+        var sx = YARD_SPOTS[i][j][0] * cw, sy = YARD_SPOTS[i][j][1] * cw;
+        c.save();
+        c.beginPath(); c.arc(sx, sy, cw * 0.34, Math.PI * 0.1, Math.PI * 0.9); c.strokeStyle = "rgba(255,255,255,.4)"; c.lineWidth = Math.max(1, cw * 0.05); c.stroke();
+        c.beginPath(); c.arc(sx, sy, cw * 0.36, Math.PI * 1.1, Math.PI * 1.9); c.strokeStyle = "rgba(0,0,0,.3)"; c.lineWidth = Math.max(1, cw * 0.05); c.stroke();
+        c.restore();
+      }
+      // yard corner rivets
+      for (i = 0; i < 4; i++) {
+        var yx = YARDS[i][0] * cw, yy = YARDS[i][1] * cw, rv = [[0.55, 0.55], [5.45, 0.55], [0.55, 5.45], [5.45, 5.45]];
+        for (j = 0; j < 4; j++) {
+          g = c.createRadialGradient(yx + rv[j][0] * cw - cw * 0.03, yy + rv[j][1] * cw - cw * 0.03, 0, yx + rv[j][0] * cw, yy + rv[j][1] * cw, cw * 0.11);
+          g.addColorStop(0, "rgba(255,255,255,.95)"); g.addColorStop(1, "rgba(0,0,0,.35)");
+          c.beginPath(); c.arc(yx + rv[j][0] * cw, yy + rv[j][1] * cw, cw * 0.1, 0, TAU); c.fillStyle = g; c.fill();
+        }
+      }
+      // centre hub: metallic double ring + soft drop shadow
+      c.save(); c.shadowColor = "rgba(0,0,0,.45)"; c.shadowBlur = cw * 0.3; c.shadowOffsetY = cw * 0.08;
+      c.beginPath(); c.arc(ctr, ctr, cw * 0.86, 0, TAU);
+      g = c.createLinearGradient(ctr - cw, ctr - cw, ctr + cw, ctr + cw);
+      g.addColorStop(0, "#fff7d1"); g.addColorStop(0.35, "#e5b94a"); g.addColorStop(0.7, "#8a5a12"); g.addColorStop(1, "#f6dd8c");
+      c.strokeStyle = g; c.lineWidth = cw * 0.13; c.stroke(); c.restore();
+      c.beginPath(); c.arc(ctr, ctr, cw * 0.77, 0, TAU); c.strokeStyle = "rgba(0,0,0,.35)"; c.lineWidth = Math.max(1, cw * 0.03); c.stroke();
+      // soft vignette so the middle glows and the rim feels recessed
+      g = c.createRadialGradient(ctr, ctr, cw * 4, ctr, ctr, cw * 10.8);
+      g.addColorStop(0, "rgba(255,255,255,.07)"); g.addColorStop(0.6, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.26)");
+      c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip(); c.fillStyle = g; c.fillRect(0, 0, size, size); c.restore();
+    }
+    function sparkle(c, x, y, r, a) {
+      c.save(); c.translate(x, y); c.globalAlpha = a; c.fillStyle = "#fffbe0"; c.shadowColor = "#fde047"; c.shadowBlur = r * 1.4;
+      c.beginPath(); c.moveTo(0, -r); c.quadraticCurveTo(r * 0.12, -r * 0.12, r, 0); c.quadraticCurveTo(r * 0.12, r * 0.12, 0, r);
+      c.quadraticCurveTo(-r * 0.12, r * 0.12, -r, 0); c.quadraticCurveTo(-r * 0.12, -r * 0.12, 0, -r); c.fill(); c.restore();
+    }
+    function ludoFx(c, cw, t, slow) {
+      var i, u, sq, g;
+      if (REDUCE) return;
+      // spotlight inside the active player's yard
+      if (st && !st.winner && st.players[st.turn]) {
+        var ap = st.players[st.turn], yy = YARDS[ap.seat], cx = (yy[0] + 3) * cw, cy = (yy[1] + 3) * cw;
+        g = c.createRadialGradient(cx, cy, cw * 0.3, cx, cy, cw * 3.2);
+        g.addColorStop(0, alpha(ap.color, 0.16 + 0.14 * slow)); g.addColorStop(1, alpha(ap.color, 0));
+        c.fillStyle = g; c.fillRect(yy[0] * cw, yy[1] * cw, cw * 6, cw * 6);
+      }
+      // twinkling sparkles on the safe stars
+      for (i = 0; i < SAFE_TRACK.length; i++) {
+        sq = TRACK[SAFE_TRACK[i]]; u = (t / 1700 + i * 0.37) % 1;
+        if (u < 0.45) sparkle(c, (sq[0] + 0.5) * cw + cw * 0.18, (sq[1] + 0.5) * cw - cw * 0.2, cw * 0.17 * Math.sin(u / 0.45 * Math.PI), Math.sin(u / 0.45 * Math.PI));
+      }
+      // slow diagonal light sweep across the glossy board
+      u = (t % 7500) / 7500;
+      if (u < 0.3) {
+        var k = u / 0.3, d = (k * 2.4 - 0.7) * size;
+        c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip();
+        g = c.createLinearGradient(d - size * 0.18, 0, d + size * 0.18, size * 0.36);
+        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, "rgba(255,255,255," + (0.13 * Math.sin(k * Math.PI)).toFixed(3) + ")"); g.addColorStop(1, "rgba(255,255,255,0)");
+        c.fillStyle = g; c.fillRect(0, 0, size, size); c.restore();
+      }
+    }
     function buildCache() {
       if (!size || !offCtx) return;
       var b = api.getBoard(), cols = seatColors();
@@ -3073,6 +3167,7 @@
       }
 
       kMode = false;
+      ludoDepth(c, cw, cols, b, M, K);
       if (K && api.noisePattern) { var kp = api.noisePattern(c); if (kp) { c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip(); c.globalAlpha = 0.28; c.fillStyle = kp; c.fillRect(0, 0, size, size); c.restore(); } }
       // 6. glass sheen
       c.save(); rr(c, 0, 0, size, size, size * 0.045); c.clip();
@@ -3220,6 +3315,7 @@
         c.shadowColor = ap.color; c.shadowBlur = cw * (0.4 + 0.7 * slow); c.stroke(); c.restore();
       }
 
+      ludoFx(c, cw, t, slow);
       (api.drawCenter || drawCenterEmblem)(c, size / 2, size / 2, cw * 0.62, t);
 
       // destination markers for movable pieces (respecting hints toggle)
@@ -3249,7 +3345,7 @@
       }
       for (i = 0; i < list.length; i++) {
         var it = list[i];
-        if (it.anim) { it.screenX = it.anim.x; it.screenY = it.anim.y; draws.push({ x: it.anim.x, y: it.anim.y - cw * 0.1, r: baseR * 1.12, c: it.pl.color, lift: cw * 0.14, z: 1e6 }); continue; }
+        if (it.anim) { it.screenX = it.anim.x; it.screenY = it.anim.y; var gh = it.anim.h || [], gk; for (gk = 0; gk < gh.length - 1; gk++) draws.push({ x: gh[gk].x, y: gh[gk].y - cw * 0.1, r: baseR * (0.7 + 0.04 * gk), c: it.pl.color, lift: cw * 0.1, z: 1e6 - 10 + gk, ga: 0.07 + 0.06 * gk }); draws.push({ x: it.anim.x, y: it.anim.y - cw * 0.1, r: baseR * 1.12, c: it.pl.color, lift: cw * 0.14, z: 1e6 }); continue; }
         var pos = tokenCoords(it.pl.seat, it.tIdx, it.step, size);
         var grp = groups[it.key] || [it], idx = grp.indexOf(it), len = grp.length, ox = 0, oy = 0, sc2 = 1;
         if (len > 1) { sc2 = 0.86; ox = (idx - (len - 1) / 2) * cw * 0.26; oy = -idx * cw * 0.05; }
@@ -3263,7 +3359,7 @@
         draws.push({ x: it.screenX, y: it.screenY - cw * 0.12, r: baseR * sc2, c: it.pl.color, lift: lift, z: it.screenY });
       }
       draws.sort(function (p, q3) { return p.z - q3.z; });
-      for (i = 0; i < draws.length; i++) api.drawToken(c, draws[i].x, draws[i].y, draws[i].r, draws[i].c, null, null, draws[i].lift);
+      for (i = 0; i < draws.length; i++) { c.save(); if (draws[i].ga) c.globalAlpha = draws[i].ga; api.drawToken(c, draws[i].x, draws[i].y, draws[i].r, draws[i].c, null, null, draws[i].lift); c.restore(); }
       st._rendered = list; overlays(c, list, cw, t);
 
       for (i = 0; i < particles.length; i++) {
@@ -3433,11 +3529,12 @@
           if (!st || g !== gen) return;
           var t = Math.min(1, (now - start) / ms), arc = Math.sin(t * Math.PI) * (size * arcK);
           var px = from.x + (to.x - from.x) * t, py = from.y + (to.y - from.y) * t - arc;
-          pl.anims[tIdx] = { x: px, y: py };
+          var prevA = pl.anims[tIdx], hh = prevA && prevA.h ? prevA.h : []; hh.push({ x: px, y: py }); if (hh.length > 6) hh.shift();
+          pl.anims[tIdx] = { x: px, y: py, h: hh };
           if (Math.random() < (o.trail || 0.72)) spawnTrail(px, py, pl.color);
           if (o.trail && Math.random() < 0.18) spawnSparks(px, py, "#ffffff", 2);
           if (t < 1) window.requestAnimationFrame(tick);
-          else { pl.tokens[tIdx] = steps[i]; i++; next(); }
+          else { if (lastHop) { spawnRing(to.x, to.y, pl.color, size * 0.07); spawnRing(to.x, to.y, "#ffffff", size * 0.045); } pl.tokens[tIdx] = steps[i]; i++; next(); }
         }
         window.requestAnimationFrame(tick);
       }

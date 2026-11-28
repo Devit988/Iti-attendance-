@@ -1,16 +1,32 @@
-/* ITI CONNECT service worker v2
-   - Offline app shell (index.html, og-image.png, Quiz Arena: quiz_arena.js + arena_games.js + quiz_bank.json)
+/* ITI CONNECT service worker v3 (Lean Shell + Persistent On-Demand Art Cache)
+   - Offline core app shell + default Royal Kingdom & active S&L/Avatar/Chor-Police sprites
+   - Optional extra Arena themes & piece packs cache automatically on first use in ASSETS_CACHE
+   - Persistent ASSETS_CACHE survives JS version bumps so updates stay fast on mobile data
    - CDN files (Tailwind, Lucide, Firebase SDK, fonts) cached so the app renders offline
    - Update prompt: new versions wait until the user taps "Refresh"
-   - Offline files: the page can ask this worker to save PDFs/notes for offline use
-   Bump VERSION whenever you deploy a new index.html or sw.js. */
-var VERSION = "v123";
-var CACHE = "iti-connect-" + VERSION;      // app shell + same-origin files
+   Bump VERSION whenever you deploy a new index.html, arena_games.js, or sw.js. */
+var VERSION = "v127";
+var CACHE = "iti-connect-" + VERSION;      // app shell + core code
+var ASSETS_CACHE = "iti-connect-art-v1";   // persistent art packs (survives JS updates)
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
 var FILES_CACHE = "iti-connect-files-v1";  // PDFs/notes saved for offline
 var MAX_FILES = 40;
 
-var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png", "./quiz_bank.json", "./quiz_bank_extra.json", "./quiz_arena.js", "./arena_games.js", "./chor_police.js", "./assets/bg_royal.jpg", "./assets/board_scroll.jpg", "./assets/tokens_doll.jpg", "./assets/bg_jungle.jpg", "./assets/bg_palace.png", "./assets/bg_cyber.png", "./assets/bg_sakura.png", "./assets/bg_forge.png", "./assets/bg_ocean.png", "./assets/board_palace.png", "./assets/tokens_pawn.png", "./assets/tokens_crown.png", "./assets/tokens_pack1.png", "./assets/tokens_pack2.png", "./assets/tokens_pack3.png", "./assets/tokens_pack4.png", "./assets/tokens_pack5.png", "./assets/dice_skins.png", "./assets/center_emblems.png", "./assets/board_cyber.png", "./assets/board_sakura.png", "./assets/board_forge.png", "./assets/board_ocean.png", "./assets/sl_heads.png", "./assets/sl_ladders.png"];
+/* Lean core shell: only essential code precached on install. */
+var SHELL = [
+  "./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./og-image.png",
+  "./quiz_bank.json", "./quiz_bank_extra.json", "./quiz_arena.js", "./arena_games.js", "./chor_police.js"
+];
+
+/* Core visual assets cached in persistent ASSETS_CACHE (never re-downloaded on JS updates).
+   Optional extra themes/pieces (bg_cyber, tokens_pack1..5, board_palace..ocean, etc.)
+   auto-cache in ASSETS_CACHE the first time a player selects them! */
+var CORE_ART = [
+  "./assets/bg_royal.jpg", "./assets/board_scroll.jpg", "./assets/tokens_doll.jpg",
+  "./assets/dice_skins.png", "./assets/center_emblems.png",
+  "./assets/sl_heads.png", "./assets/sl_ladders.png",
+  "./assets/avatars.png", "./assets/cp_roles.png", "./assets/cp_roles_extra.png"
+];
 
 var CDN_PRECACHE = [
   "https://cdn.tailwindcss.com/3.4.17",
@@ -27,6 +43,11 @@ self.addEventListener("install", function (e) {
   /* No skipWaiting here: the page shows a "Refresh" banner and sends SKIP_WAITING. */
   e.waitUntil(Promise.all([
     caches.open(CACHE).then(function (c) { return Promise.all(SHELL.map(function (u) { return c.add(u).catch(function () {}); })); }).catch(function () {}),
+    caches.open(ASSETS_CACHE).then(function (c) {
+      return Promise.all(CORE_ART.map(function (u) {
+        return c.match(u).then(function (hit) { return hit || c.add(u).catch(function () {}); });
+      }));
+    }).catch(function () {}),
     caches.open(CDN_CACHE).then(function (c) {
       return Promise.all(CDN_PRECACHE.map(function (u) {
         return fetch(u, { mode: "cors" }).then(function (r) { if (r && r.ok) return c.put(u, r); }).catch(function () {});
@@ -36,7 +57,7 @@ self.addEventListener("install", function (e) {
 });
 
 self.addEventListener("activate", function (e) {
-  var keep = [CACHE, CDN_CACHE, FILES_CACHE];
+  var keep = [CACHE, ASSETS_CACHE, CDN_CACHE, FILES_CACHE];
   e.waitUntil(
     caches.keys().then(function (keys) {
       return Promise.all(keys.filter(function (k) { return keep.indexOf(k) < 0; }).map(function (k) { return caches.delete(k); }));
@@ -80,8 +101,24 @@ self.addEventListener("fetch", function (e) {
     return;
   }
 
-  /* Same-origin: network first, but on a slow/weak connection fall back to the cached copy after 4 s
-     (the network request still finishes and refreshes the cache for next time). */
+  /* Same-origin ./assets/ art packs: cache-first in persistent ASSETS_CACHE, refresh in background. */
+  if (/\/assets\//.test(url.pathname)) {
+    e.respondWith(
+      caches.open(ASSETS_CACHE).then(function (c) {
+        return c.match(req).then(function (hit) {
+          var net = fetch(req).then(function (res) {
+            if (res && res.ok) c.put(req, res.clone());
+            return res;
+          }).catch(function () { return hit || Response.error(); });
+          if (hit) { e.waitUntil(net.catch(function () {})); return hit; }
+          return net;
+        });
+      })
+    );
+    return;
+  }
+
+  /* Same-origin app shell & JS: network first, falling back to cache after 4 s on weak connections. */
   var fromCache = function () {
     return caches.match(req).then(function (hit) {
       return hit || (req.mode === "navigate" ? caches.match("./index.html") : Response.error());
@@ -122,7 +159,6 @@ self.addEventListener("message", function (e) {
           if (!res || !res.ok) throw new Error("bad response");
           return c.put(u, res).then(function () { reply({ type: "cache-result", url: u, ok: true }); });
         }).catch(function () {
-          /* Hosts without CORS (e.g. some Drive links) cannot be saved. */
           reply({ type: "cache-result", url: u, ok: false });
         });
       })).then(trimFiles);

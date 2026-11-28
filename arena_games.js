@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v5.5 (Painted S&L Sprites + Slither-Across Shifting Snakes + All Art Packs)
+/*! ITI CONNECT — Arena Games v5.6.2 (Ludo Piece/Frame/Emblem/Dice Art Toggles + Snake Head Toggle + All Polish)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -1431,7 +1431,22 @@
       R + ".bg-emo:active{transform:scale(.9)}",
       R + ".bg-bubble{position:absolute;right:6px;top:-14px;font-size:20px;pointer-events:none;animation:bgPop 1.3s ease-out forwards;z-index:5}",
       "@keyframes bgPop{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-4px) scale(1.15)}80%{opacity:1;transform:translateY(-12px) scale(1)}100%{opacity:0;transform:translateY(-20px) scale(.9)}}",
-      "@media(prefers-reduced-motion:reduce){" + R + ".bg-dice.roll," + R + ".bg-bubble{animation:none}}"
+      "@media(prefers-reduced-motion:reduce){" + R + ".bg-dice.roll," + R + ".bg-bubble{animation:none}}",
+      /* Painted avatar portrait inside .lx-av */
+      R + ".lx-av{overflow:visible}",
+      R + ".lx-av .ag-av-img{position:relative;z-index:2;width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}",
+      R + ".lx-emb .lx-av .ag-av-img{border-radius:9px;padding:1px}",
+      /* Quick Rules Modal */
+      ".ag-rules-bg{position:fixed;inset:0;z-index:2147483500;display:grid;place-items:center;padding:16px;background:rgba(2,6,23,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:agFadeIn .18s ease-out}",
+      ".ag-rules-card{width:100%;max-width:420px;max-height:84vh;overflow-y:auto;border-radius:22px;padding:16px 16px 18px;color:#f8fafc;background:linear-gradient(165deg,#1e1b4b,#0f172a);border:1.5px solid rgba(251,191,36,.48);box-shadow:0 24px 60px -14px rgba(0,0,0,.85)}",
+      "html.bright-mode .ag-rules-card{color:#0f172a;background:linear-gradient(165deg,#ffffff,#f1f5f9);border-color:rgba(217,119,6,.55)}",
+      ".ag-rules-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}",
+      ".ag-rules-hd h3{margin:0;font-size:16px;font-weight:900;letter-spacing:.01em}",
+      ".ag-rules-x{width:32px;height:32px;border-radius:10px;border:1px solid rgba(148,163,184,.35);background:rgba(148,163,184,.14);color:inherit;font-size:16px;font-weight:900;cursor:pointer}",
+      ".ag-rules-list{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}",
+      ".ag-rules-list li{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:13px;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.18);font-size:12.5px;line-height:1.4;font-weight:600}",
+      ".ag-rules-list li span{font-size:16px;line-height:1.2;flex:none}",
+      "@keyframes agFadeIn{from{opacity:0}to{opacity:1}}"
     ];
     var st = document.createElement("style"); st.id = "ag-style"; st.textContent = css.join("\n");
     document.head.appendChild(st);
@@ -1528,7 +1543,34 @@
     isMuted: function () { return !!P.mute; },
     registerGame: registerGame,
     setTab: setTab,
-    getTab: function () { return P.tab; }
+    getTab: function () { return P.tab; },
+    avatarHTML: function (name) { return '<b>' + esc((name || "?").charAt(0).toUpperCase()) + '</b>'; },
+    showRules: function (game) {
+      var old = document.getElementById("ag-rules-modal"); if (old) old.remove();
+      var isLudo = game === "ludo";
+      var items = isLudo ? [
+        ["🎲", "<b>Roll a 6</b> to bring a piece out of your yard and earn a bonus roll. Rolling <b>three 6s</b> in a row skips your turn."],
+        ["⭐", "<b>Safe Stars</b> protect all pieces sitting on them from being captured."],
+        ["⚔️", "<b>Captures &amp; Home:</b> Landing on a rival sends them back to their yard and awards a bonus roll plus a <b>Power Card</b>."],
+        ["🎴", "<b>Power Cards (Offline):</b> Use <b>✨ 6</b> to guarantee your next roll is a 6, or <b>🛡️ Shield</b> to block captures until your next turn."],
+        ["🏠", "<b>Win:</b> Reach the center triangle with an exact roll for all your tokens (2 in Turbo, 4 in Classic)."]
+      ] : [
+        ["🎯", "<b>Race to 100:</b> Roll the dice to climb from Square 1 to Square 100. You need an <b>exact roll</b> to land on 100!"],
+        ["🔥", "<b>Bonus Roll:</b> Rolling a <b>6</b> gives you an extra turn."],
+        ["🪜", "<b>Ladders &amp; Power Cards:</b> Climbing a ladder jumps you up AND awards a <b>Power Card</b> in offline matches (<b>✨ Lucky 6</b> or <b>🛡️ Snake Shield</b>)."],
+        ["🛡️", "<b>Snake Shield:</b> Arm your shield before rolling—if you land on a snake head, it <b>blocks the bite</b> completely!"],
+        ["🐍", "<b>Shifting Snakes:</b> In <b>Medium (3×)</b> and <b>Hard (4×)</b> modes, snakes slither to new tiles mid-match! Watch for the 1-turn <b>⚠️ stirring</b> warning. Snakes never land on a player, ladder, 1, or 100."]
+      ];
+      var m = document.createElement("div");
+      m.id = "ag-rules-modal"; m.className = "ag-rules-bg";
+      m.innerHTML = '<div class="ag-rules-card" role="dialog" aria-modal="true">' +
+        '<div class="ag-rules-hd"><h3>' + (isLudo ? '🎲 Ludo Arena Rules' : '🐍 Snakes &amp; Ladders Rules') + '</h3>' +
+        '<button type="button" class="ag-rules-x" aria-label="Close">✕</button></div>' +
+        '<ul class="ag-rules-list">' + items.map(function (it) { return '<li><span>' + it[0] + '</span><div>' + it[1] + '</div></li>'; }).join("") + '</ul></div>';
+      m.addEventListener("click", function (ev) { if (ev.target === m || ev.target.closest(".ag-rules-x")) m.remove(); });
+      document.body.appendChild(m);
+      playSfx("click");
+    }
   };
   /* =====================================================================
    * GAME 1: SNAKES & LADDERS (Offline + Online Friends + Studio Integration)
@@ -2124,6 +2166,16 @@
           ctx.beginPath(); ctx.arc(c0.x + ox, c0.y + oy + baseR * 0.3, baseR * sc * 0.95 * rp, 0, TAU); ctx.stroke(); ctx.restore();
         }
         api.drawToken(ctx, c0.x + ox, c0.y + oy, baseR * sc, pl.color, null, null, REDUCE_SL ? 0 : Math.max(0, Math.sin(now / 420 + i) * cw * 0.035));
+        if (pl.shield > 0) {
+          var shP = REDUCE_SL ? 0.5 : 0.5 + 0.5 * Math.sin(now / 250 + i);
+          ctx.save(); ctx.strokeStyle = "rgba(125,211,252," + (0.6 + 0.35 * shP).toFixed(2) + ")"; ctx.fillStyle = "rgba(56,189,248," + (0.12 + 0.08 * shP).toFixed(2) + ")"; ctx.lineWidth = 2.2;
+          ctx.beginPath(); ctx.arc(c0.x + ox, c0.y + oy, baseR * sc * (1.28 + 0.07 * shP), 0, TAU); ctx.fill(); ctx.stroke(); ctx.restore();
+        }
+        if (i === st.turn && st.force && !st.winner) {
+          ctx.save(); ctx.fillStyle = "#fde047"; ctx.shadowColor = "#f59e0b"; ctx.shadowBlur = 8;
+          for (var ok = 0; ok < 3; ok++) { var oa = now / 300 + ok * TAU / 3; ctx.beginPath(); ctx.arc(c0.x + ox + Math.cos(oa) * baseR * 1.2, c0.y + oy + Math.sin(oa) * baseR * 1.2, cw * 0.065, 0, TAU); ctx.fill(); }
+          ctx.restore();
+        }
       }
       for (i = 0; i < st.players.length; i++) {
         pl = st.players[i]; if (!pl.anim) continue;
@@ -2437,8 +2489,134 @@
       continueAfterTurn();
     }
 
+    /* ---------- S&L Power Cards & Career Stats ---------- */
+    var SL_LIFE_KEY = "iti_sl_life_v1";
+    var SL_TITLES = ["Explorer", "Climber", "Pathfinder", "Snake Charmer", "Summit Master", "Apex Legend"];
+    function slStat(i) {
+      if (!st.stats) st.stats = [];
+      if (!st.t0) st.t0 = Date.now();
+      return st.stats[i] || (st.stats[i] = { ladders: 0, snakes: 0, blocked: 0, six: 0, moves: 0 });
+    }
+    function slLifeLoad() {
+      var o = {}; try { o = JSON.parse(localStorage.getItem(SL_LIFE_KEY) || "{}") || {}; } catch (e) { }
+      return { games: o.games | 0, wins: o.wins | 0, ladders: o.ladders | 0, snakes: o.snakes | 0, blocked: o.blocked | 0, six: o.six | 0, streak: o.streak | 0, best: o.best | 0, xp: o.xp | 0 };
+    }
+    function slLvlOf(xp) { return Math.floor(Math.sqrt(xp / 55)) + 1; }
+    function slBadges(L) {
+      var b = [];
+      if (L.games >= 5) b.push("🎮 Regular");
+      if (L.wins >= 1) b.push("🏆 First Summit");
+      if (L.wins >= 5) b.push("👑 Summit King");
+      if (L.best >= 3) b.push("🔥 Win Streak");
+      if (L.ladders >= 15) b.push("🪜 Ladder Master");
+      if (L.blocked >= 5) b.push("🛡️ Snake Tamer");
+      if (L.six >= 20) b.push("🎲 Lucky Six");
+      return b;
+    }
+    function slProfileHTML() {
+      var L = slLifeLoad(), lv = slLvlOf(L.xp), a = 55 * (lv - 1) * (lv - 1), b = 55 * lv * lv;
+      var pc = Math.max(0, Math.min(100, Math.round((L.xp - a) / (b - a) * 100)));
+      var bd = slBadges(L);
+      return '<div class="ag-glass lx-card lx-enter" style="animation-delay:.04s;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800"><span>⭐ Level ' + lv + ' · ' + SL_TITLES[Math.min(SL_TITLES.length - 1, lv - 1)] + '</span><span style="opacity:.72;font-size:11px">' + L.xp + ' XP · ' + L.wins + 'W/' + L.games + 'G</span></div>' +
+        '<div style="height:7px;border-radius:9px;background:rgba(148,163,184,.25);margin-top:5px;overflow:hidden"><i style="display:block;height:100%;width:' + pc + '%;background:linear-gradient(90deg,#22c55e,#fbbf24)"></i></div>' +
+        (bd.length ? '<div style="margin-top:7px;display:flex;flex-wrap:wrap;gap:4px">' + bd.slice(0, 4).map(function (x) { return '<span style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--ag-on);border:1px solid var(--ag-onb)">' + x + '</span>'; }).join("") + '</div>' : '') +
+        '</div>';
+    }
+    function slResultExtras(ranked) {
+      var me = rm ? st.players.findIndex(function (p) { return p.uid === rm.uid; }) : (cfg.mode === "ai" ? 0 : -1);
+      var life = slLifeLoad(), fresh = [];
+      if (me >= 0 && !st.rec) {
+        st.rec = 1;
+        var before = slBadges(life), s = slStat(me), won = ranked[0] === st.players[me];
+        life.games++; life.ladders += s.ladders; life.snakes += s.snakes; life.blocked += s.blocked; life.six += s.six;
+        if (won) { life.wins++; life.streak++; life.best = Math.max(life.best, life.streak); } else life.streak = 0;
+        var mult = curDiff === "hard" ? 1.5 : (curDiff === "medium" ? 1.2 : 1);
+        var gain = Math.round((20 + (won ? 50 : 0) + s.ladders * 6 + s.blocked * 10 + s.six * 2) * mult);
+        var lv0 = slLvlOf(life.xp);
+        life.xp += gain; st.xpGain = gain; st.lvUp = slLvlOf(life.xp) > lv0;
+        if (st.lvUp) { playSfx("levelup"); vibrate("levelup"); }
+        try { localStorage.setItem(SL_LIFE_KEY, JSON.stringify(life)); } catch (e) { }
+        st.fresh = slBadges(life).filter(function (x) { return before.indexOf(x) < 0; });
+      }
+      fresh = st.fresh || [];
+      var secs = Math.round((Date.now() - (st.t0 || Date.now())) / 1000);
+      var box = 'border-radius:14px;background:var(--ag-bg2);border:1px solid var(--ag-bd);padding:10px 12px;margin-top:8px;text-align:left;font-size:12px;font-weight:700';
+      var h = '<div style="' + box + '"><div style="display:flex;justify-content:space-between;font-weight:800;margin-bottom:5px"><span>📊 Match Stats</span><span style="opacity:.75">⏱ ' + Math.floor(secs / 60) + ':' + ('0' + secs % 60).slice(-2) + '</span></div>';
+      st.players.forEach(function (p, i) {
+        var s = slStat(i);
+        h += '<div style="display:flex;justify-content:space-between;gap:6px;padding:2px 0"><span style="color:' + p.color + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">● ' + esc(p.name) + '</span><span style="flex:none">🪜 ' + s.ladders + ' &nbsp;🐍 ' + s.snakes + (s.blocked ? ' &nbsp;🛡️ ' + s.blocked : '') + ' &nbsp;🎲 ' + s.six + '</span></div>';
+      });
+      h += '</div>';
+      if (me >= 0) {
+        var lv = slLvlOf(life.xp), a = 55 * (lv - 1) * (lv - 1), b = 55 * lv * lv, pc = Math.max(0, Math.min(100, Math.round((life.xp - a) / (b - a) * 100)));
+        h += '<div style="' + box + '"><div style="display:flex;justify-content:space-between;font-weight:800;margin-bottom:5px"><span>⭐ Lv ' + lv + ' · ' + SL_TITLES[Math.min(SL_TITLES.length - 1, lv - 1)] + '</span><span style="color:var(--ag-ac)">' + (st.xpGain ? '+' + st.xpGain + ' XP' : '') + (st.lvUp ? ' · LEVEL UP! 🎉' : '') + '</span></div>' +
+          '<div style="height:6px;border-radius:9px;background:rgba(148,163,184,.25);margin-bottom:8px;overflow:hidden"><i style="display:block;height:100%;width:' + pc + '%;background:linear-gradient(90deg,#22c55e,#fbbf24)"></i></div>' +
+          '<div style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center;gap:4px">' +
+          [["Games", life.games], ["Wins", life.wins], ["Ladders", life.ladders], ["Blocked", life.blocked]].map(function (x) { return '<div><div style="font-size:16px;font-weight:900">' + x[1] + '</div><div style="opacity:.7;font-size:10px">' + x[0] + '</div></div>'; }).join("") + '</div>';
+        var bd = slBadges(life);
+        if (bd.length) h += '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">' + bd.map(function (x) { return '<span style="padding:3px 8px;border-radius:99px;font-size:11px;background:' + (fresh.indexOf(x) >= 0 ? '#f59e0b;color:#111' : 'var(--ag-on)') + '">' + x + (fresh.indexOf(x) >= 0 ? ' NEW!' : '') + '</span>'; }).join("") + '</div>';
+        h += '</div>';
+      }
+      return h;
+    }
+    function slGiveCard(pl, posCell) {
+      if (rm) return;
+      var c = pl.cards || (pl.cards = { gold: 0, shield: 0 });
+      if (c.gold + c.shield >= 4) return;
+      var k = Math.random() < 0.5 ? "gold" : "shield";
+      c[k]++; playSfx("card"); vibrate("card");
+      if (posCell && size) {
+        var pt = cellCenter(posCell, size);
+        popText(k === "gold" ? "🎴 +1 LUCKY 6!" : "🎴 +1 SHIELD!", pt.x, pt.y - pt.cw * 0.85, k === "gold" ? "#fde047" : "#7dd3fc", pt.cw * 0.46, 1150);
+      }
+    }
+    function slUseCard(k, pl) {
+      if (!st || rm || st.winner || st.busy) return false;
+      pl = pl || st.players[st.turn];
+      var c = pl.cards; if (!c || !(c[k] > 0)) return false;
+      var pt = cellCenter(pl.pos, size);
+      if (k === "gold") {
+        if (st.force) return false;
+        st.force = 6; c.gold--;
+        playSfx("gold"); vibrate("gold");
+        addRing(pt.x, pt.y, "#fde047", pt.cw * 1.7, 560);
+        spawnBurst(pt.x, pt.y, ["#fbbf24", "#fde047", "#ffffff"], 18, {});
+        popText("✨ LUCKY 6 ARMED!", size / 2, size * 0.46, "#fde047", pt.cw * 0.54, 1050);
+        setMsg("✨ " + pl.name + " armed Lucky 6!");
+      } else {
+        if (pl.shield > 0) return false;
+        pl.shield = 1; c.shield--;
+        playSfx("shield"); vibrate("shield");
+        addRing(pt.x, pt.y, "#38bdf8", pt.cw * 1.7, 560);
+        spawnBurst(pt.x, pt.y, ["#38bdf8", "#7dd3fc", "#ffffff"], 18, {});
+        popText("🛡️ SNAKE SHIELD UP!", size / 2, size * 0.46, "#7dd3fc", pt.cw * 0.54, 1050);
+        setMsg("🛡️ " + pl.name + " raised a Snake Shield!");
+      }
+      updateHUD(); kickLoop();
+      return true;
+    }
+    function slBotCards(pl) {
+      var c = pl.cards; if (!c) return;
+      var snakeAhead = false, d;
+      for (d = 1; d <= 6; d++) if (SNAKES[pl.pos + d]) snakeAhead = true;
+      if (c.shield > 0 && !(pl.shield > 0) && snakeAhead) slUseCard("shield", pl);
+      if (c.gold > 0 && !st.force && pl.pos + 6 <= 100 && !SNAKES[pl.pos + 6]) slUseCard("gold", pl);
+    }
+    function slCardsHTML() {
+      if (rm || !st) return "";
+      var cp = st.players[st.turn], ow = cp.bot ? st.players[0] : cp;
+      if (!ow || ow.bot) return "";
+      var c = ow.cards || { gold: 0, shield: 0 }, live = ow === cp && !st.busy && !st.winner;
+      var mk = function (k, ic, lab, n, on) {
+        return '<button type="button" data-sl="card" data-k="' + k + '" class="lx-cbtn' + (on ? ' armed' : '') + (n > 0 && live ? ' live' : '') + '" style="opacity:' + (n > 0 && live ? 1 : 0.48) + '">' + ic + ' ' + lab + ' ×' + n + '</button>';
+      };
+      return mk("gold", "✨", "6", c.gold, !!st.force) + mk("shield", "🛡️", ow.shield > 0 ? "ON" : "Shield", c.shield, ow.shield > 0);
+    }
+
     function executeMove(pIdx, val, isActor) {
       var pl = st.players[pIdx], target = pl.pos + val, rolledSix = val === 6;
+      slStat(pIdx).moves++; if (rolledSix) slStat(pIdx).six++;
       if (rolledSix) { playSfx("six"); var sc6 = cellCenter(pl.pos, size); popText("SIX! 🔥", sc6.x, sc6.y - sc6.cw * 0.7, "#fde047", sc6.cw * 0.5, 900); addRing(sc6.x, sc6.y, "#fde047", sc6.cw * 1.5, 520); }
       if (target > 100) {
         var need = 100 - pl.pos, g0 = gen, p0 = cellCenter(pl.pos, size), p100 = cellCenter(100, size), cw0 = p100.cw, t0 = performance.now(), hit = false;
@@ -2477,12 +2655,28 @@
         }
         if (LADDERS[pl.pos]) {
           var up = LADDERS[pl.pos];
+          slStat(pIdx).ladders++;
           setMsg(pl.name + " climbed ladder to " + up + "!");
-          animateJump(pl, up, true, function () { updateHUD(); finishTurn(rolledSix, isActor); });
+          animateJump(pl, up, true, function () { slGiveCard(pl, up); updateHUD(); finishTurn(rolledSix, isActor); });
         } else if (SNAKES[pl.pos]) {
-          var dn = SNAKES[pl.pos];
-          setMsg("Snake slid " + pl.name + " to " + dn + "!");
-          animateJump(pl, dn, false, function () { updateHUD(); finishTurn(rolledSix, isActor); });
+          if (pl.shield > 0) {
+            pl.shield = 0; slStat(pIdx).blocked++;
+            var sc = cellCenter(pl.pos, size);
+            playSfx("shield"); vibrate("shield");
+            flashBoard("56,189,248", 0.36, 560);
+            addRing(sc.x, sc.y, "#38bdf8", sc.cw * 1.9, 600);
+            addRing(sc.x, sc.y, "#ffffff", sc.cw * 1.2, 420);
+            spawnBurst(sc.x, sc.y, ["#38bdf8", "#7dd3fc", "#ffffff"], 26, { sp: 1.6, spr: 3.4, g: 0.04 });
+            popText("🛡️ SNAKE BLOCKED!", sc.x, sc.y - sc.cw * 0.65, "#7dd3fc", sc.cw * 0.56, 1200);
+            setMsg("🛡️ " + pl.name + "'s Shield blocked the snake!");
+            updateHUD();
+            later(function () { finishTurn(rolledSix, isActor); }, api.dur(700));
+          } else {
+            var dn = SNAKES[pl.pos];
+            slStat(pIdx).snakes++;
+            setMsg("Snake slid " + pl.name + " to " + dn + "!");
+            animateJump(pl, dn, false, function () { updateHUD(); finishTurn(rolledSix, isActor); });
+          }
         } else {
           finishTurn(rolledSix, isActor);
         }
@@ -2496,11 +2690,11 @@
     }
 
     function rollDice(byBot) {
-      if (byBot === true) { if (rm || !st || st.busy || st.winner || !st.players[st.turn].bot) return; }
+      if (byBot === true) { if (rm || !st || st.busy || st.winner || !st.players[st.turn].bot) return; slBotCards(st.players[st.turn]); }
       else if (!canRollNow()) return;
       st.busy = true; updateHUD();
       playSfx("dice");
-      var finalVal = 1 + Math.floor(Math.random() * 6), actor = st.turn, ms = Math.round(api.dur(1000));
+      var finalVal = st.force ? (function () { var fv = st.force; st.force = 0; return fv; })() : (1 + Math.floor(Math.random() * 6)), actor = st.turn, ms = Math.round(api.dur(1000));
       clearTimeout(diceT);
       st.dice = finalVal; st.players[actor].lastDice = finalVal;
       dieVisual(actor, finalVal, ms);
@@ -2717,10 +2911,10 @@
       var cols = slColors(), pls = [], i, nm;
       for (i = 0; i < cfg.count; i++) {
         nm = (cfg.names[i] || "").trim() || (cfg.mode === "ai" && i > 0 ? "Bot " + i : "Player " + (i + 1));
-        pls.push({ name: nm, color: cols[i], pos: 1, bot: cfg.mode === "ai" && i > 0, anim: null });
+        pls.push({ name: nm, color: cols[i], pos: 1, bot: cfg.mode === "ai" && i > 0, anim: null, shield: 0, cards: { gold: 0, shield: curDiff === "hard" ? 1 : 0 } });
       }
       var mSh0 = (DIFFS[curDiff] && DIFFS[curDiff].maxShifts) || 0;
-      st = { players: pls, turn: 0, dice: 6, rollId: 0, turnCount: 0, shiftsDone: 0, maxShifts: mSh0, shiftEvery: calcShiftEvery(curDiff, pls.length), shiftId: 0, busy: false, winner: null, msg: turnTxt(pls[0].name) + " — Tap dice!" };
+      st = { players: pls, stats: [], t0: Date.now(), force: 0, turn: 0, dice: 6, rollId: 0, turnCount: 0, shiftsDone: 0, maxShifts: mSh0, shiftEvery: calcShiftEvery(curDiff, pls.length), shiftId: 0, busy: false, winner: null, msg: turnTxt(pls[0].name) + " — Tap dice!" };
       particles = []; view = "game"; render();
     }
 
@@ -2733,6 +2927,7 @@
         if (K && w.getAttribute("data-c") !== p.color) { w.setAttribute("style", K.vars(p.color)); w.setAttribute("data-c", p.color); }   /* keep the dice tint in step with the player's colour */
         d.disabled = !ready;
         d.classList.toggle("ready", ready); w.classList.toggle("ready", ready); w.classList.toggle("idle", !mine);
+        w.classList.toggle("dice-gold", !!(st.force && ready));
       });
       var hint = q("#sl-roll-hint", host);
       if (hint) {
@@ -2764,11 +2959,13 @@
           return '<div style="flex:' + pp.pos + ';background:' + pp.color + '" title="' + esc(pp.name) + ' · Sq ' + pp.pos + '">' + (st.players.length <= 3 || pc >= 22 ? pp.pos : '') + '</div>';
         }).join("");
       }
+      var cdEl = q("#sl-cards", host);
+      if (cdEl) { var ch = slCardsHTML(); cdEl.innerHTML = ch; cdEl.style.display = ch ? "flex" : "none"; }
     }
 
     function renderSetup() {
       var K0 = dkit(); if (K0) K0.css();
-      var m = cfg.mode, cols = slColors(), i, h = '<div class="bg-box lx"><div class="ag-glass lx-card lx-enter" style="animation-delay:.08s">';
+      var m = cfg.mode, cols = slColors(), i, h = '<div class="bg-box lx">' + slProfileHTML() + '<div class="ag-glass lx-card lx-enter" style="animation-delay:.08s">';
       h += '<div class="lx-lbl">Game mode</div><div class="lx-g3">' + [
         ["ai", "bot", "vs Bots", "Play solo"], ["local", "users", "Pass & Play", "Same phone"], ["online", "wifi", "Online", "With friends"]
       ].map(function (t) {
@@ -2850,9 +3047,9 @@
         '<button type="button" id="sl-die-' + idx + '" class="lx-die" data-sl="roll" aria-label="Roll dice for ' + esc(pl.name) + '" disabled>' + (K ? K.cube("sl-cube-" + idx) : "") + '</button></div>';
     }
     function slCard(idx) {
-      var pl = st.players[idx];
+      var pl = st.players[idx], isMe = rm ? (pl.uid === rm.uid) : (idx === 0);
       return '<div id="sl-chip-' + idx + '" class="lx-pc lx-emb sl-card' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
-        '<div class="lx-avw"><div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div><div class="lx-nm">' + esc(pl.name) + '</div></div>' +
+        '<div class="lx-avw"><div class="lx-av" data-av-i="' + idx + '" data-av-me="' + (isMe ? 1 : 0) + '" data-av-n="' + esc(pl.name) + '">' + api.avatarHTML(pl.name, idx, isMe) + '</div><div class="lx-nm">' + esc(pl.name) + '</div></div>' +
         '<div class="lx-mid"><div class="sl-sq">Sq <b class="sl-pos">' + pl.pos + '</b></div><div class="sl-pbar"><i style="width:' + Math.min(100, pl.pos) + '%"></i></div></div>' +
         slDie(idx) + '<span class="lx-tbar" aria-hidden="true"><i></i></span></div>';
     }
@@ -2881,10 +3078,11 @@
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="sl-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
         '<span id="sl-dbadge" class="sl-dbadge sl-d-' + curDiff + '">' + DIFFS[curDiff].name.toUpperCase() + (st.maxShifts > 0 ? ' · 🐍' + Math.max(0, st.maxShifts - (st.shiftsDone || 0)) : '') + '</span>' +
+        '<button type="button" class="lx-ib" data-sl="rules" aria-label="Rules" title="How to Play">' + ico("help-circle") + '</button>' +
         '<button type="button" class="lx-ib studio" data-sl="studio" aria-label="Arena Studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
       h += rowH(topRow, true);
       h += '<div class="bg-cv-wrap ag-glass lx-enter" style="animation-delay:.1s"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
-      h += '<div class="sl-bar-row lx-enter" style="animation-delay:.12s"><div id="sl-race" class="sl-race" title="Live race to 100"></div>' +
+      h += '<div class="sl-bar-row lx-enter" style="animation-delay:.12s"><div id="sl-cards" class="sl-cards" style="display:none"></div><div id="sl-race" class="sl-race" title="Live race to 100"></div>' +
         '<div class="sl-emos">' + ["👏", "😂", "🔥", "😱"].map(function (em) { return '<button type="button" class="sl-emo" data-sl="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div></div>';
       h += rowH(botRow, false);
       h += '</div>';
@@ -2915,6 +3113,7 @@
           '<span class="truncate flex-1">' + esc(pl.name) + '</span>' +
           '<span class="font-extrabold qa-ac">' + (pl.pos === 100 ? "100 ★" : "Tile " + pl.pos) + '</span></div>';
       }).join("") + '</div>';
+      h += slResultExtras(ranked);
       h += '<div class="grid grid-cols-2 gap-2 pt-1">' +
         (rm ? '<button type="button" class="bg-cta col-span-2" data-sl="leave">' + ico("log-out") + 'Leave Room</button>' :
           '<button type="button" class="bg-cta" data-sl="start">' + ico("rotate-ccw") + 'Play Again</button>' +
@@ -2953,7 +3152,9 @@
         R + ".sl-race>div{display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);transition:flex .5s ease}",
         R + ".sl-emos{display:flex;gap:4px;flex:none}",
         R + ".sl-emo{width:28px;height:26px;border-radius:9px;background:var(--ag-bg2);border:1px solid var(--ag-bd);font-size:14px;line-height:1;display:grid;place-items:center;transition:transform .12s}",
-        R + ".sl-emo:active{transform:scale(.82)}"
+        R + ".sl-emo:active{transform:scale(.82)}",
+        R + ".sl-cards{display:flex;align-items:center;gap:4px;flex:none}",
+        R + ".sl-cards .lx-cbtn{padding:3px 7px;font-size:10.5px;border-radius:10px}"
       ].join("");
       document.head.appendChild(t);
     }
@@ -2987,6 +3188,8 @@
           else if (a === "leave") { playSfx("click"); leaveOnline(); }
           else if (a === "setup") { playSfx("click"); view = "setup"; render(); }
           else if (a === "studio") { toggleInGameStudio(); }
+          else if (a === "rules") { api.showRules("snakes"); }
+          else if (a === "card") { if (canRollNow()) slUseCard(k); }
           else if (a === "roll") { rollDice(); }
           else if (a === "emo") { sendEmoji(k); }
           else if (a === "quit") {
@@ -3021,7 +3224,7 @@
             else if (view === "setup") renderSetup();
           }
           if ((key === "dpos" || key === "all") && st && view === "game" && !st.busy && !st.winner) { renderGame(); }
-          if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "theme" || key === "snake" || key === "ladder" || key === "all") {
+          if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "theme" || key === "snake" || key === "ladder" || key === "slHeadArt" || key === "pieceArt" || key === "frameArt" || key === "centerArt" || key === "diceArt" || key === "all") {
             offKey = ""; drawFrame();
           }
         });
@@ -4891,8 +5094,9 @@ function pickBestBotTokenOld(pl, valid, dice) {
       if (idx < 0) return '<div></div>';
       var pl = st.players[idx], dots = "", k;
       for (k = 0; k < pl.tokens.length; k++) dots += '<i class="lx-tk' + (pl.tokens[k] === 56 ? " done" : "") + '"></i>';
+      var isMe = rm ? (pl.uid === rm.uid) : (idx === 0);
       return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc lx-emb' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
-        '<div class="lx-avw"><div class="lx-av"><b>' + esc((pl.name || "?").charAt(0).toUpperCase()) + '</b></div>' +
+        '<div class="lx-avw"><div class="lx-av" data-av-i="' + idx + '" data-av-me="' + (isMe ? 1 : 0) + '" data-av-n="' + esc(pl.name) + '">' + api.avatarHTML(pl.name, idx, isMe) + '</div>' +
         '<div class="lx-nm">' + esc(pl.name) + '<span class="lx-lead" style="display:none">👑</span></div></div>' +
         '<div class="lx-mid"><div class="lx-tks">' + dots + '</div></div>' +
         dieBlock(idx) + '<span class="lx-tbar" aria-hidden="true"><i></i></span></div>';
@@ -4908,6 +5112,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       var cur = st.players[st.turn], h = '<div class="lx lx-gap lx-pdl' + (st.players.length <= 2 ? " lx-few" : "") + '" style="gap:10px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-ld="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="ld-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
+        '<button type="button" class="lx-ib" data-ld="rules" aria-label="Rules" title="How to Play">' + ico("help-circle") + '</button>' +
         '<button type="button" class="lx-ib studio" data-ld="studio" aria-label="Arena Studio" title="Live Theme &amp; Piece Studio">' + ico("sparkles") + '</button>' +
         '<button type="button" id="ld-auto-btn" class="lx-pill' + (P.autoMove ? " on" : "") + '" data-ld="automove" title="Auto-move when only 1 piece can move">Auto: ' + (P.autoMove ? "On" : "Off") + '</button></div>';
       h += '<div class="lx-row lx-rt lx-enter" style="animation-delay:.04s">' + ldCell(0) + ldCell(1) + '</div>';
@@ -5032,6 +5237,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
           else if (a === "leave") { playSfx("click"); leaveOnline(); }
           else if (a === "setup") { playSfx("click"); view = "setup"; render(); }
           else if (a === "studio") { toggleInGameStudio(); }
+          else if (a === "rules") { api.showRules("ludo"); }
           else if (a === "card") { if (canActNow()) useCard(k); }
           else if (a === "undo") { doUndo(); }
           else if (a === "roll") { rollDice(); }
@@ -5079,7 +5285,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
             var ab = q("#ld-auto-btn", host);
             if (ab) { ab.classList.toggle("on", P.autoMove); ab.textContent = "Auto: " + (P.autoMove ? "On" : "Off"); }
           }
-          if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "center" || key === "hints" || key === "theme" || key === "all") {
+          if (key === "style" || key === "board" || key === "piece" || key === "palette" || key === "center" || key === "pieceArt" || key === "frameArt" || key === "centerArt" || key === "diceArt" || key === "hints" || key === "theme" || key === "all") {
             offKey = ""; drawFrame();
           }
         });
@@ -5196,13 +5402,30 @@ function pickBestBotTokenOld(pl, valid, dice) {
   ];
 
   var CENTERS = [
-    ["jewel", "Prism Jewel"],
-    ["crown", "Royal Crown"],
-    ["star",  "North Star"],
+    ["jewel",  "Prism Jewel"],
+    ["crown",  "Royal Crown"],
+    ["star",   "North Star"],
     ["heart",  "Love Heart"],
     ["flower", "Happy Bloom"],
     ["planet", "Ringed Planet"],
-    ["trophy", "Gold Trophy"]
+    ["trophy", "Gold Trophy"],
+    ["sun",    "Royal Sun"]
+  ];
+
+  var AVATARS = [
+    ["auto",     "Letter"],
+    ["prince",   "Prince"],
+    ["princess", "Princess"],
+    ["cyber",    "Cyber"],
+    ["wizard",   "Wizard"],
+    ["knight",   "Knight"],
+    ["ninja",    "Ninja"],
+    ["robot",    "Robot"],
+    ["astro",    "Astro"],
+    ["lion",     "Lion"],
+    ["panda",    "Panda"],
+    ["fox",      "Fox"],
+    ["dragon",   "Dragon"]
   ];
 
   var BOARD_IDS = ["auto", "kingdom", "marble", "pirate", "diwali", "disco", "jade", "cloud", "steampunk", "autumn", "classic", "grass", "wood", "felt", "cyber", "ocean", "gold", "sakura", "lava", "aurora", "retro", "jungle", "glacier", "desert", "toxic", "galaxy"];
@@ -5341,8 +5564,8 @@ function pickBestBotTokenOld(pl, valid, dice) {
 
   var DEFAULTS = {
     open: false, czTab: "presets",
-    style: "classic", board: "kingdom", piece: "doll", palette: "storybook",
-    dice: "ivory", trail: "star", center: "crown", snake: "gold", ladder: "wood",
+    style: "classic", board: "kingdom", piece: "doll", palette: "storybook", avatar: "prince",
+    dice: "ivory", trail: "star", center: "crown", pieceArt: true, frameArt: true, centerArt: true, diceArt: true, snake: "gold", ladder: "wood", slHeadArt: false,
     speed: 1, mute: false, volume: 80, music: 0, haptic: true, hpow: "normal", dpos: "split", cam: true
   };
 
@@ -5383,6 +5606,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
       if (has(CENTERS, saved.center)) s.center = saved.center;
       if (has(SNAKE_SKINS, saved.snake)) s.snake = saved.snake;
       if (has(LADDER_STYLES, saved.ladder)) s.ladder = saved.ladder;
+      if (has(AVATARS, saved.avatar)) s.avatar = saved.avatar;
+      if (typeof saved.slHeadArt === "boolean") s.slHeadArt = saved.slHeadArt;
+      if (typeof saved.pieceArt === "boolean") s.pieceArt = saved.pieceArt;
+      if (typeof saved.frameArt === "boolean") s.frameArt = saved.frameArt;
+      if (typeof saved.centerArt === "boolean") s.centerArt = saved.centerArt;
+      if (typeof saved.diceArt === "boolean") s.diceArt = saved.diceArt;
       if (saved.speed === 1 || saved.speed === 1.5 || saved.speed === 2) s.speed = saved.speed;
       if (typeof saved.mute === "boolean") s.mute = saved.mute;
       if (typeof saved.volume === "number" && saved.volume >= 0 && saved.volume <= 100) s.volume = Math.round(saved.volume);
@@ -5429,12 +5658,13 @@ function pickBestBotTokenOld(pl, valid, dice) {
     return (PALETTES[id || S.palette] || PALETTES.classic).colors.slice();
   }
 
-  /* ---------- Real Painted Art Engine v5.5 (6 Frames + 23 Pieces + 12 Dice + 7 Emblems + S&L Heads & Ladders) ---------- */
+  /* ---------- Real Painted Art Engine v5.6 (All Art + 12 Avatars + 8th Emblem + Chor-Police Role Cards) ---------- */
   var ART = {
     bgRoyal: null, bgJungle: null, bgPalace: null, bgCyber: null, bgSakura: null, bgForge: null, bgOcean: null,
     scroll: null, palace: null, cyber: null, sakura: null, forge: null, ocean: null,
     pieces: {}, diceCv: {}, diceUrl: {}, centers: {},
     slHeads: null, slBossHead: null, slLadders: null,
+    avatars: {}, avatarUrls: {}, cpRoles: {}, cpRoleUrls: {},
     booted: false
   };
   var TEAM_COLS = [
@@ -5622,6 +5852,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     } catch (e) { }
   }
   function applyDiceArtCss() {
+    if (!S.diceArt) { var oldD = document.getElementById("as-dice-art-style"); if (oldD) oldD.remove(); return; }
     try {
       var rules = [], id, url;
       for (id in ART.diceUrl) {
@@ -5648,12 +5879,53 @@ function pickBestBotTokenOld(pl, valid, dice) {
   }
   function processCenterEmblems(im) {
     try {
-      var ids = ["jewel", "crown", "star", "heart", "flower", "planet", "trophy"];
+      var ids = ["jewel", "crown", "star", "heart", "flower", "planet", "trophy", "sun"];
       processRectGrid(im, 4, 2, 192, function (r, c, cv) {
         var id = ids[r * 4 + c]; if (!id) return;
         ART.centers[id] = cv;
       });
       drawThumbs(); notifyGames("all");
+    } catch (e) { }
+  }
+  function refreshAllAvatars() {
+    if (!root) return;
+    root.querySelectorAll(".lx-av[data-av-i]").forEach(function (el) {
+      el.innerHTML = api.avatarHTML(el.getAttribute("data-av-n") || "?", +el.getAttribute("data-av-i"), el.getAttribute("data-av-me") === "1");
+    });
+  }
+  function processAvatars(im) {
+    try {
+      var ids = ["prince", "princess", "cyber", "wizard", "knight", "ninja", "robot", "astro", "lion", "panda", "fox", "dragon"];
+      processRectGrid(im, 4, 3, 144, function (r, c, cv) {
+        var id = ids[r * 4 + c]; if (!id) return;
+        ART.avatars[id] = cv;
+        try { ART.avatarUrls[id] = cv.toDataURL("image/png"); } catch (e2) { }
+      });
+      drawThumbs(); refreshAllAvatars();
+    } catch (e) { }
+  }
+  function enhanceChorPoliceDom() {
+    if (!ART.cpRoleUrls || !ART.cpRoleUrls.raja) return;
+    try {
+      document.querySelectorAll("[data-cp-role]").forEach(function (el) {
+        var k = String(el.getAttribute("data-cp-role") || "").toLowerCase();
+        var u = ART.cpRoleUrls[k]; if (!u || el.getAttribute("data-cp-painted") === "1") return;
+        el.setAttribute("data-cp-painted", "1");
+        el.style.backgroundImage = "url(" + u + ")";
+        el.style.backgroundSize = "cover"; el.style.backgroundPosition = "center";
+      });
+    } catch (e) { }
+  }
+  function processCpRoles(im) {
+    try {
+      var ids = ["raja", "mantri", "sipahi", "chor"];
+      processRectGrid(im, 2, 2, 260, function (r, c, cv) {
+        var id = ids[r * 2 + c]; if (!id) return;
+        ART.cpRoles[id] = cv;
+        try { ART.cpRoleUrls[id] = cv.toDataURL("image/png"); } catch (e2) { }
+      });
+      enhanceChorPoliceDom();
+      try { window.dispatchEvent(new CustomEvent("ag:cp-art", { detail: ART.cpRoleUrls })); } catch (e3) { }
     } catch (e) { }
   }
   function processSlHeads(im) {
@@ -5703,6 +5975,8 @@ function pickBestBotTokenOld(pl, valid, dice) {
     loadArtFile("center_emblems", processCenterEmblems);
     loadArtFile("sl_heads",       processSlHeads);
     loadArtFile("sl_ladders",     processSlLadders);
+    loadArtFile("avatars",        processAvatars);
+    loadArtFile("cp_roles",       processCpRoles);
     var packs = [
       ["tokens_pack1", ["orb", "rocket", "shield", "bolt"]],
       ["tokens_pack2", ["hex", "lotus", "cat", "bear"]],
@@ -6209,7 +6483,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     ctx.translate(x, y);
     ctx.lineJoin = "round"; ctx.lineCap = "round";
 
-    var spArt = ART.pieces && pickQuadSprite(ART.pieces[shape], color);
+    var spArt = S.pieceArt && ART.pieces && pickQuadSprite(ART.pieces[shape], color);
     if (spArt) {
       var isTall = shape === "doll" || shape === "pawn" || shape === "rocket" || shape === "bunny" || shape === "wizard";
       var maxW = r * 2.02, maxH = r * (isTall ? 2.16 : 1.98);
@@ -6400,13 +6674,13 @@ function pickBestBotTokenOld(pl, valid, dice) {
   function drawCenter(c, cx, cy, r, t, forceId) {
     var cid = forceId || S.center, cols = getPalette(), g, i;
     c.save();
-    var spCtr = ART.centers && ART.centers[cid];
+    var spCtr = S.centerArt && ART.centers && ART.centers[cid];
     if (spCtr) {
       var br = t ? 1 + 0.04 * Math.sin(t / 360) : 1;
       var box = r * 2.15 * br, scl = Math.min(box / spCtr.width, box / spCtr.height);
       var dw = spCtr.width * scl, dh = spCtr.height * scl;
       c.translate(cx, cy);
-      if (t && (cid === "star" || cid === "flower")) c.rotate(Math.sin(t / 1200) * 0.12);
+      if (t && (cid === "star" || cid === "flower" || cid === "sun")) c.rotate(Math.sin(t / 1200) * 0.12);
       c.shadowColor = "rgba(15,23,42,.45)"; c.shadowBlur = r * 0.35; c.shadowOffsetY = r * 0.1;
       c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
       c.drawImage(spCtr, -dw / 2, -dh / 2, dw, dh);
@@ -6424,6 +6698,16 @@ function pickBestBotTokenOld(pl, valid, dice) {
       c.beginPath(); c.moveTo(-s * 0.72, s * 0.45); c.lineTo(-s * 0.82, -s * 0.35); c.lineTo(-s * 0.3, s * 0.05);
       c.lineTo(0, -s * 0.65); c.lineTo(s * 0.3, s * 0.05); c.lineTo(s * 0.82, -s * 0.35); c.lineTo(s * 0.72, s * 0.45); c.closePath(); c.fill();
       c.fillStyle = "#fef08a"; c.fillRect(-s * 0.68, s * 0.3, s * 1.36, s * 0.2);
+    } else if (cid === "sun") {
+      c.translate(cx, cy); c.rotate((t / 3200) % TAU);
+      c.shadowColor = "#f59e0b"; c.shadowBlur = r * 0.85;
+      c.beginPath();
+      for (i = 0; i < 24; i++) { var sa = i * TAU / 24, sr = i % 2 ? r * 0.62 : r * 1.06; if (i) c.lineTo(Math.cos(sa) * sr, Math.sin(sa) * sr); else c.moveTo(Math.cos(sa) * sr, Math.sin(sa) * sr); }
+      c.closePath();
+      g = c.createRadialGradient(0, 0, r * 0.1, 0, 0, r);
+      g.addColorStop(0, "#fffbeb"); g.addColorStop(0.55, "#fbbf24"); g.addColorStop(1, "#d97706");
+      c.fillStyle = g; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = 1.2; c.stroke();
+      c.shadowBlur = 0; c.beginPath(); c.arc(0, 0, r * 0.48, 0, TAU); c.fillStyle = "#fef08a"; c.fill(); c.stroke();
     } else if (cid === "star") {
       c.translate(cx, cy); c.rotate((t / 2800) % TAU);
       c.shadowColor = "#fde047"; c.shadowBlur = r * 0.9;
@@ -6561,7 +6845,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
   api.getLadderStyle = ladderNow;
   api.paintBoardBg = paintBoardBg;
   api.noisePattern = kNoisePat;
-  api.hasScrollArt = function () { var fi = frameArtInfo(getBoard()); return fi ? fi.key : ""; };
+  api.hasScrollArt = function () { if (!S.frameArt) return ""; var fi = frameArtInfo(getBoard()); return fi ? fi.key : ""; };
   api.drawScrollArt = function (c, x, y, w, h) {
     var fi = frameArtInfo(getBoard()); if (!fi) return;
     c.save(); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
@@ -6596,7 +6880,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     return true;
   };
   api.drawSnakeHeadArt = function (c, col, isBoss, hr, hh, open, thr, fl, ang) {
-    if (!ART.slHeads) return false;
+    if (!S.slHeadArt || !ART.slHeads) return false;
     var sp = (isBoss && ART.slBossHead) ? ART.slBossHead : pickQuadSprite(ART.slHeads, col);
     if (!sp) return false;
     if ((fl > 0.05 && open < 0.45) || (open > 0.05 && open < 0.55)) {
@@ -6621,6 +6905,21 @@ function pickBestBotTokenOld(pl, valid, dice) {
   };
   api.drawToken = drawToken;
   api.drawCenter = drawCenter;
+  api.getChorPoliceArt = function () { return ART.cpRoleUrls; };
+  api.avatarHTML = function (name, idx, isHuman) {
+    var letter = '<b>' + String(name || "?").charAt(0).toUpperCase().replace(/[&<>"']/g, "") + '</b>';
+    if (S.avatar === "auto" || !ART.avatarUrls || !ART.avatarUrls.prince) return letter;
+    var pool = ["prince", "princess", "cyber", "wizard", "knight", "ninja", "robot", "astro", "lion", "panda", "fox", "dragon"];
+    var id = S.avatar;
+    if (!isHuman) {
+      var others = pool.filter(function (x) { return x !== S.avatar; });
+      var h0 = 0, nm = String(name || "");
+      for (var k = 0; k < nm.length; k++) h0 = (h0 * 31 + nm.charCodeAt(k)) % 997;
+      id = others[((idx | 0) * 3 + h0) % others.length];
+    }
+    var url = ART.avatarUrls[id];
+    return url ? '<img class="ag-av-img" src="' + url + '" alt="' + String(name || "").replace(/"/g, "") + '">' : letter;
+  };
   api.spawnTrail = spawnTrail;
   api.paintAmbient = function (c, s, t, low) {
     if (!c || !s) return;
@@ -6990,6 +7289,8 @@ function pickBestBotTokenOld(pl, valid, dice) {
     applyRootAttrs();
     syncStudio();
     drawThumbs();
+    if (key === "avatar" || key === "all") refreshAllAvatars();
+    if (key === "diceArt" || key === "all") { try { applyDiceArtCss(); } catch (e) { } }
     notifyGames(key || "studio");
     if (lookCb && !savedLook && key !== "open" && key !== "mute") { try { lookCb(api.getLook()); } catch (e) { } }
   }
@@ -7075,6 +7376,10 @@ function pickBestBotTokenOld(pl, valid, dice) {
       R + ".as-centers button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 3px 6px;border-radius:.82rem;border:1.5px solid var(--ag-bd);background:var(--ag-bg2);transition:.18s}",
       R + ".as-centers button.on{border-color:var(--ag-onb);background:var(--ag-on);box-shadow:0 0 0 1px var(--ag-onb)}",
       R + ".as-cpc{display:grid;place-items:center;width:46px;height:46px;border-radius:.7rem;border:1px solid var(--ag-bd);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.16),rgba(15,23,42,.22))}",
+      R + ".as-avs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}",
+      R + ".as-avb{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px 5px;border-radius:.82rem;border:1.5px solid var(--ag-bd);background:var(--ag-bg2);transition:.18s}",
+      R + ".as-avb.on{border-color:var(--ag-onb);background:var(--ag-on);box-shadow:0 0 0 1px var(--ag-onb)}",
+      R + ".as-avc{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;overflow:hidden;background:rgba(2,6,23,.35);border:1.5px solid rgba(255,255,255,.35);font-weight:900;font-size:16px}",
       R + ".ag-playing.ag-peek-cz .ag-cz{display:block!important;margin-bottom:.55rem}",
       R + ".as-midbtn{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--ag-ac)!important;border:1px solid var(--ag-onb)!important;background:var(--ag-on)!important;flex:none}",
       "#quiz-arena-root.as-fs{position:fixed;top:0;left:0;right:0;bottom:0;width:auto;max-width:none;z-index:2147483000;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--as-fsbg,#0b1220);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}",
@@ -7165,14 +7470,14 @@ function pickBestBotTokenOld(pl, valid, dice) {
           '<span class="as-pr-e">' + pr.emoji + '</span><span class="as-pr-n">' + pr.name + '</span><span class="as-pr-s">' + pr.sub + '</span></button>';
       }).join("") + '</div></div>';
 
-    h += '<div class="as-pane ag-off" data-asp="board"><div class="ag-lbl" style="margin-top:.1rem">Board finish</div><div class="ag-seg">' +
+    h += '<div class="as-pane ag-off" data-asp="board"><div class="ag-lbl" style="margin-top:.1rem">Board frame art</div><div class="ag-seg">' + seg("frameArt", "false", "Classic") + seg("frameArt", "true", "Painted") + '</div><div class="ag-lbl">Board finish</div><div class="ag-seg">' +
       STYLES.map(function (s) { return seg("style", s[0], s[1]); }).join("") + '</div>' +
       '<div class="ag-lbl">' + (BOARD_IDS.length - 1) + ' textured boards</div><div class="as-boards">' + BOARD_IDS.map(function (id) {
         var nm = id === "auto" ? "Auto" : BOARDS[id].name;
         return '<button type="button" data-as="set" data-p="board" data-k="' + id + '"><span class="ag-sw as-sw" data-k="' + id + '"></span><span class="ag-bn">' + nm + '</span></button>';
       }).join("") + '</div></div>';
 
-    h += '<div class="as-pane ag-off" data-asp="pieces"><div class="ag-lbl" style="margin-top:.1rem">' + PIECES.length + ' bespoke 3D pieces</div><div class="as-pieces">' +
+    h += '<div class="as-pane ag-off" data-asp="pieces"><div class="ag-lbl" style="margin-top:.1rem">Piece art style</div><div class="ag-seg">' + seg("pieceArt", "false", "Classic 3D") + seg("pieceArt", "true", "Painted") + '</div><div class="ag-lbl">' + PIECES.length + ' bespoke 3D pieces</div><div class="as-pieces">' +
       PIECES.map(function (p) {
         return '<button type="button" data-as="set" data-p="piece" data-k="' + p[0] + '"><span class="ag-pc"><canvas class="as-thumb" data-k="' + p[0] + '"></canvas></span><span class="ag-bn">' + p[1] + '</span></button>';
       }).join("") + '</div><div class="ag-lbl">Team color palette</div><div class="as-pals">' + PALETTE_IDS.map(function (id) {
@@ -7180,21 +7485,25 @@ function pickBestBotTokenOld(pl, valid, dice) {
         return '<button type="button" class="as-pal" data-as="set" data-p="palette" data-k="' + id + '">' +
           '<span class="as-pal-d">' + pl.colors.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("") + '</span>' +
           '<span class="ag-bn">' + pl.name + '</span></button>';
+      }).join("") + '</div><div class="ag-lbl">Your avatar portrait</div><div class="as-avs">' + AVATARS.map(function (av) {
+        return '<button type="button" class="as-avb" data-as="set" data-p="avatar" data-k="' + av[0] + '">' +
+          '<span class="as-avc">' + (av[0] === "auto" ? 'A' : '<canvas class="as-avthumb" data-k="' + av[0] + '"></canvas>') + '</span>' +
+          '<span class="ag-bn">' + av[1] + '</span></button>';
       }).join("") + '</div></div>';
 
     var pip5 = '<svg viewBox="0 0 40 40" class="as-dpips" aria-hidden="true"><circle cx="11" cy="11" r="3.4"/><circle cx="29" cy="11" r="3.4"/><circle cx="20" cy="20" r="3.4"/><circle cx="11" cy="29" r="3.4"/><circle cx="29" cy="29" r="3.4"/></svg>';
-    h += '<div class="as-pane ag-off" data-asp="fx"><div class="ag-lbl" style="margin-top:.1rem">3D dice skin</div><div class="as-dices">' +
+    h += '<div class="as-pane ag-off" data-asp="fx"><div class="ag-lbl" style="margin-top:.1rem">3D dice skin art</div><div class="ag-seg">' + seg("diceArt", "false", "Classic") + seg("diceArt", "true", "Painted") + '</div><div class="ag-lbl">3D dice skin</div><div class="as-dices">' +
       DICE_SKINS.map(function (d) {
         return '<button type="button" class="as-dskin" data-as="set" data-p="dice" data-k="' + d[0] + '">' +
           '<span class="as-dchip" style="background:linear-gradient(135deg,' + d[2] + ',' + d[3] + ');color:' + d[4] + ';border-color:' + d[4] + '">' + pip5 + '</span>' +
           '<span class="ag-bn">' + d[1] + '</span></button>';
       }).join("") + '</div><div class="ag-lbl">Hop trail FX</div><div class="ag-seg as-wrap">' +
       TRAILS.map(function (t) { return seg("trail", t[0], t[1]); }).join("") + '</div>' +
-      '<div data-g="ludo"><div class="ag-lbl">Ludo center emblem</div><div class="as-centers">' +
+      '<div data-g="ludo"><div class="ag-lbl">Center emblem style</div><div class="ag-seg">' + seg("centerArt", "false", "Classic") + seg("centerArt", "true", "Painted") + '</div><div class="ag-lbl">Ludo center emblem</div><div class="as-centers">' +
       CENTERS.map(function (c) {
         return '<button type="button" data-as="set" data-p="center" data-k="' + c[0] + '"><span class="as-cpc"><canvas class="as-cthumb" data-k="' + c[0] + '"></canvas></span><span class="ag-bn">' + c[1] + '</span></button>';
       }).join("") + '</div></div>' +
-      '<div data-g="snakes" class="ag-off"><div class="ag-lbl">Snake skin</div><div class="as-pals">' + SNAKE_SKINS.map(function (sk) {
+      '<div data-g="snakes" class="ag-off"><div class="ag-lbl">Snake head style</div><div class="ag-seg">' + seg("slHeadArt", "false", "Classic") + seg("slHeadArt", "true", "Painted") + '</div><div class="ag-lbl">Snake skin</div><div class="as-pals">' + SNAKE_SKINS.map(function (sk) {
         var cs = sk[2] || ["#ef4444", "#22c55e", "#facc15", "#38bdf8"];
         return '<button type="button" class="as-pal" data-as="set" data-p="snake" data-k="' + sk[0] + '"><span class="as-pal-d">' +
           cs.slice(0, 4).map(function (c) { return '<i style="background:' + c + '"></i>'; }).join("") + '</span><span class="ag-bn">' + sk[1] + '</span></button>';
@@ -7283,6 +7592,14 @@ function pickBestBotTokenOld(pl, valid, dice) {
       if (cv.width !== s * dpr) { cv.width = s * dpr; cv.height = s * dpr; cv.style.width = s + "px"; cv.style.height = s + "px"; }
       c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, s, s);
       drawCenter(c, s / 2, s / 2, s * 0.4, 0, cv.getAttribute("data-k"));
+    });
+    root.querySelectorAll(".as-avthumb").forEach(function (cv) {
+      var s = 38, c = cv.getContext && cv.getContext("2d"); if (!c) return;
+      if (cv.width !== s * dpr) { cv.width = s * dpr; cv.height = s * dpr; cv.style.width = s + "px"; cv.style.height = s + "px"; }
+      c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, s, s);
+      var k = cv.getAttribute("data-k"), sp = ART.avatars && ART.avatars[k];
+      if (sp) { c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high"; c.drawImage(sp, 1, 1, s - 2, s - 2); }
+      else { c.fillStyle = "rgba(255,255,255,.75)"; c.font = "900 15px sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(k.charAt(0).toUpperCase(), s / 2, s / 2); }
     });
   }
 
@@ -7636,12 +7953,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
     });
 
     try {
-      new MutationObserver(injectMidGameBtn).observe(root, { childList: true, subtree: true });
+      new MutationObserver(function () { injectMidGameBtn(); enhanceChorPoliceDom(); }).observe(root, { childList: true, subtree: true });
     } catch (e) { }
 
     bootArtAssets(); applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
   }
 
-  window.ArenaStudio = { version: "5.5.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
+  window.ArenaStudio = { version: "5.6.2", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountStudio); else mountStudio();
 })();

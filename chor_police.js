@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Chor Police (Raja Mantri Chor Sipahi) v1.1 (FX update)
+/*! ITI CONNECT — Chor Police (Raja Mantri Chor Sipahi) v1.3 (All 8 Painted Role Cards + Setup Chips + Quick Rules)
  *  Drop-in Arena module. Load right AFTER ./arena_games.js in index.html.
  *  Plugs into #quiz-arena-root alongside Quiz & Clash, Ludo, and Snakes & Ladders.
  *  Modes: Solo vs Bots | Pass & Play (Hold-to-Peek) | Online Rooms (2–6P + Bot Auto-Fill & 3P Hidden Raja)
@@ -27,6 +27,126 @@
     DAKU:   { id: "DAKU",   en: "Daku",   bn: "ডাকাত",  emoji: "🗡️", points: 0,    color: "#ef4444" },
     CHOR:   { id: "CHOR",   en: "Chor",   bn: "চোর",    emoji: "🥷", points: 0,    color: "#f97316" }
   };
+
+  /* ---------- Painted Role Cards Engine (./assets/cp_roles.png + ./assets/cp_roles_extra.png · 8 roles) ---------- */
+  var CP_ART = {};
+  var ROLE_ART_KEY = { RAJA: "raja", RANI: "rani", MANTRI: "mantri", POLICE: "sipahi", VAKEEL: "vakeel", BABU: "babu", DAKU: "daku", CHOR: "chor" };
+  function roleArtUrl(role) {
+    if (!role) return "";
+    var k = ROLE_ART_KEY[role.id];
+    return (k && CP_ART[k]) ? CP_ART[k] : "";
+  }
+  function roleMiniArt(role, cls) {
+    var u = roleArtUrl(role);
+    if (u) return '<img class="' + cls + '" src="' + u + '" alt="' + esc(role.en) + '" draggable="false">';
+    return "";
+  }
+  function cpFindValleys(ink, sz, count) {
+    var cuts = [0], k, lo, hi, best, bestV, i, z0, z1;
+    for (k = 1; k < count; k++) {
+      var mid = Math.round(sz * k / count), rad = Math.round(sz * 0.08);
+      lo = Math.max(4, mid - rad); hi = Math.min(sz - 4, mid + rad);
+      best = mid; bestV = 1e9; z0 = -1; z1 = -1;
+      for (i = lo; i <= hi; i++) {
+        if (ink[i] === 0) { if (z0 < 0) z0 = i; z1 = i; }
+        if (ink[i] < bestV) { bestV = ink[i]; best = i; }
+      }
+      cuts.push(z0 >= 0 ? Math.round((z0 + z1) / 2) : best);
+    }
+    cuts.push(sz);
+    return cuts;
+  }
+  function cpSliceCard(sheet, sx, sy, sw, sh) {
+    var tw = 240, th = Math.max(240, Math.round(tw * (sh / Math.max(1, sw))));
+    var cv0 = document.createElement("canvas"); cv0.width = tw; cv0.height = th;
+    var c = cv0.getContext("2d");
+    c.fillStyle = "#ffffff"; c.fillRect(0, 0, tw, th);
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    c.drawImage(sheet, sx, sy, sw, sh, 2, 2, tw - 4, th - 4);
+    var imgD = c.getImageData(0, 0, tw, th), d = imgD.data, vis = new Uint8Array(tw * th);
+    var qx = new Int32Array(tw * th), head = 0, tail = 0, x, y, p, i;
+    function push(px, py) {
+      var pos = py * tw + px; if (vis[pos]) return;
+      var k = pos * 4; if (d[k] < 228 || d[k + 1] < 228 || d[k + 2] < 228) return;
+      vis[pos] = 1; qx[tail++] = pos;
+    }
+    for (x = 0; x < tw; x++) { push(x, 0); push(x, th - 1); }
+    for (y = 0; y < th; y++) { push(0, y); push(tw - 1, y); }
+    while (head < tail) {
+      p = qx[head++]; x = p % tw; y = (p - x) / tw;
+      d[p * 4 + 3] = 0;
+      if (x > 0) push(x - 1, y);
+      if (x + 1 < tw) push(x + 1, y);
+      if (y > 0) push(x, y - 1);
+      if (y + 1 < th) push(x, y + 1);
+    }
+    c.putImageData(imgD, 0, 0);
+    var x0 = tw, y0 = th, x1 = 0, y1 = 0;
+    for (y = 0; y < th; y++) for (x = 0; x < tw; x++) {
+      if (d[(y * tw + x) * 4 + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    if (x1 <= x0 || y1 <= y0) return cv0.toDataURL("image/png");
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1, out = document.createElement("canvas");
+    out.width = cw; out.height = ch;
+    out.getContext("2d").drawImage(cv0, x0, y0, cw, ch, 0, 0, cw, ch);
+    return out.toDataURL("image/png");
+  }
+  function loadCpSheet(baseName, keys) {
+    var exts = [".png", ".webp", ".jpg", ".jpeg"], idx = 0;
+    function next() {
+      if (idx >= exts.length) return;
+      var im = new Image();
+      im.onload = function () {
+        if (im.naturalWidth < 64) { idx++; next(); return; }
+        try {
+          var W = 880, H = Math.max(240, Math.round(W * (im.naturalHeight / Math.max(1, im.naturalWidth))));
+          var sheet = document.createElement("canvas"); sheet.width = W; sheet.height = H;
+          var c0 = sheet.getContext("2d");
+          c0.fillStyle = "#ffffff"; c0.fillRect(0, 0, W, H);
+          c0.drawImage(im, 0, 0, W, H);
+          var d = c0.getImageData(0, 0, W, H).data;
+          var rowInk = new Int32Array(H), colInk = new Int32Array(W), x, y, pos;
+          for (y = 0; y < H; y++) for (x = 0; x < W; x++) {
+            pos = (y * W + x) * 4;
+            if (d[pos] < 228 || d[pos + 1] < 228 || d[pos + 2] < 228) { rowInk[y]++; colInk[x]++; }
+          }
+          var ys = cpFindValleys(rowInk, H, 2), xs = cpFindValleys(colInk, W, 2);
+          for (var r = 0; r < 2; r++) for (var c = 0; c < 2; c++) {
+            CP_ART[keys[r * 2 + c]] = cpSliceCard(sheet, xs[c], ys[r], xs[c + 1] - xs[c], ys[r + 1] - ys[r]);
+          }
+          if (activeTab && pane) render();
+        } catch (e) { }
+      };
+      im.onerror = function () { idx++; next(); };
+      im.src = "./assets/" + baseName + exts[idx];
+    }
+    next();
+  }
+  function bootCpArt() {
+    if (CP_ART._booted) return; CP_ART._booted = true;
+    loadCpSheet("cp_roles", ["raja", "mantri", "sipahi", "chor"]);
+    loadCpSheet("cp_roles_extra", ["rani", "daku", "vakeel", "babu"]);
+  }
+  function showCpRules() {
+    var old = document.getElementById("ag-rules-modal"); if (old) old.remove();
+    var bn = lang === "bn";
+    var items = [
+      ["👑", bn ? "<b>রাজা (১০০০)</b> সরাসরি সবার সামনে প্রকাশ পায় (৩P লুকানো রাজা বাদে) এবং ১০০০ পয়েন্ট পায়।" : "<b>Raja (1000 pts)</b> reveals first (except in 3P Hidden Raja) and earns 1000 points."],
+      ["📜", bn ? "<b>মন্ত্রী / পুলিশ</b> চোরকে খুঁজে বের করে! সঠিক ধরলে নিজের পয়েন্ট পায়।" : "<b>Mantri / Police</b> hunts the Chor! Catching the right player keeps their full points."],
+      ["🥷", bn ? "<b>ভুল আন্দাজ:</b> চোর বেঁচে গেলে শিকারির পয়েন্ট চুরি করে নেয় (যদি Point Steal চালু থাকে)।" : "<b>Wrong Guess:</b> The hunter gets 0 pts and the Chor steals their points (when Steal is ON)."],
+      ["👁️", bn ? "<b>Pass &amp; Play:</b> নিজের চিরকুট দেখতে বোতাম চেপে ধরে রাখুন, ছাড়লেই লুকিয়ে যাবে।" : "<b>Pass &amp; Play:</b> Hold the peek button to view your secret chit—releasing hides it immediately."],
+      ["🗡️", bn ? "<b>ডাবল হান্ট (৬ জন):</b> প্রথমে মন্ত্রী ডাকাতকে ধরে, তারপর পুলিশ চোরকে ধরে!" : "<b>6P Double Hunt:</b> Stage 1 Mantri hunts Daku, then Stage 2 Police hunts Chor!"]
+    ];
+    var m = document.createElement("div");
+    m.id = "ag-rules-modal"; m.className = "ag-rules-bg";
+    m.innerHTML = '<div class="ag-rules-card" role="dialog" aria-modal="true">' +
+      '<div class="ag-rules-hd"><h3>👑 ' + (bn ? 'চোর পুলিশ নিয়মাবলী' : 'Chor Police Rules') + '</h3>' +
+      '<button type="button" class="ag-rules-x" aria-label="Close">✕</button></div>' +
+      '<ul class="ag-rules-list">' + items.map(function (it) { return '<li><span>' + it[0] + '</span><div>' + it[1] + '</div></li>'; }).join("") + '</ul></div>';
+    m.addEventListener("click", function (ev) { if (ev.target === m || ev.target.closest(".ag-rules-x")) m.remove(); });
+    document.body.appendChild(m);
+    sfx("click");
+  }
 
   var PRESETS = {
     classic4: {
@@ -1172,7 +1292,10 @@
       '<div class="cp-title">CHOR <span>POLICE</span></div>' +
       '<div class="cp-sub">' + (lang === "bn" ? "রাজা · মন্ত্রী · পুলিশ · চোর — ব্লাফ, আন্দাজ আর স্কোর!" : "Raja · Mantri · Police · Chor — Peek, Bluff & Catch!") + '</div></div>' +
       '<div class="cp-hero-badge" aria-hidden="true">👑<span>🥷</span></div></div>' +
-      '<div class="cp-roles" aria-hidden="true"><b>\uD83D\uDC51</b><b>\uD83D\uDCDC</b><b>\uD83D\uDC6E</b><b>\uD83E\uDD77</b></div>' +
+      '<div class="cp-roles" aria-hidden="true">' + rc.roles.map(function (r0) {
+        var u0 = roleArtUrl(r0);
+        return u0 ? '<b class="art"><img src="' + u0 + '" alt="" draggable="false"></b>' : '<b>' + r0.emoji + '</b>';
+      }).join("") + '</div>' +
       '<div class="cp-hero-bar"><span class="cp-hero-tag">' + (lang === "bn" ? "চিরকুটের ভাষা" : "Card Language") + '</span>' + langSwitcherHTML() + '</div></div>';
 
     /* Main setup glass card */
@@ -1200,7 +1323,8 @@
     /* Live role preview chips for selected preset */
     h += '<div class="cp-deck-prev">' + rc.roles.map(function (r) {
       var nm = r.customName || (lang === "bn" ? r.bn : (lang === "both" ? r.bn + " / " + r.en : r.en));
-      return '<span class="cp-rchip" style="--rc:' + r.color + '">' + r.emoji + ' ' + esc(nm) + ' <b>' + r.points + '</b></span>';
+      var ic = roleMiniArt(r, "cp-rc-art") || ('<span>' + r.emoji + '</span>');
+      return '<span class="cp-rchip" style="--rc:' + r.color + '">' + ic + ' ' + esc(nm) + ' <b>' + r.points + '</b></span>';
     }).join("") + '</div>';
 
     /* Collapsible Custom Rules Drawer */
@@ -1236,8 +1360,9 @@
       /* Custom role points & custom names */
       h += '<div class="cp-lbl" style="margin-top:10px">Edit role points &amp; custom names (optional)</div><div class="cp-role-ed">' +
         rc.roles.map(function (r) {
+          var eArt = roleMiniArt(r, "cp-re-art");
           return '<div class="cp-re-row">' +
-            '<span class="cp-re-em">' + r.emoji + '</span>' +
+            '<span class="cp-re-em">' + (eArt || r.emoji) + '</span>' +
             '<input type="text" maxlength="16" class="cp-in" data-cp-rname="' + r.id + '" value="' + esc(r.customName) + '" placeholder="' + esc(r.bn + ' / ' + r.en) + '">' +
             '<input type="number" min="0" max="5000" step="50" class="cp-in cp-pts-in" data-cp-rpts="' + r.id + '" value="' + r.points + '" aria-label="' + esc(r.en) + ' points">' +
             '</div>';
@@ -1468,7 +1593,8 @@
     h += '<div class="cp-top">' +
       '<button type="button" class="cp-ib" data-cp="quit" aria-label="Quit game">' + ico("x") + '</button>' +
       '<div class="cp-rpill">Round <b>' + st.round + '</b> / ' + rc.totalRounds + '</div>' +
-      langSwitcherHTML() + '</div>';
+      '<div style="display:flex;align-items:center;gap:6px">' + langSwitcherHTML() +
+      '<button type="button" class="cp-ib" data-cp="rules" aria-label="Rules" title="How to Play">' + ico("help-circle") + '</button></div></div>';
 
     /* Mini scoreboard strip */
     var sortedStrip = st.players.slice().sort(function (a, b) { return b.score - a.score; });
@@ -1495,13 +1621,14 @@
           '<div class="cp-st-s">Make sure no one else is looking at the screen!</div>';
 
         if (!chitPicked) { h += pickFanHTML(rc); } else {
-        h += '<div class="cp-lw' + landCls + '"><div class="cp-peek-card' + (isPeeking ? " open" : "") + '" id="cp-peek-card" style="--rc:' + (curRole ? curRole.color : "#f59e0b") + '">' +
+        var curArt = roleArtUrl(curRole);
+        h += '<div class="cp-lw' + landCls + '"><div class="cp-peek-card' + (isPeeking ? " open" : "") + (curArt ? " art-card" : "") + '" id="cp-peek-card" style="--rc:' + (curRole ? curRole.color : "#f59e0b") + '">' +
           '<div class="cp-pc-front"><div class="cp-fold-mark">📄</div><div class="cp-fold-txt">' +
           (lang === "bn" ? "চিরকুট দেখতে চেপে ধরে রাখুন" : "Hold button below to peek") + '</div></div>' +
-          '<div class="cp-pc-back">' +
-          '<div class="cp-r-emoji">' + (curRole ? curRole.emoji : "") + '</div>' +
-          '<div class="cp-r-title">' + roleTitleHTML(curRole) + '</div>' +
-          '<div class="cp-r-pts">' + (curRole ? curRole.points : 0) + ' PTS</div></div></div></div>';
+          '<div class="cp-pc-back' + (curArt ? " has-art" : "") + '">' +
+          (curArt ? '<img class="cp-pc-art" src="' + curArt + '" alt="' + esc(curRole.en) + '" draggable="false"><div class="cp-pc-foot"><div class="cp-r-title">' + roleTitleHTML(curRole) + '</div><div class="cp-r-pts">' + (curRole ? curRole.points : 0) + ' PTS</div></div>'
+                  : '<div class="cp-r-emoji">' + (curRole ? curRole.emoji : "") + '</div><div class="cp-r-title">' + roleTitleHTML(curRole) + '</div><div class="cp-r-pts">' + (curRole ? curRole.points : 0) + ' PTS</div>') +
+          '</div></div></div>';
 
         h += '<button type="button" class="cp-hold-btn" id="cp-hold-btn">' + ico("eye") +
           '<span>' + (lang === "bn" ? "চেপে ধরে চিরকুট দেখুন" : "HOLD TO PEEK CHIT") + '</span></button>';
@@ -1517,13 +1644,14 @@
         h += '<div class="ag-glass cp-stage cp-center">' +
           '<div class="cp-badge-pill">' + (lang === "bn" ? "আপনার গোপন চিরকুট" : "Your Secret Chit") + '</div>';
         if (!chitPicked) { h += pickFanHTML(rc); } else {
-        h += '<div class="cp-lw' + landCls + '"><div class="cp-peek-card' + (isPeeking ? " open" : "") + '" id="cp-peek-card" data-cp="toggletap" style="margin-top:10px;--rc:' + (myRole ? myRole.color : "#f59e0b") + '">' +
+        var myArt = roleArtUrl(myRole);
+        h += '<div class="cp-lw' + landCls + '"><div class="cp-peek-card' + (isPeeking ? " open" : "") + (myArt ? " art-card" : "") + '" id="cp-peek-card" data-cp="toggletap" style="margin-top:10px;--rc:' + (myRole ? myRole.color : "#f59e0b") + '">' +
           '<div class="cp-pc-front"><div class="cp-fold-mark">📄</div><div class="cp-fold-txt">' +
           (lang === "bn" ? "চিরকুট খুলতে ট্যাপ করুন" : "Tap chit to open") + '</div></div>' +
-          '<div class="cp-pc-back">' +
-          '<div class="cp-r-emoji">' + (myRole ? myRole.emoji : "") + '</div>' +
-          '<div class="cp-r-title">' + roleTitleHTML(myRole) + '</div>' +
-          '<div class="cp-r-pts">' + (myRole ? myRole.points : 0) + ' PTS</div></div></div></div>';
+          '<div class="cp-pc-back' + (myArt ? " has-art" : "") + '">' +
+          (myArt ? '<img class="cp-pc-art" src="' + myArt + '" alt="' + esc(myRole.en) + '" draggable="false"><div class="cp-pc-foot"><div class="cp-r-title">' + roleTitleHTML(myRole) + '</div><div class="cp-r-pts">' + (myRole ? myRole.points : 0) + ' PTS</div></div>'
+                 : '<div class="cp-r-emoji">' + (myRole ? myRole.emoji : "") + '</div><div class="cp-r-title">' + roleTitleHTML(myRole) + '</div><div class="cp-r-pts">' + (myRole ? myRole.points : 0) + ' PTS</div>') +
+          '</div></div></div>';
 
         h += '<div class="cp-ready-grid">' + st.players.map(function (p) {
           return '<div class="cp-rstat"><span class="cp-rs-n">' + esc(p.name) + '</span>' +
@@ -1610,8 +1738,9 @@
         h += '</div>';
 
         if (showFace && pRole) {
-          h += '<div class="cp-seat-face">' +
-            '<span class="cp-sf-em">' + pRole.emoji + '</span>' +
+          var sArt = roleMiniArt(pRole, "cp-sf-art");
+          h += '<div class="cp-seat-face' + (sArt ? " has-art" : "") + '">' +
+            (sArt || ('<span class="cp-sf-em">' + pRole.emoji + '</span>')) +
             '<div class="cp-sf-t">' + roleTitleHTML(pRole) + '</div>' +
             '<span class="cp-sf-pts">' + pRole.points + ' pts</span>' +
             (isMe && !isRevealed ? '<span class="cp-secret-lbl">Only you see this</span>' : '') +
@@ -1659,8 +1788,9 @@
       ranked.forEach(function (p, ri) {
         var r = findRole(rc, st.roles[p.id]);
         var delta = res.roundPoints[p.id] || 0;
+        var rArt = roleMiniArt(r, "cp-rr-art");
         h += '<div class="cp-res-row" style="--i:' + ri + ';--rc:' + (r ? r.color : "#94a3b8") + '">' +
-          '<span class="cp-rr-em">' + (r ? r.emoji : "📄") + '</span>' +
+          (rArt ? '<span class="cp-rr-em art">' + rArt + '</span>' : '<span class="cp-rr-em">' + (r ? r.emoji : "📄") + '</span>') +
           '<div class="cp-rr-mid">' +
           '<div class="cp-rr-n">' + esc(p.name) + '</div>' +
           '<div class="cp-rr-r">' + roleTitleHTML(r) + '</div></div>' +
@@ -1884,6 +2014,7 @@
     var a = b.getAttribute("data-cp"), k = b.getAttribute("data-k");
 
     if (a === "lang") { setLang(k); return; }
+    if (a === "rules") { showCpRules(); return; }
     if (a === "mode") { cfg.mode = k; saveCfg(); sfx("click"); renderSetup(); return; }
     if (a === "preset") { cfg.preset = k; saveCfg(); sfx("click"); renderSetup(); return; }
     if (a === "togglecust") { cfg.customOpen = !cfg.customOpen; sfx("click"); renderSetup(); return; }
@@ -2491,7 +2622,26 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
 
       /* Toast */
       R + ".cp-toast{position:fixed;left:50%;bottom:calc(var(--nav-offset,0px) + 5.8rem);transform:translate(-50%,10px);max-width:90%;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:800;color:#fff;background:rgba(15,23,42,.92);border:1px solid rgba(249,115,22,.55);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:80;text-align:center}",
-      R + ".cp-toast.on{opacity:1;transform:translate(-50%,0)}"
+      R + ".cp-toast.on{opacity:1;transform:translate(-50%,0)}",
+      /* Painted Role Card Artwork Styling */
+      R + ".cp-roles b.art{padding:3px;height:66px;overflow:hidden;border-radius:12px}",
+      R + ".cp-roles b.art img{width:100%;height:100%;object-fit:contain;display:block;border-radius:9px}",
+      R + ".cp-peek-card.art-card{width:198px;height:268px}",
+      R + ".cp-pc-back.has-art{padding:0;overflow:hidden;background:#0f172a;border:2px solid var(--rc,#f59e0b)}",
+      R + ".cp-pc-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}",
+      R + ".cp-pc-foot{position:relative;z-index:2;margin-top:auto;width:100%;padding:26px 10px 10px;display:flex;flex-direction:column;align-items:center;background:linear-gradient(180deg,transparent,rgba(10,14,28,.86) 44%,rgba(10,14,28,.96));color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.75)}",
+      R + ".cp-pc-foot .cp-r-title{margin-top:0}",
+      R + ".cp-pc-foot .cp-r1{font-size:18px;color:#fff}",
+      R + ".cp-pc-foot .cp-r2{color:#fde68a}",
+      R + ".cp-pc-foot .cp-r-pts{margin-top:5px;background:rgba(249,115,22,.88);color:#fff}",
+      R + ".cp-sf-art{width:58px;height:84px;object-fit:contain;border-radius:9px;margin-bottom:4px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}",
+      R + ".cp-seat-face.has-art{padding-top:4px}",
+      R + ".cp-rr-em.art{width:36px;height:52px;display:grid;place-items:center}",
+      R + ".cp-rr-art{width:36px;height:52px;object-fit:contain;border-radius:6px;display:block;filter:drop-shadow(0 3px 6px rgba(0,0,0,.38))}",
+      R + ".cp-rc-art{width:17px;height:24px;object-fit:contain;border-radius:4px;display:block;flex:none}",
+      R + ".cp-re-art{width:20px;height:28px;object-fit:contain;border-radius:4px;display:block;margin:0 auto}",
+      R + ".cp-roles b:nth-child(5){animation-delay:4s}",
+      R + ".cp-roles b:nth-child(6){animation-delay:5s}"
     ];
     css.push(cpFx(R));
     var stEl = document.createElement("style");
@@ -2557,6 +2707,7 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
     });
 
     icons();
+    bootCpArt();
 
     if (pendingInviteCode) {
       try { if (typeof window.switchTab === "function") window.switchTab("quiz"); } catch (e) { }
@@ -2565,7 +2716,7 @@ html.bright-mode #ag-pane-chorpolice::before{opacity:.55}
   }
 
   window.ChorPoliceArena = {
-    version: "1.1.0",
+    version: "1.3.0",
     open: activateTab,
     setLang: setLang,
     getLang: function () { return lang; }

@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v5.7.5 (Custom Painted PNG Icons for ±1 Nudge, Undo Rewind, Pilot AI, Match History, Sound On/Off + Flying Power Card Art)
+/*! ITI CONNECT — Arena Games v5.7.6 (Hotfix: Fix CAM_MODES/CAM_POWS Hoisting Boot Crash + Studio Boot Sync + Custom PNG Icons)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -99,6 +99,8 @@
     { id: "heritage", name: "Royal Wood", emoji: "🪵", sub: "Carved classic",   grad: "linear-gradient(135deg,#3b2210,#78350f,#d97706)", set: { style: "classic", board: "wood",   piece: "pawn",   palette: "classic", dice: "wood",     trail: "spark",   center: "crown", sfx: "arcade" } }
   ];
 
+  var CAM_MODES = ["off", "special", "big", "all"];
+  var CAM_POWS = ["subtle", "normal", "cine"];
   var DEFAULTS = {
     tab: "quiz", open: false, czTab: "presets",
     style: "modern", board: "auto", piece: "pawn", palette: "classic",
@@ -163,8 +165,6 @@
     }
     return function (idx) { if (idx < 0) { clearTimeout(t); key = -1; return; } if (idx !== key) { key = idx; arm(7000, idx); } };
   }
-  var CAM_MODES = ["off", "special", "big", "all"];
-  var CAM_POWS = ["subtle", "normal", "cine"];
   function normCam(v) {
     if (v === false || v === "off") return "off";
     if (v === true || v === "all") return "all";
@@ -6947,7 +6947,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
 
   var S = loadStudio();
   var origSetPref = api.setPref, origSubscribe = api.subscribe;
-  try { var bp = api.getPrefs(); if (bp.haptic !== S.haptic) origSetPref("haptic", S.haptic); if (bp.hpow !== S.hpow) origSetPref("hpow", S.hpow); } catch (e) { }
+  try { var bp = api.getPrefs(); if (bp.haptic !== S.haptic) origSetPref("haptic", S.haptic); if (bp.hpow !== S.hpow) origSetPref("hpow", S.hpow); if (bp.cam !== S.cam) origSetPref("cam", S.cam); if (bp.camPow !== S.camPow) origSetPref("camPow", S.camPow); if (bp.eco !== S.eco) origSetPref("eco", S.eco); } catch (e) { }
   var subList = [], pvRaf = 0, pvSparks = [], pvT0 = 0, pvLastHop = -1, root = null, mounted = false;
 
   /* ---------- Canvas Renderers (11 Textured Boards, 8 3D Pieces, 3 Center Emblems, 5 Trails) ---------- */
@@ -9294,6 +9294,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
     bootArtAssets(); applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
   }
 
-  window.ArenaStudio = { version: "5.7.5", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
+  window.ArenaStudio = { version: "5.7.6", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountStudio); else mountStudio();
 })();

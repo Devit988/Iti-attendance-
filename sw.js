@@ -5,7 +5,7 @@
    - CDN files (Tailwind, Lucide, Firebase SDK, fonts) cached so the app renders offline
    - Update prompt: new versions wait until the user taps "Refresh"
    Bump VERSION whenever you deploy a new index.html, arena_games.js, or sw.js. */
-var VERSION = "v135";
+var VERSION = "v145";
 var CACHE = "iti-connect-" + VERSION;      // app shell + core code
 var ASSETS_CACHE = "iti-connect-art-v1";   // persistent art packs (survives JS updates)
 var CDN_CACHE = "iti-connect-cdn-v1";      // third-party libraries and fonts
@@ -26,7 +26,9 @@ var CORE_ART = [
   "./assets/dice_skins.png", "./assets/center_emblems.png",
   "./assets/sl_heads.png", "./assets/sl_ladders.png",
   "./assets/avatars.png", "./assets/cp_roles.png", "./assets/cp_roles_extra.png",
-  "./assets/pc_gold.png", "./assets/pc_shield.png"
+  "./assets/pc_gold.png", "./assets/pc_shield.png", "./assets/pc_nudge.png",
+  "./assets/pc_undo.png", "./assets/pc_pilot.png", "./assets/pc_history.png",
+  "./assets/pc_sound_on.png", "./assets/pc_sound_off.png"
 ];
 
 var CDN_PRECACHE = [

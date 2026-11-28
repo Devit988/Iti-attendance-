@@ -1,4 +1,4 @@
-/*! ITI CONNECT — Arena Games v5.4 (All 6 Painted Board Frames + 23 Pieces + 12 Dice Skins + 7 Emblems)
+/*! ITI CONNECT — Arena Games v5.5 (Painted S&L Sprites + Slither-Across Shifting Snakes + All Art Packs)
  *  Load AFTER ./quiz_arena.js. Wraps #quiz-arena-root with a top switcher:
  *    Quiz & Clash (quiz_arena.js, untouched) | Ludo | Snakes & Ladders
  */
@@ -1536,13 +1536,13 @@
   (function () {
     /* ===== DIFFICULTY: Easy = the classic board, Medium = more snakes, Hard = even more (incl. a MEGA snake 99 -> 41) ===== */
     var DIFFS = {
-      easy:   { name: "Easy",   icon: "sprout", col: "#4ade80", sub: "8 snakes",   note: "Classic board · 8 snakes · 8 ladders",
+      easy:   { name: "Easy",   icon: "sprout", col: "#4ade80", sub: "8 snakes",     maxShifts: 0, note: "Classic board · 8 snakes · 8 ladders",
                 L: { 4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91 },
                 S: { 17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78 } },
-      medium: { name: "Medium", icon: "flame",  col: "#fbbf24", sub: "10 snakes",  note: "10 snakes · 8 ladders · snake heads glow",
+      medium: { name: "Medium", icon: "flame",  col: "#fbbf24", sub: "10 · 3× shift", maxShifts: 3, note: "10 snakes · 8 ladders · snakes slither 3× per match",
                 L: { 3: 22, 8: 30, 20: 41, 27: 83, 36: 57, 50: 69, 66: 87, 72: 91 },
                 S: { 16: 6, 34: 12, 47: 26, 56: 19, 62: 38, 75: 44, 89: 53, 93: 68, 96: 77, 99: 61 } },
-      hard:   { name: "Hard",   icon: "skull",  col: "#f87171", sub: "12 + MEGA",  note: "12 snakes · MEGA snake 99 → 41 · fiery heads",
+      hard:   { name: "Hard",   icon: "skull",  col: "#f87171", sub: "12 · 4× shift", maxShifts: 4, note: "12 snakes · MEGA dragon · snakes slither 4× per match",
                 L: { 2: 22, 10: 31, 15: 36, 26: 46, 39: 59, 52: 72, 66: 85, 78: 94 },
                 S: { 17: 7, 33: 12, 45: 24, 56: 35, 61: 21, 68: 47, 74: 53, 86: 62, 89: 65, 93: 70, 97: 76, 99: 41 } }
     };
@@ -1577,20 +1577,85 @@
     try { REDUCE_SL = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) { }
     var lraf = 0, lastDraw = 0, lastF = 0, dprCap = 2.5, lowFx = false, slowFrames = 0;
     var fx = { texts: [], rings: [], flash: null, celebrate: null };
-    var biteFx = null, climbFx = null, swallowFx = null;
+    var biteFx = null, climbFx = null, swallowFx = null, slitherFx = null;
     var SN_COLS = ["#22c55e", "#ef4444", "#a855f7", "#f97316", "#06b6d4", "#eab308", "#ec4899", "#84cc16"];
     function snCol(i) { var a = api.getSnakeCols ? api.getSnakeCols() : SN_COLS; return a[i % a.length]; }
     var snakeKeys = [];
     var geoT = -1, geoV = {};
+    function cloneSnakes(map) { var o = {}, k; for (k in map) o[+k] = +map[k]; return o; }
+    function setSnakeMap(map) {
+      SNAKES = cloneSnakes(map);
+      snakeKeys = Object.keys(SNAKES).map(Number).sort(function (a, b) { return a - b; });
+      geoT = -1; geoV = {}; offKey = "";
+    }
     function applyLayout(id) {
       var d = DIFFS[id] || DIFFS.easy; curDiff = DIFFS[id] ? id : "easy";
-      LADDERS = d.L; SNAKES = d.S; snakeKeys = Object.keys(SNAKES).map(Number); geoT = -1; geoV = {}; offKey = "";
+      LADDERS = d.L; setSnakeMap(d.S);
     }
     applyLayout(cfg.diff);
 
+    function calcShiftEvery(diff, n) {
+      n = Math.max(2, n || 2);
+      if (diff === "hard") return Math.max(4, n * 2);
+      if (diff === "medium") return Math.max(6, n * 2 + 2);
+      return 999;
+    }
+    function isStirring() {
+      return !!(st && !st.winner && st.maxShifts > 0 && st.shiftsDone < st.maxShifts && ((st.turnCount + 1) % st.shiftEvery === 0));
+    }
+    function buildShiftedSnakes(diff, oldMap, players) {
+      var used = { 1: 1, 100: 1 }, k, i, out = {};
+      for (k in LADDERS) { used[+k] = 1; used[+LADDERS[k]] = 1; }
+      if (players) for (i = 0; i < players.length; i++) used[players[i].pos] = 1;
+      function shuf(arr) { for (var j = arr.length - 1; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), tmp = arr[j]; arr[j] = arr[r]; arr[r] = tmp; } return arr; }
+      function rangeFree(lo, hi, avoidOld) {
+        var a = [], x;
+        for (x = lo; x <= hi; x++) if (!used[x] && (!avoidOld || !oldMap[x])) a.push(x);
+        return shuf(a);
+      }
+      if (diff === "hard") {
+        var mh = rangeFree(88, 99, true); if (!mh.length) mh = rangeFree(88, 99, false);
+        for (i = 0; i < mh.length; i++) {
+          var mt = rangeFree(36, Math.min(52, mh[i] - 40), false);
+          if (mt.length) { out[mh[i]] = mt[0]; used[mh[i]] = 1; used[mt[0]] = 1; break; }
+        }
+      }
+      var bands = diff === "medium"
+        ? [[16,28,4,13],[29,42,10,22],[43,54,18,32],[50,62,22,38],[58,70,26,46],[66,78,34,54],[74,86,40,62],[82,92,48,70],[88,96,58,78],[92,99,55,75]]
+        : [[15,26,4,12],[27,39,8,20],[40,51,16,28],[48,59,20,34],[55,66,24,42],[62,73,30,48],[69,80,36,54],[75,85,42,60],[81,90,48,66],[86,94,54,72],[90,98,60,78]];
+      for (var b = 0; b < bands.length; b++) {
+        var bd = bands[b];
+        var hs = rangeFree(bd[0], bd[1], true);
+        if (!hs.length) hs = rangeFree(bd[0], bd[1], false);
+        if (!hs.length) hs = rangeFree(15, 98, false);
+        for (i = 0; i < hs.length; i++) {
+          var h = hs[i], ts = rangeFree(Math.max(2, bd[2]), Math.min(bd[3], h - 10), false);
+          if (!ts.length) ts = rangeFree(2, h - 10, false);
+          if (ts.length) { out[h] = ts[0]; used[h] = 1; used[ts[0]] = 1; break; }
+        }
+      }
+      return Object.keys(out).length >= 6 ? out : cloneSnakes(oldMap);
+    }
+    function pairShiftSnakes(oldMap, newMap) {
+      var oKeys = Object.keys(oldMap).map(Number).sort(function (a, b) { return a - b; });
+      var nKeys = Object.keys(newMap).map(Number).sort(function (a, b) { return a - b; });
+      var pairs = [], oBoss = -1, nBoss = -1, i;
+      for (i = 0; i < oKeys.length; i++) if (oKeys[i] - oldMap[oKeys[i]] >= 40) oBoss = i;
+      for (i = 0; i < nKeys.length; i++) if (nKeys[i] - newMap[nKeys[i]] >= 40) nBoss = i;
+      if (oBoss >= 0 && nBoss >= 0) {
+        var okB = oKeys.splice(oBoss, 1)[0], nkB = nKeys.splice(nBoss, 1)[0];
+        pairs.push({ ok: okB, ot: oldMap[okB], nk: nkB, nt: newMap[nkB], si: snakeKeys.indexOf(okB), isBoss: true });
+      }
+      var len = Math.min(oKeys.length, nKeys.length);
+      for (i = 0; i < len; i++) {
+        pairs.push({ ok: oKeys[i], ot: oldMap[oKeys[i]], nk: nKeys[i], nt: newMap[nKeys[i]], si: i, isBoss: (nKeys[i] - newMap[nKeys[i]] >= 40) });
+      }
+      return pairs;
+    }
+
     function resetFx() {
       fx = { texts: [], rings: [], flash: null, celebrate: null };
-      biteFx = null; climbFx = null; swallowFx = null; particles = []; geoT = -1; geoV = {};
+      biteFx = null; climbFx = null; swallowFx = null; slitherFx = null; particles = []; geoT = -1; geoV = {};
       cam.k = 1; cam.x = 0; cam.y = 0; if (cv) cv.style.transform = "";   /* a quit mid-move must not leave the next board zoomed in */
     }
     function rrp(c, x, y, w, h, r) {
@@ -1615,7 +1680,7 @@
       var si = snakeKeys.indexOf(k), dir = si % 2 ? -1 : 1;
       var half = Math.max(2, Math.min(9, Math.round(len / (cw * 1.5))));
       var amp = cw * 0.44 * dir, N = lowFx ? 26 : 40, pts = [], i, tt, env, w, cum = [0];
-      var fast = swallowFx && swallowFx.k === k ? 2.6 : 1;
+      var fast = swallowFx && swallowFx.k === k ? 2.6 : (isStirring() ? 2.2 : 1);
       var ph = REDUCE_SL ? 0 : Math.sin(now * 0.0032 * fast + si * 1.7) * 0.9;
       for (i = 0; i <= N; i++) {
         tt = i / N; env = Math.pow(Math.sin(tt * Math.PI), 0.55);
@@ -1650,7 +1715,7 @@
     /* ---------- static board (cached): 2.5D sculpted tiles + landmarks + lashed ladders ---------- */
     function buildCache() {
       if (!size || !offCtx) return;
-      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl9|" + curDiff + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood") + "|" + ((api.hasScrollArt && api.hasScrollArt()) || "");
+      var b = api.getBoard(), key = size + "|" + dpr + "|" + b.id + "|" + (b.modern ? "m" : "c") + "|" + b.dark + "|sl10|" + curDiff + "|" + snakeKeys.join(",") + "|" + (api.getLadderStyle ? api.getLadderStyle().id : "wood") + "|" + ((api.hasScrollArt && api.hasScrollArt()) || "") + "|" + ((api.hasSlArt && api.hasSlArt()) || "");
       if (key === offKey) return;
       offKey = key;
       off.width = size * dpr; off.height = size * dpr;
@@ -1733,6 +1798,7 @@
       var isRope = LS.id === "wood" || LS.id === "bamboo" || LS.id === "vine" || LS.rope;
       for (k in LADDERS) {
         f = cellCenter(+k, size); t = cellCenter(LADDERS[k], size);
+        if (api.drawLadderArt && api.drawLadderArt(c, f.x, f.y, t.x, t.y, cw, LS.id)) continue;
         dx = t.x - f.x; dy = t.y - f.y; len = Math.sqrt(dx * dx + dy * dy) || 1;
         nx = -dy / len * cw * 0.18; ny = dx / len * cw * 0.18;
         rungs = Math.max(3, Math.round(len / (cw * 0.42)));
@@ -1824,15 +1890,20 @@
       var pl = st && st.players[st.turn];
       return !!(pl && !st.winner && !st.busy && k - pl.pos >= 1 && k - pl.pos <= 6);
     }
-    function drawHead(c, k, now) {
-      var g = geo(k, now), P0 = g.pts[0], P1 = g.pts[4], cw = g.cw, col = snCol(g.si);
-      var dark = shade(col, -0.5), ang = Math.atan2(P0[1] - P1[1], P0[0] - P1[0]), isBoss = k - SNAKES[k] >= 40, thr = snThreat(k);
+    function drawHead(c, k, now, customGeo, customBoss) {
+      var g = customGeo || geo(k, now), P0 = g.pts[0], P1 = g.pts[4], cw = g.cw, col = snCol(g.si);
+      var dark = shade(col, -0.5), ang = Math.atan2(P0[1] - P1[1], P0[0] - P1[0]), isBoss = customBoss != null ? customBoss : (k - SNAKES[k] >= 40), thr = customGeo ? false : snThreat(k);
       var hr = cw * (isBoss ? 0.33 : 0.28), hh = cw * (isBoss ? 0.24 : 0.2), open = Math.max(g.open || 0, thr && !REDUCE_SL ? 0.08 + 0.06 * Math.sin(now * 0.012) : 0);
       var ca = Math.cos(ang), sa = Math.sin(ang), tg = headTarget(k), i;
       var lx = (tg.x - P0[0]) * ca + (tg.y - P0[1]) * sa, ly = -(tg.x - P0[0]) * sa + (tg.y - P0[1]) * ca, ll = Math.sqrt(lx * lx + ly * ly) || 1;
       lx /= ll; ly /= ll;
       c.save(); c.translate(P0[0], P0[1]); c.rotate(ang);
       if (thr && !REDUCE_SL) c.translate(Math.sin(now * 0.014 + g.si) * cw * 0.035, 0);
+      var fl0 = REDUCE_SL ? 0 : Math.pow(Math.max(0, Math.sin(now * (thr ? 0.013 : 0.0065) + g.si * 2.1)), thr ? 4 : 8);
+      if (api.drawSnakeHeadArt && api.drawSnakeHeadArt(c, col, isBoss, hr, hh, open, thr, fl0, ang, now)) {
+        c.restore();
+        return;
+      }
       /* Boss Cobra Hood & Horns for MEGA snakes (e.g. Hard mode 99 -> 41) */
       if (isBoss) {
         var hdg = c.createRadialGradient(-hr * 0.55, 0, hr * 0.1, -hr * 0.55, 0, hr * 1.15);
@@ -1925,6 +1996,40 @@
       c.restore();
       if (!skipHead) drawHead(c, k, now);
     }
+    function drawSlitherSnake(c, pair, u, now) {
+      var of0 = cellCenter(pair.ok, size), ot0 = cellCenter(pair.ot, size);
+      var nf0 = cellCenter(pair.nk, size), nt0 = cellCenter(pair.nt, size), cw = of0.cw;
+      var eu = easeIO(u), arc = Math.sin(u * Math.PI) * cw * 0.65 * (pair.si % 2 ? -1 : 1);
+      var fx = of0.x + (nf0.x - of0.x) * eu + arc * 0.45, fy = of0.y + (nf0.y - of0.y) * eu - Math.abs(arc) * 0.35;
+      var tx = ot0.x + (nt0.x - ot0.x) * eu - arc * 0.35, ty = ot0.y + (nt0.y - ot0.y) * eu + Math.abs(arc) * 0.25;
+      var dx = tx - fx, dy = ty - fy, len = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / len, ny = dx / len;
+      var dir = pair.si % 2 ? -1 : 1, half = Math.max(2, Math.min(8, Math.round(len / (cw * 1.45))));
+      var amp = cw * 0.48 * dir, N = lowFx ? 22 : 34, pts = [], i, tt, env, w;
+      var ph = now * 0.016 + pair.si * 1.7;
+      for (i = 0; i <= N; i++) {
+        tt = i / N; env = Math.pow(Math.sin(tt * Math.PI), 0.52);
+        w = Math.sin(tt * Math.PI * half - ph) * amp * env;
+        pts.push([fx + dx * tt + nx * w, fy + dy * tt + ny * w]);
+      }
+      var col = snCol(pair.si), dark = shade(col, -0.5), mid = shade(col, -0.14), lite = shade(col, 0.34), wd, a, b2;
+      c.save(); c.lineCap = "round"; c.lineJoin = "round";
+      c.shadowColor = alpha(col, 0.55); c.shadowBlur = cw * 0.22;
+      for (i = N; i >= 1; i--) {
+        tt = (i - 0.5) / N; wd = cw * (0.045 + 0.16 * Math.pow(1 - tt, 0.7)); a = pts[i - 1]; b2 = pts[i];
+        c.strokeStyle = dark; c.lineWidth = wd + cw * 0.055; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+      }
+      c.shadowBlur = 0;
+      for (i = N; i >= 1; i--) {
+        tt = (i - 0.5) / N; wd = cw * (0.045 + 0.16 * Math.pow(1 - tt, 0.7)); a = pts[i - 1]; b2 = pts[i];
+        c.strokeStyle = (Math.floor(i / 3) % 2) ? mid : col; c.lineWidth = wd; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+      }
+      for (i = N; i >= 1; i--) {
+        tt = (i - 0.5) / N; wd = cw * (0.045 + 0.16 * Math.pow(1 - tt, 0.7)); a = pts[i - 1]; b2 = pts[i];
+        c.strokeStyle = lite; c.lineWidth = wd * 0.28; c.beginPath(); c.moveTo(a[0], a[1] - wd * 0.2); c.lineTo(b2[0], b2[1] - wd * 0.2); c.stroke();
+      }
+      c.restore();
+      drawHead(c, pair.nk, now, { pts: pts, cw: cw, open: 0.12, si: pair.si }, pair.isBoss);
+    }
     function putToken(c, x, y, r, col, lift, an) {
       if (an && (an.sq || an.a != null)) {
         c.save(); if (an.a != null) c.globalAlpha = an.a;
@@ -1990,9 +2095,16 @@
         }
       }
 
-      /* snakes (living) */
+      /* snakes (living or slithering to new tiles) */
       var sk, biting = biteFx ? biteFx.k : -1;
-      for (i = 0; i < snakeKeys.length; i++) { sk = snakeKeys[i]; drawSnake(ctx, sk, now, sk === biting); }
+      if (slitherFx) {
+        var su = Math.max(0, Math.min(1, (now - slitherFx.t0) * sp / slitherFx.dur));
+        for (i = 0; i < slitherFx.pairs.length; i++) {
+          drawSlitherSnake(ctx, slitherFx.pairs[i], su, now);
+        }
+      } else {
+        for (i = 0; i < snakeKeys.length; i++) { sk = snakeKeys[i]; drawSnake(ctx, sk, now, sk === biting); }
+      }
 
       /* tokens: resting first, moving on top */
       for (i = 0; i < st.players.length; i++) {
@@ -2083,7 +2195,7 @@
       cv.style.transformOrigin = "0 0"; cv.style.transform = "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) scale(" + cam.k.toFixed(3) + ")";
     }
     function fxBusy() {
-      return !!(st && (cam.k > 1.003 || st.busy || particles.length || fx.texts.length || fx.rings.length || fx.flash || fx.celebrate));
+      return !!(st && (cam.k > 1.003 || st.busy || slitherFx || particles.length || fx.texts.length || fx.rings.length || fx.flash || fx.celebrate));
     }
     function loop(now) {
       lraf = 0;
@@ -2224,7 +2336,41 @@
       if (isLadder) animateLadder(pl, dest, onDone); else animateSnake(pl, dest, onDone);
     }
 
-    function pushOnlineState(nextTurn, winnerIdx, msg) {
+    function animateSlitherShift(newSnakes, onDone) {
+      var g0 = gen, cw = cellCenter(1, size).cw, pairs = pairShiftSnakes(SNAKES, newSnakes), lastDust = 0;
+      slitherFx = { t0: performance.now(), dur: REDUCE_SL ? 220 : 1120, pairs: pairs, next: newSnakes };
+      playSfx("snake"); vibrate([24, 30, 38, 26, 22]);
+      flashBoard("245,158,11", 0.34, 780);
+      popText("🐍 SNAKES SHIFTED!", size / 2, size * 0.45, "#fde047", cw * 0.66, 1350);
+      for (var i = 0; i < pairs.length; i++) {
+        var oc = cellCenter(pairs[i].ok, size);
+        addRing(oc.x, oc.y, snCol(pairs[i].si), cw * 1.1, 460);
+      }
+      kickLoop();
+      function tick(now) {
+        if (!st || g0 !== gen || !slitherFx) { slitherFx = null; return; }
+        var u = Math.max(0, Math.min(1, (now - slitherFx.t0) * api.speed() / slitherFx.dur));
+        if (!REDUCE_SL && !lowFx && now - lastDust > 95) {
+          lastDust = now;
+          for (var j = 0; j < pairs.length; j += 2) {
+            var of0 = cellCenter(pairs[j].ok, size), nf0 = cellCenter(pairs[j].nk, size), eu = easeIO(u);
+            spawnBurst(of0.x + (nf0.x - of0.x) * eu, of0.y + (nf0.y - of0.y) * eu, [snCol(pairs[j].si), "#fde047"], 2, { sp: 0.3, spr: 1.0, g: 0.02, sz: 1.6, szr: 1.4, d: 0.05 });
+          }
+        }
+        if (u < 1) { window.requestAnimationFrame(tick); return; }
+        slitherFx = null;
+        setSnakeMap(newSnakes);
+        for (var k = 0; k < snakeKeys.length; k++) {
+          var nc = cellCenter(snakeKeys[k], size);
+          addRing(nc.x, nc.y, "#fca5a5", cw * 1.15, 520);
+        }
+        drawFrame();
+        if (onDone) onDone();
+      }
+      window.requestAnimationFrame(tick);
+    }
+
+    function pushOnlineState(nextTurn, winnerIdx, msg, shiftedSnakes) {
       if (!rm || !st) return;
       var positions = st.players.map(function (p) { return p.pos; });
       var up = {
@@ -2232,8 +2378,11 @@
         "sl.turn": nextTurn,
         "sl.dice": st.dice,
         "sl.rollId": st.rollId,
+        "sl.turnCount": st.turnCount || 0,
+        "sl.shiftsDone": st.shiftsDone || 0,
         "sl.msg": msg
       };
+      if (shiftedSnakes) { up["sl.snakes"] = shiftedSnakes; up["sl.shiftId"] = st.shiftId || Date.now(); }
       if (winnerIdx >= 0) { up.status = "finished"; up["sl.winner"] = winnerIdx; }
       rm.F.updateDoc(rm.ref, up).catch(function () { });
     }
@@ -2248,17 +2397,44 @@
       later(function () { executeMove(a, mv.val, false); }, rms + 80);
     }
 
-    function finishTurn(rolledSix, isActor) {
+    function continueAfterTurn() {
       if (!st || st.winner) return;
       st.busy = false;
+      updateHUD();
+      if (!rm) maybeBot();
+      else if (rm.pendingShift) {
+        var ns = rm.pendingShift; rm.pendingShift = null;
+        st.busy = true; updateHUD();
+        animateSlitherShift(ns, continueAfterTurn);
+      } else if (rm.pending) {
+        var nmv = rm.pending; rm.pending = null; playRemoteMove(nmv);
+      }
+    }
+
+    function finishTurn(rolledSix, isActor) {
+      if (!st || st.winner) return;
       var nextTurn = rolledSix ? st.turn : (st.turn + 1) % st.players.length;
+      if (!rolledSix) st.turnCount = (st.turnCount || 0) + 1;
+      var shouldShift = !rolledSix && (!rm || isActor) && st.maxShifts > 0 && st.shiftsDone < st.maxShifts && st.turnCount > 0 && (st.turnCount % st.shiftEvery === 0);
+      if (shouldShift) {
+        st.busy = true;
+        st.shiftsDone++;
+        st.shiftId = Date.now();
+        var nextSnakes = buildShiftedSnakes(curDiff, SNAKES, st.players);
+        var sMsg = "🐍 Snakes slithered! " + turnTxt(st.players[nextTurn].name);
+        st.turn = nextTurn;
+        setMsg(sMsg);
+        if (rm && isActor) pushOnlineState(nextTurn, -1, sMsg, nextSnakes);
+        updateHUD();
+        animateSlitherShift(nextSnakes, continueAfterTurn);
+        return;
+      }
       var msg = rolledSix ? (st.players[st.turn].name + " rolled 6! Roll again") : turnTxt(st.players[nextTurn].name);
+      if (!rolledSix && isStirring()) msg += " · ⚠️ Snakes stirring!";
       st.turn = nextTurn;
       setMsg(msg);
       if (rm && isActor) pushOnlineState(nextTurn, -1, msg);
-      updateHUD();
-      if (!rm) maybeBot();
-      else if (rm.pending) { var nmv = rm.pending; rm.pending = null; playRemoteMove(nmv); }
+      continueAfterTurn();
     }
 
     function executeMove(pIdx, val, isActor) {
@@ -2434,9 +2610,10 @@
       });
       if (uids.length < 2) return;
       var pos = uids.map(function () { return 1; });
+      var dObj = DIFFS[cfg.diff] || DIFFS.easy;
       rm.F.updateDoc(rm.ref, {
         status: "playing",
-        sl: { order: uids, positions: pos, turn: 0, dice: 6, rollId: 0, diff: cfg.diff, msg: d.players[uids[0]].name + "'s turn" }
+        sl: { order: uids, positions: pos, turn: 0, dice: 6, rollId: 0, diff: cfg.diff, snakes: cloneSnakes(dObj.S), turnCount: 0, shiftsDone: 0, shiftId: 0, msg: d.players[uids[0]].name + "'s turn" }
       }).catch(function () { });
     }
 
@@ -2471,7 +2648,7 @@
       }
     }
     function attachRoom(code, ref, f, isHost) {
-      rm = { code: code, ref: ref, F: f.F, uid: f.uid, isHost: isHost, data: null, lastRollId: 0, lastReactId: 0, unsub: null };
+      rm = { code: code, ref: ref, F: f.F, uid: f.uid, isHost: isHost, data: null, lastRollId: 0, lastReactId: 0, lastShiftId: 0, pendingShift: null, unsub: null };
       rm.unsub = f.F.onSnapshot(ref, function (snap) {
         if (!rm) return;
         if (!snap.exists()) { clearTimeout(rm.wd); rm = null; lookEnd(); st = null; gen++; view = "setup"; render(); return; }
@@ -2484,12 +2661,23 @@
           var sl = d.sl, cols = slColors();
           if (!st || view !== "game") {
             applyLayout(sl.diff);
+            if (sl.snakes) setSnakeMap(sl.snakes);
             var pls = sl.order.map(function (u, idx) {
               return { uid: u, name: (d.players[u] && d.players[u].name) || "Player " + (idx + 1), color: cols[idx], pos: sl.positions[idx] || 1, bot: false, anim: null };
             });
-            st = { players: pls, turn: sl.turn || 0, dice: sl.dice || 6, rollId: Math.max(sl.rollId || 0, (sl.lastMove && sl.lastMove.id) || 0), busy: false, winner: null, msg: sl.msg || "" };
-            gen++; rm.lastRollId = (sl.lastMove && sl.lastMove.id) || 0; rm.pending = null;
+            var mSh = (DIFFS[curDiff] && DIFFS[curDiff].maxShifts) || 0;
+            st = { players: pls, turn: sl.turn || 0, dice: sl.dice || 6, rollId: Math.max(sl.rollId || 0, (sl.lastMove && sl.lastMove.id) || 0), turnCount: sl.turnCount || 0, shiftsDone: sl.shiftsDone || 0, maxShifts: mSh, shiftEvery: calcShiftEvery(curDiff, pls.length), shiftId: sl.shiftId || 0, busy: false, winner: null, msg: sl.msg || "" };
+            gen++; rm.lastRollId = (sl.lastMove && sl.lastMove.id) || 0; rm.lastShiftId = sl.shiftId || 0; rm.pending = null; rm.pendingShift = null;
             particles = []; view = "game"; render();
+          }
+          if (sl.shiftId && sl.shiftId > rm.lastShiftId && sl.snakes) {
+            rm.lastShiftId = sl.shiftId;
+            st.shiftsDone = sl.shiftsDone || st.shiftsDone;
+            st.turnCount = sl.turnCount || st.turnCount;
+            if (sl.shiftId !== st.shiftId) {
+              if (st.busy) rm.pendingShift = cloneSnakes(sl.snakes);
+              else { st.busy = true; updateHUD(); animateSlitherShift(cloneSnakes(sl.snakes), continueAfterTurn); }
+            }
           }
           armWatch(sl.turn || 0, JSON.stringify([sl.turn, sl.positions, sl.lastMove && sl.lastMove.id]));
           if (sl.react && sl.react.id && sl.react.id !== rm.lastReactId) {
@@ -2531,7 +2719,8 @@
         nm = (cfg.names[i] || "").trim() || (cfg.mode === "ai" && i > 0 ? "Bot " + i : "Player " + (i + 1));
         pls.push({ name: nm, color: cols[i], pos: 1, bot: cfg.mode === "ai" && i > 0, anim: null });
       }
-      st = { players: pls, turn: 0, dice: 6, rollId: 0, busy: false, winner: null, msg: turnTxt(pls[0].name) + " — Tap dice!" };
+      var mSh0 = (DIFFS[curDiff] && DIFFS[curDiff].maxShifts) || 0;
+      st = { players: pls, turn: 0, dice: 6, rollId: 0, turnCount: 0, shiftsDone: 0, maxShifts: mSh0, shiftEvery: calcShiftEvery(curDiff, pls.length), shiftId: 0, busy: false, winner: null, msg: turnTxt(pls[0].name) + " — Tap dice!" };
       particles = []; view = "game"; render();
     }
 
@@ -2561,6 +2750,12 @@
         var barEl = el.querySelector(".sl-pbar i");
         if (barEl) barEl.style.width = Math.min(100, p.pos) + "%";
       });
+      var dbEl = q("#sl-dbadge", host);
+      if (dbEl) {
+        var rem = Math.max(0, (st.maxShifts || 0) - (st.shiftsDone || 0));
+        dbEl.textContent = DIFFS[curDiff].name.toUpperCase() + (rem > 0 ? " · 🐍" + rem : "");
+        dbEl.classList.toggle("sl-stir", isStirring());
+      }
       var rEl = q("#sl-race", host);
       if (rEl && st.players.length) {
         var tot = st.players.reduce(function (a, pp) { return a + pp.pos; }, 0) || 1;
@@ -2685,7 +2880,7 @@
       var h = '<div class="bg-box lx lx-gap lx-pdl' + (n <= 2 ? " lx-few" : "") + '" style="gap:8px">';
       h += '<div class="lx-top lx-enter"><button type="button" class="lx-ib" data-sl="quit" aria-label="Quit game">' + ico("x") + '</button>' +
         '<div id="sl-msg" class="lx-msg">' + esc(st.msg) + '</div>' +
-        '<span class="sl-dbadge sl-d-' + curDiff + '">' + DIFFS[curDiff].name.toUpperCase() + '</span>' +
+        '<span id="sl-dbadge" class="sl-dbadge sl-d-' + curDiff + '">' + DIFFS[curDiff].name.toUpperCase() + (st.maxShifts > 0 ? ' · 🐍' + Math.max(0, st.maxShifts - (st.shiftsDone || 0)) : '') + '</span>' +
         '<button type="button" class="lx-ib studio" data-sl="studio" aria-label="Arena Studio" title="Arena Studio">' + ico("sparkles") + '</button></div>';
       h += rowH(topRow, true);
       h += '<div class="bg-cv-wrap ag-glass lx-enter" style="animation-delay:.1s"><canvas id="sl-canvas" class="bg-cv"></canvas></div>';
@@ -2744,7 +2939,8 @@
         R + ".sl-dbadge{flex:none;font-size:10px;font-weight:900;letter-spacing:.07em;padding:4px 8px;border-radius:999px;color:#0b1020;white-space:nowrap;align-self:center}",
         R + ".sl-dbadge.sl-d-easy{background:#4ade80}",
         R + ".sl-dbadge.sl-d-medium{background:#fbbf24}",
-        R + ".sl-dbadge.sl-d-hard{background:#f87171;animation:slDPulse 1.3s ease-in-out infinite}",
+        R + ".sl-dbadge.sl-d-hard, " + R + ".sl-dbadge.sl-stir{animation:slDPulse 1.1s ease-in-out infinite}",
+        R + ".sl-dbadge.sl-d-hard{background:#f87171}",
         "@keyframes slDPulse{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.65)}50%{box-shadow:0 0 0 7px rgba(248,113,113,0)}}",
         R + ".sl-dt.sl-d-easy.on{box-shadow:0 0 0 2px #4ade80,0 0 18px -4px #4ade80}",
         R + ".sl-dt.sl-d-medium.on{box-shadow:0 0 0 2px #fbbf24,0 0 18px -4px #fbbf24}",
@@ -5233,11 +5429,12 @@ function pickBestBotTokenOld(pl, valid, dice) {
     return (PALETTES[id || S.palette] || PALETTES.classic).colors.slice();
   }
 
-  /* ---------- Real Painted Art Engine v5.4 (6 Board Frames + 23 Pieces + 12 Dice Skins + 7 Emblems + 7 Backdrops) ---------- */
+  /* ---------- Real Painted Art Engine v5.5 (6 Frames + 23 Pieces + 12 Dice + 7 Emblems + S&L Heads & Ladders) ---------- */
   var ART = {
     bgRoyal: null, bgJungle: null, bgPalace: null, bgCyber: null, bgSakura: null, bgForge: null, bgOcean: null,
     scroll: null, palace: null, cyber: null, sakura: null, forge: null, ocean: null,
     pieces: {}, diceCv: {}, diceUrl: {}, centers: {},
+    slHeads: null, slBossHead: null, slLadders: null,
     booted: false
   };
   var TEAM_COLS = [
@@ -5459,6 +5656,40 @@ function pickBestBotTokenOld(pl, valid, dice) {
       drawThumbs(); notifyGames("all");
     } catch (e) { }
   }
+  function processSlHeads(im) {
+    try {
+      var defs = [
+        ["emerald", [34, 197, 94]],
+        ["ruby",    [239, 68, 68]],
+        ["purple",  [168, 85, 247]],
+        ["gold",    [245, 158, 11]],
+        ["frost",   [56, 189, 248]],
+        ["lava",    [72, 52, 48]],
+        ["candy",   [244, 114, 182]],
+        ["boss",    null]
+      ];
+      var list = [];
+      processRectGrid(im, 4, 2, 192, function (r, c, cv) {
+        var d = defs[r * 4 + c]; if (!d) return;
+        if (d[0] === "boss") ART.slBossHead = cv;
+        else list.push({ key: d[0], rgb: d[1], cv: cv });
+      });
+      if (list.length) ART.slHeads = list;
+      notifyGames("all");
+    } catch (e) { }
+  }
+  function processSlLadders(im) {
+    try {
+      var ids = ["wood", "gold", "bamboo", "steel", "neon", "candy", "crystal", "lava"];
+      var map = {};
+      processRectGrid(im, 4, 2, 224, function (r, c, cv) {
+        var id = ids[r * 4 + c]; if (!id) return;
+        map[id] = cv;
+      });
+      ART.slLadders = map;
+      notifyGames("all");
+    } catch (e) { }
+  }
   function bootArtAssets() {
     if (ART.booted) return; ART.booted = true;
     var bgs = [["bg_royal", "bgRoyal"], ["bg_jungle", "bgJungle"], ["bg_palace", "bgPalace"], ["bg_cyber", "bgCyber"], ["bg_sakura", "bgSakura"], ["bg_forge", "bgForge"], ["bg_ocean", "bgOcean"]];
@@ -5470,6 +5701,8 @@ function pickBestBotTokenOld(pl, valid, dice) {
     loadArtFile("tokens_crown", function (im) { processQuadSprites(im, "crown"); });
     loadArtFile("dice_skins",     processDiceSkins);
     loadArtFile("center_emblems", processCenterEmblems);
+    loadArtFile("sl_heads",       processSlHeads);
+    loadArtFile("sl_ladders",     processSlLadders);
     var packs = [
       ["tokens_pack1", ["orb", "rocket", "shield", "bolt"]],
       ["tokens_pack2", ["hex", "lotus", "cat", "bear"]],
@@ -6334,6 +6567,57 @@ function pickBestBotTokenOld(pl, valid, dice) {
     c.save(); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
     c.shadowColor = "rgba(18,4,30,.55)"; c.shadowBlur = w * 0.035; c.shadowOffsetY = h * 0.014;
     c.drawImage(fi.cv, x, y, w, h); c.restore();
+  };
+  api.hasSlArt = function () { return (ART.slLadders ? "L" : "") + (ART.slHeads ? "H" : ""); };
+  api.drawLadderArt = function (c, fx, fy, tx, ty, cw, styleId) {
+    if (!ART.slLadders) return false;
+    var k = styleId === "vine" ? "bamboo" : (styleId === "rope" ? "wood" : styleId);
+    var sp = ART.slLadders[k] || ART.slLadders.wood;
+    if (!sp) return false;
+    var dx = tx - fx, dy = ty - fy, len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ang = Math.atan2(dx, -dy), lw = cw * 0.66;
+    var sw = sp.width, sh = sp.height, sc = lw / sw;
+    var capS = Math.round(sh * 0.24), botS = Math.round(sh * 0.24), midS = Math.max(8, sh - capS - botS);
+    var capH = Math.min(len * 0.34, capS * sc), botH = Math.min(len * 0.34, botS * sc);
+    var midLen = Math.max(0, len - capH - botH);
+    c.save();
+    c.translate(fx, fy); c.rotate(ang);
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    c.shadowColor = "rgba(0,0,0,.38)"; c.shadowBlur = cw * 0.14; c.shadowOffsetX = cw * 0.07; c.shadowOffsetY = cw * 0.1;
+    c.drawImage(sp, 0, 0, sw, capS, -lw / 2, -len, lw, capH + 0.8);
+    if (midLen > 1) {
+      var reps = Math.max(1, Math.round(midLen / Math.max(10, midS * sc))), segH = midLen / reps, r;
+      for (r = 0; r < reps; r++) {
+        c.drawImage(sp, 0, capS, sw, midS, -lw / 2, -len + capH + r * segH - 0.6, lw, segH + 1.2);
+      }
+    }
+    c.drawImage(sp, 0, sh - botS, sw, botS, -lw / 2, -botH - 0.6, lw, botH + 0.6);
+    c.restore();
+    return true;
+  };
+  api.drawSnakeHeadArt = function (c, col, isBoss, hr, hh, open, thr, fl, ang) {
+    if (!ART.slHeads) return false;
+    var sp = (isBoss && ART.slBossHead) ? ART.slBossHead : pickQuadSprite(ART.slHeads, col);
+    if (!sp) return false;
+    if ((fl > 0.05 && open < 0.45) || (open > 0.05 && open < 0.55)) {
+      var tl = hr * (0.95 + 0.9 * Math.min(1, fl + open));
+      c.strokeStyle = "#ef4444"; c.lineWidth = Math.max(1.4, hr * 0.12); c.lineCap = "round"; c.lineJoin = "round";
+      c.beginPath(); c.moveTo(hr * 0.72, 0); c.lineTo(hr + tl * 0.6, 0); c.lineTo(hr + tl, -tl * 0.28); c.moveTo(hr + tl * 0.6, 0); c.lineTo(hr + tl, tl * 0.28); c.stroke();
+    }
+    if (open > 0.24) {
+      c.fillStyle = "#450a0a"; c.beginPath(); c.ellipse(hr * 0.62, 0, hr * 0.55, hh * 0.9 * open, 0, 0, TAU); c.fill();
+      c.fillStyle = "#ffffff"; var fh = hh * 0.55 * open, fy = hh * 0.82 * open;
+      c.beginPath(); c.moveTo(hr * 0.66, -fy); c.lineTo(hr * 0.88, -fy); c.lineTo(hr * 0.77, -fy + fh); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(hr * 0.66, fy); c.lineTo(hr * 0.88, fy); c.lineTo(hr * 0.77, fy - fh); c.closePath(); c.fill();
+    }
+    c.save();
+    if (Math.cos(ang) < 0) c.scale(1, -1);
+    var dh = hr * (isBoss ? 2.85 : 2.38), dw = dh * (sp.width / sp.height);
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+    c.shadowColor = thr ? "rgba(254,240,138,.7)" : "rgba(15,23,42,.42)"; c.shadowBlur = hr * (thr ? 0.5 : 0.28);
+    c.drawImage(sp, -dw * 0.42, -dh * 0.52, dw, dh);
+    c.restore();
+    return true;
   };
   api.drawToken = drawToken;
   api.drawCenter = drawCenter;
@@ -7358,6 +7642,6 @@ function pickBestBotTokenOld(pl, valid, dice) {
     bootArtAssets(); applyRootAttrs(); syncStudio(); drawThumbs(); injectMidGameBtn(); fsWatchPlaying();
   }
 
-  window.ArenaStudio = { version: "5.4.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
+  window.ArenaStudio = { version: "5.5.0", fullscreen: toggleFs, toggle: toggleInGameStudio, getBoard: getBoard, getPalette: getPalette };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountStudio); else mountStudio();
 })();

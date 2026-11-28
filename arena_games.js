@@ -122,6 +122,46 @@
   function ico(n, c) { return '<i data-lucide="' + n + '" class="ag-i ' + (c || "") + '"></i>'; }
   function q(sel, el) { return (el || root).querySelector(sel); }
   function qa(sel, el) { return Array.prototype.slice.call((el || root).querySelectorAll(sel)); }
+
+  /* ---- finish-and-continue + "your turn" nudge (shared by Ludo and Snakes & Ladders) ---- */
+  var FIN_MEDALS = ["🥇", "🥈", "🥉", "4️⃣"], FIN_ORD = ["1st", "2nd", "3rd", "4th"];
+  function finRank(st, cmp) { var o = (st.order || []).slice(), rest = st.players.filter(function (p) { return o.indexOf(p) < 0; }).sort(cmp); return o.concat(rest); }
+  function finNext(st, from) { var n = st.players.length, i = from, k; for (k = 0; k < n; k++) { i = (i + 1) % n; if (!st.players[i].done) return i; } return from; }
+  /* record a finisher. Returns true when the match should offer "continue" (2+ players still racing). */
+  function finRecord(st, pl) {
+    st.order = st.order || []; if (st.order.indexOf(pl) < 0) st.order.push(pl); pl.done = true;
+    var rem = st.players.filter(function (p) { return !p.done; });
+    if (rem.length >= 2) return true;
+    if (rem.length === 1) { st.order.push(rem[0]); rem[0].done = true; }
+    return false;
+  }
+  function finPanel(ns, st) {
+    var pl = st.order[st.order.length - 1], place = st.order.length, rem = st.players.filter(function (p) { return !p.done; }).length;
+    var el = document.createElement("div"); el.className = "lx-fin";
+    el.innerHTML = '<div class="lx-fin-t">' + FIN_MEDALS[place - 1] + ' ' + String(pl.name).replace(/[<>&]/g, "") + ' finished ' + FIN_ORD[place - 1] + '!</div>' +
+      '<div class="lx-fin-s">' + rem + ' players still racing</div>' +
+      '<button type="button" class="lx-fin-b go" data-' + ns + '="fincont">▶ Play for ' + FIN_ORD[place] + ' place</button>' +
+      '<button type="button" class="lx-fin-b" data-' + ns + '="finend">🏁 End match</button>';
+    return el;
+  }
+  function finMark(st, el, p) {
+    var mi = (st.order || []).indexOf(p);
+    el.classList.toggle("done", !!p.done);
+    if (mi >= 0) el.setAttribute("data-medal", FIN_MEDALS[mi]); else el.removeAttribute("data-medal");
+  }
+  function makeNudger(getEl) {
+    var t = 0, key = -1;
+    function arm(ms, idx) {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        var el = getEl(idx); if (!el) return;
+        el.classList.remove("lx-nudge"); void el.offsetWidth; el.classList.add("lx-nudge");
+        try { vibrate([14, 40, 14]); } catch (e) { }
+        arm(9000, idx);
+      }, ms);
+    }
+    return function (idx) { if (idx < 0) { clearTimeout(t); key = -1; return; } if (idx !== key) { key = idx; arm(7000, idx); } };
+  }
   function savedName() { return (ls(NAME_KEY) || "").trim().slice(0, 14) || "Player"; }
   function saveName(n) { var v = String(n || "").trim().slice(0, 14); if (v) lsSet(NAME_KEY, v); }
   function lookEnd() { try { var a = window.ArenaGames; if (a && a.watchLook) a.watchLook(null); if (a && a.restoreLook) a.restoreLook(); } catch (e) { } }
@@ -2449,6 +2489,16 @@
       later(function () { executeMove(a, mv.val, false); }, rms + 80);
     }
 
+    function slFinShow() { if (!st || !host || view !== "game") return; st.finPanel = true; var w = q(".bg-cv-wrap", host); if (w && !q(".lx-fin", w)) w.appendChild(finPanel("sl", st)); }
+    function slFinContinue() {
+      if (!st || !st.order || !st.order.length) return;
+      var w = q(".lx-fin", host); if (w) w.remove();
+      var pl = st.order[st.order.length - 1]; st.finPanel = false; st.winner = null; st.busy = false; st.force = 0;
+      st.turn = finNext(st, st.players.indexOf(pl)); setMsg(turnTxt(st.players[st.turn].name));
+      updateHUD(); drawFrame(); kickLoop(); maybeBot();
+    }
+    function slFinEnd() { if (!st) return; st.finPanel = false; view = "result"; render(); }
+
     function continueAfterTurn() {
       if (!st || st.winner) return;
       st.busy = false;
@@ -2465,7 +2515,7 @@
 
     function finishTurn(rolledSix, isActor) {
       if (!st || st.winner) return;
-      var nextTurn = rolledSix ? st.turn : (st.turn + 1) % st.players.length;
+      var nextTurn = rolledSix ? st.turn : finNext(st, st.turn);
       if (!rolledSix) st.turnCount = (st.turnCount || 0) + 1;
       var shouldShift = !rolledSix && (!rm || isActor) && st.maxShifts > 0 && st.shiftsDone < st.maxShifts && st.turnCount > 0 && (st.turnCount % st.shiftEvery === 0);
       if (shouldShift) {
@@ -2650,6 +2700,7 @@
           celebrate(pl);
           vibrate([40, 40, 80]);
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
+          if (!rm && st.players.length >= 3 && finRecord(st, pl)) { later(slFinShow, api.dur(2600)); return; }   /* offer: keep playing for the next places */
           later(function () { view = "result"; render(); }, 5500);
           return;
         }
@@ -2918,9 +2969,12 @@
       particles = []; view = "game"; render();
     }
 
+    var slNudge = makeNudger(function (i) { return q("#sl-dw-" + i, host); });
     function updateHUD() {
       if (!st || !host) return;
       var pl = st.players[st.turn], can = canRollNow();
+      if (st.finPanel && !q(".lx-fin", host)) slFinShow();
+      slNudge(can && !pl.bot && !rm ? st.turn : -1);
       st.players.forEach(function (p, i) {
         var d = q("#sl-die-" + i, host), w = q("#sl-dw-" + i, host); if (!d || !w) return;
         var mine = i === st.turn, ready = mine && can, K = dkit();
@@ -2938,7 +2992,8 @@
       /* cards are looked up by player index (#sl-chip-N), NOT by DOM order: the seat layout rotates them, so DOM order != player order */
       st.players.forEach(function (p, idx) {
         var el = q("#sl-chip-" + idx, host); if (!el) return;
-        el.classList.toggle("turn", idx === st.turn);
+        el.classList.toggle("turn", idx === st.turn && !st.winner);
+        finMark(st, el, p);
         el.style.setProperty("--c", p.color); el.style.setProperty("--cd", shade(p.color, -0.4));
         var posEl = el.querySelector(".sl-pos");
         if (posEl) posEl.textContent = p.pos;
@@ -2956,7 +3011,7 @@
         var tot = st.players.reduce(function (a, pp) { return a + pp.pos; }, 0) || 1;
         rEl.innerHTML = st.players.map(function (pp) {
           var pc = Math.max(8, Math.round(pp.pos / tot * 100));
-          return '<div style="flex:' + pp.pos + ';background:' + pp.color + '" title="' + esc(pp.name) + ' · Sq ' + pp.pos + '">' + (st.players.length <= 3 || pc >= 22 ? pp.pos : '') + '</div>';
+          return '<div style="flex:' + pp.pos + ';background:' + pp.color + '" title="' + esc(pp.name) + ' · Sq ' + pp.pos + '">' + pp.pos + '</div>';
         }).join("");
       }
       var cdEl = q("#sl-cards", host);
@@ -3102,7 +3157,7 @@
     }
 
     function renderResult() {
-      var ranked = st.players.slice().sort(function (a, b) { return b.pos - a.pos; });
+      var ranked = finRank(st, function (a, b) { return b.pos - a.pos; });
       var medals = ["🥇", "🥈", "🥉", "4️⃣"];
       var h = '<div class="bg-box"><div class="ag-glass p-4 text-center space-y-3">';
       h += '<div class="text-xs font-extrabold qa-t2 uppercase tracking-wider">Snakes &amp; Ladders</div>';
@@ -3154,7 +3209,33 @@
         R + ".sl-emo{width:28px;height:26px;border-radius:9px;background:var(--ag-bg2);border:1px solid var(--ag-bd);font-size:14px;line-height:1;display:grid;place-items:center;transition:transform .12s}",
         R + ".sl-emo:active{transform:scale(.82)}",
         R + ".sl-cards{display:flex;align-items:center;gap:4px;flex:none}",
-        R + ".sl-cards .lx-cbtn{padding:3px 7px;font-size:10.5px;border-radius:10px}"
+        R + ".sl-cards .lx-cbtn{padding:3px 7px;font-size:10.5px;border-radius:10px}",
+        R + ".lx-fin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:8;width:min(86%,260px);padding:12px 12px 10px;border-radius:18px;background:rgba(15,10,30,.92);border:2px solid #fde047;box-shadow:0 14px 40px rgba(0,0,0,.6),0 0 24px -4px #fbbf24;text-align:center;color:#fff;animation:lxFinIn .35s cubic-bezier(.2,1.3,.4,1)}",
+        R + ".lx-fin-t{font-size:15px;font-weight:900;line-height:1.2}",
+        R + ".lx-fin-s{font-size:11px;opacity:.75;margin:3px 0 9px;font-weight:700}",
+        R + ".lx-fin-b{display:block;width:100%;padding:9px 8px;margin-top:6px;border-radius:12px;font-size:12.5px;font-weight:900;color:#fff;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4)}",
+        R + ".lx-fin-b.go{background:linear-gradient(135deg,#f59e0b,#ea580c);border-color:#fde047}",
+        "@keyframes lxFinIn{from{opacity:0;transform:translate(-50%,-50%) scale(.7)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}",
+        R + ".lx-pc.done{opacity:.55!important;filter:grayscale(.55);transform:scale(.95)!important}",
+        R + ".lx-pc[data-medal]::before{content:attr(data-medal);position:absolute;left:-4px;top:-9px;font-size:18px;line-height:1;z-index:6;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}",
+        R + ".lx-dwrap.lx-nudge{animation:lxNudge .8s ease-in-out 3}",
+        "@keyframes lxNudge{0%,100%{transform:rotate(0) scale(1)}20%{transform:rotate(-9deg) scale(1.12);box-shadow:0 0 18px 4px #fde047}40%{transform:rotate(8deg) scale(1.12)}60%{transform:rotate(-5deg) scale(1.06)}80%{transform:rotate(3deg)}}",
+
+        /* ---- layout fixes: board stays inside the screen, turn-timer bar stays inside its card, race bar always readable ---- */
+        R + ".ag-playing #ag-pane-snakes .bg-box.lx{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);overflow:visible}",
+        R + ".ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 318px),calc(100vw - 8px));width:min(100%,calc(100dvh - 318px),calc(100vw - 8px));min-width:230px;max-width:100%;margin:4px auto;flex:none;position:relative;z-index:1;contain:layout paint}",
+        R + "#quiz-arena-root.as-fs .ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 330px),calc(100vw - 28px));width:min(100%,calc(100dvh - 330px),calc(100vw - 28px))}",
+        R + "#ag-pane-snakes .lx-pc.lx-emb{margin-right:0;padding-right:20px;min-width:0}",
+        R + "#ag-pane-snakes .lx-pc.lx-emb .lx-tbar{right:5px;width:7px;top:6px;bottom:6px}",
+        R + "#ag-pane-snakes .lx-row.sl-three .lx-pc.lx-emb{margin-right:0;padding-right:15px}",
+        R + "#ag-pane-snakes .lx-row.sl-three .lx-tbar{right:3px;width:6px}",
+        R + "#ag-pane-snakes .lx-few .lx-pc.lx-emb{margin-right:0;padding-right:24px}",
+        R + "#ag-pane-snakes .lx-few .lx-tbar{right:7px}",
+        R + "#ag-pane-snakes .lx-emb .lx-nm{font-size:9px}",
+        R + "#ag-pane-snakes .lx-row{padding:0 2px;max-width:100%;box-sizing:border-box}",
+        R + "#ag-pane-snakes .sl-bar-row{position:relative;z-index:5;flex:none;box-sizing:border-box;max-width:min(100%,calc(100vw - 8px))}",
+        R + "#ag-pane-snakes .sl-race{height:22px;min-width:96px}",
+        R + "#ag-pane-snakes .sl-race>div{min-width:20px;overflow:hidden;font-size:10px;white-space:nowrap}"
       ].join("");
       document.head.appendChild(t);
     }
@@ -3190,6 +3271,8 @@
           else if (a === "studio") { toggleInGameStudio(); }
           else if (a === "rules") { api.showRules("snakes"); }
           else if (a === "card") { if (canRollNow()) slUseCard(k); }
+          else if (a === "fincont") { playSfx("click"); slFinContinue(); }
+          else if (a === "finend") { playSfx("click"); slFinEnd(); }
           else if (a === "roll") { rollDice(); }
           else if (a === "emo") { sendEmoji(k); }
           else if (a === "quit") {
@@ -3427,6 +3510,14 @@
         R + ".lx-bw::before{content:\"\";position:absolute;inset:0;border-radius:4.5%;box-shadow:0 22px 44px -16px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}",
         R + ".ag-playing .lx-bw{width:min(94%,calc(100vh - 248px));width:min(94%,calc(100dvh - 248px));min-width:250px}",
         R + ".lx-bw.has-scroll::before{display:none}",
+        /* ---- Ludo layout fixes: painted frame is drawn outside the board square, so shrink the square to keep the frame on screen; timer bar stays inside its card ---- */
+        R + ".ag-playing #ag-pane-ludo .lx-bw{width:min(78%,calc(100vh - 330px),calc(100vw - 96px));width:min(78%,calc(100dvh - 330px),calc(100vw - 96px));min-width:220px}",
+        R + "#ag-pane-ludo .lx-pc.lx-emb{margin-right:0;padding-right:20px;min-width:0}",
+        R + "#ag-pane-ludo .lx-pc.lx-emb .lx-tbar{right:5px;width:7px;top:6px;bottom:6px}",
+        R + "#ag-pane-ludo .lx-few .lx-pc.lx-emb{margin-right:0;padding-right:24px}",
+        R + "#ag-pane-ludo .lx-few .lx-tbar{right:7px}",
+        R + "#ag-pane-ludo .lx-row{padding:0 2px;max-width:100%;box-sizing:border-box}",
+        R + "#ag-pane-ludo .lx-pdl{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)}",
         /* Screenshot-accurate glossy pill cards with embedded 3D dice well & vertical green turn-timer bar */
         R + ".lx-ecell{width:100%}",
         R + ".lx-pc.lx-emb{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 8px;border-radius:16px;border:2.5px solid rgba(255,255,255,.82);background:linear-gradient(180deg,var(--c),var(--cd));box-shadow:0 8px 18px -8px rgba(0,0,0,.72),inset 0 2px 0 rgba(255,255,255,.45);opacity:.82;transform:scale(.97);margin-right:14px;overflow:visible}",
@@ -3575,6 +3666,27 @@
         R + ".lx-cbtn{position:relative;overflow:hidden;border:1.5px solid var(--ag-onb);background:linear-gradient(135deg,rgba(251,191,36,.22),rgba(56,189,248,.16));color:var(--ag-tx);border-radius:12px;padding:4px 10px;font-size:11.5px;font-weight:800;transition:transform .14s,box-shadow .2s}",
         R + ".lx-cbtn:active:not(:disabled){transform:scale(.94)}",
         R + ".lx-cbtn.armed{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff!important;border-color:#fde047;box-shadow:0 0 16px -3px #f59e0b}",
+        R + ".lx-fin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:8;width:min(86%,260px);padding:12px 12px 10px;border-radius:18px;background:rgba(15,10,30,.92);border:2px solid #fde047;box-shadow:0 14px 40px rgba(0,0,0,.6),0 0 24px -4px #fbbf24;text-align:center;color:#fff;animation:lxFinIn .35s cubic-bezier(.2,1.3,.4,1)}",
+        R + ".lx-fin-t{font-size:15px;font-weight:900;line-height:1.2}",
+        R + ".lx-fin-s{font-size:11px;opacity:.75;margin:3px 0 9px;font-weight:700}",
+        R + ".lx-fin-b{display:block;width:100%;padding:9px 8px;margin-top:6px;border-radius:12px;font-size:12.5px;font-weight:900;color:#fff;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4)}",
+        R + ".lx-fin-b.go{background:linear-gradient(135deg,#f59e0b,#ea580c);border-color:#fde047}",
+        "@keyframes lxFinIn{from{opacity:0;transform:translate(-50%,-50%) scale(.7)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}",
+        R + ".lx-pc.done{opacity:.55!important;filter:grayscale(.55);transform:scale(.95)!important}",
+        R + ".lx-pc[data-medal]::before{content:attr(data-medal);position:absolute;left:-4px;top:-9px;font-size:18px;line-height:1;z-index:6;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}",
+        R + ".lx-dwrap.lx-nudge{animation:lxNudge .8s ease-in-out 3}",
+        "@keyframes lxNudge{0%,100%{transform:rotate(0) scale(1)}20%{transform:rotate(-9deg) scale(1.12);box-shadow:0 0 18px 4px #fde047}40%{transform:rotate(8deg) scale(1.12)}60%{transform:rotate(-5deg) scale(1.06)}80%{transform:rotate(3deg)}}",
+        R + ".lx-pcards{display:flex;gap:3px;justify-content:center;align-items:center;max-width:100%;min-height:19px}",
+        R + ".lx-pcd{flex:none;display:inline-flex;align-items:center;gap:2px;padding:3px 5px;border-radius:8px;border:1px solid rgba(255,255,255,.45);background:rgba(10,8,25,.55);color:#fff;font-size:9.5px;line-height:1;font-weight:900;white-space:nowrap;text-shadow:0 1px 1px rgba(0,0,0,.65);opacity:1;transition:transform .12s,box-shadow .2s}",
+        R + ".lx-pci{width:14px;height:14px;object-fit:contain;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5));pointer-events:none}",
+        R + ".lx-pcd b{font-weight:900;letter-spacing:.01em}",
+        R + ".lx-pcd.zero{opacity:.6}",
+        R + ".lx-pcd.live{background:linear-gradient(135deg,#f59e0b,#ea580c);border-color:#fde047;box-shadow:0 0 9px -1px #fbbf24;animation:lxPcd 1.6s ease-in-out infinite}",
+        R + ".lx-pcd.shield.live{background:linear-gradient(135deg,#38bdf8,#2563eb);border-color:#bae6fd;box-shadow:0 0 9px -1px #38bdf8}",
+        R + ".lx-pcd.on{background:linear-gradient(135deg,#22c55e,#15803d);border-color:#fff;box-shadow:0 0 9px -1px #4ade80}",
+        R + ".lx-pcd:active:not(:disabled){transform:scale(.9)}",
+        "@keyframes lxPcd{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}",
+        R + ".lx-util{flex-wrap:nowrap;padding:4px 8px}",
         R + ".lx-cbtn.live::after{content:'';position:absolute;inset:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:lxShine 3.2s ease-in-out infinite}",
         R + ".lx-lead{display:inline-block;margin-left:3px;font-size:11px;vertical-align:1px}",
         "@media(prefers-reduced-motion:reduce){" + R + ".lx *{animation:none!important}" + R + ".lx-cube{transition:none!important}" + R + ".lx-toast{opacity:1}}"
@@ -3813,6 +3925,7 @@
     }
     function stepParticles() {
       var sp = api.speed(), i, p;
+      if (particles.length > 200) particles.splice(0, particles.length - 200);   /* hard budget: keeps the win celebration smooth on mid-range phones */
       for (i = particles.length - 1; i >= 0; i--) {
         p = particles[i];
         if (p.k === "r") p.life -= 0.05 * sp;
@@ -4057,8 +4170,10 @@
         } else if (pt.k === "d" || pt.k === "f") {
           c.fillStyle = pt.col; c.globalCompositeOperation = "lighter"; c.beginPath(); c.arc(pt.x, pt.y, pt.r * a, 0, TAU); c.fill();
         } else {
-          c.globalCompositeOperation = "lighter"; c.fillStyle = pt.col; c.shadowColor = pt.col; c.shadowBlur = 8;
-          c.beginPath(); c.arc(pt.x, pt.y, pt.r * (0.4 + 0.6 * a), 0, TAU); c.fill();
+          c.globalCompositeOperation = "lighter"; c.fillStyle = pt.col;
+          var sr = pt.r * (0.4 + 0.6 * a);
+          if (particles.length < 70) { c.globalAlpha = a * 0.28; c.beginPath(); c.arc(pt.x, pt.y, sr * 2.3, 0, TAU); c.fill(); c.globalAlpha = a; }   /* soft glow without costly shadowBlur */
+          c.beginPath(); c.arc(pt.x, pt.y, sr, 0, TAU); c.fill();
         }
         c.restore();
       }
@@ -4097,7 +4212,7 @@
       if (!st || view !== "game" || !cv || document.hidden) { prevNow = 0; return; }
       adaptHd(now);
       var fast = particles.length > 0 || ldTexts.length > 0 || fxCards.length > 0 || stepGlows.length > 0 || ldCam.k > 1.003 || st.awaitMove || st.busy || (st.introT0 && now - st.introT0 < 1000);
-      if (fast || now - lastT >= 33) { lastT = now; if (particles.length) stepParticles(); drawFrame(); }
+      if ((fast && !(particles.length > 90 && now - lastT < 30)) || now - lastT >= 33) { lastT = now; if (particles.length) stepParticles(); drawFrame(); }   /* heavy FX: cap to ~33fps so frames stay even */
       raf = window.requestAnimationFrame(loop);
     }
     function kickLoop() { if (!raf && cv && st && view === "game") raf = window.requestAnimationFrame(loop); }
@@ -4256,7 +4371,7 @@
     function endTurn(bonus, isActor) {
       if (!st || st.winner) return;
       st.busy = false; st.awaitMove = false; st.validTokens = [];
-      var nextTurn = bonus ? st.turn : (st.turn + 1) % st.players.length;
+      var nextTurn = bonus ? st.turn : finNext(st, st.turn);
       if (!bonus) { st.sixes = 0; st.turns = (st.turns || 0) + 1; if (st.turns % 12 === 0) comeback(); }
       var msg = bonus ? (st.players[st.turn].name + " gets a bonus roll!") : turnTxt(st.players[nextTurn].name);
       st.turn = nextTurn; if (!bonus && st.players[nextTurn].shield > 0) st.players[nextTurn].shield--;
@@ -4266,6 +4381,59 @@
       if (rm && isActor) pushOnlineState(nextTurn, -1, msg);
       updateHUD(); drawFrame(); kickLoop();
       if (!rm) maybeBot();
+    }
+
+    /* extra capture impact: shockwave rings, flying stars/shards in both colours, a delayed second pulse */
+    function captureFx(x, y, opCol, plCol) {
+      var i, a, sp, k = (size || 440) / 440;
+      if (REDUCE) return;
+      for (i = 0; i < 3; i++) (function (i) { later(function () { spawnRing(x, y, i % 2 ? opCol : "#ffffff", size * (0.14 + i * 0.07)); }, i * 110); })(i);
+      for (i = 0; i < 12; i++) {
+        a = Math.random() * TAU; sp = (1.2 + Math.random() * 2.8) * k;
+        particles.push({ k: "st", x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.6 * k, rot: Math.random() * TAU, life: 1, col: i % 3 === 0 ? "#fde047" : (i % 3 === 1 ? opCol : plCol), r: size * (0.016 + Math.random() * 0.014) });
+      }
+      for (i = 0; i < 14; i++) {
+        a = Math.random() * TAU; sp = (2 + Math.random() * 3.4) * k;
+        particles.push({ k: "s", x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, col: i % 2 ? opCol : "#ffffff", r: (1.6 + Math.random() * 2.2) * Math.max(.8, k) });
+      }
+      later(function () { spawnSparks(x, y, plCol, 12); spawnRing(x, y, "#fecaca", size * 0.2); }, 260);
+    }
+    /* captured piece: one smooth, slower glide back along the track it travelled (eased, spinning, glowing trail),
+       then a little arc that drops it into its yard with a bounce */
+    function animateReturn(pl, tIdx, from, onDone) {
+      var g = gen, pts = [], k, i, total = 0, segs = [];
+      kickLoop();
+      for (k = from; k >= 0; k--) pts.push(tokenCoords(pl.seat, tIdx, k, size));
+      var yp = tokenCoords(pl.seat, tIdx, -1, size);
+      for (i = 1; i < pts.length; i++) { var dl = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); segs.push(dl); total += dl; }
+      var n = pts.length, d1 = total > 1 ? api.dur(Math.max(1300, Math.min(2600, 800 + n * 40))) : 0, d2 = api.dur(650), t0 = performance.now();
+      if (!pl.anims) pl.anims = [];
+      function ease(u) { return -(Math.cos(Math.PI * u) - 1) / 2; }
+      function finish() { pl.tokens[tIdx] = -1; pl.anims[tIdx] = null; if (st) drawFrame(); if (onDone) onDone(); }
+      function tick(now) {
+        if (!st || g !== gen) return;
+        var el = now - t0, px, py, rot, sc, lift = 0, sq = 0;
+        if (el < d1) {
+          var u = el / d1, dist = ease(u) * total, j = 0, acc = 0;
+          while (j < segs.length - 1 && acc + segs[j] < dist) { acc += segs[j]; j++; }
+          var f = segs[j] ? Math.min(1, Math.max(0, (dist - acc) / segs[j])) : 0;
+          px = pts[j].x + (pts[j + 1].x - pts[j].x) * f; py = pts[j].y + (pts[j + 1].y - pts[j].y) * f;
+          lift = Math.sin(u * Math.PI) * size * 0.014; py -= lift;
+          rot = ease(u) * TAU * 1.6; sc = 1 + 0.1 * Math.sin(u * Math.PI);
+          if (Math.random() < 0.55) spawnTrail(px, py, pl.color);
+          if (Math.random() < 0.12) spawnSparks(px, py, "#ffffff", 2);
+        } else {
+          var t = Math.min(1, (el - d1) / d2), a = pts[n - 1], e2 = 1 - Math.pow(1 - t, 3);
+          px = a.x + (yp.x - a.x) * e2; py = a.y + (yp.y - a.y) * e2 - Math.sin(t * Math.PI) * size * 0.09;
+          rot = TAU * 1.6 + e2 * TAU * 0.4; sc = 1 + 0.12 * Math.sin(t * Math.PI);
+          sq = t > 0.8 ? 0.16 * Math.sin(((t - 0.8) / 0.2) * Math.PI) : 0;
+          if (Math.random() < 0.7) spawnTrail(px, py, pl.color);
+          if (t >= 1) { finish(); return; }
+        }
+        pl.anims[tIdx] = { x: px, y: py, sq: sq, rot: rot, sc: sc };
+        window.requestAnimationFrame(tick);
+      }
+      window.requestAnimationFrame(tick);
     }
 
     function executeTokenMove(pIdx, tIdx, dice, isActor) {
@@ -4308,6 +4476,7 @@
                     caps.push({ op: op, ot: ot, from: op.tokens[ot] }); bonus = true; stat(pIdx).cap++; stat(o).lost++; giveCard(pl, 0, hitPos);
                     playSfx("capture");
                     spawnSparks(hitPos.x, hitPos.y, op.color, 30); spawnRing(hitPos.x, hitPos.y, "#ffffff", size * 0.16); spawnRing(hitPos.x, hitPos.y, op.color, size * 0.11);
+                    captureFx(hitPos.x, hitPos.y, op.color, pl.color);
                     ldPop(stat(pIdx).cap > 1 ? "💥 ×" + stat(pIdx).cap + " KO!" : "💥 CAPTURE!", hitPos.x, hitPos.y - size * 0.05, "#fecaca", 1200);
                     toast(stat(pIdx).cap > 1 ? "💥 CAPTURE x" + stat(pIdx).cap + "!" : "💥 CAPTURED!", "#ef4444"); shake(); flash(op.color);
                     if (!pl.bot || !op.bot) vibrate("capture");
@@ -4324,25 +4493,24 @@
           var left = caps.length;
           later(function () {
             caps.forEach(function (c) {
-              var back = [], k; for (k = c.from - 1; k >= 0; k--) back.push(k); back.push(-1);
-              var per = Math.max(24, Math.min(72, 1250 / back.length));
               playSfx("move");
-              animateHop(c.op, c.ot, back, function () {
+              animateReturn(c.op, c.ot, c.from, function () {
                 var yp = tokenCoords(c.op.seat, c.ot, -1, size);
-                spawnRing(yp.x, yp.y, c.op.color, size * 0.09); spawnSparks(yp.x, yp.y, c.op.color, 14);
+                spawnRing(yp.x, yp.y, c.op.color, size * 0.1); spawnRing(yp.x, yp.y, "#ffffff", size * 0.06); spawnSparks(yp.x, yp.y, c.op.color, 16);
                 if (--left === 0) { updateHUD(); endTurn(bonus, isActor); }
-              }, { ms: per, quiet: true, trail: 1, spin: 1, arc: 0.016, lastMs: 380, lastArc: 0.15 });
+              });
             });
-          }, api.dur(420));
+          }, api.dur(560));
           return;
         }
         if (pl.tokens.every(function (v) { return v === 56; })) {
           st.winner = pl; st.busy = false; playSfx("win");
-          spawnConfetti(size / 2, size * 0.6, 36); spawnConfetti(size * 0.2, size * 0.7, 12); spawnConfetti(size * 0.8, size * 0.7, 12);
-          toast("🏆 " + pl.name + " WINS!", pl.color); celebrateWin(pl); fireworks(pl);
+          spawnConfetti(size / 2, size * 0.6, 24); spawnConfetti(size * 0.2, size * 0.7, 6); spawnConfetti(size * 0.8, size * 0.7, 6);
+          toast("🏆 " + pl.name + " WINS!", pl.color); later(function () { celebrateWin(pl); }, 180); later(function () { fireworks(pl); }, 420);
           vibrate([40, 40, 80, 40, 160]);
           if (rm && isActor) pushOnlineState(st.turn, pIdx, pl.name + " wins!");
           kickLoop();
+          if (!rm && st.players.length >= 3 && finRecord(st, pl)) { later(ldFinShow, api.dur(2600)); return; }   /* offer: keep playing for the next places */
           later(function () { view = "result"; render(); }, 5500);   /* fixed wait so the celebration is always seen */
           return;
         }
@@ -4350,17 +4518,27 @@
       }, entering ? { ms: 330, arc: 0.1 } : null);
     }
 
+    function ldFinShow() { if (!st || !host || view !== "game") return; st.finPanel = true; var w = q(".lx-bw", host); if (w && !q(".lx-fin", w)) w.appendChild(finPanel("ld", st)); }
+    function ldFinContinue() {
+      if (!st || !st.order || !st.order.length) return;
+      var w = q(".lx-fin", host); if (w) w.remove();
+      var pl = st.order[st.order.length - 1]; st.finPanel = false; st.winner = null; st.busy = false; st.awaitMove = false; st.validTokens = []; st.sixes = 0; st.force = 0;
+      st.turn = finNext(st, st.players.indexOf(pl)); setMsg(turnTxt(st.players[st.turn].name));
+      updateHUD(); drawFrame(); kickLoop(); if (!rm) maybeBot();
+    }
+    function ldFinEnd() { if (!st) return; st.finPanel = false; view = "result"; render(); }
+
     function celebrateWin(pl) {
       /* lighter than before: fewer particles/sounds so low-end phones stay smooth */
       var cols = [pl.color, "#fde047", "#ffffff"], i;
       flash("#fde047");
       pl.tokens.forEach(function (v, t) {
         var hp = tokenCoords(pl.seat, t, 56, size);
-        for (var r = 0; r < 2; r++) (function (r) { later(function () { spawnRing(hp.x, hp.y, pl.color, size * (0.1 + r * 0.06)); if (r === 0) spawnSparks(hp.x, hp.y, cols[1], 8); }, r * 320 + t * 160); })(r);
+        for (var r = 0; r < 2; r++) (function (r) { later(function () { spawnRing(hp.x, hp.y, pl.color, size * (0.1 + r * 0.06)); if (r === 0) if (t % 2 === 0) spawnSparks(hp.x, hp.y, cols[1], 6); }, r * 320 + t * 160); })(r);
       });
       for (i = 0; i < 6; i++) (function (i) { later(function () {
         var x = size * (0.2 + Math.random() * 0.6), y = size * (0.2 + Math.random() * 0.6);
-        spawnSparks(x, y, cols[i % 3], 14); spawnRing(x, y, cols[(i + 1) % 3], size * 0.11);
+        spawnSparks(x, y, cols[i % 3], 9); spawnRing(x, y, cols[(i + 1) % 3], size * 0.11);
         if (i % 2 === 0) playSfx("move");
         if (i === 0 || i === 3) vibrate(25);
       }, 300 + i * 450); })(i);
@@ -4458,7 +4636,29 @@ function paintRace() {
     leftTools += '<button type="button" data-ld="undo" class="lx-undo" title="Rewind last move" style="opacity:' + (st.snap && (st.undos == null || st.undos > 0) ? 1 : 0.45) + '">↩ ' + (st.undos == null ? 3 : st.undos) + '</button>';
   }
   var emos = '<div class="lx-uemos">' + ["👏", "😂", "🔥", "😱"].map(function (em) { return '<button type="button" class="lx-uemo" data-ld="emo" data-k="' + em + '">' + em + '</button>'; }).join("") + '</div>';
-  el.innerHTML = '<div class="lx-util"><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">' + leftTools + cardsHTML() + '</div>' + emos + '</div>';
+  el.innerHTML = '<div class="lx-util"><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">' + leftTools + '</div>' + emos + '</div>';
+  paintPCards();
+}
+/* compact power-card chips living inside every player's card (offline modes only) */
+function pcIco(f, emo) { return '<img class="lx-pci" src="assets/' + f + '.png" alt="' + emo + '" draggable="false" onerror="this.outerHTML=\'' + emo + '\'">'; }
+function pcardsHTML(idx) {
+  if (rm || !st) return "";
+  var p = st.players[idx]; if (!p) return "";
+  var c = p.cards || { gold: 0, shield: 0 }, mine = idx === st.turn && !p.bot, live = mine && !st.busy && !st.awaitMove && !st.winner;
+  var gOn = idx === st.turn && !!st.force, sOn = p.shield > 0;
+  var chip = function (k, ic, lab, n, on, tip) {
+    var act = n > 0 && live && !on;
+    return '<button type="button" data-ld="card" data-k="' + k + '" data-p="' + idx + '" title="' + tip + '" class="lx-pcd ' + k + (on ? " on" : "") + (act ? " live" : "") + (n < 1 && !on ? " zero" : "") + '"' + (act ? "" : " disabled") + '>' + ic + '<b>' + lab + '</b></button>';
+  };
+  return chip("gold", pcIco("pc_gold", "✨"), gOn ? "6 ON" : "6 ×" + c.gold, c.gold, gOn, "Golden Dice: next roll is a 6") +
+    chip("shield", pcIco("pc_shield", "🛡️"), sOn ? "ON" : "×" + c.shield, c.shield, sOn, "Shield: can't be captured until your next turn");
+}
+function paintPCards() {
+  if (!host || !st) return;
+  qa(".lx-pc", host).forEach(function (el) {
+    var idx = +el.getAttribute("data-i"), box = el.querySelector(".lx-pcards"); if (!box || isNaN(idx)) return;
+    var h = pcardsHTML(idx); if (box.getAttribute("data-h") !== h) { box.setAttribute("data-h", h); box.innerHTML = h; }
+  });
 }
 function doUndo() {
   if (!st || rm || cfg.mode !== "ai" || st.winner) return;
@@ -4621,10 +4821,10 @@ function diffHTML() {
 /* ---- v3.6: move preview, win fireworks, series score, comeback boost ---- */
 function fireworks(pl) {
   var cols = [pl.color, "#fde047", "#ffffff", "#38bdf8", "#f472b6"];
-  for (var k = 0; k < 12; k++) (function (k) { later(function () {
+  for (var k = 0; k < 9; k++) (function (k) { later(function () {
     var x = size * (0.12 + Math.random() * 0.76), y = size * (0.1 + Math.random() * 0.55), col = cols[k % cols.length];
-    spawnSparks(x, y, col, 28); spawnRing(x, y, col, size * 0.16); playSfx("pop"); if (k % 4 === 0) vibrate([12]);
-  }, 260 * k); })(k);
+    spawnSparks(x, y, col, 16); if (k % 2 === 0) spawnRing(x, y, col, size * 0.16); if (k % 2 === 0) playSfx("pop"); if (k % 4 === 0) vibrate([12]);
+  }, 340 * k + 120); })(k);
 }
 function comeback() {
   if (rm || st.players.length < 2) return;
@@ -4960,12 +5160,16 @@ function pickBestBotTokenOld(pl, valid, dice) {
     /* ---------------------------------------------------------------
      * HUD
      * --------------------------------------------------------------- */
+    var ldNudge = makeNudger(function (i) { return q("#ld-dw-" + i, host); });
     function updateHUD() { try { paintRace(); } catch (e) { }
       if (!st || !host) return;
       var pl = st.players[st.turn], can = canActNow(), rdy = can && !st.busy && !st.awaitMove && !st.winner;
+      if (st.finPanel && !q(".lx-fin", host)) ldFinShow();
+      ldNudge(rdy && !rm ? st.turn : -1);
       qa(".lx-pc", host).forEach(function (el) {
         var idx = +el.getAttribute("data-i"), p = st.players[idx];
         el.classList.toggle("turn", idx === st.turn && !st.winner);
+        if (p) finMark(st, el, p);
         if (p) {
           el.style.setProperty("--c", p.color);
           el.style.setProperty("--cd", shade(p.color, -0.4));
@@ -5098,7 +5302,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       return '<div id="ld-chip-' + idx + '" data-i="' + idx + '" class="lx-pc lx-emb' + (idx === st.turn ? " turn" : "") + '" style="--c:' + pl.color + ';--cd:' + shade(pl.color, -0.4) + '">' +
         '<div class="lx-avw"><div class="lx-av" data-av-i="' + idx + '" data-av-me="' + (isMe ? 1 : 0) + '" data-av-n="' + esc(pl.name) + '">' + api.avatarHTML(pl.name, idx, isMe) + '</div>' +
         '<div class="lx-nm">' + esc(pl.name) + '<span class="lx-lead" style="display:none">👑</span></div></div>' +
-        '<div class="lx-mid"><div class="lx-tks">' + dots + '</div></div>' +
+        '<div class="lx-mid"><div class="lx-tks">' + dots + '</div><div class="lx-pcards">' + pcardsHTML(idx) + '</div></div>' +
         dieBlock(idx) + '<span class="lx-tbar" aria-hidden="true"><i></i></span></div>';
     }
     function ldCell(seat) {
@@ -5138,7 +5342,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
     }
 
     function renderResult() {
-      var ranked = st.players.slice().sort(function (a, b) {
+      var ranked = finRank(st, function (a, b) {
         var da = a.tokens.filter(function (v) { return v === 56; }).length;
         var db = b.tokens.filter(function (v) { return v === 56; }).length;
         if (db !== da) return db - da;
@@ -5238,7 +5442,9 @@ function pickBestBotTokenOld(pl, valid, dice) {
           else if (a === "setup") { playSfx("click"); view = "setup"; render(); }
           else if (a === "studio") { toggleInGameStudio(); }
           else if (a === "rules") { api.showRules("ludo"); }
-          else if (a === "card") { if (canActNow()) useCard(k); }
+          else if (a === "fincont") { playSfx("click"); ldFinContinue(); }
+          else if (a === "finend") { playSfx("click"); ldFinEnd(); }
+          else if (a === "card") { var cpi = b.getAttribute("data-p"); if (canActNow() && (cpi == null || +cpi === st.turn)) useCard(k); }
           else if (a === "undo") { doUndo(); }
           else if (a === "roll") { rollDice(); }
           else if (a === "emo") { sendEmoji(k); }
@@ -7384,7 +7590,7 @@ function pickBestBotTokenOld(pl, valid, dice) {
       R + ".as-midbtn{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--ag-ac)!important;border:1px solid var(--ag-onb)!important;background:var(--ag-on)!important;flex:none}",
       "#quiz-arena-root.as-fs{position:fixed;top:0;left:0;right:0;bottom:0;width:auto;max-width:none;z-index:2147483000;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--as-fsbg,#0b1220);-webkit-overflow-scrolling:touch;overscroll-behavior:contain}",
       "#quiz-arena-root.as-fs .ag-playing #ag-pane-snakes .bg-cv-wrap{width:min(100%,calc(100vh - 250px));width:min(100%,calc(100dvh - 250px));min-width:240px}",
-      "#quiz-arena-root.as-fs .ag-playing .lx-bw{width:min(100%,calc(100vh - 290px));width:min(100%,calc(100dvh - 290px));min-width:240px}",
+      "#quiz-arena-root.as-fs .ag-playing .lx-bw{width:min(78%,calc(100vh - 340px),calc(100vw - 110px));width:min(78%,calc(100dvh - 340px),calc(100vw - 110px));min-width:220px}",
       "html.as-fs-lock,html.as-fs-lock body{overflow:hidden!important}",
       R + ".as-wrap{flex-wrap:wrap}",
       R + ".as-wrap button{flex:1 1 30%}",
